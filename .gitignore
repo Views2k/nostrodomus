@@ -14,7 +14,6 @@ test-results/
 Trace-*.json.gz
 # Local reference archives
 nostrodomus-ha-resources.zip
-stellar-ha-resources.zip
 # Local scratch and helper scripts
 send-to-windows.sh
 docs/planned/
