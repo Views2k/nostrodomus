@@ -1,10 +1,10 @@
-// ABSORB P4 — RUN CHECKPOINT C: typing-latency / suppression-gap probe.
+// Typing-latency / suppression-gap probe.
 //
 // What this proves on the REAL 2026.6 editor (the part unit tests cannot):
 //   (1) MARK-SIDE REACH — fast typing in a real CodeMirror editor actually marks
-//       the coordinator 'editor-input' quiet channel. This is the convergence-gap
-//       proof for P4: unlike the A/B per-editor CSS injection (which was wired only
-//       to the sentinel and silently missed editors found by other paths), the mark
+//       the coordinator 'editor-input' quiet channel. Unlike a per-editor CSS
+//       injection wired only to the sentinel (which misses editors found by
+//       other paths), the mark
 //       side rides the document-level capture keydown listener →
 //       isScopedEditorEvent(ev.composedPath) → rememberView → hookDispatch →
 //       view.dispatch → noteEditorDispatchRepeatPressure → markRuntimeQuiet. That is
@@ -21,14 +21,12 @@
 // (companionInputQuiet.suppressions). During *rapid* typing editorDispatch skips its
 // own per-keystroke scheduleDiagnosticsRefresh, and the flush path is gated on the
 // diagnostics Context panel being open — so suppressions is LEGITIMATELY 0 with the
-// panel closed. Asserting it blind would be an A/B-style false signal. The guard
-// LOGIC is unit-proven (input_quiet_runtime.test.mjs: defer → single trailing flush);
-// the live consult-side observation belongs in the owner feel-check with the Context
-// tab open. We still READ companionInputQuiet here and ATTACH it as evidence.
+// panel closed. Asserting it blind would be a false signal. The guard
+// LOGIC is unit-proven (input_quiet_runtime.test.mjs: defer → single trailing flush).
+// This spec still READS companionInputQuiet and ATTACHES it as evidence.
 //
-// Authored on-branch; the layer ships DORMANT by default and is force-activated here
-// via the D-KILL-SWITCH escape hatch (localStorage). RUN BY THE OWNER (no browser/HA
-// in the build container). boot-cost-unchanged is covered by boot-cost.spec.mjs.
+// The layer is force-activated here via the localStorage escape hatch.
+// Boot cost is covered by boot-cost.spec.mjs.
 
 import { test, expect, openDashboard } from './session.mjs';
 import {
@@ -71,9 +69,9 @@ async function readQuietState(page) {
   });
 }
 
-test('typing-latency: fast typing marks the real editor quiet window and never stalls completion (CHECKPOINT C)', async ({ page }, testInfo) => {
+test('typing-latency: fast typing marks the real editor quiet window and never stalls completion', async ({ page }, testInfo) => {
   // Force the absorbed companion layer ACTIVE before any HA document runs (and re-assert
-  // in the loaded context), the same escape hatch the A/B specs use.
+  // in the loaded context), the same escape hatch the companion specs use.
   await page.addInitScript(() => {
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* opaque origin */ }
   });
@@ -82,9 +80,8 @@ test('typing-latency: fast typing marks the real editor quiet window and never s
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* ignore */ }
   });
 
-  // Entities card: a proven completion fixture ('the' → 'theme'). The mark side rides
-  // the universal keydown path, so the editor choice is irrelevant to (1); the button
-  // card's small/simple visual is the owner's manual feel-check.
+  // Entities card: a known completion fixture ('the' → 'theme'). The mark side rides
+  // the universal keydown path, so the editor choice is irrelevant to (1).
   await openSeededCardCodeEditor(page, stamp);
 
   // Precondition: the layer must really be active, else the whole probe is meaningless
@@ -128,7 +125,7 @@ test('typing-latency: fast typing marks the real editor quiet window and never s
   expect(after.lastError ?? null, `a completion-compute error surfaced during fast typing: ${JSON.stringify(after.lastError)}`).toBeFalsy();
 
   // (2c) NO SUGGESTION STALL — completion still fires after the burst. Fresh line, a
-  // known prefix, Ctrl+Space → suggestions (the proven entities-card 'the' → 'theme').
+  // known prefix, Ctrl+Space → suggestions (the entities-card 'the' → 'theme').
   await page.keyboard.press('Enter');
   await expectDialogAlive(page, 'after Enter for the post-burst completion check');
   await page.keyboard.type('the', { delay: FAST_DELAY_MS });

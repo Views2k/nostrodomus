@@ -5,7 +5,6 @@ text = (ROOT / "src" / "main.legacy.js").read_text(encoding="utf-8")
 # The panel shell mounts Settings through the portal root; main.legacy only delegates to it.
 shell = (ROOT / "src" / "ui" / "settings" / "settingsPanelShell.js").read_text(encoding="utf-8")
 dist = (ROOT / "dist" / "nostrodomus.js").read_text(encoding="utf-8")
-adr = (ROOT / "docs" / "adr" / "007-settings-panel-isolation.md").read_text(encoding="utf-8")
 
 # Historical regression guard:
 # The document-level settings overlay was a failed workaround for the codebox-height
@@ -26,13 +25,11 @@ required = [
     "function openSettings()",
     "function ensureSettingsPortalHost()",
     "const root = settingsPortalRoot();",
-    "nostrodomus-editor-v17.2.46-sticky-simple-mode",
-    "simple/tall mode sticky",
 ]
 
 settings_block = text[text.find("function openSettings()"):text.find("function tabButton", text.find("function openSettings()"))]
 assert "overlayRoot()" not in settings_block, "openSettings must not use the completion overlay root"
-for token in required[:3]:
+for token in required:
     source_ok = token in text
     if token == "const root = settingsPortalRoot();":
         source_ok = source_ok or token in shell
@@ -46,8 +43,5 @@ for token in required[:3]:
     if token == "const root = settingsPortalRoot();":
         dist_ok = dist_ok or "settingsPortalRoot()" in dist
     assert dist_ok, f"missing dist token: {token}"
-
-for token in required[3:]:
-    assert token in adr, f"missing ADR token: {token}"
 
 print("SETTINGS OVERLAY CLEANUP STATIC TEST OK")

@@ -109,7 +109,7 @@ test('codeboxStyleBuildRootCss preserves legacy root CSS selectors and token int
   assert.match(css, /font-size: 17px !important;/);
   assert.match(css, /filter: var\(--nostrodomus-codebox-syntax-filter, hue-rotate\(10deg\) saturate\(1\.20\)\) !important;/);
   assert.match(css, /border: 2px solid var\(--nostrodomus-codebox-scrollbar-thumb-border, thumb-border-token\) !important;/);
-  // UNIVERSAL FIX 1: the Dev Tools → Template Result pane (the whole ha-card.render-pane) mirrors the
+  // UNIVERSAL: the Dev Tools → Template Result pane (the whole ha-card.render-pane) mirrors the
   // codebox frame — border + glow + uniform frosted surface — with the codebox vars (re)defined on the
   // pane from the same tokens so it stays color-synced.
   assert.match(css, /ha-card\.render-pane\s*\{/);
@@ -121,7 +121,7 @@ test('codeboxStyleBuildRootCss preserves legacy root CSS selectors and token int
   assert.doesNotMatch(css, /pre\.rendered\s*\{/);
 });
 
-test('Bug 2 regression: main + preview codebox-style apply paths both include syntaxFilter in their inline-var tokens', () => {
+test('main + preview codebox-style apply paths both include syntaxFilter in their inline-var tokens', () => {
   const mainSrc = readFileSync(new URL('../../src/ui/codeboxStyleRuntime.js', import.meta.url), 'utf8');
   const previewSrc = readFileSync(new URL('../../src/ui/settingsInteractionRuntime.js', import.meta.url), 'utf8');
   // The inline --nostrodomus-codebox-syntax-filter var is emitted from the tokens object. If the main
@@ -131,7 +131,7 @@ test('Bug 2 regression: main + preview codebox-style apply paths both include sy
   assert.match(previewSrc, /const tokens = \{[^}]*\bsyntaxFilter\b[^}]*\}/, 'preview path tokens include syntaxFilter');
 });
 
-test('Bug 4 regression: applyingCodeboxStyle reset is guarded by try/finally and kept deferred', () => {
+test('applyingCodeboxStyle reset is guarded by try/finally and kept deferred', () => {
   const src = readFileSync(new URL('../../src/ui/codeboxStyleRuntime.js', import.meta.url), 'utf8');
   // The guard set true must be followed by a try, and the reset must live in a finally so a throw between
   // set and reset can never strand the flag true (which permanently gates the observer's reapply). The

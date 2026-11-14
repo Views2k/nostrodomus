@@ -10,7 +10,7 @@
 //    contract), so this lives in the companion layer (sibling to scrollbarStyleRuntime),
 //    not in main's apply. It sets inline heights on .cm-editor/.cm-scroller
 //    (companion-owned); main's apply still skips them, protected tests unchanged.
-//  - No-wildcard (§8): the tab scan must not use `querySelectorAll("*")`, so it is a
+//  - No-wildcard: the tab scan must not use `querySelectorAll("*")`, so it is a
 //    bounded, depth-capped traversal that descends only into the registry's known
 //    editor-host types (OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR) and queries the
 //    registry's tab selectors at each root.
@@ -37,8 +37,8 @@ import { HA_DIALOG, HA_DIALOG_FOOTER, HA_FORM, HA_SELECTOR, HA_YAML_EDITOR, HUI_
 // rounding the content back would re-clip the down-arrow. 14px is the clean middle: at
 // that height the frame's corner inset is ~1.5px, so any arc overlap is sub-pixel.
 // Editor and scroller share the height so the residual strip is uniform.
-// Tabbed-lane height, derived from a live owner probe (2026-07-24, real HA,
-// innerHeight 1358, zoom 100%): the tabbed codebox TOP sits at 3vh + ~310px of fixed
+// Tabbed-lane height, derived from a measurement on a real HA instance
+// (innerHeight 1358, zoom 100%): the tabbed codebox TOP sits at 3vh + ~310px of fixed
 // dialog chrome (header + option tabs + code-mode toolbar; measured top 351px). The
 // dialog bottom edge is at 97vh, so ending the box 30px inside it gives
 // 97vh - 30 - (3vh + 310) = 94vh - 340px — the tallest box that stays inside the
@@ -253,7 +253,7 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     return companionLayerActive({ globalRef, storage, shippedDefault: CODEBOX_ENLARGE_SHIPPED_ACTIVE });
   }
 
-  // Bounded tab detection (§8): a visible tab container, or >=2 visible tabs (excluding
+  // Bounded tab detection: a visible tab container, or >=2 visible tabs (excluding
   // Nostrodomus's own UI), means a tabbed editor. Descends only into known editor-host
   // shadow roots, capped at maxDepth (the no-wildcard law).
   function hasOptionTabs(dialogShadowRoot) {

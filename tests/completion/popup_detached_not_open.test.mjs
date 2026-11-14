@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { completionPopupIsOpen } from '../../src/completion/popupRuntime.js';
 import { createEditorDispatchRuntime } from '../../src/editor/editorDispatchRuntime.js';
 
-// completion#12. Home Assistant removes the list together with the dialog that hosted it. The
+// Home Assistant removes the list together with the dialog that hosted it. The
 // box keeps display:block, so it counted as open and the first change in the next editor asked
 // for a live update, which showed the list there without Ctrl+Space.
 test('a list whose box was removed from the page is not open', () => {

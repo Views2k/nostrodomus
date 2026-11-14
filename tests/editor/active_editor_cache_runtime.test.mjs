@@ -62,11 +62,11 @@ test('active editor cache runtime remembers active codebox editor and schedules 
   assert.equal(calls[0][2], 'active-editor-unit-test');
 });
 
-// ABSORB CHECKPOINT A+B reopen regression: the companion layer (scrollbar/enlarge) must
+// The companion layer (scrollbar/enlarge) must
 // be driven from the editor-cache convergence — the point EVERY discovery path funnels
-// through — not only the editor sentinel. The CHECKPOINT B feel-check failed because a
-// real button-card editor was discovered via initialSyntaxPaintGate (a NON-sentinel
-// path), so the sentinel never fired and no companion applied. This pins the fix.
+// through — not only the editor sentinel. A
+// real button-card editor is discovered via initialSyntaxPaintGate (a NON-sentinel
+// path), so the sentinel never fires for it.
 test('active editor cache runtime drives the companion layer on the convergence path (non-sentinel discovery)', () => {
   const companionEditors = [];
   const state = {
@@ -177,7 +177,7 @@ test('active editor cache runtime owns no-editor backoff guard', () => {
   }
 });
 
-// ABSORB v17-persistence regression: the persistence engine re-applies on open to editors a
+// The persistence engine re-applies on open to editors a
 // click never reached, widening discovery's blast radius. A CodeMirror nested in a visual-editor
 // form field (ha-form / ha-selector — markdown template selector, condition/action editors, any
 // card-config field) is NOT the dialog's main codebox; treating it as one force-sizes it to
@@ -208,7 +208,7 @@ test('visibleStyleEditorCandidate rejects any CodeMirror nested in ha-form/ha-se
 });
 
 test('suppressNativeAutocompleteAcrossSurface turns native off on EVERY codebox host on the surface', () => {
-  // Owner bug: HA's native entity dropdown stayed visible in the other codeboxes on a screen, since
+  // HA's native entity dropdown stayed visible in the other codeboxes on a screen, since
   // suppression only ran for the single active editor. The surface sweep turns it off on all of them.
   const mkHost = () => ({ localName: 'ha-code-editor', dataset: {}, autocompleteEntities: true, autocompleteIcons: true });
   const hosts = [mkHost(), mkHost(), mkHost()];

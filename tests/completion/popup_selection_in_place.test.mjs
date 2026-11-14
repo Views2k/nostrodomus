@@ -190,7 +190,7 @@ test('opening the list renders and places it once, and an arrow key does not ren
   calls.length = 0;
   runtime.onKeydown({ key: 'ArrowDown', preventDefault: () => {}, stopPropagation: () => {} });
   assert.equal(state.selected, 1);
-  // No details pane here, so the box keeps its size and is not placed again either (completion#21).
+  // No details pane here, so the box keeps its size and is not placed again either.
   assert.deepEqual(calls, [], 'the selection moved without a render');
   const list = overlay.querySelector('[data-nostrodomus-list="1"]');
   assert.equal(list.children[1].attributes['aria-selected'], 'true');

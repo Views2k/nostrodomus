@@ -43,7 +43,6 @@ for path in [
     if not (ROOT / path).exists():
         errors.append(f"Missing managed companion resource: {path}")
 for required in [
-    "nostrodomus_editor_v16",
     "nostrodomus-library-core-v1",
     "nostrodomus-library-webdev-v1",
     "nostrodomus_editor_v17_2_learned_reapply.js",

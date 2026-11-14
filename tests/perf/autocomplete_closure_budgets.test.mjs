@@ -1,4 +1,4 @@
-// Perf budgets relocated from the functional suites (RUNTIME_DATA.md P4/W5).
+// Perf budgets, kept apart from the functional suites.
 // Run via `npm run test:perf`; excluded from the default `npm test` walk so
 // the required gate is timing-flake-free by construction. Functional
 // assertions for these scenarios remain in their original files:

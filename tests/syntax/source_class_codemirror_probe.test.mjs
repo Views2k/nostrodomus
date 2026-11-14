@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createSourceClassBridgeRuntime } from '../../src/syntax/sourceClassBridgeRuntime.js';
 
-// Finding 2B(1): cm was acquired only as host?._loadedCodeMirror || editor._loadedCodeMirror ||
+// cm was acquired only as host?._loadedCodeMirror || editor._loadedCodeMirror ||
 // bridgeCodeEditor?._loadedCodeMirror -- three reads of the SAME private field, so one HA/CM rename
 // of _loadedCodeMirror zeroes all three at once and syntax coloring is lost. probeCodeMirrorModule
 // keeps the convention field as the fast path but adds a field-name-independent fallback that finds

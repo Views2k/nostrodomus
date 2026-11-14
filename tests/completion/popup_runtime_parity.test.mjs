@@ -50,7 +50,7 @@ test('popup position flips above and clamps horizontally within bounds', () => {
   assert.equal(above.left <= 180, true);
 });
 
-test('popup stays on-screen when the editor band is narrower than the popup (bug hunt)', () => {
+test('popup stays on-screen when the editor band is narrower than the popup', () => {
   // A narrow codebox near the viewport's right edge: leftBound(1050) > rightBound(1290) - width(280).
   // The old clamp snapped left back to 1050, pushing the right edge to 1330 (off-screen).
   const narrow = completionPopupPosition({ top: 300, bottom: 318, left: 1050 }, { width: 280, height: 150 }, { left: 1050, right: 1290, top: 10, bottom: 800 });
@@ -131,7 +131,7 @@ test('self-corrects a containing-block offset so the box lands at the intended v
 });
 
 test('popup TRACKS the caret horizontally on a wide editor (no fixed left-of-editor cap), still clamped to the right edge', () => {
-  // Mirrors the owner probe: a ~1364px-wide panel editor (bounds.left 48 .. right 1392), caret mid-editor.
+  // A ~1364px-wide panel editor (bounds.left 48 .. right 1392), caret mid-editor.
   const wide = { left: 48, right: 1392, top: 144, bottom: 800 };
   // Caret well to the right but not near the edge → popup follows the caret (was capped at left+170 = 218).
   const mid = completionPopupPosition({ top: 400, bottom: 416, left: 700 }, { width: 280, height: 150 }, wide);

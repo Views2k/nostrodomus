@@ -1,12 +1,13 @@
-// ABSORB P0c — quiet-window semantics golden baseline. FROZEN.
+// Quiet-window semantics golden baseline.
 //
-// picker-safe's typing-session quiet window is the substrate P4 absorbs and wires
-// into the suppression-gap. This test pins its current behavior under a controlled
+// picker-safe's typing-session quiet window is the substrate that
+// src/companion/inputQuietRuntime.js absorbs and wires into the suppression-gap.
+// This test pins its behavior under a controlled
 // clock: the mark→active window duration, the defer-then-flush-after-quiet
 // sequence, and the CodeMirror hotpath-skip truth table. The functions under test
 // are a verbatim transplant of the source (a faithfulness guard proves no drift).
-// P4.3 adds the richer timing tests against the absorbed module; this frozen file
-// pins the cross-phase invariant. Do NOT modify this file during the ABSORB order.
+// input_quiet_runtime.test.mjs has the richer timing tests against the absorbed
+// module. If this test fails, fix the module, not this file.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -133,14 +134,13 @@ test('quiet-window functions are byte-identical to the frozen picker-safe source
   }
 });
 
-// --- Absorbed-module predicate parity (active once P4 authors the module) ---
+// --- Absorbed-module predicate parity ---
 // CONTRACT for src/companion/inputQuietRuntime.js: export the pure
-// `isCodeMirrorEvent(event)` predicate with the identical truth table. (P4.3 adds
-// the timing-semantics tests against the absorbed module; the cross-phase pin here
-// is the predicate, the part most likely to regress under re-seaming.)
+// `isCodeMirrorEvent(event)` predicate with the identical truth table. (The pin here
+// is the predicate, the part most likely to regress.)
 const QUIET_MODULE = 'inputQuietRuntime.js';
 test('absorbed quiet module keeps the CodeMirror predicate truth table', async () => {
-  assert.ok(absorbedModuleExists(QUIET_MODULE), `src/companion/${QUIET_MODULE} is missing — the absorb landed at v0.1.136 and this module is load-bearing; fix the move/rename, never skip`);
+  assert.ok(absorbedModuleExists(QUIET_MODULE), `src/companion/${QUIET_MODULE} is missing; this module is required, fix the move or rename`);
   const mod = await import(absorbedModulePath(QUIET_MODULE));
   assert.equal(typeof mod.isCodeMirrorEvent, 'function', 'module must export isCodeMirrorEvent()');
   assert.equal(mod.isCodeMirrorEvent(evt([{ localName: 'ha-code-editor' }])), true);

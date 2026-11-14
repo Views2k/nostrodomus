@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 
 import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 
-// Finding 2A: the css lane was `/style:\s*\|[\s\S]*$/.test(info.before)` where info.before is the
+// The css lane was `/style:\s*\|[\s\S]*$/.test(info.before)` where info.before is the
 // WHOLE document prefix, so one card_mod `style: |` near the top forced lang='css' for every line
-// below it, killing YAML/entity completion. The fix bounds it to an ACTUALLY-OPEN style block
+// below it, killing YAML/entity completion. The lane is bounded to an ACTUALLY-OPEN style block
 // scalar at the cursor (blockScalarContextAt, which nulls on dedent).
 const settings = { triggerMode: 'auto', minChars: 1, suggestInComments: false };
 
@@ -39,7 +39,7 @@ test('2A(d): cursor in a later open style block after an earlier closed one is C
   assert.equal(ctx.lang, 'css');
 });
 
-test("button-card extra_styles: | is the CSS lane, matching the syntax highlighter contract (bug hunt 4)", () => {
+test("button-card extra_styles: | is the CSS lane, matching the syntax highlighter contract", () => {
   const doc = 'type: custom:button-card\nextra_styles: |\n  ha-card {\n    colo';
   assert.equal(detectRuntimeContext(doc, doc.length).lang, 'css', 'extra_styles block is CSS, not YAML');
   // a plain YAML value is still YAML
@@ -47,7 +47,7 @@ test("button-card extra_styles: | is the CSS lane, matching the syntax highlight
   assert.equal(detectRuntimeContext(plain, plain.length).lang, 'yaml');
 });
 
-test('card_mod shadow-DOM style blocks (ha-card$: | and .: |) enter the CSS lane (bug hunt 4)', () => {
+test('card_mod shadow-DOM style blocks (ha-card$: | and .: |) enter the CSS lane', () => {
   const shadow = 'card_mod:\n  style:\n    ha-card$: |\n      colo';
   assert.equal(detectRuntimeContext(shadow, shadow.length).lang, 'css', 'ha-card$: | shadow block is CSS');
   const element = 'card_mod:\n  style:\n    .: |\n      colo';

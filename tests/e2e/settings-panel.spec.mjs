@@ -1,7 +1,6 @@
-// settings-panel.spec (HARNESS P2.3) — open settings via its real entry
+// settings-panel.spec — open settings via its real entry
 // point (the popup's gear button), switch a tab, drag the panel 50px, change
-// one value, close, reopen, assert persistence. [Would have caught: any
-// settings-shell regression from UI_DECOMP.]
+// one value, close, reopen, assert persistence.
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor, expectDialogAlive, popup } from './editor-helpers.mjs';
@@ -18,7 +17,7 @@ import {
 async function openSettingsViaPopup(page) {
   // The real entry point: the gear in the completion popup header (present
   // whenever the popup shows, even on an idle-pane explicit open with zero
-  // rows). Stabilized once (RUN CHECKPOINT 2 final): on the REOPEN path focus
+  // rows). On the REOPEN path focus
   // has left the editor after the prior close, so a lone Ctrl+Space mounts the
   // popup but it polls hidden (the flake). Refocus the editor first, then wait
   // for the gear to be visible, re-pressing Ctrl+Space ONLY while the popup is
@@ -44,10 +43,10 @@ test('settings panel: tab switch, drag, value change, persistence across reopen'
   await expectDialogAlive(page, 'after opening the settings panel via the popup gear');
 
   // Switch to the second tab and remember which one it is.
-  // Switch to a non-default tab that actually hosts toggles. Round-9
-  // correction: the tabs are General / Context / Diagnostics / Style / Help,
-  // and only General and Style carry checkboxes — the previous `nth(1)`
-  // (Context) has none, so the value-change step had no control to toggle.
+  // Switch to a non-default tab that actually hosts toggles.
+  // The tabs are General / Context / Diagnostics / Style / Help,
+  // and only General and Style carry checkboxes — `nth(1)`
+  // (Context) has none, so a value-change step there has no control to toggle.
   // Style is the natural choice (its toggles are core editor styling).
   const tabs = panel.locator('[role="tab"]');
   expect(await tabs.count(), 'settings panel rendered fewer than two tabs').toBeGreaterThan(1);
@@ -73,11 +72,11 @@ test('settings panel: tab switch, drag, value change, persistence across reopen'
   expect(Math.round(after.y - before.y), 'drag moved the panel less than 40px vertically').toBeGreaterThan(40);
   await expectDialogAlive(page, 'after dragging the settings panel');
 
-  // Change one value: a checkbox on the ACTIVE tab. Round-9 correction: every
+  // Change one value: a checkbox on the ACTIVE tab. Every
   // tab panel's inputs stay in the DOM, but inactive panels are display:none,
-  // so an unscoped `.first()` grabbed a hidden checkbox on tab 0 after we
-  // switched to tab 1. The `:visible` filter targets the visible control on
-  // the active tab — the panel opens via the working path now.
+  // so an unscoped `.first()` grabs a hidden checkbox on tab 0 after the
+  // switch to tab 1. The `:visible` filter targets the visible control on
+  // the active tab.
   const checkbox = panel.locator('input[type="checkbox"][aria-label]:visible').first();
   await checkbox.waitFor({ state: 'visible', timeout: 5000 });
   const label = await checkbox.getAttribute('aria-label');
@@ -102,7 +101,7 @@ test('settings panel: tab switch, drag, value change, persistence across reopen'
 
 // 0.1.253: the syntax theme set (color-named, count floor >=16, ~37) is selectable and switching a theme
 // REPAINTS the editor tokens — no collapse to base-white / a single color. The color-name coherence itself
-// is an offline/visual judgment (numerically pre-verified); the behavioral repaint is what this pins.
+// is an offline/visual judgment; the behavioral repaint is what this pins.
 test('theme repaint: the syntax theme set is selectable and switching one repaints the editor tokens', async ({ page }) => {
   const stamp = await openDashboard(page);
   await openSeededCardCodeEditor(page, stamp);
@@ -132,7 +131,7 @@ test('theme repaint: the syntax theme set is selectable and switching one repain
 });
 
 // No-touch contract items: a header click WITHOUT a drag must not move the saved position, and Escape must
-// close the Nostrodomus panel before HA's edit dialog. Both were owner-probe-only.
+// close the Nostrodomus panel before HA's edit dialog.
 test('settings edge behaviors: a no-drag header click keeps position; Escape closes Nostrodomus before the HA dialog', async ({ page }) => {
   const stamp = await openDashboard(page);
   await openSeededCardCodeEditor(page, stamp);

@@ -9,7 +9,7 @@ PROJECT_INTERNAL = json.loads((ROOT / 'PROJECT.json').read_text(encoding='utf-8'
 legacy = (ROOT / 'src' / 'main.legacy.js').read_text(encoding='utf-8', errors='replace')
 dist = (ROOT / 'dist' / 'nostrodomus.js').read_text(encoding='utf-8', errors='replace')
 version_module = (ROOT / 'src/core/version.js').read_text(encoding='utf-8', errors='replace') if (ROOT / 'src/core/version.js').exists() else ''
-# UI Decomp Phase 2 group 3 (CHANGELOG v0.1.78) moved the stable style-node churn
+# v0.1.78 moved the stable style-node churn
 # guard out of main.legacy.js: ensureStableStyleElement / STABLE_CODEBOX_STYLE_NODE_IDS
 # now live in src/ui/styleDomRuntime.js, and the mutation-skip helper
 # (mutationRecordIsNostrodomusStableStyleNode + the codebox preflight callsite) lives in

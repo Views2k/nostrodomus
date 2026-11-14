@@ -5,14 +5,14 @@ import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 import { yamlValueKind as adapterVK } from '../../src/yaml/runtimeContextAdapter.js';
 import { yamlValueKind as classifierVK } from '../../src/yaml/yamlContextClassifier.js';
 
-// Regression guards for the dead/mis-wired value lanes the 9/10 audit found (2026-07-06), all the same
+// Regression guards for dead or mis-wired value lanes, all the same
 // class as the 0.1.262 registry bug (a branch present only in the runtime-dead 3rd classifier copy):
 //   - legacy `platform:` triggers returned '' (silent completion)
 //   - `condition:` under card `visibility:`, legacy singular `condition:` lists, and `repeat.while/until`
 //     returned '' (condition-type lane dead)
 //   - root-level `action:` (Dev Tools Actions / per-step YAML) classified as the DASHBOARD action enum
 //     instead of a service call
-// Binding realistic-position rule: exercise the CM-auto-indent columns 0/2/4/6 in BOTH lanes, and pin the
+// Realistic-position rule: exercise the CM-auto-indent columns 0/2/4/6 in BOTH lanes, and pin the
 // two LIVE classifier copies (adapter + classifier) equal at each site so a fix can never land in one only.
 const vk = (doc) => detectRuntimeContext(doc, doc.length, { triggerKind: 'explicit' }).valueKind;
 
@@ -28,7 +28,7 @@ test('platform: legacy trigger key completes as trigger-type at the under-trigge
   }
 });
 
-test('platform: under the LEGACY singular trigger: key completes as trigger-type (bug hunt)', () => {
+test('platform: under the LEGACY singular trigger: key completes as trigger-type', () => {
   // Legacy automations (still fully supported by HA) use singular `trigger:` as the list key with
   // `- platform: <type>`. The value lane checked only the plural path token 'triggers', so this
   // dominant legacy form got no trigger-type completion and the popup never opened. Fixed to accept
@@ -43,7 +43,7 @@ test('platform: under the LEGACY singular trigger: key completes as trigger-type
   assert.equal(vk('sensor:\n  - platform: '), '', 'a non-automation platform: does not over-fire');
 });
 
-test('known limitation (pre-existing, not MD1): a col-0 dash under a key is not seen as nested', () => {
+test('known limitation: a col-0 dash under a key is not seen as nested', () => {
   // Documents current behavior so a future currentYamlPath fix (list-at-parent-indent) flips these.
   // Affects the working modern trigger: identically — proof it is a path-scanner gap, not a lane gap.
   assert.equal(vk('triggers:\n- trigger: '), '', 'modern trigger at col-0 dash: same pre-existing gap');
@@ -78,7 +78,7 @@ test('no regression on the trigger/condition/service controls', () => {
   assert.equal(vk('foo: light.'), 'entity');
 });
 
-test('the fix landed in BOTH live classifier copies (adapter and classifier agree)', () => {
+test('both live classifier copies agree (adapter and classifier)', () => {
   const ctxs = [
     { yamlKey: 'platform', yamlPath: ['triggers'], yamlRole: 'value' },
     { yamlKey: 'condition', yamlPath: ['visibility'], yamlRole: 'value' },
@@ -91,7 +91,7 @@ test('the fix landed in BOTH live classifier copies (adapter and classifier agre
   }
 });
 
-test('mode: under a service data block is NOT the automation run-mode (bug hunt 3)', () => {
+test('mode: under a service data block is NOT the automation run-mode', () => {
   // A bare `mode:` was always classified automation-mode, which hard-filtered a service field's
   // real values (e.g. humidifier.set_mode). Under data: it must fall through to the value lane.
   assert.notEqual(vk('actions:\n  - action: humidifier.set_mode\n    data:\n      mode: '), 'automation-mode');

@@ -177,7 +177,7 @@ export async function runPublicRuntimeContract({ distPath = 'dist/nostrodomus.js
     console.debug = capture('debug');
     await import(url);
     await new Promise(resolve => setTimeout(resolve, 0));
-    // HARNESS P4: the completion library loads lazily on first editor use. This
+    // The completion library loads lazily on first editor use. This
     // runner verifies the COMPLETE public surface (library + index + providers),
     // so trigger the load explicitly via the public open() — it awaits
     // loadLibrary() then bails gracefully with no view, adding no console output

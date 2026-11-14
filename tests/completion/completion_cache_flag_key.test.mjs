@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { scoreItems } from '../../src/completion/scoring.js';
 
-// Regression guard for the 9/10 audit's cacheKey finding (QW2, 2026-07-06): the scoreItems cache
+// Regression guard: the scoreItems cache
 // key omitted the completion lane-gate flags. Because the candidate set a provider yields for a
 // fixed context depends on those flags (engineV2/registryLane/schemaValues/surfaceScope/jinjaLane/
 // lazyResolve) and the settings-save cache clear is debounced, a flag toggle could serve rows

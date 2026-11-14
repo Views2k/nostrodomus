@@ -1,17 +1,16 @@
-// ABSORB preview-fill + warning-toggle (v0.1.139) — the "Hide editor warnings" opt-in.
-// Updated for the v0.1.163 badge redesign: by DEFAULT (toggle off) the warning is now a small
-// corner badge (a separate style id), not the full-width banner; the toggle still fully hides it.
+// The "Hide editor warnings" opt-in. By DEFAULT (toggle off) the warning is a small
+// corner badge (a separate style id), not the full-width banner; the toggle fully hides it.
 //
 // CONTEXT: HA renders the editor warning/alert family (the "Visual editor is not supported"
 // notice AND real config-validation errors, e.g. "Expected … received …") INSIDE the nested
-// card-editor shadow root — beyond the frozen dialog-root rule's reach (live `[alert-map]` proof
-// from the owner's 2026.6 instance: both showed display:inline/flex with the frozen rule active).
+// card-editor shadow root — beyond the frozen dialog-root rule's reach (on HA 2026.6 both
+// showed display:inline/flex with the frozen rule active).
 // The companion's surface-wide reconcile owns them: gated by `style.hideEditorWarnings`, DEFAULT
 // OFF — off = the corner badge (info preserved on hover), on = display:none (fully hidden).
 //
 // This spec asserts ONLY the HIDE sheet's lifecycle (its id), which is the toggle's observable
 // signal regardless of whether the seeded card emits a real ha-alert; the badge's default-on look
-// is a visual judgment left to the owner feel-check (and unit-pinned in
+// is a visual judgment (and unit-pinned in
 // tests/companion/editor_warning_hide.test.mjs).
 //
 // This spec drives the REAL wiring on a seeded editor:
@@ -22,14 +21,12 @@
 //       hui-card-element-editor shadow root.
 //   (c) Toggle OFF — flipping it back reconciles the sheet away (no reload).
 //
-// NOT asserted here (needs fixtures the harness lacks / are visual judgments — owner feel-check):
+// NOT asserted here (needs fixtures the harness lacks / are visual judgments):
 //   - a Sections-layout card preview filling its pane (no sections-view seed in the harness;
 //     the preview-fill rule covering hui-section + hui-grid-section is unit-proven in
 //     tests/companion/scrollbar_placement.test.mjs);
 //   - that a REAL warning banner visually stops overlapping the bottom-left "Show visual/code
 //     editor" buttons when hidden (needs a card that emits one; visual).
-//
-// Authored on-branch; RUN BY OWNER (the gate excludes tests/e2e).
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor, popup } from './editor-helpers.mjs';

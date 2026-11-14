@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 
 import { createCodeboxPreflight } from '../../src/ui/codebox/codeboxPreflight.js';
 
-// Finding 1B(iii): installCodeboxPreflightStyle writes the preflight <style> node into
+// installCodeboxPreflightStyle writes the preflight <style> node into
 // document.head AND into each ha-code-editor shadow root, but removeCodeboxPreflightStyle
 // removed only the document copy (document.getElementById), orphaning the shadow-root
-// copies on uninstall. The fix walks the same roots and removes every copy.
+// copies on uninstall. Removal walks the same roots and removes every copy.
 const ID = 'nostrodomus-codebox-preflight-style-v1';
 
 function styleNode() {

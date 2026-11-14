@@ -32,9 +32,7 @@ required_tokens = [
     "Browser",
     "Browser window",
     # Privacy disclosure that GPU details are coarse browser-exposed capability signals.
-    # Condensed in commit a4f048e ("S2: diagnostics diet") from the longer
-    # "...browser-exposed WebGL/WebGPU capability signals and may be unavailable..."
-    # to this shorter form; same fact (it is a browser-exposed WebGL/WebGPU signal note).
+    # The short form of the note (it is a browser-exposed WebGL/WebGPU signal note).
     "browser-exposed WebGL/WebGPU signals",
     "overflow-wrap:anywhere",
 ]

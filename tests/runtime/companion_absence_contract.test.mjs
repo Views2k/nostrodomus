@@ -3,13 +3,12 @@ import assert from 'node:assert/strict';
 
 import { runPublicRuntimeContract } from '../../tools/public_runtime_contract_runner.mjs';
 
-// Companion absence-proof (steward P4): the contract runner boots the built
+// Companion absence: the contract runner boots the built
 // dist with NO pre-existing coordinator global, NO v17 editor bridge, and NO
-// picker-safe companion loaded. These tests pin exactly what was observed on
-// the unmodified runtime (reports/COMPANION_ABSENCE_OBSERVATION.txt):
+// picker-safe companion loaded. These tests pin that
 // boot does not crash, the console carries exactly the one ready banner,
-// diagnostics tell the truth about being alone, and zero runtime errors are
-// recorded. This documents reality; it does not improve it.
+// diagnostics report the companion layer correctly when it is alone, and zero
+// runtime errors are recorded.
 
 const result = await runPublicRuntimeContract();
 const api = globalThis.__nostrodomus;

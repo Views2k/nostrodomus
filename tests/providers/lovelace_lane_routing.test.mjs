@@ -45,7 +45,7 @@ test('automation target: triggers earlier in the document must not hijack the bl
 test('CM auto-indent: target and data lanes route correctly at the opener own column', () => {
   // Enter after `target:`/`data:` lands the cursor at the KEY'S own column (not a level
   // deeper) -- the position real editing produces. The lanes must route there, not only
-  // at a hand-typed deeper indent. (Binding rule: cover the auto-indent column.)
+  // at a hand-typed deeper indent.
   assertTargetLane(rowsAt('actions:\n  - action: light.turn_on\n    target:\n    '), 'automation target auto-indent');
   assertTargetLane(rowsAt('triggers:\n  - trigger: state\nactions:\n  - action: light.turn_on\n    target:\n    '), 'automation target auto-indent under triggers');
   assertTargetLane(rowsAt('type: button\ntap_action:\n  action: perform-action\n  target:\n  '), 'dashboard target auto-indent');
@@ -131,9 +131,9 @@ test('keep-green: root-level data/target blocks keep their 0.1.260 rowsets', () 
   assertTargetLane(rowsAt('target:\n  entity_id: light.kitchen\n  ar'), 'root-level');
 });
 
-// MD2: the recent-text fallback must line-anchor block keys. A bare recent.includes("triggers:")
+// The recent-text fallback must line-anchor block keys. A bare recent.includes("triggers:")
 // matched the word inside a string value and mis-routed the whole block to the trigger/action lane.
-test('a block-key word inside a string value does not hijack the fallback lane (audit MD2)', () => {
+test('a block-key word inside a string value does not hijack the fallback lane', () => {
   const nameWithTriggers = rowsAt('type: entities\nname: "set up your triggers: here"\n');
   assert.ok(!nameWithTriggers.includes('platform:'), `"triggers:" inside a value must not serve trigger rows, got ${JSON.stringify(nameWithTriggers.slice(0, 8))}`);
   const titleWithActions = rowsAt('type: markdown\ntitle: "actions: a how-to"\n');

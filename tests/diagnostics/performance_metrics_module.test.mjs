@@ -61,7 +61,7 @@ test('performance budget average warnings require enough samples', () => {
   assert.deepEqual(result.results['codebox-style-apply'].issues, []);
 });
 
-test('Bug 6 regression: the completion-compute diagnostics metric reads the writer event key (compute)', () => {
+test('the completion-compute diagnostics metric reads the writer event key (compute)', () => {
   // The compute timing is recorded under the bare event key 'compute' (completionRuntime.js); the
   // diagnostics reader must source 'completion.compute.ms' from that SAME key, not from a
   // non-existent 'completion-compute' (which read empty and blanked the diagnostics row).

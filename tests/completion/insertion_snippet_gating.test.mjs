@@ -3,7 +3,7 @@ import test from 'node:test';
 
 import { createCompletionInsertionRuntime } from '../../src/completion/insertionRuntime.js';
 
-// Finding 1A: parseSnippetTemplate must only run for snippet items. A non-snippet
+// parseSnippetTemplate must only run for snippet items. A non-snippet
 // value that happens to contain a literal "$N" (e.g. an MQTT topic mqtt/$0/state)
 // must be inserted verbatim, not have its "$0" stripped as a snippet tabstop.
 function createView(doc = '') {

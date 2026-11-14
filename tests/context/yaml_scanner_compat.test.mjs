@@ -30,7 +30,7 @@ test('yamlScanner facade exposes pure path, comment, and key helpers', () => {
   assert.equal(isCommentContext('yaml', { line: '# note', beforeCursor: '# note' }, ''), true);
 });
 
-test('isCommentContext catches a trailing YAML comment (bug hunt 3)', () => {
+test('isCommentContext catches a trailing YAML comment', () => {
   const line = 'entity: light.a # kit';
   // Cursor inside the trailing comment → suppressed (else the entity popup overwrites the comment).
   assert.equal(isCommentContext('yaml', { line, beforeCursor: 'entity: light.a # kit' }, ''), true, 'cursor after the # is inside the comment');
@@ -44,7 +44,7 @@ test('isCommentContext catches a trailing YAML comment (bug hunt 3)', () => {
   assert.equal(isCommentContext('css', { line: 'color: #ff', beforeCursor: 'color: #ff' }, ''), false, 'CSS # is a color, not a comment');
 });
 
-test('isCommentContext gates the /* and <!-- scans by language (audit MD2)', () => {
+test('isCommentContext gates the /* and <!-- scans by language', () => {
   // /* … */ is a comment only in CSS/JS. In YAML a `/*` inside a value (e.g. a URL) must NOT
   // suppress completion — and the cross-line scan must not kill the rest of the recent buffer.
   const urlLine = { line: 'url: https://ex.com/*wild', beforeCursor: 'url: https://ex.com/*wild' };
@@ -61,7 +61,7 @@ test('isCommentContext gates the /* and <!-- scans by language (audit MD2)', () 
   assert.equal(isCommentContext('yaml', { line: 'name: x', beforeCursor: 'name: x' }, 'body: "<!-- open"'), false, 'stray <!-- in the YAML buffer does not suppress downstream');
 });
 
-test('isCommentContext gates the line-start # and // markers by language (bug hunt)', () => {
+test('isCommentContext gates the line-start # and // markers by language', () => {
   // `#` starts a comment in YAML/Python but is an id SELECTOR in a card_mod CSS block.
   assert.equal(isCommentContext('css', { line: '#id {', beforeCursor: '#id {' }, ''), false, 'CSS #id selector is not a comment');
   assert.equal(isCommentContext('css', { line: '#id .child {', beforeCursor: '#id ' }, ''), false, 'mid-CSS id selector is not a comment');
@@ -113,7 +113,7 @@ test('yamlScanner facade keeps scalar and branch compatibility helpers', () => {
 });
 
 
-test('a stray /* in YAML above a card_mod block does not suppress CSS completion inside it (bug hunt 4)', () => {
+test('a stray /* in YAML above a card_mod block does not suppress CSS completion inside it', () => {
   const line = { line: '      colo', beforeCursor: '      colo' };
   // /* is in a YAML value ABOVE the `style: |` opener → not a CSS comment for the block below.
   const strayAbove = 'name: "see http://x/*wild"\ncard_mod:\n  style: |\n    ha-card {\n      ';

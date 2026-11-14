@@ -1,7 +1,7 @@
 // Companion picker visual-fix module.
 //
 // The entity-picker/popover/popup transparency-blur fix. The traversal must not use a
-// `querySelectorAll("*")` document walk (illegal under the no-wildcard §8 gate), so it is
+// `querySelectorAll("*")` document walk (not allowed by the no-wildcard rule), so it is
 // a bounded, depth-capped, registry-driven walk: it descends ONLY into known host types
 // (the editor hosts + the picker overlay hosts), capped at maxDepth, over explicit roots
 // (document + home shadow + active dialog/top-layer). The collection grouping uses exact

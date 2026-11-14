@@ -1,193 +1,181 @@
-# Nostrodomus E2E harness — the contract (HARNESS P0 design lock)
+# Nostrodomus browser test harness
 
-Real-HA, real-browser end-to-end testing. This file is the binding design; the
-implementation (P1) must match it or this file must change first.
+The browser suite runs the built bundle in a real Home Assistant frontend. A Home Assistant container is started from nothing, onboarded and seeded by script, and Playwright drives Chromium against it. The specs are in `tests/e2e/`, the scripts that prepare the instance are in this directory.
 
-## Execution split
+The unit tests under `tests/` run without a browser. This suite covers what they cannot: the real editor DOM, the real CodeMirror, and the browser console.
 
-- The **build container** is where everything here is written. It has no Docker, no
-  general network and no browser binaries, so E2E never runs there.
-- The **host** executes every run at the work order's
-  **[RUN CHECKPOINT]** lines and pastes output back. A POSIX shell (WSL/bash)
-  is assumed for the npm aliases; checkpoint 0 verifies this.
-- No E2E result exists until a checkpoint output says so.
+## Requirements
 
-## Test instance
+- Docker with the compose plugin (`docker compose`), able to pull `homeassistant/home-assistant`.
+- Node 22 or newer. The scripts use Node's built-in WebSocket client.
+- The project's dev dependencies and a Chromium for Playwright:
 
-- Image: `homeassistant/home-assistant:${HA_TAG:-stable}` (the `e2e:beta`
-  canary sets `HA_TAG=beta`).
-- Isolated compose network; **port 8124 → container 8123**. Never 8123 on the
-  host — the real instance owns that port and must never be touched.
-- Config dir bind-mounted from `tools/e2e/.ha-state/config/` (gitignored).
-  The beta canary uses a separate `tools/e2e/.ha-state-beta/` so a beta HA
-  never migrates the stable state dir forward.
-- One instance at a time (same host port); `npm run e2e:down` before
-  switching tags.
-- Disposable by contract: `rm -rf tools/e2e/.ha-state` + `npm run e2e:up`
-  must reach ready from nothing, unattended.
-- `e2e:up`/`e2e:beta` begin with `tools/e2e/ensure_state.mjs`, which
-  pre-creates the state dir (including `config/www/`) HOST-owned before
-  compose runs. Two reasons: Docker would otherwise create a missing bind
-  source as root (breaking host-side seeding and `rm -rf` disposability), and
-  HA only registers the `/local/` static path if `config/www` exists at first
-  boot.
+  ```bash
+  npm ci
+  npx playwright install chromium
+  ```
 
-## Bootstrap — fully automated onboarding (tools/e2e/bootstrap.mjs)
+- Port 8124 free on the machine that runs the tests.
+- A POSIX shell for `npm run e2e:beta`, which sets environment variables inline.
 
-Sequence (HA's documented onboarding HTTP API; no UI, no interaction):
-
-1. Poll `GET http://localhost:8124/api/onboarding` until it answers 200
-   (container ready). If onboarding is already complete (step list says so or
-   401 with an existing `.ha-state/token`), bootstrap is a **no-op** —
-   idempotency contract.
-2. `POST /api/onboarding/users` — create the test owner
-   (`client_id: http://localhost:8124/`, name/username `e2e_owner`, a random
-   per-bootstrap password, language `en`) → returns `auth_code`.
-3. `POST /auth/token` (`grant_type=authorization_code`, the code, same
-   `client_id`) → access + refresh tokens.
-4. `POST /api/onboarding/core_config` (Bearer) → done.
-5. `POST /api/onboarding/analytics` (Bearer) → done.
-6. `POST /api/onboarding/integration` (Bearer, `client_id` + `redirect_uri`)
-   → finalizes onboarding.
-7. Open `ws://localhost:8124/api/websocket`, authenticate with the access
-   token, send `auth/long_lived_access_token` (`client_name: nostrodomus-e2e`,
-   `lifespan: 3650`) → the long-lived token (LLAT) used by all API tooling.
-8. Write gitignored state:
-   - `.ha-state/token` — the LLAT (file mode 0600),
-   - `.ha-state/hass-tokens.json` — `{hassUrl, clientId, access_token,
-     refresh_token, expires, expires_in}` for frontend auth seeding,
-   - `.ha-state/owner-credentials.json` — the random owner password
-     (debug-only convenience).
-
-**HARD boundary (zero attempts):** if HA has changed the onboarding flow such
-that this documented API sequence fails, STOP and park with
-`reports/HARNESS_BLOCKED.md`. No manual-click fallbacks, no committed tokens,
-no auth-model weakening.
-
-**Redaction rule:** no script ever prints a token/password value — only
-`<first 6 chars>…(<length>)`. Checkpoint paste-backs must contain no secrets.
-
-## Resource seeding (tools/e2e/seed.mjs)
-
-1. Copy the repo's current `dist/nostrodomus.js` into the bind mount
-   at `config/www/nostrodomus.js`.
-2. Register it in storage-mode Lovelace resources (WS
-   `lovelace/resources/list` → `update` the existing nostrodomus entry or
-   `create`; the host deploy script's bump logic is the prior art) as
-   `type: module`.
-3. **Stale-resource guard stamp (non-optional):** the registered URL is
-   `/local/nostrodomus.js?v=<internal_version>-<nonce>` with a fresh
-   nonce per seed run. Seed writes `.ha-state/resource-stamp.json`
-   (`{internalVersion, nonce, url, distSha256, dashboardPath}`). Every spec session asserts,
-   before anything else, that (a) the nostrodomus.js request the
-   page actually made carries exactly this stamp, and (b) the registered
-   resource URL equals the stamp. Any mismatch (old version, old nonce) fails
-   the suite immediately with a distinct `STALE RESOURCE` message. A
-   real-browser test silently exercising old JS is worse than no test.
-4. Demo entities: two `input_boolean` helpers via WS (`input_boolean/create`,
-   list-first idempotent).
-5. One **owned** storage-mode dashboard: `lovelace/dashboards/create`
-   (`url_path: e2e-test` — HA requires a hyphen — `mode: storage`,
-   `show_in_sidebar: true`; list-first idempotent), then
-   `lovelace/config/save` targeted at that `url_path`
-   (overwrite-idempotent) with an `entities` card (the demo booleans), a
-   `markdown` card, and a `button` card. **Never the legacy default-Lovelace
-   slot:** HA 2026.6 removed it — an untargeted `config/save` lands in a
-   dashboard that no longer exists and `/lovelace/*` is not routed
-   (docs/COMPAT.md). The dashboard path (`/e2e-test/home`) rides in the
-   stamp as `dashboardPath`.
-
-## Runner + frontend auth
-
-- Playwright `@playwright/test`, **chromium only** (until launch), runs on the
-  host against `http://localhost:8124`.
-- Frontend auth: **localStorage `hassTokens` seeding** (an init script writes
-  the bootstrap's `{access_token, refresh_token, clientId, hassUrl, …}` before
-  first navigation). Why this and not the `?auth_callback` token flow: token
-  seeding is deterministic and headless-safe and skips the auth UI entirely,
-  so specs never depend on the login form's DOM; the callback flow exercises
-  HA's auth redirect machinery we don't own and adds a navigation roundtrip
-  per session. (If HA changes the storage shape, that is a canary signal, not
-  something to paper over.)
-- Specs navigate to the seeded dashboard by its **explicit URL**, read from
-  the stamp's `dashboardPath` (`/e2e-test/home` — the owned dashboard, seed
-  view path `home`). Never `/` (HA 2026.6 made the separate `/home` built-in
-  overview the default landing panel, so the root target is HA's choice, not
-  ours) and never the legacy default-Lovelace slot (removed in 2026.6).
-  Built-in dashboards also do not load custom Lovelace resources — pinned by
-  the compat canary test in `ha-boots.spec.mjs` (docs/COMPAT.md).
-- `retries: 0` — flaky-by-design is forbidden; stability comes from explicit
-  waits on HA-ready signals (e.g. `hass` connection state, dialog visibility),
-  not retries. Trace on first failure; `video: 'on'` for every run.
-- **Service workers are blocked** (`serviceWorkers: 'block'`): HA's SW
-  installs on first visit in every fresh test profile and **reloads the page
-  on activation** (~4s after registration), killing open dialogs mid-spec
-  (RUN CHECKPOINT 2 round 5, proven from both traces). Humans never see it —
-  settled profiles. Blocking also removes an SW-cache stale-asset vector.
-- Every session attaches `navigation-log.json` (test-side `framenavigated`
-  listener — survives reloads): a navigation entry between commanded
-  `goto()` calls is a spontaneous-reload smoking gun.
-- Console capture is the harness's core value (the detector for the
-  green-gates/broken-browser class). Per session, collected for the whole run:
-  - `pageerror` → **always fail**;
-  - `console.error` → **fail unless allowlisted**;
-  - `console.warn` → collected and attached to the report; fails **only** for
-    Nostrodomus-origin warnings or allowlist violations (HA and third-party cards
-    are noisy; their warnings are recorded, not failed on).
-  - Allowlist: `tests/e2e/console-allowlist.mjs` — exact-match or anchored
-    regex per entry, each with an owner comment justifying it. A pageerror
-    is suppressed ONLY by an entry with `appliesTo: 'pageerror'` AND a
-    `source` RegExp matched against the error stack — a message alone can
-    never swallow an uncaught exception from our own code. (Standing entry:
-    HA's `frontend_latest/app.*.js` `addEventListener`-on-undefined throw,
-    the known `serviceWorkers: 'block'` side effect.)
-
-## Host prerequisites (one-time)
-
-1. Docker Engine with the compose plugin (`docker compose`), able to pull
-   `homeassistant/home-assistant`.
-2. Node >= 22 for the e2e tooling — bootstrap/seed use Node's global
-   WebSocket client, stable since 22 (checkpoint 0 verified v22.22.3; the
-   repo's runtime floor stays Node >= 20 and the scripts preflight with a
-   clear message).
-3. `npm ci` then `npx playwright install chromium` — **host-side only**;
-   never run `playwright install` in the build container.
-4. Host port 8124 free.
-
-## Commands (host cheat-sheet)
+## Running the suite
 
 ```bash
-npm run e2e:up     # compose up (stable) + bootstrap + seed → ready instance
-npm run e2e        # run the spec suite against it
-npm run e2e:beta   # the monthly canary: same cycle against :beta (own state dir)
-npm run e2e:down   # stop the instance (state dir persists; rm -rf to reset)
+python3 tools/build.py   # only if src/ changed: the suite tests dist/nostrodomus.js
+npm run e2e:up           # start Home Assistant, onboard it, seed it
+npm run e2e              # run the specs in Chromium
+npm run e2e:firefox      # run the specs in Firefox (needs `npx playwright install firefox`)
+npm run e2e:down         # stop the container
 ```
 
-## File map (P1)
+`npm run e2e:up` can be run again at any time. It leaves an onboarded instance as it is and seeds it again. Run it after every rebuild of the bundle; the specs refuse to run against an older copy (see "Stale-resource guard").
+
+A single spec:
+
+```bash
+npx playwright test --config tests/e2e/playwright.config.mjs tests/e2e/ha-boots.spec.mjs
+```
+
+Playwright writes traces, screenshots, videos and an HTML report to `tests/e2e/.playwright/`.
+
+The CI workflow defines an `e2e` job that is switched off by default, because it needs a runner with Docker.
+
+## The test instance
+
+`docker-compose.yml` starts one container, `nostrodomus-e2e-ha`, from `homeassistant/home-assistant:${HA_TAG:-stable}` on its own compose network.
+
+- Host port 8124 maps to the container's 8123. The harness does not use port 8123, so it cannot collide with a Home Assistant that already runs on the machine.
+- The configuration directory is a bind mount of `tools/e2e/.ha-state/config/`.
+- Only one instance can run at a time: the port and the container name are fixed.
+
+### State directory
+
+Everything the instance and the scripts keep is under `tools/e2e/.ha-state/`, which git ignores:
+
+| Path | Content |
+| --- | --- |
+| `config/` | The Home Assistant configuration directory |
+| `config/www/nostrodomus.js` | The seeded copy of the bundle |
+| `token` | Long-lived access token for the scripts |
+| `hass-tokens.json` | Access and refresh token for the frontend |
+| `owner-credentials.json` | Name and random password of the test user |
+| `resource-stamp.json` | What the last seed registered (see below) |
+
+The files with secrets are written with mode 0600. The scripts never print a token or password; log lines show the first six characters and the length.
+
+To start over, stop the container, delete the directory and run `npm run e2e:up`:
+
+```bash
+npm run e2e:down
+rm -rf tools/e2e/.ha-state
+npm run e2e:up
+```
+
+`ensure_state.mjs` runs first in `e2e:up` and creates the directory, including `config/www/`, before Docker starts. Without that, Docker would create the missing bind source as root, and Home Assistant serves `/local/` only if `config/www` exists when it boots. The script also writes a `configuration.yaml` that lists the default integrations without zeroconf, ssdp, dhcp, usb and bluetooth, which cannot start on the container's bridge network. An existing `configuration.yaml` is left alone.
+
+### Onboarding (`bootstrap.mjs`)
+
+The script uses Home Assistant's onboarding API. No browser and no manual step is involved.
+
+1. Wait until `GET /api/onboarding` answers.
+2. `POST /api/onboarding/users` creates the user `e2e_owner` with a random password and returns an auth code.
+3. `POST /auth/token` exchanges the code for an access and a refresh token.
+4. `POST /api/onboarding/core_config`, `/analytics` and `/integration` finish onboarding.
+5. Over the WebSocket API, `auth/long_lived_access_token` issues the token the other scripts use.
+6. The tokens are written to the state directory.
+
+If onboarding is already complete and the token file exists, the script does nothing. If onboarding is complete and the token file is missing, or onboarding stopped halfway, it asks for the state directory to be deleted.
+
+If Home Assistant changes the onboarding API so that this sequence fails, the script stops with the failing step and the response. The fix is to adapt the script; there is no fallback through the login form.
+
+### Seeding (`seed.mjs`)
+
+1. Copy `dist/nostrodomus.js` to `config/www/nostrodomus.js` and check that the instance serves the same bytes.
+2. Register the file as a dashboard resource of type `module`, or update the existing entry, with the URL `/local/nostrodomus.js?v=<internal_version>-<nonce>`. The nonce is new on every run.
+3. Create helpers: two `input_boolean` entities for the cards, 800 more plus `input_boolean.zzz_marker` to exceed the entity row limit, and two areas.
+4. Create the dashboard `e2e-test` in storage mode and save its configuration: a view `home` with an entities card, a markdown card and a button card, and a view `sections` with a grid section.
+5. Create a long script (`e2e_long_script`) and a long automation (`e2e_long_automation`) for the specs that test the editors outside the card dialog.
+6. Write `resource-stamp.json` with the internal version, the nonce, the URL, the SHA-256 of the bundle and the paths of the dashboard, the script editor and the automation editor.
+
+The script can run repeatedly: it creates what is missing and overwrites the resource entry, the dashboard configuration, the script and the automation.
+
+The harness owns its dashboard and never uses Home Assistant's default one. Since Home Assistant 2026.6 the built-in overview does not load custom dashboard resources, and the old default dashboard no longer exists (`docs/COMPAT.md`). The specs open the dashboard by the path stored in the stamp, `/e2e-test/home`, and never by `/`.
+
+## How the specs run
+
+`tests/e2e/playwright.config.mjs`: Chromium only, one worker, no retries, 60 seconds per test, `test.only` forbidden. A test that fails once fails the run; stability comes from waiting for explicit signals of the page, not from repetition. Every run records video; traces and screenshots are kept for failures.
+
+Service workers are blocked. In a fresh browser profile Home Assistant's service worker installs on the first visit and reloads the page a few seconds later, which closes an open edit dialog in the middle of a test. Blocking it also removes one way of serving an old file.
+
+Specs import `test` and `expect` from `tests/e2e/session.mjs` and get three things automatically:
+
+- Sign-in. An init script writes the tokens from `hass-tokens.json` into `localStorage` under `hassTokens` before the first page of the instance loads. The login form is never used.
+- A navigation log. Every navigation of the main frame is recorded and attached to the report as `navigation-log.json`. An entry that no `goto()` asked for shows that the page reloaded by itself.
+- Console capture, see below.
+
+`openDashboard(page)` opens the seeded dashboard and runs the stale-resource guard. Every spec starts with it.
+
+### Stale-resource guard
+
+A browser test that silently runs an old bundle proves nothing. Before a spec does anything else, `openDashboard` checks against `resource-stamp.json`:
+
+1. Every request the page made for `nostrodomus.js` ends with exactly `?v=<internal_version>-<nonce>` from the stamp.
+2. Home Assistant has exactly one registered resource for `nostrodomus.js`, and its URL is the one in the stamp.
+
+A mismatch fails the test with a message that starts with `STALE RESOURCE`. The seed script fails with the same prefix when the instance does not serve the bytes it just copied. In both cases run `npm run e2e:up` again.
+
+### Console policy
+
+The console of every test is collected for its whole duration by `tests/e2e/console-capture.mjs`, attached to the report as `console-capture.json` and judged when the test ends:
+
+- An uncaught page error fails the test.
+- A `console.error` fails the test.
+- A `console.warn` fails the test only if its text contains a Nostrodomus marker. Warnings from Home Assistant and from other cards are recorded and not judged.
+
+Exceptions are listed in `tests/e2e/console-allowlist.mjs`. An entry matches an exact string or an anchored regular expression and has an `owner` and a `reason` field. A page error can be excused only by an entry with `appliesTo: 'pageerror'` and a `source` pattern that matches the stack, so a message alone can never hide an exception from Nostrodomus code. The one standing entry is an error inside Home Assistant's own bundle that is a side effect of blocking service workers.
+
+## Another Home Assistant version
+
+Two environment variables select the image and the state directory:
+
+- `HA_TAG`: the image tag. The default is `stable`.
+- `HA_STATE`: the name of the state directory inside `tools/e2e/`. The default is `.ha-state`. Other names must have the form `.ha-state-<name>` with lower-case letters, digits and dashes.
+
+Use a separate state directory per version. A newer Home Assistant migrates its configuration directory, and an older one may not start from it afterwards.
+
+`npm run e2e:beta` runs the whole cycle against the `beta` tag with `.ha-state-beta`: prepare the directory, start the container, onboard, seed, run the specs.
+
+For any other tag, stop the running instance and run the same steps with both variables set:
+
+```bash
+npm run e2e:down
+export HA_TAG=2026.11.1
+export HA_STATE=.ha-state-2026-11-1
+node tools/e2e/ensure_state.mjs
+docker compose -f tools/e2e/docker-compose.yml up -d --wait
+node tools/e2e/bootstrap.mjs
+node tools/e2e/seed.mjs
+npx playwright test --config tests/e2e/playwright.config.mjs
+npm run e2e:down
+```
+
+`.gitignore` lists `.ha-state/` and `.ha-state-beta/`. A state directory with another name contains tokens too and must not be committed.
+
+## Files
 
 | File | Role |
 | --- | --- |
-| `tools/e2e/docker-compose.yml` | the disposable HA instance (HA_TAG/HA_STATE-parameterized) |
-| `tools/e2e/ensure_state.mjs` | host-owned state-dir preflight (runs before compose) |
-| `tools/e2e/ha_api.mjs` | shared host-side plumbing: paths, redaction, HTTP, WS client |
-| `tools/e2e/bootstrap.mjs` | automated onboarding → tokens → LLAT → state files |
-| `tools/e2e/seed.mjs` | dist copy + stamped resource + helpers + dashboard + stamp file |
-| `tests/e2e/playwright.config.mjs` | runner config (chromium, retries 0, trace on failure) |
-| `tests/e2e/session.mjs` | per-spec session: auth seeding, console fixture, stale-resource guard |
-| `tests/e2e/console-capture.mjs` | the console failure-policy detector |
-| `tests/e2e/console-allowlist.mjs` | justified exceptions only (owner + reason per entry) |
-| `tests/e2e/selectors.mjs` | named selectors for specs (interim home — HARNESS P3 re-homes the HA-internal block into `src/editor/haSelectors.js`, this file then re-exports) |
-| `tests/e2e/editor-helpers.mjs` | shared choreography: edit mode, card edit dialog → YAML editor, popup helpers |
-| `tests/e2e/ha-boots.spec.mjs` | the P1 smoke spec + 2026.6 built-in-overview compat canary (RUN CHECKPOINT 1) |
-| `tests/e2e/startup-clean.spec.mjs` | P2.1 — clean boot: API handle installed, runtimeErrors surface clean |
-| `tests/e2e/editor-completion.spec.mjs` | P2.2 — real-CodeMirror completion: type → suggest, Ctrl+Space, Escape, accept |
-| `tests/e2e/settings-panel.spec.mjs` | P2.3 — settings via the popup gear: tabs, drag, value persistence |
-| `tests/e2e/editor-styling.spec.mjs` | P2.4 — host-owned codebox chrome + 3s scrollHeight stability |
-| `tests/e2e/live-data.spec.mjs` | P2.5 — seeded `window.customCards` + real service fields reach completion |
+| `tools/e2e/docker-compose.yml` | The Home Assistant container |
+| `tools/e2e/ensure_state.mjs` | Creates the state directory before Docker starts |
+| `tools/e2e/ha_api.mjs` | Shared code of the scripts: paths, redaction, HTTP and WebSocket client |
+| `tools/e2e/bootstrap.mjs` | Onboarding and tokens |
+| `tools/e2e/seed.mjs` | Bundle copy, resource, helpers, dashboard, script, automation, stamp |
+| `tests/e2e/playwright.config.mjs` | Runner configuration |
+| `tests/e2e/session.mjs` | Sign-in, navigation log, console capture, stale-resource guard |
+| `tests/e2e/console-capture.mjs` | Console collection and the failure policy |
+| `tests/e2e/console-allowlist.mjs` | Justified console exceptions |
+| `tests/e2e/selectors.mjs` | Named selectors for the specs |
+| `tests/e2e/editor-helpers.mjs` | Shared steps: edit mode, card dialog, code editor, suggestion popup |
+| `tests/e2e/*.spec.mjs` | The specs, one file per area |
 
-## Boundaries
-
-- Nothing in `src/` may import from `tools/e2e/` or `tests/e2e/`.
-- `tools/e2e/.ha-state*/` is gitignored; no secrets are ever committed.
-- The suite stays SMALL and high-signal (five named specs — see HARNESS P2);
-  E2E breadth is a tax, E2E depth on boot paths is the value.
+Nothing under `src/` imports from `tools/e2e/` or `tests/e2e/`.

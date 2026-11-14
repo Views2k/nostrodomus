@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createCodeboxStyleSettle } from '../../src/ui/codebox/codeboxStyleSettle.js';
 
-// Tier A finding A4: after uninstall (the only writer of state.enabled = false), a
+// After uninstall (the only writer of state.enabled = false), a
 // surviving trigger must not be able to re-arm the style reapply lane -- the reapply
 // re-injects style nodes and re-installs observers, so uninstall would not stick.
 // enabled === undefined (every existing stub harness) must keep scheduling.

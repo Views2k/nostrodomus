@@ -186,8 +186,8 @@ def main() -> int:
     validate_inputs()
     DIST_DIR.mkdir(parents=True, exist_ok=True)
 
-    # v31 has one canonical built artifact. Remove stale generated v30 filenames
-    # from dist only; archived copies live under /config/nostrodomus_archive.
+    # There is one built artifact. Remove stale generated file names of earlier
+    # versions from dist.
     for old in OLD_DIST:
         if old.exists():
             old.unlink()

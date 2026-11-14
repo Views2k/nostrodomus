@@ -1,55 +1,44 @@
 # Runtime Constants Module Contract
 
-`src/core/runtimeConstants.js` is the third wired low-risk extraction from `src/main.legacy.js`.
+`src/core/runtimeConstants.js` holds the constants that several runtime modules share. It contains no behavior.
 
-## Ownership
-
-This module owns only shared static runtime constants:
+## Exports
 
 ```text
 SECURITY_LIMITS
 STATIC_PROVIDER_ID
 HA_VALUE_PROVIDER_ID
 LOVELACE_CONTEXT_PROVIDER_ID
-SNIPPET_PROVIDER_ID
-```
-
-## Purity rule
-
-The module must stay pure and deterministic. It must not read or write:
-
-```text
-window
-document
-localStorage
-sessionStorage
-Home Assistant runtime state
-DOM/querySelector targets
-events
-timers
-network/fetch
-```
-
-## Behavior boundary
-
-This extraction must not move provider registration, suggestion logic, settings behavior, syntax behavior, styling behavior, preview behavior, diagnostics scheduling, or CodeMirror lifecycle code. Those behaviors remain owned by `src/main.legacy.js` until a later behavior-specific extraction has parity tests.
-
-## Build rule
-
-`src/main.legacy.js` imports the constants and `dist/nostrodomus.js` must contain the bundled constants (e.g. `var SECURITY_LIMITS=`; the minified bundle strips module-path comments). Directly copying `src/main.legacy.js` to dist is unsafe once active imports exist.
-
-## Verification tokens
-
-Static checks should verify:
-
-```text
-from './core/runtimeConstants.js'
-export const SECURITY_LIMITS
-STATIC_PROVIDER_ID
-HA_VALUE_PROVIDER_ID
-LOVELACE_CONTEXT_PROVIDER_ID
-SNIPPET_PROVIDER_ID
 HACS_CATALOG_PROVIDER_ID
+SNIPPET_PROVIDER_ID
 WORD_FALLBACK_PROVIDER_ID
-No window/document access
+NATIVE_CARD_TYPES
 ```
+
+`SECURITY_LIMITS` is a frozen object with the upper bounds the runtime applies to data it did not produce itself:
+
+- row text: `maxItemLabel`, `maxInsertText`, `maxAlias`, `maxAliases`, `maxRowsPerPack`
+- document scanning: `maxDocScanChars`, `maxYamlPathLines`
+- result cache: `maxCacheEntries`
+- Home Assistant data: `maxRuntimeEntities`, `maxRuntimeEntitiesIndexed`, `maxRuntimeServices`, `maxRuntimeServicesIndexed`, `maxRuntimeAreas`, `maxRuntimeDevices`, `maxRuntimeFloors`, `maxRuntimeLabels`, `maxRuntimeCustomCards`, `maxServiceFieldsPerService`, `maxServicesWithFields`, `maxServiceFieldOptions`, `runtimeCacheMs`
+- providers: `defaultProviderTimeoutMs`, `maxProviderTimeoutMs`, `maxProviderMalformedDiagnostics`
+
+The provider ids are the `id` values of the built-in providers (`docs/PROVIDER_CONTRACT.md`). `NATIVE_CARD_TYPES` lists the card types that ship with Home Assistant.
+
+## Purity
+
+The module must stay deterministic and free of side effects:
+
+```text
+No window/document access
+No localStorage/sessionStorage access
+No timers
+No event listeners
+No DOM query or mutation
+No Home Assistant runtime reads
+No network calls
+```
+
+`tools/verify.py` and `tools/check_runtime_contracts.py` fail when the module references one of these, when an export listed above is missing, or when `src/main.legacy.js` declares `SECURITY_LIMITS` or a provider id itself.
+
+Provider registration, suggestion logic and everything else that uses these values lives in the modules that import them.

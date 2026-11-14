@@ -1,15 +1,14 @@
 // devtools-template-jinja.spec — the 0.1.178 Jinja lane: inside states('…') in Developer Tools > Template,
-// completion offers live entity ids (and does not list helper function names as entities). Owner-validated
-// live only until now.
+// completion offers live entity ids (and does not list helper function names as entities).
 //
 // This lane is OPT-IN and stacked: it requires completions.engineV2 AND completions.jinjaLane (both
 // default-OFF), and the runtime must resolve the surface as 'devtools-template' (src/yaml/
 // runtimeContextRuntime.js:76 + runtimeContextAdapter.js:424). We enable both flags before boot via the
 // deep-merged nostrodomus.settings key, then SPA-navigate to the panel.
 //
-// HIGHEST-RISK spec of the backfill: it depends on the surface classifier + the Dev Tools panel DOM +
+// This spec depends on the surface classifier + the Dev Tools panel DOM +
 // the jinja arg detector all lining up. It self-diagnoses (the completion-gate diagnosis dumps the
-// resolved context) so a first-run miss names its own cause. Authored on-branch; owner-run.
+// resolved context) so a miss names its own cause.
 
 import { test, expect, openDashboard } from './session.mjs';
 import { expectPopupWithSuggestions, popupRowTexts, typeInYaml } from './editor-helpers.mjs';

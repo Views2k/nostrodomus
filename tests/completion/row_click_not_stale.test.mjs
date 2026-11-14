@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createCompletionRuntime } from '../../src/completion/completionRuntime.js';
 
-// completion#13. After fast typing the live update is deferred, so the list and its context
+// After fast typing the live update is deferred, so the list and its context
 // describe an older document. Enter and Tab bring the list up to date before they accept; a
 // click on a row inserted with the old context and replaced the old range.
 function harness() {

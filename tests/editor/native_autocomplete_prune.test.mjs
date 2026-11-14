@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createActiveEditorCacheRuntime } from '../../src/editor/activeEditorCacheRuntime.js';
 
-// Regression (bug hunt): with native-autocomplete replacement on, each editor-discovery sweep added
+// With native-autocomplete replacement on, each editor-discovery sweep added
 // every ha-code-editor host to nativeAutocompleteSuppressedHosts / nativeAutocompleteOriginals, but
 // hosts were only removed on a full restore/uninstall. A long session that opened and closed many
 // editor dialogs therefore accumulated detached hosts (a leak — the Set/Map held them alive). The

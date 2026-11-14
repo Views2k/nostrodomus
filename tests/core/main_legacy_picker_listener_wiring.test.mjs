@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-// Tier A finding A4, part 2: the two capture-phase companion-picker listeners were
+// The two capture-phase companion-picker listeners were
 // raw-attached to the document BEFORE the __nostrodomus installed guard, so uninstall
 // (which only sweeps the persistent-listener registry) could never remove them and a
 // duplicate resource load stacked a second permanent pair. main.legacy.js is a

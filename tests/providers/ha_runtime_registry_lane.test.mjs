@@ -1,7 +1,7 @@
-// P4: the ha-runtime-value provider's registry value lane. area_id:/device_id:/floor_id:/label_id:
+// The ha-runtime-value provider's registry value lane. area_id:/device_id:/floor_id:/label_id:
 // complete real registry ids ONLY when the registryLane gate rode in on ctx (ctx.registryLaneEnabled,
 // set when engineV2 + registryLane are on). Otherwise yamlValueKind returns '' for those keys and the
-// provider is byte-identical to its pre-P4 self (no rows). Rows insert the bare id; the human name is
+// provider is byte-identical to its self without the lane (no rows). Rows insert the bare id; the human name is
 // detail + a fuzzy keyword. Fail-dark on empty/missing registry data.
 
 import test from 'node:test';
@@ -28,7 +28,7 @@ test('canHandle: area_id/device_id/floor_id/label_id with the lane ON → true',
   assert.equal(p.canHandle(regCtx('area')), true, 'bare area: (area card) also routes');
 });
 
-test('canHandle: with the lane OFF the registry keys stay inert (pre-P4 behavior)', () => {
+test('canHandle: with the lane OFF the registry keys stay inert', () => {
   const p = haRuntimeValueProvider({ runtimeData: liveData });
   for (const key of ['area_id', 'device_id', 'floor_id', 'label_id', 'area']) {
     assert.equal(p.canHandle(regCtx(key, { registryLaneEnabled: false })), false, `${key} OFF → no lane`);

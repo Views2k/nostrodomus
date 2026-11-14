@@ -301,7 +301,7 @@ test('completion runtime accepts snippet choice rows without ending the snippet 
   assert.equal(state.overlay.style.display, 'none');
 });
 
-test('Escape closing the settings panel preserves the saved drag position (bug hunt 4)', () => {
+test('Escape closing the settings panel preserves the saved drag position', () => {
   const closeArgs = [];
   const { state, runtime } = createDeps({ closeSettings: (reset) => closeArgs.push(reset) });
   state.settingsPanel = { parentNode: {} }; // panel is open

@@ -1,22 +1,18 @@
 # Nostrodomus HACS/plugin layout
 
-This repository is prepared as a HACS dashboard/plugin-style frontend resource for **Nostrodomus**.
+How the repository is packaged as a HACS dashboard plugin (a frontend resource). The installation steps for users are in [README.md](../README.md#installation).
 
-## Active build artifact
+## Bundle file
 
 ```text
 dist/nostrodomus.js
 ```
 
-The artifact file name remains compatibility-oriented. The public project name is **Nostrodomus**.
+This single file is the browser resource. It is built from `src/main.js` and committed, so HACS can serve it from the repository without a build step.
 
 ## HACS metadata
 
-```text
-hacs.json
-```
-
-Current frontend plugin metadata:
+`hacs.json` in the repository root:
 
 ```json
 {
@@ -29,20 +25,20 @@ Current frontend plugin metadata:
 }
 ```
 
-There is no `version` field in `hacs.json`. HACS remote versioning is handled by GitHub releases/tags, or by the default branch commit when releases are not used.
+There is no `version` field in `hacs.json`. HACS takes the version from GitHub releases and tags, or from the default branch commit when no release exists.
 
 ## Build and release verification
 
 ```bash
-npm install
+npm ci
 python3 tools/build.py
 python3 tools/verify.py
 python3 tools/verify.py --release
 ```
 
-Release verification requires `reports/BUILD_LAST.txt` to match the current source, dist, project version, package version, and internal runtime version.
+Release verification requires `reports/BUILD_LAST.txt`, written by `tools/build.py`, to match the current source, the dist file, the project version, the package version, and the internal runtime version.
 
-## Deploy boundary
+## What build and verify do not touch
 
 Build and verify do not write to:
 
@@ -52,15 +48,12 @@ Build and verify do not write to:
 /config/.storage/lovelace_resources
 ```
 
-Manual Home Assistant testing should copy only the verified built dist file to the intended `/config/www/...` test resource path and then update the Lovelace resource URL cache string.
+To test a build on a Home Assistant instance by hand, copy the verified `dist/nostrodomus.js` to the `www` folder of that instance and change the cache string of the resource URL (for example `/local/nostrodomus.js?v=2`).
 
 ## Runtime API
 
-Preferred public API:
+The runtime exposes one public namespace, with no aliases:
 
 ```js
 window.__nostrodomus
 ```
-
-The runtime exposes exactly one global namespace (`window.__nostrodomus`) — there are
-no compatibility aliases.

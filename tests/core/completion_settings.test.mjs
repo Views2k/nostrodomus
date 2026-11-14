@@ -1,4 +1,4 @@
-// Phase 1 universal-completions flag home. Locks: defaults all OFF (so the engine is a no-op
+// Universal-completions flag home. Locks: defaults all OFF (so the engine is a no-op
 // out of the box), boolean-only override merge, and fail-dark to defaults on missing/hostile
 // input. These flags gate the completion-engine superset; if any default flips to true by
 // accident, behavior would change silently — this test is the fence.

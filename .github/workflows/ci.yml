@@ -38,7 +38,7 @@ jobs:
         run: npm test
 
       # Wall-clock budget tests are advisory: they run on shared CI hardware and
-      # must never block the required gate (RUNTIME_DATA.md P4/W5 test split).
+      # must never block the required gate.
       - name: Run perf budget tests (non-blocking)
         run: npm run test:perf
         continue-on-error: true

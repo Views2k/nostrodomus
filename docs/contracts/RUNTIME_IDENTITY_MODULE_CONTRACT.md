@@ -1,86 +1,46 @@
 # Runtime Identity Module Contract
 
-`src/core/version.js` is the runtime identity module: the single source of truth
-for the version/identity constants bundled into the browser runtime.
+`src/core/version.js` is the single source of truth for the version and identity constants of the browser runtime. Other modules import them from here and do not repeat the literal values.
 
-## Ownership
+## Exports
 
-```text
-src/core/version.js      single source of truth for runtime identity constants
-src/main.legacy.js       imports the constants and keeps the active runtime behavior
-dist/nostrodomus.js bundled browser artifact produced by esbuild
-PROJECT.json             machine-readable project/version metadata
-package.json/lock        npm metadata that must match PROJECT.json
-src/core/changelogSummary.js  in-app five-release version history (dist SHA in commit message)
-```
+| Constant | Meaning |
+| --- | --- |
+| `VERSION` | Internal version string, `nostrodomus-v<version>-<slug>`. Equal to `internal_version` in `PROJECT.json` |
+| `PROJECT_VERSION` | The version number. Equal to `version` in `PROJECT.json` and in `package.json` |
+| `PROJECT_RELEASE_STATE` | Release channel shown in diagnostics |
+| `LIVE_COMPANION_EDITOR_VERSION` | Version string of the standalone editor script that the companion layer was taken from; reported in diagnostics |
+| `PRODUCT_NAME` | `Nostrodomus` |
+| `LOG_PREFIX` | Prefix of console messages |
+| `SETTINGS_WRITE_KEY` | `localStorage` key of the settings, `nostrodomus.settings` |
+| `FRECENCY_WRITE_KEY` | `localStorage` key of the accepted-completion counts, `nostrodomus.frecency` |
 
-## Exported constants
+## Purity
 
-`src/core/version.js` owns these exports:
-
-```text
-VERSION
-PROJECT_VERSION
-PROJECT_RELEASE_STATE
-LIVE_COMPANION_EDITOR_VERSION
-PRODUCT_NAME
-LOG_PREFIX
-SETTINGS_WRITE_KEY
-```
-
-Do not duplicate these constants at the top of `src/main.legacy.js` after this
-extraction. The legacy runtime may use the imported bindings, but the module owns
-the literal values.
-
-## Purity rule
-
-The module must stay pure and side-effect-free:
+The module contains constants only:
 
 ```text
 No window/document access
 No localStorage/sessionStorage access
 No timers
 No event listeners
-No DOM query/mutation
+No DOM query or mutation
 No Home Assistant runtime reads
 No network calls
 ```
 
-This keeps the extraction safe to import before the legacy IIFE starts.
+`tools/verify.py`, `tools/check_runtime_contracts.py` and `tests/test_runtime_identity_module_static.py` fail when the module references one of these, when `src/main.legacy.js` declares `VERSION` or `PROJECT_VERSION` itself, or when the values differ from `PROJECT.json`.
 
-## Build rule
+## Version change
 
-After a wired module import exists, `dist/nostrodomus.js` must be built
-with esbuild. Do not publish a legacy-copy fallback artifact, because copying
-`src/main.legacy.js` directly would leave an unbundled relative import in the live
-Home Assistant resource.
-
-## Change checklist
-
-When bumping versions or changing identity constants, update all of these in the
-same patch:
+The version appears in these files, and they must agree:
 
 ```text
 src/core/version.js
 PROJECT.json
 package.json
 package-lock.json
-src/core/changelogSummary.js
 dist/nostrodomus.js
 ```
 
-Then run:
-
-```bash
-python3 tools/check_runtime_contracts.py
-python3 tools/verify.py
-node --check src/main.js
-node --check src/main.legacy.js
-node --check src/core/version.js
-node --check dist/nostrodomus.js
-```
-
-
-## Related extraction
-
-`src/core/settingsStorageKeys.js` depends on `SETTINGS_WRITE_KEY` from this module. Keep `SETTINGS_WRITE_KEY` here and keep legacy key arrays in the settings storage keys module so storage identity remains centralized without moving Settings behavior.
+`python3 tools/version_bump.py <version> <slug>` updates the first four. After that, update the release list in `src/core/changelogSummary.js` and rebuild the bundle with `python3 tools/build.py`. The bundle is always produced by esbuild from `src/main.js`; `dist/nostrodomus.js` is not edited by hand. `python3 tools/verify.py --release` fails when one of the files is out of step.

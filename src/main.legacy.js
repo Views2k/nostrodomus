@@ -884,7 +884,7 @@ import { dashboardActionBranchState } from './yaml/runtimeContextAdapter.js';
       editorDispatchRepeatPressureActive,
       recordPerformanceEvent,
       closeSettings,
-      // UNIVERSAL B1: bind `state` so the gate can read the universal flags + admit an allowlisted
+      // UNIVERSAL: bind `state` so the gate can read the universal flags + admit an allowlisted
       // non-card-dialog panel editor. The dialog path is unchanged (deps unused when a dialog is open).
       isScopedEditorEvent: (ev) => isScopedEditorEvent(ev, { state }),
       isNostrodomusUiEvent,
@@ -1208,8 +1208,6 @@ import { dashboardActionBranchState } from './yaml/runtimeContextAdapter.js';
     diagnosticsRecording: () => shouldRecordPerformanceTelemetry("editor-dispatch"),
   });
   function debug() {
-    // Stage C4 embedded-language diagnostics compatibility token retained after diagnostics owner extraction:
-    // embeddedLanguageDiagnostics({ legacyContext: state.context, liveItems: state.items })
     return diagnosticsRuntime.debug();
   }
 
@@ -1250,7 +1248,7 @@ import { dashboardActionBranchState } from './yaml/runtimeContextAdapter.js';
 
   // ON-MOUNT FLASH FIX (universal panels): the editor-surface observation roots currently present, as
   // {root,label}. The panel ha-code-editor sits below several shadow boundaries
-  // (ha-code-editor < ha-yaml-editor < ... < ha-automation-editor — owner-instrumented), and a
+  // (ha-code-editor < ha-yaml-editor < ... < ha-automation-editor), and a
   // MutationObserver cannot cross them, so the sentinel observes each wrapper's shadowRoot; the
   // .cm-editor mount inside ha-code-editor's shadow then fires a pre-paint microtask and styles before the
   // first unstyled paint (the flash). Path-gated (a cheap no-op off automation/script/dev-tools routes;
@@ -1333,7 +1331,7 @@ import { dashboardActionBranchState } from './yaml/runtimeContextAdapter.js';
   editorLifecycleSentinelRuntime = createEditorLifecycleSentinelRuntime({
     document,
     window: W,
-    // UNIVERSAL A2: gate the on-open navigation convergence on the same flag as the universal
+    // UNIVERSAL: gate the on-open navigation convergence on the same flag as the universal
     // discovery walk. Default ON; flip style.universalCodebox=false to revert to dialog-only.
     universalCodeboxEnabled: () => state.settings?.style?.universalCodebox !== false,
     state,

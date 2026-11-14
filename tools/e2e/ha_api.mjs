@@ -1,8 +1,8 @@
-// Shared plumbing for the E2E harness scripts (tools/e2e/README.md is the
-// binding contract). Host-side only: never imported from src/.
+// Shared plumbing for the E2E harness scripts (see tools/e2e/README.md).
+// Host-side only: never imported from src/.
 //
 // Node >= 22 is required on the host for the global WebSocket client (the repo
-// runtime floor stays Node 20; checkpoint 0 verified v22.22.3 on the host).
+// runtime floor stays Node 20).
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

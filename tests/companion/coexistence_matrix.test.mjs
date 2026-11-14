@@ -1,4 +1,4 @@
-// ABSORB P6.1 — coexistence proof. The four cells the order requires, asserted on
+// Coexistence matrix. The four cells, asserted on
 // the shared dormancy/activation logic (companionLayerStatus / companionModuleDormant
 // / companionLayerActive) and the input-quiet guard, with the coordinator's external-
 // descriptor signal and the force-dormant kill switch driving each cell.
@@ -51,7 +51,7 @@ test('CELL 3 — both absent: internal (active subject to the shipped default / 
   const g = globalWith([internalDescriptor]); // only the internal runtime registered
   assert.equal(companionLayerStatus({ globalRef: g, storage: noStorage }), 'internal');
   assert.equal(companionModuleDormant({ globalRef: g, storage: noStorage }), false);
-  // not dormant, but gated by each module's shipped default until a checkpoint flips it
+  // not dormant, but gated by each module's shipped default
   assert.equal(companionLayerActive({ globalRef: g, storage: noStorage, shippedDefault: false }), false, 'shipped dormant by default');
   assert.equal(companionLayerActive({ globalRef: g, storage: noStorage, shippedDefault: true }), true, 'active once the default is flipped');
   // the force-active escape hatch activates regardless of the shipped default

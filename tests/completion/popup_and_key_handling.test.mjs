@@ -101,7 +101,6 @@ test('Tab still moves between placeholders while the caret is inside the snippet
   assert.deepEqual(calls.find(call => Array.isArray(call)), ['moveSnippetPlaceholder', 1]);
 });
 
-// diff271#7
 test('Tab and Escape in another editor are not taken for a snippet left behind in the first one', () => {
   for (const key of ['Tab', 'Escape']) {
     const { state, calls, runtime } = createDeps();
@@ -127,7 +126,6 @@ test('Tab moves between placeholders when the snippet is in the bound editor', (
   assert.deepEqual(calls.find(call => Array.isArray(call)), ['moveSnippetPlaceholder', 1]);
 });
 
-// completion#16
 test('Escape in a snippet session ends the session and closes an open list', async () => {
   const { state, calls, runtime } = createDeps();
   await runtime.open(true);

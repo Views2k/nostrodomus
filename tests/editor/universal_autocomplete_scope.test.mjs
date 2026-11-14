@@ -1,4 +1,4 @@
-// UNIVERSAL Track B (B1) — autocomplete scope gates for non-card-dialog panel editors.
+// UNIVERSAL — autocomplete scope gates for non-card-dialog panel editors.
 //
 // The decisive guard is the "no dashboard-wide Ctrl+Space leakage" invariant: the universal arm
 // must admit a keystroke/view ONLY when it resolves to a REAL editor surface inside an allowlisted

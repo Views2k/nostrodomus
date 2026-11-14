@@ -86,8 +86,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
     // When on, the targeted shadow walk also descends through the non-card-dialog editor
     // panel hosts (Dev Tools, dashboard raw config, automation / script YAML), so the
     // per-editor decorative chrome reaches them. Kill switch only: there is no visible
-    // toggle yet (a settings control would change the frozen settings stylesheet bytes and
-    // needs a separate visual order). Flip false to restore the card-dialog-only reach.
+    // toggle yet (a settings control would change the frozen settings stylesheet bytes).
+    // Flip false to restore the card-dialog-only reach.
     universalCodebox: true,
 
     // Default on: also activate autocomplete (Ctrl+Space / auto-open) on the universal panel
@@ -120,7 +120,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
   // src/core/completionSettings.js). Lives outside `style` so it never touches the frozen
   // settings stylesheet bytes; every flag ships false, so completion behavior is unchanged
   // until a flag is flipped. No visible control yet (a settings toggle would change the
-  // frozen stylesheet and needs its own visual order).
+  // frozen stylesheet).
   completions: DEFAULT_COMPLETION_SETTINGS,
 });
 

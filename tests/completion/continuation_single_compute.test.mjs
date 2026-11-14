@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { createCompletionRuntime } from '../../src/completion/completionRuntime.js';
 import { insertItem } from '../../src/completion/insertion.js';
 
-// completion#24. The runtime and insertItem are wired the way the page wires them: the dispatch
+// The runtime and insertItem are wired the way the page wires them: the dispatch
 // of the accepted row requests a live update (the dispatch hook does that while the list is
 // open), and insertItem schedules the continuation open. Frames run one at a time.
 function harness({ rowsFor, keepOpen = false }) {

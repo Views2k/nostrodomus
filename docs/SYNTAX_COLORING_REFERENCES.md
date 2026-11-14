@@ -1,33 +1,56 @@
 # Nostrodomus syntax coloring references
 
-This patch keeps the source-class no-white-flash architecture and aligns the semantic overlay with the public syntax models used by Home Assistant dashboard editing.
+This document lists the syntax models the coloring follows and the modules that apply them. The code is under `src/syntax/`.
 
-## CodeMirror / Lezer
-- CodeMirror 6 highlighting maps syntax tags to generated classes; Nostrodomus uses `highlightingFor(view.state, tag)` when Home Assistant exposes it so spans are styled before post-paint recovery is needed.
-- Lezer highlight tags provide the generic roles used by CodeMirror: comment, keyword, string, number, variableName, propertyName, punctuation, operator, and related tags.
+## Syntax models
 
-## YAML / Lovelace
-- YAML documents are represented as mappings, sequences, and scalars.
-- Lovelace/card configuration uses YAML mappings for keys such as `type`, `entity`, `name`, `card_mod`, `style`, `tap_action`, and nested lists under keys like `entities` or `cards`.
-- YAML block scalars introduced by `|` or `>` preserve or fold following indented text; embedded `card_mod: style: |` CSS must remain in CSS mode while scrolling through the block.
+### CodeMirror and Lezer
 
-## CSS / card_mod
-- CSS is selector + declaration based: selectors precede `{`, declarations contain property/value pairs separated by `:`, and declarations end with `;`.
-- Custom properties use the `--name` syntax. A custom property definition before `:` is a property; the same `--name` inside `var(--name)` is a value reference.
-- Numeric values may include units such as `px`, `%`, `rem`, `vh`, `deg`, `ms`, and may occur inside functions like `rgb()`, `rgba()`, `drop-shadow()`, `translateZ()`, gradients, and `calc()`.
-- `!important` is a declaration priority marker and should not be colored like selectors or comments.
+- CodeMirror 6 maps syntax tags to generated class names. `highlightingFor(view.state, tag)` returns the class names for a tag in the active editor.
+- Lezer highlight tags give the generic roles: comment, keyword, string, number, variableName, propertyName, punctuation, operator and related tags.
 
-## Jinja / Home Assistant templates
-- Jinja delimiters are `{{ ... }}`, `{% ... %}`, and `{# ... #}`.
-- Template keywords such as `if`, `elif`, `else`, `endif`, `for`, `set`, `in`, `and`, `or`, and `is` are keyword/operator roles.
-- Home Assistant template calls such as `states()`, `state_attr()`, `is_state()`, and filters with `|` should not collapse into the surrounding YAML/CSS color.
+### YAML and Lovelace
 
-## v31.6.77 range-highlight semantic syntax
+- A YAML document consists of mappings (`key: value`), sequences (`- item`) and scalars.
+- Card configuration uses mappings for keys such as `type`, `entity`, `name`, `card_mod`, `style` and `tap_action`, and lists under keys such as `entities` and `cards`.
+- A block scalar introduced by `|` or `>` keeps or folds the indented text that follows. CSS inside `card_mod:` / `style: |` stays CSS for the whole block, also while scrolling through it.
 
-- CodeMirror source-class styling remains the first paint layer. It uses Home Assistant's `highlightingFor(view.state, tag)` class map when available.
-- Embedded `card_mod:` / `style: |` CSS is YAML block-scalar text, and Home Assistant's editor may render those lines as plain `.cm-line` text nodes with no child token spans. For those lines, Nostrodomus uses browser CSS Custom Highlight ranges instead of mutating CodeMirror spans or writing inline styles.
-- YAML/Lovelace rules are based on YAML mappings (`key: value`), block sequences (`- item`), scalar values, comments, and literal/folded block scalar headers (`|` / `>`).
-- CSS/card_mod ranges classify selectors, class selectors, custom properties (`--name`), declaration punctuation, CSS functions (`rgb`, `rgba`, `var`, `drop-shadow`, `radial-gradient`), numbers/units, value keywords, comments, and `!important`.
-- Jinja ranges classify delimiters (`{{ }}`, `{% %}`, `{# #}`), control keywords, variables/functions, strings, numbers, operators, and filters.
-- Line classes are context/fallback only. They must never be allowed to color a mixed selector/declaration line when range highlights are active.
+### CSS and card_mod
 
+- CSS consists of selectors and declarations: a selector precedes `{`, a declaration is a property and a value separated by `:` and ends with `;`.
+- A custom property is written `--name`. Before the `:` it is a property; inside `var(--name)` it is a value reference.
+- Numbers may carry units such as `px`, `%`, `rem`, `vh`, `deg` and `ms`, and may appear inside functions such as `rgb()`, `rgba()`, `drop-shadow()`, `translateZ()`, gradients and `calc()`.
+- `!important` is a priority marker. It is not colored like a selector or a comment.
+
+### Jinja and Home Assistant templates
+
+- The delimiters are `{{ ... }}`, `{% ... %}` and `{# ... #}`.
+- `if`, `elif`, `else`, `endif`, `for`, `set`, `in`, `and`, `or` and `is` are keywords or operators.
+- Template calls such as `states()`, `state_attr()` and `is_state()`, and filters after `|`, get their own color and do not take the color of the surrounding YAML or CSS.
+
+## How the coloring is applied
+
+Home Assistant's YAML editor often renders the content of a block scalar, for example the CSS of a `card_mod` style, as plain text inside `.cm-line` with no token spans. Coloring by token class alone cannot reach that text, and coloring a whole line with one color is wrong for a line that holds a selector, a property, a value and a template expression. The coloring therefore has several layers:
+
+- Native highlight (`codeMirrorNativeHighlight.js`, `nativeHighlightLifecycle.js`): where Home Assistant's CodeMirror bundle exposes the needed API, a CodeMirror `HighlightStyle` extension with the theme colors is installed in the editor.
+- Source-class stylesheet (`sourceClassCssBuilder.js`, `sourceClassLifecycle.js`): a stylesheet in the editor's root that colors CodeMirror's own token classes, found through `highlightingFor()`. It sets the neutral foreground on the line container and not on every span.
+- Range highlights (`smartSyntaxTokenizers.js`, `smartSyntaxStyles.js`, `smartSyntaxLifecycle.js`): the visible lines are tokenized as YAML, CSS or Jinja, and the resulting ranges are registered with the CSS Custom Highlight API (`CSS.highlights`, styled through `::highlight()`). This colors text that has no token span. It is used when the browser supports the API.
+- Inline painter (`darkPlusBridge.js`, `darkPlusClassifiers.js`): the oldest path, which sets colors on spans. It remains as a fallback only.
+
+`initialSyntaxPaintGate.js` hides the editor content of a newly opened editor until the first colors are in place, so that the text does not appear uncolored for a moment.
+
+The ranges classify:
+
+- YAML: keys, list markers, scalar values and comments.
+- CSS: selectors, custom properties, declaration punctuation, functions, numbers and units, value keywords, comments and `!important`.
+- Jinja: delimiters, control keywords, variables and functions, strings, numbers, operators and filters.
+
+The token kinds are listed in `SMART_SYNTAX_KIND_ORDER` in `src/syntax/smartSyntaxTokenizers.js`. The colors per kind come from the selected syntax theme (`STYLE_SYNTAX_PRESETS` and `syntaxThemePalette` in `src/ui/settingsStyle.js`). Changing the theme in Settings rebuilds the stylesheet and the highlight rules.
+
+## Rules
+
+- No whole-line color for a line of mixed syntax.
+- The inline painter does not become the primary path again.
+- Syntax repaints are postponed while the user types (`typingSessionLifecycle.js`).
+
+`tests/test_range_highlight_syntax_baseline_static.py` and `tools/check_runtime_contracts.py` check that the range highlight code stays in the modules named above and in the bundle.

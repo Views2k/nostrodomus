@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { createCompletionRuntime } from '../../src/completion/completionRuntime.js';
 import { renderCompletionPopup } from '../../src/completion/popupRuntime.js';
 
-// diff272#4. The rows of a hidden box have no size, so the render cannot scroll a kept selection
+// The rows of a hidden box have no size, so the render cannot scroll a kept selection
 // into view; the list was then shown with the selected row below its visible part.
 
 const ROW_HEIGHT = 20;

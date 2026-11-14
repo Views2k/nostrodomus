@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createCompletionRuntime } from '../../src/completion/completionRuntime.js';
 
-// completion#18, editor#5, hotpaths#9. rememberView looks up the active dialog three times and
+// rememberView looks up the active dialog three times and
 // asks for a style apply; isViewAllowed looks it up once more. A key pressed in the editor that
 // is already bound and hooked needs neither.
 function harness() {

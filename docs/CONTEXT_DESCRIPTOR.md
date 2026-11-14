@@ -1,26 +1,27 @@
 # Context Descriptor Contract
 
-Nostrodomus uses a context descriptor to describe the user cursor position before providers and scoring run.
+Before providers and scoring run, Nostrodomus describes the cursor position as a plain object: the context descriptor. Providers and the scoring module read this object and do not parse the editor text themselves.
 
-This document records the context descriptor contract for `src/yaml/` context detection, which is wired into the browser bundle.
+There are two producers:
+
+- `describeYamlCompletionContext` in `src/yaml/yamlCompletionContext.js` builds the versioned base descriptor. It is covered by the fixture corpus and by a schema validator.
+- `detectRuntimeContext` in `src/yaml/runtimeContextAdapter.js` builds the descriptor the live completion path uses. It carries the base fields plus cursor, line and trigger fields.
+
+Both are pure functions of the text, the cursor position and the options passed in. They do not read browser globals, Home Assistant objects, storage, timers or runtime state.
 
 ## Descriptor version
 
-Current descriptor version: `1`.
+Current descriptor version: `1` (`CONTEXT_DESCRIPTOR_VERSION`).
 
-Changing the shape or meaning of existing fields is a breaking change. Additive fields can be minor changes if existing consumers keep working.
+Changing the shape or meaning of an existing field is a breaking change. Adding a field is compatible as long as existing consumers keep working.
 
-## Pure function entry point
+## Base descriptor
 
 ```js
 import { describeYamlCompletionContext } from './src/yaml/yamlCompletionContext.js';
 
 const ctx = describeYamlCompletionContext(sourceText, cursorPosition, options);
 ```
-
-The function is pure. It must not access browser globals, Home Assistant runtime objects, network APIs, storage APIs, timers, or runtime state.
-
-## Current descriptor shape
 
 ```js
 {
@@ -30,9 +31,9 @@ The function is pure. It must not access browser globals, Home Assistant runtime
   pathText: string,
   yamlPath: string[],
   yamlKey: string,
-  yamlRole: 'blank' | 'comment' | 'list-key' | 'key' | 'value',
-  valueKind: '' | 'entity' | 'service' | 'card-type' | 'icon' | 'action' | 'trigger-type' | 'condition-type' | 'automation-mode' | 'boolean' | 'number' | 'duration' | 'string' | 'scalar' | 'theme',
-  focusKind: '' | 'action-block' | 'automation-action' | 'entity-list' | 'style-block' | 'trigger-block' | 'condition-block',
+  yamlRole: 'blank' | 'comment' | 'key' | 'list-key' | 'value',
+  valueKind: '' | 'action' | 'automation-mode' | 'boolean' | 'card-type' | 'condition-type' | 'duration' | 'entity' | 'icon' | 'number' | 'service' | 'string' | 'scalar' | 'theme' | 'trigger-type',
+  focusKind: '' | 'style-block' | 'entity-list' | 'action-block' | 'trigger-block' | 'condition-block' | 'automation-action',
   branchState: null | object,
   scope: string,
   shouldSuggest: boolean,
@@ -42,44 +43,93 @@ The function is pure. It must not access browser globals, Home Assistant runtime
 }
 ```
 
+The module exports the schema helpers `CONTEXT_DESCRIPTOR_FIELD_NAMES`, `YAML_CONTEXT_ROLES`, `contextDescriptorValidationErrors(ctx)` and `isValidContextDescriptor(ctx)`. The validator checks that every field is present, that string and boolean fields have the right type, and that `lang`, `yamlRole` and `valueKind` hold one of the values listed above.
+
+`blockScalarContextAt(sourceText, cursorPosition)` reports whether the cursor is inside a YAML literal or folded scalar (`|` or `>`). When it is, the descriptor keeps the key and path that own the block, and `lang` becomes `css` or `jinja` when the surrounding content indicates it.
+
+`detectContext` in `src/yaml/yamlScanner.js` returns the base descriptor with line fields added. The scanner module also provides the path, comment and key helpers that the runtime adapter imports.
+
+## Runtime descriptor
+
+`createRuntimeContextRuntime` in `src/yaml/runtimeContextRuntime.js` calls `detectRuntimeContext(doc, pos, options)` on every completion request and passes the result to the providers and to `scoreItems`. If detection throws, `detectRuntimeContextFallback` and then a fixed safe descriptor are used, and the error is recorded once in the runtime error buffer.
+
+The runtime descriptor has no `descriptorVersion` field. Its fields:
+
+| Field | Meaning |
+| --- | --- |
+| `lang` | `yaml`, `css`, `jinja`, `js`, `html` or `python` |
+| `scope` | The YAML path joined with dots, `yaml-root`, or a language scope such as `card-mod-css`, `jinja-template`, `button-card-js` |
+| `confidence` | Number between 0 and 1 for the language decision |
+| `prefix` | The typed text the suggestion replaces |
+| `from`, `to`, `wordTo`, `pos` | Document offsets: start of the prefix, cursor, end of the word under the cursor, cursor |
+| `line`, `col`, `lineNumber`, `beforeCursor`, `afterCursor` | The cursor line and its parts |
+| `yamlPath`, `pathText` | The keys above the cursor as an array and as a lower-case dotted string |
+| `yamlRole` | `blank`, `comment`, `key`, `list-key` or `value` for YAML; `code` for other languages |
+| `yamlKey` | The key on the cursor line |
+| `valueKind` | The base value kinds, plus `area`, `device`, `floor` and `label` when the registry lane is enabled |
+| `focusKind` | `valueKind` when one is set, otherwise `target-block`, `action-block`, `style-block`, `trigger-block`, `condition-block`, `automation-action`, `entity-list` or empty |
+| `branchState` | See below |
+| `scalarValueContext` | True when the value position expects a number, duration or plain string |
+| `blockValueKind` | `block-key` when the key takes a nested block instead of a value on the same line |
+| `catalogCardType`, `catalogSurfaceId`, `catalogCardNested` | The card around the cursor when the card catalog knows it |
+| `triggerKind`, `triggerChar`, `isTriggerChar` | How the request was started (`typing` or `explicit`) and the character before the cursor |
+| `isBlankLine`, `afterKeyColon`, `isComment` | Line state flags |
+| `suppressPopup`, `shouldSuggest`, `idleReason` | Whether rows are offered at this position, and why not |
+
+Fields that appear only in some contexts:
+
+- `cssInsideRule` when `lang` is `css`: the cursor is between the braces of a rule.
+- `surface` and, in templates, `jinjaArg` when the surface-aware engine is enabled (`completions.engineV2`).
+- With the engine enabled, `resolveContext` in `src/context/contextResolver.js` adds `expectedKind` (an alias of `valueKind`), `language` (an alias of `lang`), `replaceRange`, `region` and `signatureTarget`, and the context runtime sets the gate flags `jinjaLaneEnabled`, `registryLaneEnabled`, `schemaValuesEnabled` and `surfaceScopeEnabled`. With the engine off, `resolveContext` returns the descriptor unchanged.
+
+`valueKind` is computed in two places that must agree: `yamlValueKind` in `src/yaml/runtimeContextAdapter.js` (detection) and `yamlValueKind` in `src/yaml/yamlContextClassifier.js` (used by the providers). `tests/context/yaml_value_kind_parity.test.mjs` keeps them equal. `inferYamlValueKind` in `src/yaml/yamlCompletionContext.js` feeds only the base descriptor and is not on the live path; a new value lane has to be added to the two live copies.
+
 ## branchState
 
-`branchState` is the adapter-parsed view of the enclosing action/service block.
-The dashboard shape (from `dashboardActionBranchState`) carries `kind`
-(`action-block`/`target-block`), `siblings` (child key → `{value, indent,
-lineIndex}` including `service`/`perform_action` scalars), `actionValue`,
-`usedKeys`, and `missingKeys`. The automation fallback shape (from
-`yamlBranchState`) carries `parentKey`, `parentIndent`, `parentValue` (the
-parent line's own already-parsed scalar value — e.g. the service id on a
-modern `- action: light.turn_on` step; added v0.1.81), `currentIndent`,
-`siblings`, and `action`.
+`branchState` is the parsed view of the action or service block around the cursor.
 
-Service-aware consumers (e.g. service field-key completion) must read the
-service id through these parsed fields — `serviceIdFromContext(ctx)` in the HA
-runtime provider is the canonical reader — and must not reparse YAML.
+The base descriptor uses `yamlBranchState` from `src/yaml/yamlBranchState.js`. It returns `null` outside an action block, otherwise:
+
+```js
+{
+  parentKey,      // action, actions, sequence, then, else, choose, repeat or parallel
+  parentIndent,
+  parentValue,    // the scalar on the parent line, for example the service id in `- action: light.turn_on`
+  currentIndent,
+  siblings,       // child key -> { value, indent, lineIndex }
+  action          // the value of the `action` or `service` sibling
+}
+```
+
+The runtime descriptor uses `dashboardActionBranchState` from `src/yaml/runtimeContextAdapter.js`. Inside `tap_action`, `hold_action` or `double_tap_action` it returns:
+
+```js
+{
+  kind,           // 'action-block' or 'target-block'
+  parentKey, parentIndent, childIndent, currentIndent,
+  activeChildKey,
+  actionValue,    // the value of the `action` sibling
+  branchName, branch,
+  siblings,       // child key -> { value, indent, lineIndex }
+  usedKeys, missingKeys,
+  canContinue
+}
+```
+
+Outside a dashboard action block it falls back to the `yamlBranchState` shape with `kind` added.
+
+Code that needs the service id of the enclosing block reads it from these fields through `serviceIdFromContext(ctx)` in `src/providers/haRuntimeProvider.js`. It does not parse YAML again.
 
 ## Consumers
 
-Providers should use `yamlRole`, `yamlKey`, `valueKind`, `focusKind`, and `scope` rather than reparsing YAML themselves.
+Providers use `yamlRole`, `yamlKey`, `yamlPath`, `valueKind`, `focusKind` and `branchState`.
 
-Scoring should treat `valueKind` and `focusKind` as hints, not absolute truth. Malformed or partial YAML is expected while the user types.
+Scoring treats `valueKind` and `focusKind` as hints. Malformed and partial YAML is the normal case while the user types, so a descriptor can be incomplete.
 
 ## Fixture policy
 
-Context fixtures live under `tests/fixtures/context/`. Each fixture contains source text, cursor marker, expected descriptor fields, and a rationale. Fixtures should include real Home Assistant shapes: automations, scripts, Lovelace cards, card_mod CSS, Jinja templates, malformed partial YAML, embedded block scalars, multi-document YAML, tab-indented pasted YAML, EOF prefixes, and edge cases such as quoted `#` characters.
+Context fixtures live under `tests/fixtures/context/`. Each fixture has a `name`, a `rationale`, the source text with a cursor marker in `sourceWithCursor`, and the `expected` descriptor fields. `tests/context/yaml_completion_context.test.mjs` runs `describeYamlCompletionContext` against every fixture.
 
+The corpus covers Home Assistant shapes: automations, scripts, Lovelace cards, card_mod CSS, Jinja templates, malformed partial YAML, block scalars, multi-document YAML, tab-indented YAML, a prefix at the end of the file, and a quoted `#`.
 
-## Cursor marker convention
-
-New fixtures should use `__CURSOR__` instead of `|` because Home Assistant YAML commonly uses `|` and `>` as block-scalar indicators. The legacy `|` marker remains supported only for older fixtures.
-
-## Block scalar context
-
-`blockScalarContextAt(sourceText, cursorPosition)` detects whether the cursor is inside a YAML literal or folded scalar. When active, `describeYamlCompletionContext` keeps the owning YAML key/path while allowing `lang` to switch to embedded CSS or Jinja when the surrounding content indicates it.
-
-
-## v31.6.104 schema/value-kind parity hardening
-
-The context module now exports `CONTEXT_DESCRIPTOR_FIELD_NAMES`, `YAML_CONTEXT_ROLES`, `YAML_VALUE_KINDS`, `contextDescriptorValidationErrors(ctx)`, and `isValidContextDescriptor(ctx)`. These helpers keep fixture outputs and provider-facing descriptors honest.
-
-The value-kind helper covers the common Home Assistant contexts: dashboard `tap_action.action` values stay `action`, automation/script `action:` / `service:` / `service_name:` / `perform_action:` values resolve to `service`, trigger/condition type keys resolve to `trigger-type` / `condition-type`, and scalar keys such as `timeout`, `name`, and `theme` resolve to `duration`, `string`, and `theme`.
+New fixtures mark the cursor with `__CURSOR__`. Home Assistant YAML uses `|` and `>` as block scalar indicators, so the older `|` marker is accepted only for fixtures that do not contain `__CURSOR__`.

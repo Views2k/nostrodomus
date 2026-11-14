@@ -20,9 +20,9 @@ errors = []
 notes = []
 
 # Tokens still owned by src/core/settings.js. The legacy-key registry was renamed and
-# moved (see SETTINGS_MIGRATION_LEGACY_KEYS check below): "Senior Finish Phase 4 (settings
-# keys)" removed SETTINGS_READ_KEYS / SETTINGS_LEGACY_KEYS, folding the key list into the
-# data-only migration table src/core/settingsStorageKeys.js (CHANGELOG). The invariant —
+# moved (see SETTINGS_MIGRATION_LEGACY_KEYS check below): SETTINGS_READ_KEYS /
+# SETTINGS_LEGACY_KEYS are gone and the key list is in the data-only migration table
+# src/core/settingsStorageKeys.js. The invariant —
 # an exported, complete, v30f-bearing registry of legacy settings storage keys — is
 # re-pointed to its current owner module rather than weakened.
 required = [

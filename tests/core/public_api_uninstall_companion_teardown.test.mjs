@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 
 import { createPublicApiRuntime } from '../../src/core/publicApiRuntime.js';
 
-// Finding 1B(i) + 1B(ii): uninstall() must tear down the companion sublayers.
+// uninstall() must tear down the companion sublayers.
 // (i)  companion settle: dialog/home MutationObservers + capture-phase listeners + timers.
 // (ii) companion scrollbar: the warning-badge reapply MutationObservers (warningReapplyObservers).
 // Both teardowns existed but had no call site reachable from uninstall(), so they survived
-// uninstall and kept observing / arming timers. These are separate sub-findings fixed in
-// separate commits; this file asserts each delegate is invoked exactly once on uninstall.
+// uninstall and kept observing / arming timers. This file asserts each delegate is invoked
+// exactly once on uninstall.
 function buildRuntime(lifecycleExtra) {
   const noop = () => {};
   const lifecycle = {
@@ -49,7 +49,7 @@ test('uninstall tears down the companion scrollbar warning observers (1B-ii)', (
   assert.equal(torn, 1, 'uninstall must call companionScrollbarTeardown exactly once');
 });
 
-test('uninstall cancels the companion input-quiet flush timer (audit QW8)', () => {
+test('uninstall cancels the companion input-quiet flush timer', () => {
   let cleaned = 0;
   buildRuntime({ companionInputQuietCleanup: () => { cleaned += 1; } }).api.uninstall();
   assert.equal(cleaned, 1, 'uninstall must call companionInputQuietCleanup exactly once');

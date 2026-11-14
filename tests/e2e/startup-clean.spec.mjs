@@ -1,8 +1,7 @@
-// startup-clean.spec (HARNESS P2.1) — fresh dashboard load: no pageerror,
+// startup-clean.spec — fresh dashboard load: no pageerror,
 // no unexpected console error (both enforced by the session console fixture),
 // the public API handle is installed, and the runtime-error diagnostics
-// surface is clean. [Would have caught: the TDZ crash, the
-// settingsPortalRuntime boot failure.]
+// surface is clean (a crash while the bundle boots fails this).
 
 import { test, expect, openDashboard } from './session.mjs';
 

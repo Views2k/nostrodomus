@@ -1,10 +1,10 @@
 // snippet-insertion.spec — the 0.1.254/256 fix: accepting a SNIPPET row expands its tabstops/defaults
-// (no literal "${...}" left in the document), rather than pasting the raw placeholder text. Unit-only
-// until now. (The sibling case — a NON-snippet value containing $N inserting verbatim, e.g. mqtt/$0/state
-// — needs a value row that carries a literal $ and is left as a follow-up.)
+// (no literal "${...}" left in the document), rather than pasting the raw placeholder text.
+// (The sibling case — a NON-snippet value containing $N inserting verbatim, e.g. mqtt/$0/state
+// — needs a value row that carries a literal $ and is not covered here.)
 //
-// Uses the data: block with a fuzzy prefix, the context the real launch-gates G1 run showed snippet rows
-// in. Append-to-valid-config setup (no typeless HA crash). Authored on-branch; owner-run.
+// Uses the data: block with a fuzzy prefix, a context that offers snippet rows (as in launch-gates G1).
+// Append-to-valid-config setup (no typeless HA crash).
 
 import { test, expect, openDashboard } from './session.mjs';
 import {

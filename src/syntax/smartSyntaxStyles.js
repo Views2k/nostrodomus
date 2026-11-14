@@ -282,7 +282,7 @@ export function sourceClassSyntaxContentPainted(
   return spans.some((span) => String(span.className || "").trim());
 }
 
-// important-override registry (INSTRUCTIONS.md §11.9) — smart-syntax token color classes.
+// important-override registry — smart-syntax token color classes.
 // external rules overridden: CodeMirror's per-editor injected theme stylesheet (sets
 //   span colors with its own class specificity, later in document order) and HA theme
 //   text/transition rules.

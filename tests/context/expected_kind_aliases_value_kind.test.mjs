@@ -1,8 +1,8 @@
-// Phase 1: prove `expectedKind` is a strict ALIAS of `valueKind` across the REAL context
+// `expectedKind` is a strict ALIAS of `valueKind` across the REAL context
 // corpus. The framework introduces expectedKind as the future "richer expected type" channel;
-// in Phase 1 it must return the identical string for every context that already has a
-// valueKind, so no existing ranking/gating behavior shifts. If a later phase makes
-// resolveExpectedKind diverge from valueKind for a current case, this fence fails.
+// today it must return the identical string for every context that already has a
+// valueKind, so no existing ranking/gating behavior shifts. If resolveExpectedKind
+// diverges from valueKind for a current case, this fence fails.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';

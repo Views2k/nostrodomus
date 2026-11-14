@@ -1,4 +1,4 @@
-// P2/P3: surface threading + the surface-aware Jinja bias in the pure context adapter.
+// Surface threading + the surface-aware Jinja bias in the pure context adapter.
 // Locks: (a) a surface option lands on ctx.surface; (b) on a template surface with jinjaLane on, a
 // bare states('…') line (no {{ }} wrapper) is biased to lang='jinja' with an entity jinjaArg; (c) the
 // bias is gated — no jinjaLane, or a non-template surface, or a non-call line stays yaml; (d) the
@@ -24,13 +24,13 @@ test('OFF-path byte-identity: the descriptor is deep-equal with and without an e
   assert.deepEqual(withEmpty, plain, 'an empty surface adds nothing');
 });
 
-test('P2: a surface option lands on ctx.surface (additive, lang unchanged for a yaml line)', () => {
+test('surface: a surface option lands on ctx.surface (additive, lang unchanged for a yaml line)', () => {
   const ctx = at('type: ', { surface: 'devtools-action' });
   assert.equal(ctx.surface, 'devtools-action');
   assert.equal(ctx.lang, 'yaml', 'a non-template surface does not bias language');
 });
 
-test('P3: template surface + jinjaLane biases a bare states() line to jinja with an entity jinjaArg', () => {
+test('jinja lane: template surface + jinjaLane biases a bare states() line to jinja with an entity jinjaArg', () => {
   const ctx = at("states('", { surface: 'devtools-template', jinjaLane: true });
   assert.equal(ctx.lang, 'jinja', 'biased to jinja');
   assert.equal(ctx.scope, 'jinja-template');
@@ -40,14 +40,14 @@ test('P3: template surface + jinjaLane biases a bare states() line to jinja with
   assert.equal(ctx.jinjaArg.fn, 'states');
 });
 
-test('P3 gating: template surface but jinjaLane OFF → stays yaml (engineV2-alone changes no content)', () => {
+test('jinja lane gating: template surface but jinjaLane OFF → stays yaml (engineV2-alone changes no content)', () => {
   const ctx = at("states('", { surface: 'devtools-template' });
   assert.equal(ctx.lang, 'yaml');
   assert.equal(ctx.surface, 'devtools-template', 'surface still threaded for cache isolation');
   assert.equal(Object.prototype.hasOwnProperty.call(ctx, 'jinjaArg'), false, 'no jinjaArg without the lane');
 });
 
-test('P3 widen-only: a non-call line on a template surface stays yaml even with jinjaLane', () => {
+test('jinja lane widen-only: a non-call line on a template surface stays yaml even with jinjaLane', () => {
   const ctx = at('some_key: value', { surface: 'devtools-template', jinjaLane: true });
   assert.equal(ctx.lang, 'yaml', 'only a real template-call shape triggers the bias');
 });
@@ -59,7 +59,7 @@ test('genuine {{ }} jinja gets a jinjaArg on any surface (engine on) — jinja-i
   assert.equal(ctx.surface, 'card-editor');
 });
 
-test('an interior } (dict literal) or % (modulo) does not flip an open jinja template back to YAML (bug hunt 4)', () => {
+test('an interior } (dict literal) or % (modulo) does not flip an open jinja template back to YAML', () => {
   const dictDoc = "icon: >\n  {{ {'on':'mdi:lightbulb'}[states('li";
   const dict = detectRuntimeContext(dictDoc, dictDoc.length);
   assert.equal(dict.lang, 'jinja', 'a dict-literal template stays jinja');

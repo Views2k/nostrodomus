@@ -1,4 +1,4 @@
-// P2: surface MUST isolate the scoring cache, or a Dev Tools Template result could be served from a
+// The surface MUST isolate the scoring cache, or a Dev Tools Template result could be served from a
 // card-editor cache slot (and vice-versa). Two affirmative guards: the full cacheKey (via the
 // cacheHit signal) and the incremental-filter reuse predicate.
 

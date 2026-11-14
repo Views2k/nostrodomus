@@ -12,7 +12,7 @@ const telemetryRuntime = readFileSync(join(root, 'src/diagnostics/telemetryRunti
 const runtimeErrorRuntime = readFileSync(join(root, 'src/diagnostics/runtimeErrorRuntime.js'), 'utf8');
 const publicApiRuntime = readFileSync(join(root, 'src/core/publicApiRuntime.js'), 'utf8');
 // The settings panel runtime is a composer over src/ui/settings/ modules
-// (UI_DECOMP P1); the settings-owned error-routing surface spans both.
+// the settings-owned error-routing surface spans both.
 const settingsPanelRuntime = [
   'src/ui/settingsPanelRuntime.js',
   'src/ui/settings/settingsGeometry.js',

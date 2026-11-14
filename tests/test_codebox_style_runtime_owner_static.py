@@ -7,8 +7,8 @@ LEGACY = (ROOT / 'src' / 'main.legacy.js').read_text(encoding='utf-8', errors='r
 BRIDGE = (ROOT / 'src' / 'composition' / 'runtimeDelegateBridge.js').read_text(encoding='utf-8', errors='replace')
 MODULE_PATH = ROOT / 'src' / 'ui' / 'codeboxStyleRuntime.js'
 CODEBOX_MODULES_DIR = ROOT / 'src' / 'ui' / 'codebox'
-# The codebox style runtime is a composer over src/ui/codebox/ modules
-# (UI_DECOMP P2); the owned codebox body spans the composer plus its modules.
+# The codebox style runtime is a composer over src/ui/codebox/ modules;
+# the owned codebox body spans the composer plus its modules.
 MODULE = MODULE_PATH.read_text(encoding='utf-8', errors='replace') if MODULE_PATH.exists() else ''
 if CODEBOX_MODULES_DIR.exists():
     for _module_path in sorted(CODEBOX_MODULES_DIR.glob('*.js')):

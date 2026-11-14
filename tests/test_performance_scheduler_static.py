@@ -72,12 +72,10 @@ require('function mutationRecordLooksEditorStructural' in dist, "dist includes s
 version_tuple = tuple(int(part) for part in version.split(".") if part.isdigit())
 require(version_tuple >= (0, 1, 17), "PROJECT.json remains at or beyond the v0.1.17 editor lifecycle owner baseline")
 require("editor-lifecycle-owner" in internal or version_tuple > (0, 1, 17), "PROJECT.json internal_version records editor lifecycle owner (or version advanced beyond the baseline that introduced it)")
-# The legacy `performance_telemetry_policy` PROJECT.json key was a monolith-shrink process
-# ledger (tied to the now-deleted MONOLITH.md) and was intentionally removed (commit af6d7e2,
-# "shipshape P2") when PROJECT.json became a slim machine-read surface. The canonical, still-living
-# statement of the same no-telemetry/no-network performance policy is the threat-model ADR — mirror
-# the re-pointing already used by tests/test_performance_telemetry_static.py.
-THREAT_MODEL = ROOT / "docs/adr/005-threat-model.md"
+# PROJECT.json no longer has a `performance_telemetry_policy` key. The statement of the
+# no-telemetry/no-network performance policy is in the threat model, as in
+# tests/test_performance_telemetry_static.py.
+THREAT_MODEL = ROOT / "docs/THREAT_MODEL.md"
 threat_model = THREAT_MODEL.read_text(encoding="utf-8", errors="replace") if THREAT_MODEL.exists() else ""
 require("no telemetry or external network access" in threat_model and "It must not add telemetry" in threat_model, "threat model documents the local-only / no-network performance policy")
 require(internal in src_all and internal in dist, "source and dist both carry current runtime version")

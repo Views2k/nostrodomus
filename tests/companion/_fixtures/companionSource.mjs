@@ -1,8 +1,8 @@
-// ABSORB P0 — shared companion source-truth helper (NOT a test; not run by the
-// runner, which only executes *.test.mjs). Used by the frozen golden baselines
-// to read the FROZEN companion files as text and extract regions verbatim, so
-// nothing is hand-copied. The companion files are byte-frozen (D-FROZEN-REFERENCE),
-// so these extractions are stable forever.
+// Shared companion source helper (NOT a test; not run by the runner, which only
+// executes *.test.mjs). Used by the frozen golden baselines to read the frozen
+// companion files in reference/companions as text and extract regions verbatim,
+// so nothing is hand-copied. The companion files never change, so these
+// extractions are stable.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
@@ -70,7 +70,7 @@ export function extractFunctionSource(text, declaration) {
   throw new Error(`companionSource: unbalanced braces for ${JSON.stringify(declaration)}`);
 }
 
-// --- The two scrollbar-product CSS templates (ABSORB P0a) ---
+// --- The two scrollbar-product CSS templates ---
 // v17 injects its styling through two functions: injectStyle (generic, ~L1184)
 // and injectCodeCss (~L1377). The scrollbar product is carried by:
 //   1. CODEBOX  (id "nostrodomus-editor-v17-2-learned-style", injectCodeCss): the
@@ -79,7 +79,7 @@ export function extractFunctionSource(text, declaration) {
 //   2. DIALOG-ROOT (id "...-dialog-root", injectStyle): native scrollbar
 //      suppression on .element-editor/.element-preview panes (scrollbar-width:
 //      none + ::-webkit-scrollbar { display:none }) alongside dialog sizing.
-// These are the two element IDs the P2 scrollbar module reproduces byte-identically.
+// These are the two element IDs src/companion/scrollbarStyleRuntime.js reproduces byte-identically.
 export const CODEBOX_CSS_ANCHOR = 'const css = ';
 export const DIALOG_ROOT_CSS_ANCHOR = '${STYLE_ID}-dialog-root';
 
@@ -98,9 +98,8 @@ export function extractInstallerSource(text) {
   return extractFunctionSource(text, INSTALLER_DECLARATION);
 }
 
-// Resolve an absorbed module path under src/companion (present only after the
-// phase that authors it). Lets the frozen baselines also verify the real module
-// when it exists, while skipping cleanly in P0.
+// Resolve an absorbed module path under src/companion, so the frozen baselines
+// also verify the real module.
 export function absorbedModulePath(relName) {
   return join(REPO_ROOT, 'src', 'companion', relName);
 }

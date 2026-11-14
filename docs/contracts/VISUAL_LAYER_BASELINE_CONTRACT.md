@@ -1,14 +1,8 @@
 # Visual Layer Baseline Contract
 
-Active from v31.6.91 forward. This contract exists because the v31.6.88 root repair accidentally exposed a real visual regression: the code editor kept the border/glow but lost the blurry/frosted layer behind CodeMirror. The v31.6.90 repair restored the correct visual ownership. Future refactors must preserve this exact layer model before moving runtime code again.
+The codebox has three visual layers. This contract fixes which element draws each one and names the selectors and tokens that `tools/visual_layer_doctor.py` checks. The general ownership rules are in `STYLE_OWNERSHIP_CONTRACT.md`.
 
-## Source-of-truth rule
-
-The active browser runtime is `src/main.legacy.js` (a composition root) bundled with the wired `src/*` modules into `dist/nostrodomus.js`. The `src/core/*` module files are live, wired runtime — not merely reviewed source — but runtime modularization remains paused while the visual baseline is protected.
-
-## Codebox visual ownership
-
-The editor visual stack must remain separated by owner:
+## Layers
 
 ```text
 ha-code-editor / :host
@@ -18,20 +12,24 @@ CodeMirror panes
   .cm-editor / .cm-scroller / .cm-content = transparent content and scrolling layers
 ```
 
-Required runtime behavior:
+From back to front: the `::after` surface (`z-index: 1`), the CodeMirror panes with the text (`z-index: 2`), the `::before` frame on top. Both pseudo-elements ignore pointer events.
 
-- `ha-code-editor[data-nostrodomus-assist-codebox-frame-host="1"]::before` and `:host([data-nostrodomus-assist-codebox-frame-host="1"])::before` own the border/glow.
-- `ha-code-editor[data-nostrodomus-assist-codebox-frame-host="1"]::after` and `:host([data-nostrodomus-assist-codebox-frame-host="1"])::after` own the frosted surface.
-- The surface layer must include both `backdrop-filter` and `-webkit-backdrop-filter` using `--nostrodomus-codebox-surface-blur`.
-- The host must use `isolation: isolate` so `::after` can sit behind CodeMirror content while `::before` remains above.
-- CodeMirror panes must stay transparent; do not move the frosted background back onto `.cm-editor`, `.cm-scroller`, or `.cm-content`.
-- The failed measured external frame path must remain disabled unless a new design is proven with screenshot/console verification first.
+## Selectors and tokens
 
-## Refactor freeze around styling
+The rules are built by `codeboxStyleBuildRootCss` in `src/ui/codeboxStyle.js`. The host is marked by `src/ui/codebox/codeboxPreflight.js` and `src/ui/codeboxStyleRuntime.js` with the attribute `data-nostrodomus-codebox-frame-host="1"`.
 
-Do not extract, rename, or reorder codebox style install functions while also performing runtime modularization. Visual-layer changes and source-structure changes must ship separately.
+- `ha-code-editor[data-nostrodomus-codebox-frame-host="1"]::before` and `:host([data-nostrodomus-codebox-frame-host="1"])::before` draw the border and the glow from the `--nostrodomus-codebox-frame-*` variables.
+- `ha-code-editor[data-nostrodomus-codebox-frame-host="1"]::after` and `:host([data-nostrodomus-codebox-frame-host="1"])::after` draw the surface: `background: var(--nostrodomus-codebox-surface)` with `backdrop-filter` and `-webkit-backdrop-filter` set to `var(--nostrodomus-codebox-surface-blur)`.
+- `--nostrodomus-codebox-surface-blur` is `blur(16px) saturate(135%)`.
+- The host has `isolation: isolate`, so that `::after` stays behind the CodeMirror content and `::before` in front of it.
+- `.cm-editor`, `.cm-scroller` and `.cm-content` have `background: transparent`. The frosted background is not set on them.
+- `[data-nostrodomus-codebox-external-frame="1"]` has `display: none`. A frame element measured and positioned outside the editor is not used.
 
-Before any future module extraction touches style/codebox/syntax areas, run:
+The Developer Tools template page shows its result in `ha-card.render-pane`. The same root stylesheet gives that pane the border, glow and surface of the codebox, from the same variables.
+
+## Changing this area
+
+Run the checks before and after a change to the codebox styles, the style install functions or the syntax styles:
 
 ```bash
 python3 tools/visual_layer_doctor.py
@@ -39,12 +37,12 @@ python3 tools/check_runtime_contracts.py
 python3 tools/verify.py
 ```
 
-## Manual smoke test
+Keep a change to the visual CSS separate from a change that moves or renames the functions which install it. When both happen in one commit, a visual regression cannot be traced to one of them.
 
-Open a Home Assistant card editor containing long YAML/CSS. Confirm:
+Then look at an editor with long YAML and CSS in a browser:
 
-1. The code editor has the frosted blurry surface behind text.
-2. The border/glow is visible and not clipped.
-3. Syntax coloring remains stable on open, click, blur, and typing.
-4. The HA preview behind the editor is dimmed by Home Assistant, not by Nostrodomus owning dashboard-wide layers.
-5. Settings opens, drags, and sliders remain interactive.
+1. The frosted surface is visible behind the text.
+2. The border and glow are visible and not clipped.
+3. Syntax colors stay as they are on open, click, blur and typing.
+4. The dimming of the page behind the dialog comes from Home Assistant; Nostrodomus adds no layer over the dashboard.
+5. The settings panel opens, can be dragged, and its sliders work.

@@ -1,7 +1,7 @@
-// The console-capture utility every spec session uses — the harness's core
-// value: the exact detector for the green-gates/broken-browser bug class.
+// The console-capture utility every spec session uses. It catches the bugs
+// that pass every unit test and still break in the browser.
 //
-// Failure policy (tools/e2e/README.md, binding):
+// Failure policy (tools/e2e/README.md):
 // - pageerror                → fails UNLESS allowlisted with `appliesTo:
 //                              'pageerror'` AND a `source` regex the stack
 //                              matches (a bare message match is not enough —

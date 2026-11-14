@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createCompletionRuntime } from '../../src/completion/completionRuntime.js';
 
-// codebox#14, completion#17, editor#15, hotpaths#12. A pointerdown outside editor scope asks for
+// A pointerdown outside editor scope asks for
 // a style apply. On a page with no editor and no card dialog that apply has nothing left to do
 // once it has run without an editor.
 function harness(overrides = {}) {

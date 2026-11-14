@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { ensureCompletionOverlay } from '../../src/completion/popupRuntime.js';
 import { uiAccentVarsFromSettings } from '../../src/ui/codeboxStyle.js';
 
-// Regression guard for the 9/10 audit's popup-accent finding (QW10, 2026-07-06): the accent CSS
+// Regression guard for the popup accent: the accent CSS
 // vars used to be set only when the overlay was first created, so changing the codebox accent in
 // settings left the suggestion popup on the old color until the overlay was recreated. The reuse
 // path now refreshes them, guarded by a signature stamp so the per-render call writes nothing when
@@ -30,7 +30,7 @@ function fakeDom() {
   return { root, documentRef, setPropCalls: () => setPropCalls };
 }
 
-test('the popup accent refreshes when settings change on the reuse path (audit QW10)', () => {
+test('the popup accent refreshes when settings change on the reuse path', () => {
   const { root, documentRef } = fakeDom();
   const state = { settings: { style: { codeboxBorderHue: 0 } } };
   const deps = { documentRef, overlayRoot: () => root, removeOverlay: () => {} };

@@ -1,6 +1,6 @@
 {
   "name": "nostrodomus",
-  "version": "0.1.277",
+  "version": "0.1.278",
   "description": "Context-aware autocomplete, snippets, and syntax styling for Home Assistant's card and YAML editors",
   "license": "MIT",
   "author": "Views2k",
@@ -35,6 +35,7 @@
     "gate": "npm run lint && npm run typecheck && npm run check:modules && npm test && python3 tools/build.py && python3 tools/verify.py --release && npm run verify:reproducible && python3 tools/validate_snippets.py",
     "e2e:up": "node tools/e2e/ensure_state.mjs && docker compose -f tools/e2e/docker-compose.yml up -d --wait && node tools/e2e/bootstrap.mjs && node tools/e2e/seed.mjs",
     "e2e": "playwright test --config tests/e2e/playwright.config.mjs",
+    "e2e:firefox": "playwright test --config tests/e2e/playwright.firefox.config.mjs",
     "e2e:beta": "HA_STATE=.ha-state-beta node tools/e2e/ensure_state.mjs && HA_TAG=beta HA_STATE=.ha-state-beta docker compose -f tools/e2e/docker-compose.yml up -d --wait && HA_STATE=.ha-state-beta node tools/e2e/bootstrap.mjs && HA_STATE=.ha-state-beta node tools/e2e/seed.mjs && HA_STATE=.ha-state-beta playwright test --config tests/e2e/playwright.config.mjs",
     "e2e:down": "docker compose -f tools/e2e/docker-compose.yml down",
     "build": "esbuild src/main.js --bundle --format=esm --target=es2020 --outfile=dist/nostrodomus.js --minify-syntax --minify-whitespace --log-level=warning --legal-comments=none --external:/local/*",

@@ -22,7 +22,7 @@ test('clampNumber preserves legacy numeric bounds and fallback behavior', () => 
   assert.equal(clampNumber('bad', 0, 10, 1), 1);
   assert.equal(clampNumber(undefined, 0, 10, 1), 1);
   assert.equal(clampNumber(NaN, 0, 10, 1), 1);
-  // Bug hunt: null/''/whitespace/false/[]/{} must fail dark to the fallback, NOT coerce to a finite 0
+  // null/''/whitespace/false/[]/{} must fail dark to the fallback, NOT coerce to a finite 0
   // and clamp to a min>0 bound (which silently over-desaturated themes from corrupt persisted settings).
   for (const bad of [null, '', '   ', false, true, [], [5], {}]) {
     assert.equal(clampNumber(bad, 0.35, 1.85, 1), 1, `${JSON.stringify(bad)} -> fallback`);

@@ -30,7 +30,6 @@ require("runtime-layer-rollback" in internal or version_tuple > (0, 1, 0), "inte
 
 for rel in [
     "docs/contracts/VISUAL_LAYER_BASELINE_CONTRACT.md",
-    "docs/VISUAL_REGRESSION_WORKFLOW.md",
     "tools/visual_layer_doctor.py",
 ]:
     require((ROOT / rel).exists(), f"required visual guardrail file exists: {rel}")
@@ -68,9 +67,7 @@ for rel in ["src/ui/codeboxStyle.js", "dist/nostrodomus.js"]:
     require('[data-nostrodomus-codebox-external-frame="1"] {\n        display: none !important;' in text, f"{rel} keeps failed external frame path disabled")
 
 for rel, tokens in {
-    "docs/contracts/VISUAL_LAYER_BASELINE_CONTRACT.md": ["::before = border and glow owner", "::after  = frosted blurry surface/backdrop owner", "runtime modularization remains paused"],
-    "docs/VISUAL_REGRESSION_WORKFLOW.md": ["visual_layer_doctor.py", "Do not combine visual CSS changes with runtime extraction", "afterBackdrop"],
-    "docs/contracts/NO_TOUCH_REGRESSION_LIST.md": ["Do not remove the host-owned frosted codebox surface", "Do not combine visual CSS changes with runtime modularization"],
+    "docs/contracts/VISUAL_LAYER_BASELINE_CONTRACT.md": ["::before = border and glow owner", "::after  = frosted blurry surface/backdrop owner"],
 }.items():
     text = (ROOT / rel).read_text(encoding="utf-8", errors="replace") if (ROOT / rel).exists() else ""
     for token in tokens:

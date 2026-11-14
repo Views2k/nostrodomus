@@ -1,4 +1,4 @@
-// P3: the pure Jinja call-argument classifier — the brain that decides "the cursor is in an
+// The pure Jinja call-argument classifier — the brain that decides "the cursor is in an
 // entity-id position" so the live-entity lane can fire. Deterministic, fail-dark, never throws.
 // The load-bearing edge: is_state's 2nd arg is a STATE VALUE, not an entity, so it must NOT classify
 // as entity (only state_attr's 2nd arg is an attribute position).
@@ -66,7 +66,7 @@ test('fail-dark: hostile / non-string input returns the default, never throws', 
   assert.deepEqual(classifyJinjaCallArg("states('".repeat(5000)), { fn: 'states', argIndex: 0, inStringLiteral: true, expectKind: 'entity' });
 });
 
-test('a closed call does not leak its arg classification onto a later expression (bug hunt 4)', () => {
+test('a closed call does not leak its arg classification onto a later expression', () => {
   // An UNQUOTED arg has no closing quote, so the old [^'"]* pattern ran past ')' and classified
   // every later cursor position as sitting in the call's entity arg.
   assert.deepEqual(classifyJinjaCallArg("{% set x = states(entity_var) %}\n{{ x | float(0) + oth"),

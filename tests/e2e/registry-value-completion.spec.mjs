@@ -2,7 +2,7 @@
 // names, and fails dark (no rows, no error) for a registry the instance lacks. Opt-in and stacked
 // (requires completions.engineV2 AND completions.registryLane, both default-OFF). Requires the expanded
 // seed (areas E2E Living Room / E2E Kitchen; devices are not WS-createable, so device_id: is fail-dark).
-// Enable the flags before boot via the deep-merged nostrodomus.settings key. Owner-run.
+// Enable the flags before boot via the deep-merged nostrodomus.settings key.
 
 import { test, expect, openDashboard } from './session.mjs';
 import {
@@ -50,9 +50,9 @@ async function valueContextDiag(page) {
   });
 }
 
-// This test FOUND a dead lane on 0.1.262 (area_id: offered action-enum + services, valueKind "") and is
-// now the regression guard for the fix: the registry branch was added to the adapter's live yamlValueKind
-// copy and registryLane is threaded into detection (see tests/context/registry_value_lane.test.mjs).
+// On 0.1.262 this lane was dead (area_id: offered action-enum + services, valueKind ""). The registry
+// branch is in the adapter's live yamlValueKind copy and registryLane is threaded into detection
+// (see tests/context/registry_value_lane.test.mjs).
 test('registry values: area_id: completes to real seeded area names', async ({ page }) => {
   await page.addInitScript(enableRegistryLane);
   await openRegistryValue(page, '  area_id: ');

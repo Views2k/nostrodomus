@@ -1,4 +1,4 @@
-// ABSORB P0 — quiet-window semantics fixture (generated from
+// Quiet-window semantics fixture (generated from
 // reference/companions/nostrodomus-picker-safe.js). The functions between the VERBATIM
 // markers are lifted byte-for-byte from source; quiet_window_semantics.test.mjs
 // re-extracts each from source and asserts byte-identity, so they cannot drift.

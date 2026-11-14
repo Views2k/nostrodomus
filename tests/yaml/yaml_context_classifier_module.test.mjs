@@ -49,7 +49,7 @@ test('value-kind classifier covers runtime and scalar keys', () => {
   assert.equal(yamlValueKind({ yamlRole: 'list-key', yamlPath: ['entities'] }), 'entity');
 });
 
-test('P4 registry routing is flag-gated on ctx.registryLaneEnabled', () => {
+test('registry routing is flag-gated on ctx.registryLaneEnabled', () => {
   // OFF (no gate): area_id/device_id/floor_id/label_id fall through to their legacy (no-row) kind,
   // so the engine-off path is byte-identical.
   assert.equal(yamlValueKind({ yamlKey: 'area_id', yamlPath: ['target'] }), '');

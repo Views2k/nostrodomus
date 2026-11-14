@@ -18,7 +18,7 @@ function rowsFor(_label, fn) {
   return fn();
 }
 
-test('Phase C catalog fixture gate covers all HACS provider surfaces', () => {
+test('catalog fixture gate covers all HACS provider surfaces', () => {
   assert.equal(MAIN_PROVIDER_SURFACES.length, 38);
 
   for (const surface of MAIN_PROVIDER_SURFACES) {
@@ -30,7 +30,7 @@ test('Phase C catalog fixture gate covers all HACS provider surfaces', () => {
   }
 });
 
-test('Phase C card-type fixtures resolve every documented card type to one catalog owner', () => {
+test('card-type fixtures resolve every documented card type to one catalog owner', () => {
   const cardTypeRows = rowsFor('card type row generation', () => catalogRowsForContext({
     shouldSuggest: true,
     lang: 'yaml',
@@ -48,7 +48,7 @@ test('Phase C card-type fixtures resolve every documented card type to one catal
   }
 });
 
-test('Phase C key/value fixtures cover each surface through the wired provider path', () => {
+test('key/value fixtures cover each surface through the wired provider path', () => {
   const provider = hacsCatalogProvider();
 
   for (const surface of MAIN_PROVIDER_SURFACES) {
@@ -80,7 +80,7 @@ test('Phase C key/value fixtures cover each surface through the wired provider p
   }
 });
 
-test('Phase C catalog context resolver does not guess when no surface/card context is present', () => {
+test('catalog context resolver does not guess when no surface/card context is present', () => {
   assert.equal(surfaceFromCatalogContext({ shouldSuggest: true, lang: 'yaml', yamlRole: 'key' }), null);
   assert.equal(surfaceFromCatalogContext({ catalogCardType: 'custom:not-real' }), null);
 });

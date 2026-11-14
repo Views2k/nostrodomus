@@ -1,5 +1,5 @@
-// Perf budgets relocated from tests/providers/hacs_catalog_phase_c_fixtures.test.mjs
-// (RUNTIME_DATA.md P4/W5). Run via `npm run test:perf`; excluded from the default
+// Perf budgets for the scenarios of tests/providers/hacs_catalog_phase_c_fixtures.test.mjs.
+// Run via `npm run test:perf`; excluded from the default
 // `npm test` walk. The functional row-content assertions for the same scenarios
 // remain in the original file.
 

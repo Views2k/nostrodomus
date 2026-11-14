@@ -171,7 +171,7 @@ const BASE_THEMES = {
   'ios-dark': { 'primary-color': '#000000' },
 };
 
-// P4 registry collections — objects keyed by id (real HA frontend shape). Areas/floors/labels
+// Registry collections — objects keyed by id (real HA frontend shape). Areas/floors/labels
 // carry readable slug ids; devices carry opaque ids and prefer name_by_user over name. Includes a
 // hostile id (fails the identifier regex) so fail-dark filtering is provable.
 const BASE_AREAS = {

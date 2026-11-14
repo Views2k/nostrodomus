@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createInitialSyntaxPaintGate } from '../../src/syntax/initialSyntaxPaintGate.js';
 
-// Regression (bug hunt): observeInitialSyntaxPaintGateRoot stores each root's MutationObserver in a
+// observeInitialSyntaxPaintGateRoot stores each root's MutationObserver in a
 // strong Map (state.initialSyntaxGateObservers). It was only cleared on uninstall, so every
 // card-editor open left its observer + detached root retained for the session (a leak). The
 // per-discovery prime now drops observers whose root has left the DOM.

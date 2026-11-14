@@ -1,15 +1,12 @@
-// Codebox bottom geometry, converted from the owner's hand-run GAP/VSCROLL console probes so this never
-// needs hand-probing again.
+// Codebox bottom geometry: the gap under the editor and the vertical scrollbar clearance.
 //
-// REWORKED-FLUSH DESIGN (pinned): the .cm-editor + .cm-scroller sit ~14px above the ha-code-editor host
+// FLUSH DESIGN (pinned): the .cm-editor + .cm-scroller sit ~14px above the ha-code-editor host
 // bottom (SIMPLE 164 vs 150; TABBED 413 vs 399 — 14px either way, viewport-independent), so the horizontal
 // scrollbar riding the scroller bottom is close to flush — down from the old ~38px frosted dead-strip — while
-// its ends and the vertical down-arrow stay clear of the host ::before radius-22 rounded frame corners. The
-// first "flush" attempt (7dd6ec1) went to gap≈0 and shipped a corner-leak (the deliberate CONTENT_FIT
-// square clip poked the bar ends past the corner arc); it was reverted. This reworked version keeps a 14px
-// clearance instead — at that height the frame's corner inset is ~1.5px, so any arc overlap is sub-pixel.
-// Rounding the content back would have re-clipped the down-arrow CONTENT_FIT squares on purpose.
-// Authored on-branch; owner-run loop.
+// its ends and the vertical down-arrow stay clear of the host ::before radius-22 rounded frame corners. A
+// gap of 0 leaks at the corners (the deliberate CONTENT_FIT square clip pokes the bar ends past the corner
+// arc). At 14px the frame's corner inset is ~1.5px, so any arc overlap is sub-pixel.
+// Rounding the content back would re-clip the down-arrow that CONTENT_FIT squares on purpose.
 
 import { test, expect, readStamp } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';

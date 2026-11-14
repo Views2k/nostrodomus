@@ -629,7 +629,7 @@ export function createSettingsPanelShell(deps = {}) {
       ev.stopPropagation();
     });
 
-    // MD8: keyboard resize. The separator is focusable; arrow keys grow/shrink the panel (Shift for a
+    // Keyboard resize. The separator is focusable; arrow keys grow/shrink the panel (Shift for a
     // larger step). Mirrors the pointer resize's clamp + save so keyboard and mouse stay consistent.
     resizeHandle?.setAttribute?.("tabindex", "0");
     resizeHandle?.setAttribute?.("aria-label", "Resize settings panel with arrow keys");
@@ -761,7 +761,7 @@ export function createSettingsPanelShell(deps = {}) {
       ev.stopPropagation();
     });
 
-    // MD8: keyboard move. The header is focusable; arrow keys reposition the panel (Shift for a
+    // Keyboard move. The header is focusable; arrow keys reposition the panel (Shift for a
     // larger step). Mirrors the pointer drag-end's clamp + apply + save (viewport coords), so the
     // stored position stays in the same space the pointer path writes.
     if (handle) {

@@ -1,8 +1,6 @@
-// Named selectors for the E2E specs — single source from day one (HARNESS
-// P2 "selector discipline"). INTERIM HOME: HARNESS P3 centralizes the
-// runtime's ~32 HA-internal selectors into src/editor/haSelectors.js; when
-// that registry lands, the HA-internal block below moves there and this file
-// re-exports it, so specs never change their imports.
+// Named selectors for the E2E specs, in one place. The runtime's own
+// HA-internal selectors live in src/editor/haSelectors.js; the specs keep
+// this separate list so the browser-side code never imports src.
 //
 // Each entry says what it finds and which spec/feature degrades if it breaks.
 
@@ -20,15 +18,14 @@ export const HUI_DIALOG_EDIT_CARD = 'hui-dialog-edit-card';
 export const HUI_ENTITIES_CARD = 'hui-entities-card';
 /**
  * The seeded button card — a SIMPLE (no option-tab row) editor. The canonical case
- * the CHECKPOINT B feel-check failed on; companion-discovery-path.spec opens THIS
+ * for the small editor; companion-discovery-path.spec opens THIS
  * (not the taller entities card) to cover the small/simple-editor failure mode.
  */
 export const HUI_BUTTON_CARD = 'hui-button-card';
 /**
  * Per-card wrapper candidates in 2026.6 edit mode (each card renders its own
- * visible "Edit" button inside a wrapper — RUN CHECKPOINT 2 round 1 finding).
- * Ordered most-specific-first; which one 2026.6 actually uses is verified at
- * the checkpoint, with a layout-based fallback in editor-helpers.mjs.
+ * visible "Edit" button inside a wrapper).
+ * Ordered most-specific-first, with a layout-based fallback in editor-helpers.mjs.
  */
 export const EDIT_MODE_CARD_WRAPPERS = ['hui-card-edit-mode', 'hui-card-options', 'hui-card'];
 /** The seeded markdown card — its VISUAL editor embeds a CodeMirror template field (inside

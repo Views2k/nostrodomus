@@ -23,7 +23,7 @@ export function createNativeHighlightLifecycle(deps) {
   } = deps;
   const CODEMIRROR_NATIVE_HIGHLIGHT_BASE_STYLE_ID = "nostrodomus-cm-native-highlight-base-v1";
 
-// important-override registry (INSTRUCTIONS.md §11.9) — native-highlight base fg/caret css.
+// important-override registry — native-highlight base fg/caret css.
 
 // external rules overridden: CodeMirror theme fg/caret-color and HA theme universal
 

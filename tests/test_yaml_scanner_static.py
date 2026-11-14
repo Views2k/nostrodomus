@@ -71,8 +71,8 @@ for token in [
 
 # v31.6.370: currentYamlPath/yamlBranchState are no longer runtime-local bodies; the runtime calls
 # the extracted scanner/runtime-context helpers directly. The "...FromYamlScannerModule" /
-# "...FromRuntimeContextAdapterModule" import aliases were the original wiring form; commit e509f8f
-# ("kill FromModule import-alias ceremony") renamed them to plain identifiers. The wiring invariant
+# "...FromRuntimeContextAdapterModule" import aliases were the original wiring form;
+# they are plain identifiers now. The wiring invariant
 # is unchanged — only the alias spelling moved — so check the current real wiring:
 #   * currentYamlPath: imported from the scanner into the runtime-context adapter, which the legacy
 #     runtime drives (the extracted YAML-path helper is wired through runtimeContextAdapter.js).

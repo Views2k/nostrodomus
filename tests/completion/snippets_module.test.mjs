@@ -16,7 +16,7 @@ describe('completion snippets module', () => {
     assert.equal(hasSnippetPlaceholders('price: $ value'), false);
   });
 
-  it('keeps balanced braces in a placeholder default (card_mod CSS / Jinja) without truncating (bug hunt)', () => {
+  it('keeps balanced braces in a placeholder default (card_mod CSS / Jinja) without truncating', () => {
     // Previously the [^}]* default stopped at the first inner `}`, so a card_mod CSS block default
     // lost its closing brace and the rest leaked into the document as literal text.
     const css = parseSnippetTemplate('style: |\n  ${1:.card { color: red; }}');

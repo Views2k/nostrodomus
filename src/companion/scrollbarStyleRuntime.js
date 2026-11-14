@@ -3,17 +3,15 @@
 // Reproduces v17's two injected scrollbar stylesheets byte-identically (the frozen
 // scrollbar_css_byte_identity baseline is the proof) under the same element ids, and
 // sources the placement (which roots) from the registry. The CSS keeps v17's
-// `--nostrodomus-codebox-scrollbar-*` variable names so a theme can still override them
-// (D-THEME-BOUNDARY).
+// `--nostrodomus-codebox-scrollbar-*` variable names so a theme can still override them.
 //
 // The layer is active by default (`SCROLLBAR_SHIPPED_ACTIVE = true`) and is gated by
 // companionLayerActive (force-dormant / external-companion / force-active escape hatch).
 // When the gate resolves inactive, applyForEditor is a verified no-op (no DOM write), so a
 // dormant install changes nothing user-visible.
 //
-// The CSS constants between the @gen markers are produced from the frozen companion
-// source by tools/absorb (do not hand-edit); the byte-identity test fails if they
-// drift by a byte.
+// The CSS constants between the @gen markers are copied from the frozen companion
+// source (do not hand-edit); the byte-identity test fails if they drift by a byte.
 
 import { HA_FORM, HA_SELECTOR, HA_YAML_EDITOR, HUI_DIALOG_EDIT_CARD } from '../editor/haSelectors.js';
 import { OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR } from '../editor/overlayRoot.js';
@@ -51,7 +49,7 @@ export const NO_WRAP_STYLE_ID = 'nostrodomus-editor-v17-2-learned-style-no-wrap'
 // the v17 byte-identity baseline (CODEBOX_CSS untouched).
 export const CONTENT_FIT_STYLE_ID = 'nostrodomus-editor-v17-2-learned-style-content-fit';
 
-// §11.9 new !important — registry-owned external-rule block:
+// New !important — registry-owned external-rule block:
 //   Owner:    remove-fullscreen-button (keep find-and-replace, remove only fullscreen).
 //   Reason:   HA's ha-code-editor toolbar (in the ha-code-editor shadow root) renders an "Enter fullscreen"
 //             button (toggles to "Exit fullscreen"); with the 54vw overflow it also rode outside the frame.
@@ -62,7 +60,7 @@ export const CONTENT_FIT_STYLE_ID = 'nostrodomus-editor-v17-2-learned-style-cont
 //   Verify:   the fullscreen button is gone; Undo/Redo/Copy/Find-and-replace remain.
 export const FULLSCREEN_HIDE_STYLE_ID = 'nostrodomus-editor-fullscreen-button-hide';
 
-// §11.9 new !important — registry-owned external-rule block:
+// New !important — registry-owned external-rule block:
 //   Owner:    kill-native-autocomplete (suppress HA's native suggestion box behind Nostrodomus's pane).
 //   Reason:   HA's ha-code-editor (CodeMirror 6) renders its native entity/icon autocomplete as a
 //             `.cm-tooltip-autocomplete` tooltip (with a `.cm-completionInfo` detail panel) inside the
@@ -369,7 +367,7 @@ const DIALOG_ROOT_CSS = `
 // ha-dialog's shadow root (one level deeper than DIALOG_ROOT_CSS) so it can reach the
 // real modal surface, wa-dialog's native top-layer `<dialog part="dialog">`.
 //
-// §11.9 new !important — registry-owned external-rule block:
+// New !important — registry-owned external-rule block:
 //   Owner:    companion-dialog-sizing (companion dialog sizing on HA 2026.6).
 //   Reason:   WebAwesome's wa-dialog carries a UA/default size on ::part(dialog) —
 //             `--width: min(1024px, 95vw, …)` plus a content-driven (auto) height and the
@@ -512,7 +510,7 @@ export const CONTENT_FIT_CSS = `
       }
     `;
 
-// Fullscreen-button hide (FULLSCREEN_HIDE_STYLE_ID): see the §11.9 block at the id declaration. Targets only
+// Fullscreen-button hide (FULLSCREEN_HIDE_STYLE_ID): see the external-rule block at the id declaration. Targets only
 // the fullscreen toggle (Enter/Exit) on either host tag (ha-button / ha-icon-button) by aria-label and title,
 // so it never touches Undo/Redo/Copy/Find-and-replace. Injected into the code root ungated (covers panel
 // editors too). HA's Ctrl+F search is unaffected (only the button goes).
@@ -529,7 +527,7 @@ export const FULLSCREEN_HIDE_CSS = `
       }
     `;
 
-// Native-autocomplete hide (NATIVE_AUTOCOMPLETE_HIDE_STYLE_ID): see the §11.9 block at the id declaration.
+// Native-autocomplete hide (NATIVE_AUTOCOMPLETE_HIDE_STYLE_ID): see the external-rule block at the id declaration.
 // Targets only the native completion tooltip + its detail panel, not `.cm-tooltip` in general (hover/lint
 // tooltips keep working) and not Nostrodomus's own pane (`#nostrodomus-completions-root`, a div).
 // All of these mount inside the ha-code-editor shadow root (the code root this sheet injects into), and HA
@@ -546,7 +544,7 @@ export const NATIVE_AUTOCOMPLETE_HIDE_CSS = `
       }
     `;
 
-// §11.9 new !important — registry-owned external-rule block:
+// New !important — registry-owned external-rule block:
 //   Owner:    preview-fill + zoom (Sections-view card preview on HA 2026.6).
 //   Reason:   The frozen DIALOG_ROOT_CSS sets `.element-preview { display:flex;
 //             justify-content:center; align-items:flex-start }`. A `hui-section` /
@@ -580,7 +578,7 @@ const PREVIEW_FILL_CSS = `
       }
     `;
 
-// §11.9 new !important — registry-owned external-rule block:
+// New !important — registry-owned external-rule block:
 //   Owner:    editor-gutter-fix.
 //   Reason:   The frozen DIALOG_ROOT_CSS sets `.element-editor.ha-scrollbar { padding-right: 18px }`.
 //             That 18px is a right-only gutter beside the styled codebox's scrollbar; it reads as a
@@ -603,7 +601,7 @@ const EDITOR_GUTTER_CSS = `
       }
     `;
 
-// §11.9 new !important — registry-owned external-rule block:
+// New !important — registry-owned external-rule block:
 //   Owner:    stacked card dialog (window narrower than 1000px).
 //   Reason:   The frozen DIALOG_ROOT_CSS gives .element-editor 54vw and .element-preview
 //             44vw - 44px, the widths of the side-by-side layout. Below 1000px Home Assistant
@@ -636,7 +634,7 @@ export const STACKED_PANES_CSS = `
       }
     `;
 
-// §11.9 registry-owned external-rule block (opt-in: style.hideEditorWarnings, default off):
+// Registry-owned external-rule block (opt-in: style.hideEditorWarnings, default off):
 //   Owner:    warning-hide toggle.
 //   Reason:   When the user opts in, fully hide the editor warning/alert family. Narrowed to the
 //             ha-alert element only — an earlier version also matched the broad, unscoped
@@ -646,7 +644,7 @@ export const STACKED_PANES_CSS = `
 //             down" glitch on toggle. `display:none` on the precise <ha-alert> host hides it cleanly
 //             without collapsing any layout container. Because the default badge sheet already takes
 //             ha-alert out of flow (position:absolute), toggling to this display:none causes no reflow.
-//   Removal:  drop with the rest of the v17 editor-chrome layer (D-THEME-BOUNDARY), or when a
+//   Removal:  drop with the rest of the v17 editor-chrome layer, or when a
 //             later change replaces this with the grouped per-type warning toggles.
 //   Verify:   `style.hideEditorWarnings` on hides the editor alerts; off (default) shows the badge.
 export const WARNING_HIDE_CSS = `
@@ -1111,7 +1109,7 @@ export function createScrollbarStyleRuntime(deps = {}) {
     const waDialogRoot = waDialogShadowRootForDialog(dialog);
     const warningRoots = nestedEditorRootsForDialog(dialog);
     // CODEBOX_CSS / NO_WRAP carry the dialog's 54vw/94vh geometry — only inject them into the
-    // code root when this editor actually lives in the card-edit dialog (Issue #1). A panel
+    // code root when this editor actually lives in the card-edit dialog. A panel
     // editor (no HUI_DIALOG_EDIT_CARD ancestor) keeps its native full-width geometry.
     // Inside the dialog that geometry is the main codebox's only. The main editor is always
     // wrapped in ha-yaml-editor and never inside a form control; any other editor there (a code

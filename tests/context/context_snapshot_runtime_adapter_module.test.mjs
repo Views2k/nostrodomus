@@ -12,7 +12,7 @@ import {
   normalizeContextSnapshot,
 } from '../../src/context/contextSnapshotRuntimeAdapter.js';
 
-test('ContextSnapshot runtime adapter keeps the Stage 1D dry-run contract shape', () => {
+test('ContextSnapshot runtime adapter keeps the dry-run contract shape', () => {
   const contract = createContextSnapshotContract();
   assert.equal(contract.version, 1);
   assert.equal(contract.language, '');
@@ -108,7 +108,7 @@ test('ContextSnapshot runtime adapter module remains pure browser-free source', 
   assert.doesNotMatch(text, /\bwindow\b|\bdocument\b|localStorage|sessionStorage|fetch\s*\(|XMLHttpRequest|new\s+MutationObserver|requestAnimationFrame|setTimeout|setInterval/);
 });
 
-test('dry-run snapshot locates the cursor in a doc longer than the 20000-char scan window (bug hunt)', () => {
+test('dry-run snapshot locates the cursor in a doc longer than the 20000-char scan window', () => {
   // The doc is tail-sliced to the scan window; the cursor pos is in ORIGINAL-doc coordinates and must
   // be shifted by the dropped-prefix length. Put the cursor on a distinctive line that is inside the
   // window but NOT at the very end, so a missing offset (old bug: clamp to window end) is visible.

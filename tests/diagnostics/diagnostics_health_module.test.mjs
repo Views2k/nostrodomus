@@ -107,7 +107,7 @@ test('health fails required checks and bounds cache entries through injected lim
   assert.equal(report.checks.find(c => c.name === 'cache-bounded')?.detail, '2 cache entries');
 });
 
-test('health counts a missing critical selector-seam as a contextual warning (bug hunt)', () => {
+test('health counts a missing critical selector-seam as a contextual warning', () => {
   const base = {
     enabled: true, installedAt: 'i', library: { sources: [] }, index: { byLang: {} },
     providers: [{ id: 'snippet' }], runtimeCache: { hasHass: true },

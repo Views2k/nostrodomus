@@ -32,7 +32,7 @@ for token in [
 ]:
     require(token in RUNTIME_OWNER, f'runtime owner imports fast-lane diagnostics helper: {token}')
 
-# Phase 2: loggingRuntime no longer imports diagnostics; the startup-badge helper is
+# loggingRuntime does not import diagnostics; the startup-badge helper is
 # injected into its factory from the composition root (main.legacy.js), keeping core/ pure.
 require("import { startupBadgeStatusFromHealth }" not in LOGGING_RUNTIME, 'logging owner no longer imports the startup badge helper (injected instead)')
 require("createLoggingRuntime({ W, health, startupBadgeStatusFromHealth, debugModeEnabled }" in LOGGING_RUNTIME, 'logging owner accepts startupBadgeStatusFromHealth as an injected factory param')
@@ -85,7 +85,7 @@ for preserved in [
     'return runtimeReader({ ...payload });',
     'const reader = W.__nostrodomus?.embeddedLanguageDetector?.read || W.__nostrodomus?.embeddedLanguageDiagnostics;',
 ]:
-    require(preserved in RUNTIME_OWNER, f'embedded-language Stage C4 runtime token preserved in runtime owner: {preserved}')
+    require(preserved in RUNTIME_OWNER, f'embedded-language runtime token preserved in runtime owner: {preserved}')
 
 for forbidden in ['window.', 'document.', 'localStorage', 'sessionStorage', 'fetch(', 'sendBeacon', 'eval(', 'new Function', 'innerHTML']:
     require(forbidden not in MODULE, f'fast-lane helper avoids browser/runtime token: {forbidden}')

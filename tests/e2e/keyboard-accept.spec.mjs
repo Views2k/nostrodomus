@@ -1,7 +1,6 @@
 // keyboard-accept.spec — accessibility: the completion popup is drivable by keyboard alone — ArrowDown
-// moves the active item and Enter accepts it into the document (no mouse). The unbuilt a11y items —
-// keyboard panel repositioning, aria-activedescendant live-region — stay documented in KNOWN_ISSUES.
-// Append-to-valid-config setup (no typeless HA crash). Authored on-branch; owner-run.
+// moves the active item and Enter accepts it into the document (no mouse).
+// Append-to-valid-config setup (no typeless HA crash).
 
 import { test, expect, openDashboard } from './session.mjs';
 import {

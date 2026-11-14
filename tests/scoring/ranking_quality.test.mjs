@@ -1,6 +1,6 @@
 // Completion RANKING QUALITY suite.
 //
-// Philosophy (binding, owner 2026-06-22): assert INTENDED behavior — what a USER should get,
+// Philosophy: assert INTENDED behavior — what a USER should get,
 // derived from how prefix/fuzzy matching SHOULD behave + what is most useful in that YAML
 // context — NOT recorded output. Observe real behavior, but if a clearly-right answer LOSES,
 // that is a ranking finding to REPORT, never encoded here as "expected". Mixed assertion types
@@ -198,7 +198,7 @@ test('quality (dpRanking ON): within one tier, the contiguous-token match leads'
 // universal "correct"). With the WEAKER match recently accepted: on DEFAULT recency wins (the
 // weaker climate.basement leads); with dpRanking ON, match quality wins (switch.mt_relay leads).
 // This does NOT claim either is the one right answer — whether match-quality ranking should ship
-// ON by default is a PRODUCT decision for the owner. The suite exists to make the gap visible.
+// ON by default is a PRODUCT decision. The suite exists to make the gap visible.
 // =====================================================================================
 test('decision item: recency leads on the DEFAULT path; dpRanking ON makes match quality lead', () => {
   const strong = ent('switch.mt_relay');

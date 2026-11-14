@@ -1,4 +1,4 @@
-// P2: the host-tag → surface map (the pure core of surface derivation). Also guards that every
+// The host-tag → surface map (the pure core of surface derivation). Also guards that every
 // mapped surface id is a real member of contextResolver.SURFACES (they must stay in lockstep, or a
 // surface would never be admitted by resolveContext).
 

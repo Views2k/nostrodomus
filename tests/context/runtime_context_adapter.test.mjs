@@ -237,7 +237,7 @@ test('explicit Ctrl+Space opens on a key line that already has a colon AFTER the
   // Caret at the start of an existing "icon: home": the colon + value sit AFTER the caret, so the
   // before-caret prefix is empty and the line "looks complete". Pre-fix, the existing-key-context guard
   // ran BEFORE the `else if (explicit)` branch, so an EXPLICIT Ctrl+Space was suppressed too — the
-  // popup opened only at end-of-line (the owner's "only opens at the end of text" bug). An explicit
+  // popup opened only at end-of-line. An explicit
   // invoke must always offer suggestions.
   const a = cursor('__CURSOR__icon: home');
   const aExplicit = detectRuntimeContext(a.source, a.pos, { triggerKind: 'explicit', settings: defaultSettings });
@@ -262,7 +262,7 @@ test('explicit Ctrl+Space opens on a key line that already has a colon AFTER the
 test('explicit Ctrl+Space opens at a kindless value position (pre-dot entity dead zone)', () => {
   // 'humidity: sens' — entity-shaped typing BEFORE the dot: the domain-prefix lane cannot
   // classify yet, valueKind is '', and the kindless-value else swallowed even an explicit
-  // invoke ("No suggestions" at exactly the owner's cursor). Ctrl+Space must always offer.
+  // invoke ("No suggestions" at that cursor). Ctrl+Space must always offer.
   const a = cursor('type: custom:some-card\nhumidity: sens__CURSOR__');
   const aExplicit = detectRuntimeContext(a.source, a.pos, { triggerKind: 'explicit', settings: defaultSettings });
   assert.equal(aExplicit.yamlRole, 'value');

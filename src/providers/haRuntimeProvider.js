@@ -39,7 +39,7 @@ function guardedRead(read, fallback) {
   try {
     return read();
   } catch {
-    // Annotated fail-dark catch (RUNTIME_DATA.md W4): hostile host objects —
+    // Fail-dark catch: hostile host objects —
     // throwing getters, proxies, partial hass, malformed registry entries —
     // must degrade to fewer suggestions, never an exception, never console
     // noise, never a typing stall.
@@ -263,7 +263,7 @@ function serviceFieldsFor(data, serviceId, limits) {
   }
 
 // Source one HA registry collection (hass.areas/devices/floors/labels). Each is an object
-// keyed by id, the value carries a human name. Pure/fail-dark per RUNTIME_DATA.md W4: a
+// keyed by id, the value carries a human name. Pure and fail-dark: a
 // hostile/partial/throwing registry degrades to {ids:[], names:{}} (fewer suggestions, never an
 // exception). Ids are validated, sorted, capped; one bad entry degrades that entry only.
 export function registryCatalog(registry, options = {}) {

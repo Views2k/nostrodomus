@@ -8,8 +8,8 @@ ADAPTERS = (ROOT / 'src' / 'composition' / 'mainLegacyAdapters.js').read_text(en
 FACTORIES = (ROOT / 'src' / 'composition' / 'mainLegacyRuntimeFactories.js').read_text(encoding='utf-8', errors='replace')
 MODULE_PATH = ROOT / 'src' / 'ui' / 'settingsPanelRuntime.js'
 SETTINGS_MODULES_DIR = ROOT / 'src' / 'ui' / 'settings'
-# The settings panel runtime is a composer over src/ui/settings/ modules
-# (UI_DECOMP P1); the owned settings body spans the composer plus its modules.
+# The settings panel runtime is a composer over src/ui/settings/ modules;
+# the owned settings body spans the composer plus its modules.
 MODULE = MODULE_PATH.read_text(encoding='utf-8', errors='replace') if MODULE_PATH.exists() else ''
 if SETTINGS_MODULES_DIR.exists():
     for _module_path in sorted(SETTINGS_MODULES_DIR.glob('*.js')):

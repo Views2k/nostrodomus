@@ -137,7 +137,7 @@ test('keep-green: stack cards and nested condition lists', () => {
   assertHas(rowsAt('type: vertical-stack\ncards:\n  - type: custom:button-card\n    entity: light.a\n  - type: tile\n    '), CARD_KEYS, 'in a card after a button-card');
 });
 
-// ---- review cases: the path names the wrong block, or no block ----
+// ---- the path names the wrong block, or no block ----
 
 const CSS_ONLY = ['background:', 'padding:', 'border-radius:'];
 const ROOT_ONLY = ['triggers:', 'mode:', 'sequence:'];
@@ -245,7 +245,7 @@ test('the enclosing block is found more than 2400 characters above, and a cut fi
   assert.equal(enclosingBlockKey('actions:\n- if:\n  - '), 'if');
 });
 
-// ---- second review: condition steps, card roots, block scalars, entity rows ----
+// ---- condition steps, card roots, block scalars, entity rows ----
 
 function rowsAtPos(doc, pos) {
   const ctx = detectRuntimeContext(doc, pos, { triggerKind: 'explicit' });
@@ -360,7 +360,7 @@ test('openers with a tag before an anchor still name the block', () => {
   assertHas(labels, ACTION_STEP, 'under actions: !!seq &a');
 });
 
-// ---- third review: fragments, button-cards under card:, tap action columns, legacy roots ----
+// ---- fragments, button-cards under card:, tap action columns, legacy roots ----
 
 test('a column-0 default: of a choose step fragment gets action-step keys', () => {
   const fragment = 'choose:\n  - conditions:\n      - condition: state\n        entity_id: light.a\n        state: "on"\n    sequence:\n      - action: light.turn_off\n';

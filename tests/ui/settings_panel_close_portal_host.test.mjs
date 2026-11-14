@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import { createSettingsPanelRuntime } from '../../src/ui/settingsPanelRuntime.js';
 import { appendSettingsChildren, clampSettingsPosition, clampSettingsSize, createSettingsElement, settingsTitle } from '../../src/ui/settingsPanel.js';
 
-// Tier A finding A3, teardown half: closeSettings removed only the panel, so the
+// closeSettings removed only the panel, so the
 // full-viewport portal host it mounts into was never removed by anything. The stub ctx
-// mirrors the frozen parity test's pattern (which itself must never be modified).
+// mirrors the frozen parity test's pattern.
 function fakeDocument() {
   return {
     createElement(tag) {

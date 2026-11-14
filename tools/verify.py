@@ -247,8 +247,7 @@ except Exception as exc:
     node_result = f"node check error: {exc}"
     errors.append(node_result)
 
-# v31.4 gate: every active extracted source file must parse before future
-# extractions can be trusted. The legacy IIFE remains checked indirectly via dist.
+# Every extracted source file must parse. The legacy IIFE is checked indirectly via dist.
 src_files = sorted(
     p for p in (ROOT / "src").rglob("*.js")
     if p.name != "main.legacy.js" and "extract-candidates" not in p.parts
@@ -348,11 +347,7 @@ run_release_mode_checks()
 # A static test is skipped ONLY when its OWN body asserts an EXACT, non-current version /
 # internal_version EQUALITY (a genuinely frozen historical pin awaiting a >= floor migration).
 # Dynamic current-version checks, ``>=`` floors, and ``not in`` absence checks are NOT pins and
-# run normally. (The former over-broad substring heuristic — which parked a test merely for
-# MENTIONING an older version anywhere in its source or a runpy-loaded tool — and the temporary
-# P1 PENDING_STATIC_MIGRATION bridge it required are both gone now that the P1 migration is
-# complete: every previously-parked static test was repaired to its current module home and
-# un-skipped.)
+# run normally. Merely mentioning an older version anywhere in the source does not skip a test.
 
 
 def test_pins_non_current_version(test_path):

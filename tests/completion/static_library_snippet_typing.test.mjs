@@ -4,8 +4,8 @@ import test from 'node:test';
 import { buildIndex, loadLibrary } from '../../src/providers/staticLibraryProvider.js';
 import { createCompletionInsertionRuntime } from '../../src/completion/insertionRuntime.js';
 
-// Tier A finding A1: the webdev-pack rows that carry ${N:...} templates must be
-// typed 'snippet', or the finding-1A gate (parseSnippetTemplate only for snippet
+// The webdev-pack rows that carry ${N:...} templates must be
+// typed 'snippet', or the snippet gate (parseSnippetTemplate only for snippet
 // items) makes accepting them insert the literal "${1:click}" text.
 const TEMPLATE_ROW_IDS = Object.freeze({
   js: [
@@ -103,7 +103,7 @@ test('accepting a webdev template row expands placeholders instead of inserting 
   assert.equal(jsonInserted, '"title": "Title"');
 });
 
-test('bare $N in a non-snippet value still inserts verbatim (finding 1A protection)', () => {
+test('bare $N in a non-snippet value still inserts verbatim', () => {
   const view = createView('');
   const { runtime } = runtimeFor(view, 'yaml');
   assert.equal(runtime.insertItem({ label: 'mqtt topic', insert: 'mqtt/$0/state', type: 'card' }), true);

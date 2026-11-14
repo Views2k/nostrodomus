@@ -1,9 +1,8 @@
-// ABSORB P0 — VERBATIM transplant of the runtime coordinator installer.
+// VERBATIM transplant of the runtime coordinator installer.
 //
 // Generated once from reference/companions/nostrodomus_editor_v17_2_learned_reapply.js
-// (byte-identical to nostrodomus-picker-safe.js, proven in P0). This fixture is the
-// "transplant-copy of the UNMODIFIED companion code" the P0 golden baselines run
-// against. coordinator_api_parity.test.mjs asserts this body is byte-identical to
+// (the installer in nostrodomus-picker-safe.js is byte-identical). This fixture is the
+// copy of the unmodified companion code the golden baselines run against. coordinator_api_parity.test.mjs asserts this body is byte-identical to
 // the frozen companion source, so it can never silently drift.
 //
 // The installer touches only globalThis / performance / Date, so it runs as-is in

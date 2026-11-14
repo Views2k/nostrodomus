@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { placeCompletionPopupAtCursor, removeCompletionOverlay } from '../../src/completion/popupRuntime.js';
 
-// completion#10. The open list followed only the editor's own scroller. A scroll of the dialog
+// The open list followed only the editor's own scroller. A scroll of the dialog
 // body or the panel around the editor, or a window resize, moved the editor and left the list
 // where it was; a caret scrolled out of the editor left the list pinned to an edge.
 

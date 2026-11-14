@@ -1,5 +1,5 @@
-// editor-completion.spec (HARNESS P2.2) — the product's core promise
-// against the real CodeMirror for the first time: open the real card edit
+// editor-completion.spec — the product's core promise
+// against the real CodeMirror: open the real card edit
 // dialog, type in the YAML editor, see Nostrodomus suggestions; Ctrl+Space
 // toggles, Escape closes, accepting inserts text into the document.
 
@@ -13,8 +13,8 @@ import {
 
 // Factory-default trigger is Ctrl+Space (the install banner logs
 // `trigger: Ctrl+Space`; plain typing only auto-opens once a setting like
-// keepOpen/autoOpenOnFocus is on — the owner's tuned real instance). This
-// spec exercises the honest fresh-install path: type a prefix, Ctrl+Space to
+// keepOpen/autoOpenOnFocus is on). This
+// spec exercises the fresh-install path: type a prefix, Ctrl+Space to
 // open, suggestions appear, accept inserts.
 test('editor completion: prefix + Ctrl+Space suggests, Escape closes, reopen, accept inserts', async ({ page }) => {
   const stamp = await openDashboard(page);

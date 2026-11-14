@@ -5,7 +5,7 @@ import { ensureCompletionOverlay } from '../../src/completion/popupRuntime.js';
 import { nostrodomusCodeEditorOverlayRoot } from '../../src/editor/overlayRoot.js';
 import { uiAccentVarsFromSettings } from '../../src/ui/codeboxStyle.js';
 
-// completion#22. One refresh asks for the list box three or four times. Each time resolved the
+// One refresh asks for the list box three or four times. Each time resolved the
 // overlay root again, which costs an active-dialog lookup with layout reads. While the box sits
 // in the overlay host of the bound editor's own root, the root cannot have changed.
 

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { pageMayHaveEditor } from '../../src/editor/activeEditor.js';
 
-// codebox#14, completion#17, editor#15, hotpaths#12: the check that tells a plain dashboard from
+// The check that tells a plain dashboard from
 // a page where a style pass can still find, repaint or clean up after an editor.
 
 function installDom({ dialogs = [], pathname = '/lovelace/0' } = {}) {

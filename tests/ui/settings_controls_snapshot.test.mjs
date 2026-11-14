@@ -1,10 +1,9 @@
-// UI_DECOMP P0d — settings control-factory structure snapshots.
+// Settings control-factory structure snapshots.
 //
 // Structure-only snapshots (tagName + className + dataset keys + children count
 // — deliberately NOT full serialization) of every settings DOM control factory,
-// captured against the pre-decomposition runtime (v0.1.71) with the real
-// createSettingsElement helper under a stub document. This test must not be
-// modified during the UI_DECOMP order.
+// built with the real createSettingsElement helper under a stub document. A refactor
+// that moves code must keep these snapshots unchanged.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';

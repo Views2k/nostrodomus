@@ -28,7 +28,6 @@ SOURCE_VISUAL_OWNER_FILES = [
 DOCS = [
     ROOT / "docs" / "contracts" / "STYLE_OWNERSHIP_CONTRACT.md",
     ROOT / "docs" / "contracts" / "VISUAL_LAYER_BASELINE_CONTRACT.md",
-    ROOT / "docs" / "VISUAL_REGRESSION_WORKFLOW.md",
 ]
 
 REQUIRED_RUNTIME_TOKENS = [
@@ -60,12 +59,6 @@ REQUIRED_DOC_TOKENS = {
     "VISUAL_LAYER_BASELINE_CONTRACT.md": [
         "::before = border and glow owner",
         "::after  = frosted blurry surface/backdrop owner",
-        "runtime modularization remains paused",
-    ],
-    "VISUAL_REGRESSION_WORKFLOW.md": [
-        "visual_layer_doctor.py",
-        "Do not combine visual CSS changes with runtime extraction",
-        "afterBackdrop",
     ],
 }
 

@@ -6,6 +6,14 @@
 
 export const CHANGELOG_SUMMARY = Object.freeze([
   {
+    version: "0.1.278",
+    title: "Reference pages and comments brought up to date",
+    bullets: [
+      "No change in behavior. The reference pages were checked against the code, and CHANGELOG.md lists what changed in each version.",
+      "Firefox is not supported yet: while you type in the editor there, Home Assistant shortcuts can open in the middle of a word. Use a Chromium-based browser.",
+    ],
+  },
+  {
     version: "0.1.277",
     title: "Insertion, list and syntax fixes; less work on idle pages",
     bullets: [
@@ -41,15 +49,6 @@ export const CHANGELOG_SUMMARY = Object.freeze([
       "Plain YAML lines are colored as YAML: comments at the end of a line, true and false, entity ids and card names no longer take CSS colors, and text inside a multi-line value is no longer colored as CSS.",
       "A click in the card dialog now triggers four style checks instead of thirteen, Settings and Developer Tools pages without an editor no longer start a four second search, and the visual editor tab stops searching for a code editor after a few seconds.",
       "Keys and clicks on the dialog's own buttons no longer act on the suggestion list, manual trigger mode keeps its list while you type, the list no longer covers the line you are typing in short editors, and the Copy and Log buttons work on plain HTTP installs.",
-    ],
-  },
-  {
-    version: "0.1.273",
-    title: "Suggestions that follow the block you are in",
-    bullets: [
-      "Key suggestions now come from the block the cursor is in. Action and condition steps below a triggers block no longer get trigger keys, cards after a conditional card no longer get condition keys, and text inside a multi-line value gets no key suggestions.",
-      "A colon typed inside a value (an mdi icon, a custom card type) keeps the list open, a colon after a fully typed key no longer swaps it for a longer one, keys pressed with Ctrl, Shift or Alt go to the editor, and a list snippet accepted right after triggers, actions or conditions keeps its dash.",
-      "Typing in the visual editor and opening the card editor do less work: the card preview is no longer scanned for warnings, and the editor is no longer searched for again on every key on narrow screens.",
     ],
   },
 ]);

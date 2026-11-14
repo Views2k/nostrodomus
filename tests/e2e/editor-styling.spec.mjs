@@ -1,9 +1,9 @@
-// editor-styling.spec (HARNESS P2.4) — with the real editor open, the
+// editor-styling.spec — with the real editor open, the
 // host-owned codebox chrome is applied per STYLE_OWNERSHIP_CONTRACT.md
 // (`ha-code-editor`/`:host` owns the layers: ::before border/glow, ::after
 // frosted surface, isolation: isolate; CodeMirror panes stay transparent),
-// and scrollHeight is stable across 3 seconds of idle. [Would have caught:
-// the scroll-jiggle/style-clobber bug.]
+// and scrollHeight is stable across 3 seconds of idle (a scroll jiggle or a
+// clobbered style fails this).
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';

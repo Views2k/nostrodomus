@@ -62,7 +62,6 @@ function harness(stateOverrides = {}) {
   return { state, calls, runtime, press };
 }
 
-// completion#14
 test('keys that belong to an input method composition are left to the editor', async () => {
   const { state, calls, runtime, press } = harness();
   await runtime.open(true);

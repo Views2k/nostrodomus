@@ -1,8 +1,8 @@
-// Shared editor choreography for the P2 specs: enter dashboard edit mode,
+// Shared editor choreography for the specs: enter dashboard edit mode,
 // open the real card edit dialog on the seeded entities card, switch to the
-// YAML code editor, and drive the Nostrodomus completion popup. Real-DOM timing
-// here is learned at RUN CHECKPOINT 2, not guessed — keep every wait an
-// explicit HA-ready signal, never a sleep (retries: 0 is binding).
+// YAML code editor, and drive the Nostrodomus completion popup. The real-DOM timing
+// here was measured on a running instance. Keep every wait an
+// explicit HA-ready signal, never a sleep (the suite runs with retries: 0).
 
 import { expect } from '@playwright/test';
 import {
@@ -18,7 +18,7 @@ import {
 /**
  * The seeded entities card's own "Edit" button. In 2026.6 edit mode every
  * card renders a visible per-card Edit button (clicking the card body does
- * NOT open the editor — RUN CHECKPOINT 2 round 1 finding), so the button
+ * NOT open the editor), so the button
  * must be scoped to THIS card's wrapper: the page shows one per card.
  * Structural scoping first (wrapper candidates), geometric fallback (the
  * button sits directly under the card; :below() sorts by distance).
@@ -55,8 +55,7 @@ export async function openSeededCardCodeEditor(page, stamp, { cardSelector = HUI
   const editButton = await cardEditButton(page, cardSelector, cardText);
   await editButton.click();
 
-  // The dialog name is unverified against 2026.6 until it actually opens
-  // (round 1 never got here). On timeout, enumerate dialog-like elements so
+  // The dialog name can change between HA versions. On timeout, enumerate dialog-like elements so
   // a rename is diagnosable from the failure message alone.
   const dialog = page.locator(HUI_DIALOG_EDIT_CARD);
   try {
@@ -97,11 +96,10 @@ export async function openSeededCardCodeEditor(page, stamp, { cardSelector = HUI
   if ((await codeEditor.count()) === 0 || !(await codeEditor.first().isVisible())) {
     await showCode.first().click();
   }
-  // Arm the dialog lifecycle recorder (round-4 finding: the dialog VANISHES
-  // mid-test in robot runs — present at attach, absent from the whole DOM at
-  // failure time — while surviving for humans). Every input event and the
-  // exact removal moment are timestamped so the killing step or timer names
-  // itself in the next failure.
+  // Arm the dialog lifecycle recorder. The dialog can VANISH mid-test in an
+  // automated run (present at attach, absent from the whole DOM at failure
+  // time). Every input event and the exact removal moment are timestamped so
+  // the killing step or timer names itself in the failure.
   await armDialogLifecycleRecorder(page);
 
   const yaml = dialog.locator(`${HA_CODE_EDITOR} ${CM_CONTENT}`).first();
@@ -275,11 +273,10 @@ async function completionGateDiagnosis(page) {
         healthChecks = { probeError: String(e) };
       }
 
-      // Deep-pierce view-extraction probe. Round 7 contradiction: viewBound
-      // true (the runtime extracts the view from the keydown's composedPath,
-      // which crosses every shadow) while the old structured ha-dialog →
-      // wa-dialog → querySelector probe found nothing — the probe was blind
-      // in the wa-dialog layer, not the runtime. This walks ALL shadow roots
+      // Deep-pierce view-extraction probe. The runtime extracts the view from
+      // the keydown's composedPath, which crosses every shadow, so viewBound can
+      // be true while a structured ha-dialog → wa-dialog → querySelector probe
+      // finds nothing in the wa-dialog layer. This walks ALL shadow roots
       // to locate ha-code-editor / .cm-editor wherever 2026.6 puts it, and
       // reads viewFromEvent's candidate properties on each.
       const looksLikeView = (v) =>

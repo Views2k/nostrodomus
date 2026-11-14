@@ -16,12 +16,12 @@ import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 import { makeHassFixture, FIXTURE_SERVICE_IDS } from '../fixtures/hassFixture.mjs';
 import { makeCustomCardsFixture } from '../fixtures/customCardsFixture.mjs';
 
-// Frozen parity list of the runtimeData() cache surface (RUNTIME_DATA.md P0).
-// New keys may be ADDED by later phases — each addition must be itemized in the
+// Frozen parity list of the runtimeData() cache surface.
+// New keys may be ADDED — each addition must be itemized in the
 // same commit that extends this list. Existing keys/shapes may not change.
-// Additions: P1 (v0.1.80) added `cardMeta` (live custom-card type → {name, description}).
-// Additions: P2 (v0.1.81) added `serviceFields` (service id → capped field descriptor list).
-// Additions: P4 (v0.1.180) added the registry id-lists + name-maps:
+// Additions: v0.1.80 added `cardMeta` (live custom-card type → {name, description}).
+// Additions: v0.1.81 added `serviceFields` (service id → capped field descriptor list).
+// Additions: v0.1.180 added the registry id-lists + name-maps:
 //   areas/areaNames, devices/deviceNames, floors/floorNames, labels/labelNames.
 const RUNTIME_CACHE_PARITY_KEYS = Object.freeze([
   'actions',
@@ -93,8 +93,7 @@ test('entity friendly names are mapped, capped, and fail dark on missing attribu
 });
 
 test('entity completion covers EVERY domain incl. automations/scripts/scenes, with friendly names as detail + keyword', () => {
-  // The owner asked to "make sure nostrodomus properly displays all entities and names of automations
-  // and scripts" — entity sourcing applies no domain filter, so automation./script./scene. flow
+  // Entity sourcing applies no domain filter, so automation./script./scene. flow
   // through like any entity, and their friendly_name rides as sourceDetail + a fuzzy keyword.
   const data = runtimeData(fixtureOptions());
   const rows = runtimeRowsForKind('entity', { runtimeData: () => data });
@@ -124,7 +123,7 @@ test('services are flattened to sorted domain.service ids and capped', () => {
   assert.deepEqual(capped.services, FIXTURE_SERVICE_IDS.slice(0, 3));
 });
 
-test('the service value lane is prefix-aware so late-alphabet services stay reachable (bug hunt 4)', () => {
+test('the service value lane is prefix-aware so late-alphabet services stay reachable', () => {
   const services = {};
   for (let i = 0; i < 600; i += 1) services[`aaa${String(i).padStart(3, '0')}`] = { turn_on: {} };
   services.zwave_js = { set_value: {} };
@@ -139,7 +138,7 @@ test('themes are listed from hass.themes.themes', () => {
   assert.deepEqual(data.themes, ['Dark Mode', 'Solarized', 'ios-dark'].sort());
 });
 
-// --- P4: registry sourcing (areas/devices/floors/labels) ---
+// --- Registry sourcing (areas/devices/floors/labels) ---
 
 test('registries are sourced into the cache: validated, sorted ids + name maps', () => {
   const data = runtimeData(fixtureOptions());
@@ -222,7 +221,7 @@ test('cache hit within TTL returns the same object without re-walking hass', () 
   assert.equal(walks, 2);
 });
 
-// --- Phase 1: live custom-card catalog ---
+// --- Live custom-card catalog ---
 
 const PERSONAL_HARDCODES = [
   'custom:better-thermostat-ui-card',
@@ -299,7 +298,7 @@ test('card-type rows carry the human card name as detail metadata', () => {
   assert.equal(native.meta.sourceDetail, undefined, 'native rows keep their previous metadata shape');
 });
 
-// --- Phase 2: service field & target completion ---
+// --- Service field & target completion ---
 
 // Build a real runtime context the way the live adapter does: doc text with a
 // cursor at the end, classifier-backed branch state included.
@@ -335,7 +334,7 @@ test('serviceFieldCatalog shapes every fixture service correctly', () => {
   assert.equal(lightOn.find(f => f.field === 'rgb_color').selectorKind, 'color_rgb');
   assert.equal(lightOn.find(f => f.field === 'effect').selectorKind, 'select');
 
-  // P6 schemaValues: a `select` field captures its option VALUES (additive — other field keys intact).
+  // schemaValues: a `select` field captures its option VALUES (additive — other field keys intact).
   assert.deepEqual(lightOn.find(f => f.field === 'effect').options, [{ value: 'colorloop', label: '' }, { value: 'random', label: '' }]);
   assert.deepEqual(lightOn.find(f => f.field === 'transition').options, [], 'a number field has no enumerated options');
 
@@ -445,13 +444,13 @@ test('no field suggestions outside data-mapping contexts', () => {
 
   const dataValue = ctxAt('actions:\n  - action: light.turn_on\n    data:\n      transition: ');
   assert.equal(isServiceDataFieldContext(dataValue), false, 'value position inside data is not a field-key context');
-  // P6: the value position IS a service-field VALUE context (distinct from the key context above).
+  // The value position IS a service-field VALUE context (distinct from the key context above).
   assert.equal(isServiceDataFieldValueContext(dataValue), true, 'a service-data field value position is a value context');
   assert.equal(isServiceDataFieldValueContext(nestedUnderField), false, 'a mapping nested under a field is not a field value context');
   assert.equal(isServiceDataFieldValueContext(rootKey), false);
 });
 
-test('P6 schemaValues: a service-field value position completes the field enum options ONLY when the flag is on', () => {
+test('schemaValues: a service-field value position completes the field enum options ONLY when the flag is on', () => {
   const { provider } = fixtureProvider();
   const effectValue = ctxAt('actions:\n  - action: light.turn_on\n    data:\n      effect: ');
 
@@ -470,7 +469,7 @@ test('P6 schemaValues: a service-field value position completes the field enum o
   assert.deepEqual(provider.provide(transitionOn), []);
 });
 
-test('P5 surfaceScope: card-type values are surface-scoped (lovelace only) but only when the flag is on', () => {
+test('surfaceScope: card-type values are surface-scoped (lovelace only) but only when the flag is on', () => {
   const { provider } = fixtureProvider();
   const cardType = ctxAt('type: '); // valueKind card-type, yamlRole value
   // default-OFF: handled regardless of surface — byte-identical.
@@ -511,15 +510,15 @@ test('one runtimeData pass populates card and service-field data from a single h
   const rows = provider.provide(ctxAt('actions:\n  - action: light.turn_on\n    data:\n      '));
   assert.ok(rows.length > 0);
   assert.equal(walkCount(), 1);
-  assert.ok(state.runtimeCache.cards.length > 0, 'same cache carries P1 card data');
-  assert.ok(Object.keys(state.runtimeCache.serviceFields).length > 0, 'same cache carries P2 field data');
+  assert.ok(state.runtimeCache.cards.length > 0, 'same cache carries card data');
+  assert.ok(Object.keys(state.runtimeCache.serviceFields).length > 0, 'same cache carries service field data');
 
   provider.provide(ctxAt('tap_action:\n  action: call-service\n  service: light.turn_on\n  target:\n    entity_id: '));
   provider.provide(ctxAt('actions:\n  - service: notify.notify\n    data:\n      '));
   assert.equal(walkCount(), 1, 'within the TTL no completion request walks hass again');
 });
 
-// --- Phase 3: fail-dark hardening / degradation proof ---
+// --- Fail-dark hardening / degradation proof ---
 
 function withConsoleCapture(run) {
   const calls = [];
@@ -646,7 +645,7 @@ test('serviceFieldCatalog skips throwing services and fields but keeps healthy o
   assert.deepEqual(consoleCalls, []);
 });
 
-test('serviceFieldCatalog flattens HA collapsible field sections (bug hunt 3)', () => {
+test('serviceFieldCatalog flattens HA collapsible field sections', () => {
   // Modern HA (2024.3+) nests optional fields in a { collapsed, fields: {...} } section.
   // The section key is NOT a valid service-data key; only the leaves are.
   const services = {
@@ -701,7 +700,7 @@ test('customCardCatalog skips throwing registry entries but keeps healthy ones',
   assert.deepEqual(hostileWindow.consoleCalls, []);
 });
 
-test('customCardCatalog fail-darks on a hostile array (throwing element getter / iterator) (bug hunt 4)', () => {
+test('customCardCatalog fail-darks on a hostile array (throwing element getter / iterator)', () => {
   // The per-entry guard did not cover the for...of itself: a real array with a throwing index getter
   // or a throwing Symbol.iterator threw straight out and aborted the runtime-data build.
   const throwGetter = [];
@@ -757,7 +756,7 @@ test('hasHass false path returns the degraded static shape', () => {
   }
 });
 
-test('serviceFieldCatalog keeps bare numeric and boolean select options (bug hunt 4)', () => {
+test('serviceFieldCatalog keeps bare numeric and boolean select options', () => {
   // HA select options can be plain numbers/booleans; the string-only branch dropped them, emptying
   // such a field or losing the numeric entries from a mixed list.
   const opts = (arr) => serviceFieldCatalog({ services: { x: { y: { fields: { f: { selector: { select: { options: arr } } } } } } }, limits: SECURITY_LIMITS })['x.y'][0].options.map(o => o.value);

@@ -106,7 +106,7 @@ test('syntax color opacity uses the module-owned Dark+ foreground fallback', () 
   assert.equal(syntaxColorWithOpacity('', 0.5), 'rgba(212, 212, 212, 0.500)');
 });
 
-test('syntaxThemeSaturation is applied exactly once per token, consistently across themes (bug hunt)', () => {
+test('syntaxThemeSaturation is applied exactly once per token, consistently across themes', () => {
   const cobalt = Object.values(STYLE_SYNTAX_PRESETS).find(p => p.label === 'Cobalt');
   // Single application: at 0.35 the key token desaturates once (43%), not twice (the old bug: 18%).
   assert.equal(syntaxThemePalette(cobalt, 0.35).key, 'hsl(188 43% 77%)');

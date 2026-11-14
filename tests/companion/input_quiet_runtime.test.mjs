@@ -1,4 +1,4 @@
-// ABSORB P4 — input-quiet runtime + suppression-gap guard unit tests.
+// Input-quiet runtime + suppression-gap guard unit tests.
 // (The CodeMirror predicate truth table is also frozen in quiet_window_semantics.)
 
 import test from 'node:test';
@@ -53,7 +53,7 @@ test('ACTIVE + quiet: defers the should-be work, flushes it once after the windo
   assert.equal(rt.sharedState.editorInputQuietFlushes, 1);
 });
 
-test('cleanup cancels a pending flush so deferred work never fires after teardown (audit QW8)', () => {
+test('cleanup cancels a pending flush so deferred work never fires after teardown', () => {
   const { rt, advance, pending } = harness({ dormant: false });
   rt.markEditorInputQuiet('typing');
   let ran = 0;
@@ -74,7 +74,7 @@ test('ACTIVE but not quiet: deferDuringTyping runs now (returns false)', () => {
   assert.equal(pending(), 0);
 });
 
-test('multiple defers during one quiet window collapse to a single trailing flush that runs every client (bug hunt 3)', () => {
+test('multiple defers during one quiet window collapse to a single trailing flush that runs every client', () => {
   const { rt, advance } = harness({ dormant: false });
   rt.markEditorInputQuiet('typing');
   // Three DISTINCT clients (distinct reasons) each defer their own work in one window.

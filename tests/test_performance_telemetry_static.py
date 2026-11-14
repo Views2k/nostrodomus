@@ -76,11 +76,9 @@ require(version_tuple >= (0, 1, 13), "PROJECT.json remains at or beyond the v0.1
 # introduced it (the release-specific suffix legitimately changes on later releases).
 require("codebox-frame-owner" in internal or version_tuple > (0, 1, 13), "PROJECT.json internal_version records codebox frame owner (or version advanced beyond the baseline that introduced it)")
 # The performance telemetry policy is documented as local-only with no network reporting.
-# The legacy `performance_telemetry_policy` PROJECT.json key was a monolith-shrink process
-# ledger (tied to the now-deleted MONOLITH.md) and was intentionally removed when
-# PROJECT.json became a slim machine-read surface; the canonical, still-living statement of
-# the no-telemetry/no-network policy is the threat-model ADR.
-THREAT_MODEL = ROOT / "docs/adr/005-threat-model.md"
+# PROJECT.json no longer has a `performance_telemetry_policy` key; the statement of
+# the no-telemetry/no-network policy is in the threat model.
+THREAT_MODEL = ROOT / "docs/THREAT_MODEL.md"
 threat_model = THREAT_MODEL.read_text(encoding="utf-8", errors="replace") if THREAT_MODEL.exists() else ""
 require("no telemetry or external network access" in threat_model and "It must not add telemetry" in threat_model, "threat model documents the local-only / no-network performance telemetry policy")
 

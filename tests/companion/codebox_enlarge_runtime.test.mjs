@@ -1,4 +1,4 @@
-// ABSORB P3 — codebox-enlargement learned memory + bounded tab detection unit tests.
+// Codebox-enlargement learned memory + bounded tab detection unit tests.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -62,7 +62,7 @@ test('runoff repair: a learned-simple dialog DOES downgrade when real tabs rende
   assert.equal(h.cm, CM_HEIGHT);
 });
 
-test('runoff repair is PERSISTED so opening settings keeps tabbed heights (bug hunt)', () => {
+test('runoff repair is PERSISTED so opening settings keeps tabbed heights', () => {
   // Regression: the 0-sized settle ladder mis-learns a genuinely tabbed editor as simple; the runoff
   // repair fixed the returned value but not the cache, so opening Nostrodomus settings resurrected the
   // stale simple mode and made the codebox 249px too tall.
@@ -83,7 +83,7 @@ test('a learned-simple dialog stays simple when still detected simple', () => {
   assert.equal(h.simple, true);
 });
 
-test('sticky tabbed: a learned-tabbed dialog is NOT poisoned by a transient no-tabs measurement (bug hunt 3)', () => {
+test('sticky tabbed: a learned-tabbed dialog is NOT poisoned by a transient no-tabs measurement', () => {
   // Symmetric to the runoff repair: a genuinely TABBED dialog that measures no-tabs for one apply
   // (a 0-sized / mid-rebuild moment) must not flip to simple and then ride the settingsOpen guard
   // (which oversized the codebox 249px over its tab row for the whole settings-open session).
@@ -107,7 +107,7 @@ test('per-dialog isolation: two dialogs learn independently', () => {
   assert.equal(r.learnedHeights(b, { detectedSimple: false, settingsOpen: false }).simple, false, 'b stays tabbed');
 });
 
-// --- bounded, depth-capped tab detection (the §8 re-seam) ---
+// --- bounded, depth-capped tab detection (no wildcard document walk) ---
 
 function el() { return { matches: () => false, getBoundingClientRect: () => ({ width: 10, height: 10 }) }; }
 function rootWith({ containers = [], tabs = [], hosts = [], host = null } = {}) {
@@ -194,7 +194,7 @@ test('applyForEditor writes the SIMPLE height set on cm internals when active + 
   assert.equal(heights['cmScroller.height'], SIMPLE_SCROLLER_HEIGHT);
 });
 
-// R3: in a card dialog, only the MAIN codebox (ha-yaml-editor-wrapped) gets the
+// In a card dialog, only the MAIN codebox (ha-yaml-editor-wrapped) gets the
 // dialog-scale enlarge; a combo/custom card's embedded editor (a raw ha-code-editor
 // with no ha-yaml-editor ancestor) must keep native sizing or it inherits the 94vh
 // heights and blows off-screen. Structural DOM stubs -- no YAML indentation, so the

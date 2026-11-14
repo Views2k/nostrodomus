@@ -1,13 +1,13 @@
-// ABSORB apply-on-open regression — the absorbed companion layer must apply when the
-// editor DIALOG settles, not only after the user clicks inside the codebox.
+// Apply on open: the companion layer must apply when the editor DIALOG settles, not only
+// after the user clicks inside the codebox.
 //
-// Field bug (owner-reported during CHECKPOINT C): on a real 2026.6 wa-dialog the codebox
+// On a real 2026.6 wa-dialog the codebox
 // stayed unstyled until ANY click on the page. Root cause: the wa-dialog opens 0-sized and
 // async-settles; at open the editor failed the ≥200×80 visible-candidate gate (mis-classed
 // as no-editor), and the no-editor re-probe loop's "opening" window expired mid-settle
 // (activeEditDialog() is null while the surface is 0-sized), so nothing re-ran discovery
 // until the next click (onPointer → scheduleCodeboxStyleReapply re-discovered the
-// now-settled editor). Fix: editorLikelyOpeningWithoutMountedCodebox() also stays true
+// now-settled editor). editorLikelyOpeningWithoutMountedCodebox() therefore also stays true
 // while an edit-card dialog candidate is present (settling), keeping the loop alive so the
 // companion converges on settle.
 //
@@ -17,12 +17,11 @@
 //       (`::-webkit-scrollbar:horizontal { height: 0 }`). NOTE: the frozen sheet hides the
 //       horizontal bar via that webkit pseudo, NOT via overflow-x — the scroller's computed
 //       overflow-x stays "auto", and getComputedStyle cannot read a ::-webkit-scrollbar
-//       pseudo, so whether a bar is VISUALLY gone is the owner's feel-check, not asserted here.
+//       pseudo, so whether a bar is VISUALLY gone is not asserted here.
 //
 // NOTE: the Edit / "code editor" chrome clicks during open are unavoidable and DO fire the
 // outside-pointer reapply — but while the editor is still 0-sized, so they don't converge.
-// This proves apply-on-settle without a CODEBOX interaction (the actual complaint). The
-// true field-timing proof is the owner's manual feel-check. Authored on-branch; RUN BY OWNER.
+// This proves apply-on-settle without a CODEBOX interaction.
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';

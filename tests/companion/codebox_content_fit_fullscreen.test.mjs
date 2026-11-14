@@ -28,7 +28,7 @@ test('CONTENT_FIT refits .cm-editor + .cm-scroller to the host (min(100%, 54vw),
   assert.doesNotMatch(CONTENT_FIT_CSS, /\.cm-content/, 'leaves .cm-content alone — long-line horizontal scroll stays inside the frame');
 });
 
-test('CONTENT_FIT squares the .cm-editor inner box (border-radius:0) so the rounded corner no longer clips the scrollbar bottom arrow (owner-confirmed)', () => {
+test('CONTENT_FIT squares the .cm-editor inner box (border-radius:0) so the rounded corner no longer clips the scrollbar bottom arrow', () => {
   assert.match(CONTENT_FIT_CSS, /\.cm-editor\s*\{[^}]*border-radius:\s*0/i, 'overrides the frozen 24px rounding that clipped the scrollbar down arrow');
   // the visible rounded frame is the HOST ::before — CONTENT_FIT must not touch that
   assert.doesNotMatch(CONTENT_FIT_CSS, /::before|:host/i, 'does not touch the host frame (the visible rounded glow stays)');
@@ -50,7 +50,7 @@ test('FULLSCREEN_HIDE removes ONLY the fullscreen toggle (Enter + Exit, both hos
 test('NATIVE_AUTOCOMPLETE_HIDE hides CodeMirror native autocomplete tooltip + info (incl. HA custom class), and ONLY that', () => {
   assert.match(NATIVE_AUTOCOMPLETE_HIDE_CSS, /\.cm-tooltip-autocomplete/, 'targets the native autocomplete tooltip');
   assert.match(NATIVE_AUTOCOMPLETE_HIDE_CSS, /\.cm-completionInfo/, 'targets the stock CM completion detail panel');
-  // Owner probe (2026-06-19): HA renders the detail panel with its OWN class `completion-info`, which leaked
+  // HA renders the detail panel with its OWN class `completion-info`, which leaked
   // to screen (0,0) when only the stock class was hidden. Must be covered too.
   assert.match(NATIVE_AUTOCOMPLETE_HIDE_CSS, /\.completion-info\b/, 'targets HA\'s custom completion-info detail panel');
   assert.match(NATIVE_AUTOCOMPLETE_HIDE_CSS, /display:\s*none\s*!important/i, 'hides it, winning over CM tooltip styles');

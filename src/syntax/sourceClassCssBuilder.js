@@ -47,7 +47,7 @@ function addCodeMirrorSourceClassRule(classRules, cm, view, label, tag, kind, sy
     return classNames.length;
   }
 
-// important-override registry (INSTRUCTIONS.md §11.9) — source-class token color rules.
+// important-override registry — source-class token color rules.
 
 // external rules overridden: CodeMirror's injected theme stylesheet (same roots,
 

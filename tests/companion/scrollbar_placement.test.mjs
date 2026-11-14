@@ -1,4 +1,4 @@
-// ABSORB P2 — scrollbar module placement/injection unit tests (DOM stubs).
+// Scrollbar module placement/injection unit tests (DOM stubs).
 // (Byte-identity is asserted by the frozen scrollbar_css_byte_identity baseline;
 // this covers placement: inject-once, first-injector-wins, teardown, dormant no-op,
 // and the editor->dialog composed walk-up.)
@@ -281,15 +281,14 @@ test('hideEditorWarnings reconciles on re-apply: ON injects, flipping OFF remove
 });
 
 test('applyForEditor does NOT inject the dialog-geometry codebox sheet on a non-dialog (panel) editor', () => {
-  // UNIVERSAL A1 feel-check, Issue #1: the frozen CODEBOX_CSS encodes the card dialog's absolute
+  // The frozen CODEBOX_CSS encodes the card dialog's absolute
   // geometry (.cm-editor/.cm-scroller { width: calc(-18px + 54vw); height: calc(94vh - 437px) }).
   // On a non-dialog PANEL editor (Dev Tools / dashboard raw config / automation / script YAML),
   // which fills its host and has no preview pane, that geometry squished the editor to ~54vw. The
   // companion now gates the code-root sheets (CODEBOX_CSS + the NO_WRAP override that pairs with
   // it) to the card-dialog context, so a panel editor keeps its native full-width geometry; main's
-  // decorative chrome still applies via discovery. (Was previously asserted to inject regardless —
-  // that assertion encoded the leak; the dialog-editor positive cases above prove the dialog path
-  // is unchanged.)
+  // decorative chrome still applies via discovery. The dialog-editor positive cases above cover
+  // the dialog path.
   const rt = makeRuntime({ active: true });
   const editor = { shadowRoot: fakeRoot(), matches: () => false, getRootNode: () => ({ host: null }) };
   // The dialog-geometry sheets (CODEBOX_CSS / NO_WRAP / CONTENT_FIT) are NOT injected on a panel editor.
@@ -302,7 +301,7 @@ test('applyForEditor does NOT inject the dialog-geometry codebox sheet on a non-
 });
 
 test('applyToRoots with codeRootDialogScoped:false skips the dialog-geometry code-root sheets', () => {
-  // Direct-call guard for the Issue #1 gate: when the code root is NOT dialog-scoped, neither the
+  // Direct-call guard for the dialog-scope gate: when the code root is NOT dialog-scoped, neither the
   // frozen CODEBOX_CSS nor the NO_WRAP override is injected; the other roots are unaffected.
   const rt = makeRuntime({ active: true });
   const codeRoot = fakeRoot();

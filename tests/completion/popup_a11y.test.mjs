@@ -8,7 +8,7 @@ import {
   closeCompletionPopup,
 } from '../../src/completion/popupRuntime.js';
 
-// MD4/MD5 accessibility: the completion popup announces its active option to a live region and wires
+// Accessibility: the completion popup announces its active option to a live region and wires
 // the ARIA combobox pattern onto the focused editor so a screen reader follows selection.
 
 function fakeContent() {
@@ -90,7 +90,7 @@ test('clearCompletionPopupA11y clears both surfaces directly', () => {
   assert.equal(content.attrs['aria-activedescendant'], undefined);
 });
 
-test('ARIA is written to the SERVED completion view, not the styling cache when they differ (bug hunt 4)', () => {
+test('ARIA is written to the SERVED completion view, not the styling cache when they differ', () => {
   const served = fakeContent();
   const styling = fakeContent();
   const state = {

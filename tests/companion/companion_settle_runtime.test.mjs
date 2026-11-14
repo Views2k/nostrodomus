@@ -1,4 +1,4 @@
-// ABSORB v17-persistence — companion settle runtime unit tests.
+// Companion settle runtime unit tests.
 // The settle engine owns the persistent TRIGGER (rAF-coalesced, typing-quiet-aware
 // scheduler + the 2800ms ladder); these pin that logic without a DOM.
 
@@ -69,7 +69,7 @@ test('ACTIVE + typing-quiet: a mutation-origin schedule is DEFERRED; a non-mutat
   assert.equal(h.reapplied.length, 1, 'non-mutation reason re-applies through the quiet window');
 });
 
-test('ACTIVE + typing-quiet: a settle ladder armed by a MUTATION observer still fires (bug hunt 3)', () => {
+test('ACTIVE + typing-quiet: a settle ladder armed by a MUTATION observer still fires', () => {
   // The home MutationObserver arms armSettleWindow('home-mutation-settle'); its rung reasons carry
   // 'mutation', which used to match the quiet-drop and killed the whole catch-up ladder mid-typing.
   const h = harness({ active: true, quiet: true });

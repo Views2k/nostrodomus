@@ -123,7 +123,7 @@ test('legacy fallback provider provide throw is isolated and later providers sti
   assert.equal(h.errors[0].scope, 'provider:bad-provide:provide');
 });
 
-test('provider stats.error is cleared once the provider recovers (bug hunt)', () => {
+test('provider stats.error is cleared once the provider recovers', () => {
   const h = createFallbackHarness();
   let broken = true;
   h.state.providers = [

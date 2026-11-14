@@ -6,7 +6,7 @@ SRC = (ROOT / "src/main.legacy.js").read_text(encoding="utf-8", errors="replace"
 DIST = (ROOT / "dist/nostrodomus.js").read_text(encoding="utf-8", errors="replace") if (ROOT / "dist/nostrodomus.js").exists() else ""
 MOD = (ROOT / "src/ui/codeboxStyle.js").read_text(encoding="utf-8", errors="replace")
 TEST = (ROOT / "tests/ui/codebox_style_module.test.mjs").read_text(encoding="utf-8", errors="replace")
-# The settle/reapply scheduling owner moved out of main.legacy.js (UI_DECOMP P2):
+# The settle/reapply scheduling owner moved out of main.legacy.js:
 # main imports the pure decision helper from ui/codeboxStyle.js and threads it
 # (via the runtime ctx) into the extracted settle seam, which now owns the
 # routing, telemetry, side effects, settle cascade and reapply RAF verbatim.

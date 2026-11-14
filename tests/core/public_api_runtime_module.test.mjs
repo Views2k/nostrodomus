@@ -60,7 +60,7 @@ test('public API runtime installs aliases, boots library before lifecycle, and r
 
   assert.equal(runtime.api.version, 'nostrodomus-v0.1.27-runtime-surface-owner');
   // boot() installs the full runtime but does NOT eagerly load the completion
-  // library (HARNESS P4 kept win — it loads lazily on first editor via open()).
+  // library (it loads lazily on first editor via open()).
   let libraryLoads = 0;
   await runtime.boot(async () => { libraryLoads += 1; });
 

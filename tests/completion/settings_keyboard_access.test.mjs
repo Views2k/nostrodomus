@@ -5,7 +5,7 @@ import { createCompletionRuntime } from '../../src/completion/completionRuntime.
 import { completionKeyAction } from '../../src/completion/keymap.js';
 import { renderCompletionPopup } from '../../src/completion/popupRuntime.js';
 
-// settings#15. Settings opened only from a mousedown on the gear in the list header (or from the
+// Settings opened only from a mousedown on the gear in the list header (or from the
 // console). With the list open, Ctrl+, now opens them, and the gear answers a keyboard or
 // assistive-technology activation as well.
 

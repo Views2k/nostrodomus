@@ -1,4 +1,4 @@
-// Seed the E2E instance (tools/e2e/README.md is the binding contract):
+// Seed the E2E instance (see tools/e2e/README.md):
 // 1. copy the repo's current dist into the bind mount at config/www/,
 // 2. register it as a storage-mode Lovelace module resource with the
 //    STALE-RESOURCE GUARD stamp `?v=<internal_version>-<nonce>`,

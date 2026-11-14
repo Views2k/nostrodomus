@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createStyleDomRuntime } from '../../src/ui/styleDomRuntime.js';
 
-// Tier A finding A3: the containment sweep's settings guard was doubly dead (it
+// The containment sweep's settings guard was doubly dead (it
 // checked state.settingsOpen, which nothing writes, against a portal-host id that was
 // not in the removal list) while #nostrodomus-settings-root WAS in the list -- so the
 // no-active-editor cleanup silently deleted an OPEN settings panel, and the portal

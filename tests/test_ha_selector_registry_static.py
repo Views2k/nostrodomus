@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# HARNESS P3 selector-registry guard.
+# Selector-registry guard.
 #
 # Treadmill-coupled HA element selectors must live only in the registry
 # (src/editor/haSelectors.js), so an HA DOM rename is one edit in one file.

@@ -6,7 +6,7 @@ SRC = (ROOT / "src/main.legacy.js").read_text(encoding="utf-8", errors="replace"
 DIST = (ROOT / "dist/nostrodomus.js").read_text(encoding="utf-8", errors="replace") if (ROOT / "dist/nostrodomus.js").exists() else ""
 MOD = (ROOT / "src/ui/codeboxStyle.js").read_text(encoding="utf-8", errors="replace")
 TEST = (ROOT / "tests/ui/codebox_style_module.test.mjs").read_text(encoding="utf-8", errors="replace")
-# UI_DECOMP move: the reason-delegate cleanup invariant left main.legacy.js when the
+# The reason-delegate cleanup invariant left main.legacy.js when the
 # style-apply runtime was extracted. The reason-routing / last-applied side effect now
 # lives in src/ui/codeboxStyleRuntime.js (RUNTIME); the raf flush + 120/420/950 settle
 # cascade + scheduleCodeboxStyleReapply moved to src/ui/codebox/codeboxStyleSettle.js

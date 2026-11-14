@@ -1,9 +1,9 @@
-// boot-cost.spec (HARNESS P4) — the kept staged-boot win, validated.
+// boot-cost.spec: the staged boot, with the completion library deferred.
 //
-// RUN CHECKPOINT 4 measured a phase-A/B install split as NOT worth the boot-path
+// A full phase-A/B install split was measured as NOT worth the boot-path
 // complexity: it deferred ~0 ongoing observers and one style node (the runtime
-// is already lazy about per-editor work). The decision (c-slim) kept ONLY the
-// completion-library deferral: a dashboard that never opens an editor never
+// is already lazy about per-editor work). Only the completion-library
+// deferral is kept: a dashboard that never opens an editor never
 // builds the ~184-entry index or registers providers (the real memory cost),
 // and `open()` loads it lazily on first use.
 //

@@ -1,6 +1,6 @@
-// APPLY-ON-OPEN (#2): the no-editor recovery heartbeat. On 2026.6 the wa-dialog opens 0-sized, so the
+// APPLY-ON-OPEN: the no-editor recovery heartbeat. On 2026.6 the wa-dialog opens 0-sized, so the
 // codebox fails the visible-candidate gate at open-time and discovery returns null; the recovery loop used
-// to dead-end (no reschedule, no reapply) so the chrome only landed on the first CLICK. The fix keeps the
+// to dead-end (no reschedule, no reapply) so the chrome only landed on the first CLICK. The runtime keeps the
 // discovery loop alive across the dialog's async settle (a bounded 120ms heartbeat) so the instant the
 // editor sizes to a candidate it is found → chrome applies ON OPEN. CM-gated (no chrome with no editor),
 // form-field skip untouched (it lives upstream in activeCodeboxStyleEditor), wall-clock ceiling (no spin).

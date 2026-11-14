@@ -44,7 +44,6 @@ function accept(docWithCaret, item, triggerKind = 'typing') {
 const key = (name, insert = `${name}: `) => ({ type: 'key', label: `${name}:`, insert });
 const value = (text) => ({ type: 'value', label: text, insert: text });
 
-// completion#7
 test('a block opened by a key of a list item is indented under the key, not under the dash', () => {
   // Already correct: a key that is not a list item.
   assert.equal(accept('type: button\ntap|', key('tap_action', 'tap_action:')), 'type: button\ntap_action:\n  |');
@@ -76,7 +75,6 @@ test('a row accepted right after the colon of a list-item key goes into that key
   assert.equal(accept('cards:\n  - tap_action:|', key('action'), 'explicit'), 'cards:\n  - tap_action:\n      action: |');
 });
 
-// completion#25
 test('a key row accepted over a key that already has its colon renames the key', () => {
   // Already correct: rows that end at their colon.
   assert.equal(accept('type: entities\nentit|y: light.kitchen', key('entity')), 'type: entities\nentity: |light.kitchen');
@@ -96,7 +94,6 @@ test('a key row accepted over a key that already has its colon renames the key',
   assert.equal(accept('browser_mod:\n  siz|:  \n  title: x', key('size', 'size: normal')), 'browser_mod:\n  size: normal|\n  title: x');
 });
 
-// completion#8
 test('a row accepted right after the colon of a list-valued key becomes the first list item', () => {
   // Already correct: the value of these keys is a mapping.
   assert.equal(accept('tap_action:|', key('action'), 'explicit'), 'tap_action:\n  action: |');

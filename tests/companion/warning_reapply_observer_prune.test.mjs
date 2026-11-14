@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createScrollbarStyleRuntime } from '../../src/companion/scrollbarStyleRuntime.js';
 
-// Regression (bug hunt): ensureWarningReapplyObserver stores one MutationObserver per badged
+// ensureWarningReapplyObserver stores one MutationObserver per badged
 // container root in a strong Map cleared only on teardown. Each card-editor dialog open/close
 // therefore left its observer + detached root retained for the session (a leak). The observer setup
 // now prunes roots that have left the DOM.
@@ -65,7 +65,7 @@ test('prune is fail-dark: unknown connectivity is kept, no throw', () => {
   assert.doesNotThrow(() => assert.equal(runtime.pruneDetachedWarningReapplyObservers(), 0));
 });
 
-test('owned-style registries prune detached roots on the next apply (bug hunt)', () => {
+test('owned-style registries prune detached roots on the next apply', () => {
   // Regression: ownedRoots (shadow roots we injected styles into) grew across every dialog open and
   // was only walked on teardown, so detached roots accumulated for the session.
   const { runtime } = makeRuntime();

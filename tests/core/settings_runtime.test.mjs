@@ -35,7 +35,7 @@ test('settings runtime loads first valid configured storage key and records sour
   assert.equal(storage.has('old-key'), false);
 });
 
-test('loadSettings returns a fully MUTABLE tree when stored settings omit a frozen nested block (bug hunt)', () => {
+test('loadSettings returns a fully MUTABLE tree when stored settings omit a frozen nested block', () => {
   // Regression: merging a stored payload onto the FROZEN DEFAULT_SETTINGS leaked the frozen nested
   // blocks by reference for any block the payload omitted (an upgrading user), so the first nested
   // toggle threw "Cannot assign to read only property". loadSettings now merges onto a mutable clone.
@@ -59,7 +59,7 @@ test('loadSettings returns a fully MUTABLE tree when stored settings omit a froz
   assert.doesNotThrow(() => { s.providers.static.enabled = false; }, 'a two-level nested toggle must not throw');
 });
 
-test('loadedSettingsKey reports empty after a corrupt payload forces the defaults fallback (bug hunt)', () => {
+test('loadedSettingsKey reports empty after a corrupt payload forces the defaults fallback', () => {
   const runtime = createSettingsRuntime({
     storage: { getItem: () => '{ not valid json', setItem: () => {}, removeItem: () => {} },
     settingsWriteKey: 'k',
@@ -197,7 +197,7 @@ test('migration: storage delete throwing keeps the write key intact (no data los
   assert.equal(storage.has('legacy-a'), true);
 });
 
-// HARNESS P5 schemaVersion / migrateSettings ledger.
+// schemaVersion / migrateSettings ledger.
 
 test('migrateSettings stamps the current schemaVersion on a versionless payload, idempotently', () => {
   const first = migrateSettings({ mode: 'snippets' }, 1);

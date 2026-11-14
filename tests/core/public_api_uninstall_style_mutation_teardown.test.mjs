@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createPublicApiRuntime } from '../../src/core/publicApiRuntime.js';
 
-// Tier A finding A4, part 1: the codebox style mutation guard observer
+// The codebox style mutation guard observer
 // (state.styleMutationObserver, installed by installCodeboxStyleMutationGuard) was
 // never disconnected by uninstall(), so a post-uninstall class/style toggle on a
 // still-open editor re-ran the reapply lane and re-installed pieces of the runtime.
@@ -38,7 +38,7 @@ function buildRuntime(stateExtra = {}) {
   return { runtime, state };
 }
 
-test('uninstall disconnects the style mutation guard observer (A4)', () => {
+test('uninstall disconnects the style mutation guard observer', () => {
   const observer = {
     takeRecords() { this.drained = true; return []; },
     disconnect() { this.disconnected = true; },

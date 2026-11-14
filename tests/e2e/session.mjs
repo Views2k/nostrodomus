@@ -1,7 +1,7 @@
 // Shared spec session for the E2E suite: frontend auth via localStorage
-// hassTokens seeding, whole-session console capture with the binding failure
+// hassTokens seeding, whole-session console capture with its failure
 // policy, and the STALE-RESOURCE GUARD that runs before any other assertion
-// (tools/e2e/README.md is the binding contract).
+// (see tools/e2e/README.md).
 
 import { test as base, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
@@ -56,7 +56,7 @@ export const test = base.extend({
     { auto: true },
   ],
 
-  // Test-side navigation log (round-5 lesson: in-page instrumentation dies
+  // Test-side navigation log (in-page instrumentation dies
   // with the page; this listener lives in the runner and survives reloads).
   // Every main-frame navigation is timestamped and attached to the report —
   // a spontaneous entry between commanded goto() calls is a reload smoking

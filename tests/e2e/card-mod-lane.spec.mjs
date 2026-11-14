@@ -1,11 +1,11 @@
 // card-mod-lane.spec — the 0.1.255/256 fix that BOUNDS the card_mod `style: |` CSS lane: CSS completes
 // INSIDE an open style block, but normal YAML completion resumes for a sibling key below/beside a closed
 // one (the bug killed the whole rest of the document to CSS). card_mod is ubiquitous, so this fired
-// constantly and was owner-probe-only.
+// constantly.
 //
 // CRASH-SAFETY (see launch-gates.spec): append to the seeded card's valid `type: entities` config so the
 // preview never sees an undefined type. card_mod is an unknown key to the entities card (ignored); the
-// completion is text-driven, so card_mod need not be installed on the instance. Authored on-branch; owner-run.
+// completion is text-driven, so card_mod need not be installed on the instance.
 
 import { test, expect, openDashboard } from './session.mjs';
 import {

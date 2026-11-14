@@ -25,7 +25,7 @@ for token in [
         notes.append(f"PASS token: {token}")
 
 for forbidden in ["state", "document", "window"]:
-    if re.search(rf"\\b{forbidden}\\b", text):
+    if re.search(rf"\b{forbidden}\b", text):
         errors.append(f"scoring.js must not reference runtime/global token: {forbidden}")
     else:
         notes.append(f"PASS no token: {forbidden}")

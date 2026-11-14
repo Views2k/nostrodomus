@@ -1,13 +1,13 @@
 // entity-value-completion.spec — the 0.1.257 adapter/classifier "split-brain" fix: an entity-shaped
-// VALUE completes to real entity ids even under an ARBITRARY/unknown key (and in an entities: list),
-// a path that was owner-probe-only until now. Drives the real editor + real hass entities.
+// VALUE completes to real entity ids even under an ARBITRARY/unknown key (and in an entities: list).
+// Drives the real editor + real hass entities.
 //
 // CRASH-SAFETY (see launch-gates.spec): the card dialog live-renders its preview and HA throws on an
 // undefined config.type, so we APPEND to the seeded card's valid `type: entities` config (type stays
 // defined; the entities card ignores the extra key) rather than clearing to a typeless doc.
 //
 // Uses the seeded input_boolean.* entities (seed.mjs creates input_boolean.e2e_demo_one / _two), so the
-// assertion is stable regardless of what else the instance exposes. Authored on-branch; RUN BY THE OWNER.
+// assertion is stable regardless of what else the instance exposes.
 
 import { test, expect, openDashboard } from './session.mjs';
 import {

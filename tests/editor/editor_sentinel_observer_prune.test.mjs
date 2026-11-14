@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { createEditorLifecycleSentinelRuntime } from '../../src/editor/editorLifecycleSentinel.js';
 
-// Finding 1B(iv): state.editorSentinelObservers is a strong-ref Map keyed by root object.
+// state.editorSentinelObservers is a strong-ref Map keyed by root object.
 // Each dialog open adds the dialog + its shadowRoot; the dedup keys on object identity, so a
 // reopened dialog (a fresh object) misses dedup and adds new entries. Nothing pruned detached
 // roots on close, so the Map grew unbounded, leaking detached dialog nodes + observers. The fix

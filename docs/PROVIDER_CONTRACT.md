@@ -1,10 +1,8 @@
 # Nostrodomus Provider Contract
 
-Status: active and enforced in the bundled runtime.
+A provider is a synchronous source of completion rows. The registry in `src/providers/providerRegistry.js` calls every registered provider for a completion request, guards each call, validates the rows and hands them to scoring. `src/providers/providerRuntime.js` connects the registry to the runtime state, the settings and the runtime error buffer.
 
 ## Provider object
-
-A provider is a small, synchronous completion source registered with `registerProvider(provider)`.
 
 ```js
 {
@@ -20,31 +18,52 @@ A provider is a small, synchronous completion source registered with `registerPr
 
 Required fields:
 
-- `id`: stable string. It is used for provider settings, diagnostics, and stats.
-- `label`: readable name used in diagnostics/settings surfaces.
-- `provide(ctx)`: synchronous function returning an array of completion rows.
+- `id`: stable string. It keys the provider's setting, its statistics and its diagnostics entries. Registering a provider with an id that is already registered replaces the earlier one.
+- `provide(ctx)`: synchronous function that returns an array of completion rows.
 
 Optional fields:
 
-- `capabilities`: descriptive list for docs/settings surfaces.
-- `priority`: default ordering hint for future provider orchestration.
-- `timeoutMs`: per-provider budget override. Defaults to `8` ms and is clamped by the runtime.
-- `canHandle(ctx)`: fast pure gate. Missing means always eligible.
+- `label`: readable name for the provider list in Settings and for diagnostics.
+- `canHandle(ctx)`: fast gate. A provider without it is asked on every request.
+- `timeoutMs`: time budget for one `provide(ctx)` call. The default is 8 ms, the maximum is 120 ms. For local debugging the default can be changed with the `nostrodomusProviderTimeoutMs` key in `localStorage`.
+- `capabilities` and `priority`: descriptive. The registry does not read them. Providers are called in registration order, and the order of rows in the popup is decided by scoring (see `docs/SCORING_CONTRACT.md`).
+
+`ctx` is the context descriptor described in `docs/CONTEXT_DESCRIPTOR.md`.
+
+## Registered providers
+
+`buildIndex` in `src/providers/staticLibraryProvider.js` registers the built-in providers in this order when the completion library is loaded:
+
+| Id | Module | Rows |
+| --- | --- | --- |
+| `static-library` | `src/providers/staticLibraryProvider.js` | Bundled keys and words for YAML, CSS, JavaScript, Jinja, HTML and Python |
+| `snippet-templates` | `src/providers/snippetProvider.js` | Snippets from `data/snippets.json`, selected by context |
+| `lovelace-context` | `src/providers/lovelaceContextProvider.js` | Dashboard and card keys for the YAML path around the cursor |
+| `hacs-catalog` | `src/providers/hacsCatalogProvider.js` | Card types, keys and values of the custom cards in `src/providers/hacsProviderCatalog.js` |
+| `ha-runtime-values` | `src/providers/haRuntimeProvider.js` | Values from the running Home Assistant instance |
+| `word-fallback` | `src/providers/documentWordProvider.js` | Words from the current editor text |
+
+The ids are constants in `src/core/runtimeConstants.js`.
+
+Other code can add a provider with `window.__nostrodomus.registerProvider(provider)`. Such a provider is called after the built-in ones and stays registered when the index is rebuilt. Every registered provider gets an entry in `settings.providers` and can be turned off there.
 
 ## Runtime enforcement
 
-`providerCandidates(ctx)` is the runtime boundary. It must keep these rules:
+`providerCandidates(ctx)` returns no rows at all when `ctx.shouldSuggest` is false, when the trigger mode is `manual` and the request was not explicit, or when the language of the context is disabled in the settings. A provider that is turned off in the settings is skipped.
+
+For every other provider:
 
 1. `canHandle(ctx)` is called in its own guard. A throw skips that provider and records `provider:<id>:canHandle`.
 2. `provide(ctx)` is called in its own guard. A throw skips that provider and records `provider:<id>:provide`.
-3. Provider runtime is measured. A provider exceeding its timeout budget is dropped and records `provider:<id>:timeout`.
-4. Return value must be an array. Non-array results are dropped and record `provider:<id>:rows`.
-5. Malformed rows are dropped individually and record `provider:<id>:row`.
-6. One provider's failure never prevents later providers from contributing rows.
+3. The call is timed. A call that takes longer than the budget is recorded as `provider:<id>:timeout` and counted in `slowCalls`. Its rows are kept: the call is synchronous, so the time is already spent when the budget can be checked.
+4. The return value must be an array. Anything else is dropped and records `provider:<id>:rows`.
+5. Malformed rows are dropped one by one and record `provider:<id>:row` (at most five diagnostics per call).
+6. At most 2000 rows per call are used. More than that records `provider:<id>:row-limit`.
+7. One provider's failure never prevents later providers from contributing rows.
+
+The records go to the runtime error buffer (`window.__nostrodomus.runtimeErrors()`). Per-provider counters are available from `providerSummary`, which Settings and diagnostics show.
 
 ## Completion row shape
-
-The runtime accepts rows with these required fields:
 
 ```js
 {
@@ -59,58 +78,38 @@ The runtime accepts rows with these required fields:
 }
 ```
 
-Required fields are `id`, `lang`, `type`, `label`, and `insert`, all strings. `source` is expected for attribution but existing built-in rows are allowed through the current compatibility layer. `aliases`, when present, must be an array. `meta`, when present, must be an object.
+`id`, `lang`, `type` and `label` must be non-empty strings, and `insert` must be a string. `aliases`, when present, must be an array. `meta`, when present, must be an object. A row that fails one of these checks is dropped.
 
-## Live instance data kinds (HA runtime value lane)
+`source` is not validated. Scoring ranks rows by the provider id in `source`, so a row should carry the id of its provider.
 
-The `ha-runtime-values` provider serves these live data kinds out of the shared
-`runtimeData()` cache (`state.runtimeCache`, TTL-gated by
-`SECURITY_LIMITS.runtimeCacheMs`; all live data is built in ONE hass/window walk
-per cache rebuild — never per keystroke):
+## Live instance data
 
-- **Live custom-card catalog** (`cards` + `cardMeta` cache keys): the in-page
-  `customCards` self-registration registry, normalized to `custom:<type>`,
-  identifier-regex validated, deduped, sorted, and capped at
-  `SECURITY_LIMITS.maxRuntimeCustomCards` (200). Names are capped at 80 chars,
-  descriptions at 200. Card rows carry the human name via `meta.sourceDetail`
-  / `meta.documentation` and a name alias. Fail-dark: an absent or malformed
-  registry yields exactly the native Lovelace card list; invalid entries are
-  skipped silently.
-- **Service field schemas** (`serviceFields` cache key): per service id, a
-  capped list of `{ field, description, selectorKind, required, advanced }`
-  shaped from `hass.services[domain][service].fields`. `selectorKind` is the
-  first key of the field's selector object or `""` when the selector is
-  absent. Caps: `maxServiceFieldsPerService` (40) and `maxServicesWithFields`
-  (400); field names are identifier-regex validated; descriptions are capped
-  at 160 chars. Field-key rows are offered only when the cursor is on a key
-  inside a `data:`/`service_data:` mapping AND the enclosing block's
-  `service:`/`perform_action:`/`action:` scalar names a known service id
-  (read from the adapter-parsed `ctx.branchState` — no provider-side YAML
-  parsing). Unknown or fieldless services yield zero rows and zero errors.
-- **Target entity ordering**: in `target:` → `entity_id:` value contexts with
-  an unambiguous service domain, entities of that domain are ordered first
-  within the existing entity lane (`homeassistant.*` services keep the plain
-  sorted order). This is within-lane ordering only; global provider ordering
-  and scoring are unchanged.
+The `ha-runtime-values` provider reads its data from one snapshot built by `runtimeData()` and kept in `state.runtimeCache`. A snapshot is used for `SECURITY_LIMITS.runtimeCacheMs` (2500 ms). After that it is kept as long as Home Assistant has not replaced the objects it was built from, and it is rebuilt after 30 seconds at the latest. Nothing is read from Home Assistant per keystroke outside this snapshot.
 
-Fail-dark guarantee (tested contract): null/partial `hass`, non-object
-`states`/`services`, throwing getters at any depth, and malformed registry
-entries each degrade that entry only — fewer suggestions, never an exception,
-never console output, never a typing stall.
+The snapshot holds:
 
-## Current limitation
+- Entity ids with friendly names, and service ids. Up to 10000 entity ids and 3000 service ids are indexed. A query returns at most 750 entity rows and 500 service rows after the typed prefix is applied.
+- Areas, devices, floors and labels with their names (at most 300, 750, 100 and 200). They are offered for `area_id:`, `device_id:`, `floor_id:` and `label_id:` when the registry lane is enabled.
+- Themes, and fixed lists of card types, icons, dashboard actions, trigger types, condition types and automation modes.
+- Custom cards (`cards` and `cardMeta`): the entries of the page's `window.customCards` registry, normalized to `custom:<type>`, validated, deduplicated, sorted and capped at `SECURITY_LIMITS.maxRuntimeCustomCards` (200). Names are cut to 80 characters and descriptions to 200. A card row carries the name as `meta.sourceDetail` and as an alias.
+- Service fields (`serviceFields`): per service id a list of `{ field, description, selectorKind, required, advanced, options }` from `hass.services[domain][service].fields`. `selectorKind` is the first key of the field's selector object, or empty. Sections of fields are flattened. The snapshot holds up to 40 fields per service for up to 400 services; a service beyond that is read when it is first asked for. Descriptions are cut to 160 characters.
 
-`src/providers/providerRegistry.js` is a pure, executable contract module wired into the browser bundle through the provider runtime owner; executed tests exercise its public exports directly.
+Field rows are offered when the cursor is on a key directly under `data:` or `service_data:` and the enclosing block names a service. The service id is read from `ctx.branchState` by `serviceIdFromContext(ctx)`; the provider does not parse YAML. An unknown service or a service without fields yields no rows.
 
+In `target:` under `entity_id:`, when the enclosing block names a service outside the `homeassistant` domain, entities of the service's domain are listed first.
 
-## Executable registry module
+A missing or partial `hass` object, a non-object `states` or `services`, a getter that throws and a malformed registry entry each reduce the affected data only. The result is fewer suggestions, not an exception and not console output. `tests/providers/ha_runtime_data.test.mjs` covers these cases.
 
-`src/providers/providerRegistry.js` exports a pure registry boundary:
+## Registry module
 
-- `createProviderRegistry(options)` for stateful test/dev use.
-- `registerProvider(provider, registryState)` for duplicate-safe registration.
-- `providerCandidates(ctx, registryState, deps)` for guarded candidate collection.
-- `providerSummary(registryState, deps)` for diagnostics/settings readouts.
-- `validateProviderRow(row)` and `validateProviderRows(provider, rows, stats, deps)` for row-schema enforcement.
+`src/providers/providerRegistry.js` exports:
 
-The module must stay pure: no DOM, no storage, no host globals, no network, and no UI ownership. Runtime host access remains inside the runtime owner modules.
+- `createProviderRegistry(options)`: a registry with its own state, for tests.
+- `registerProvider(provider, registryState)`
+- `providerCandidates(ctx, registryState, deps)`
+- `providerSummary(registryState, deps)`
+- `validateProviderRow(row)` and `validateProviderRows(provider, rows, stats, deps)`
+- `providerDiagnosticId(provider)` and `providerTimeoutBudgetMs(provider, limits)`
+- `DEFAULT_PROVIDER_LIMITS`
+
+The module is pure: no DOM, no storage, no host globals, no network. Access to the browser and to Home Assistant stays in `src/providers/providerRuntime.js` and in the provider modules.

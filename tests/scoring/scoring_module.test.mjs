@@ -81,7 +81,7 @@ test('itemMatchesYamlValueKind gates scalar value contexts', () => {
   assert.equal(itemMatchesYamlValueKind({ type: 'card' }, { valueKind: 'card-type' }), true);
 });
 
-test('itemMatchesYamlValueKind keeps snippets and other rows out of the registry value lanes (audit QW3)', () => {
+test('itemMatchesYamlValueKind keeps snippets and other rows out of the registry value lanes', () => {
   // area_id:/device_id:/floor_id:/label_id: must complete only their own registry rows. Before the
   // fix, these kinds fell through to the permissive source-based check and let ~17 snippet rows
   // (source != static) leak into the popup.

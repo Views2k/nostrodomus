@@ -1,6 +1,6 @@
-// Phase 1 universal-completions context resolver — the behavior-neutrality fence.
+// Universal-completions context resolver — the behavior-neutrality fence.
 //
-// The whole Phase-1 safety claim rests on this: with the engine flag OFF (the default),
+// With the engine flag OFF (the default),
 // resolveContext returns the legacy descriptor UNCHANGED (same reference), so the live
 // completion path is byte-identical. When ON, it only ADDS fields and never mutates the
 // legacy enum fields (lang/valueKind/yamlRole) that the descriptor validator pins.
@@ -38,7 +38,7 @@ test('engine OFF (default): returns the base descriptor by REFERENCE, unchanged'
   assert.equal(resolveContext({ baseDescriptor: base, engineEnabled: 'true' }), base, 'truthy non-boolean does NOT enable');
 });
 
-test('engine OFF: a supplied surface arg is ignored — still returns the base by reference (P2 byte-identity)', () => {
+test('engine OFF: a supplied surface arg is ignored — still returns the base by reference (byte-identity)', () => {
   const base = legacyDescriptor();
   assert.equal(resolveContext({ baseDescriptor: base, surface: 'devtools-template', engineEnabled: false }), base, 'surface arg cannot force allocation when off');
 });

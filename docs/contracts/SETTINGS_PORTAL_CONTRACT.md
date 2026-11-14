@@ -1,45 +1,51 @@
 # Contract: Settings Portal and Interaction Stability
 
-## Status
+The settings panel is drawn by Nostrodomus, but it has to live inside whatever Home Assistant has put on top. When the card editor is open, Home Assistant shows it in a native modal `<dialog>`. Content outside a modal dialog is inert: it can be visible and still receive no clicks, whatever its `z-index`. This contract describes where the panel is mounted and how it behaves while the user works with it.
 
-Active for v31.6.82+ organization work. This contract preserves the v31.6.12/v31.6.13 Settings portal and drag architecture plus later interaction-stability patches.
+## Where the panel is mounted
 
-## Owner
+`ensureSettingsPortalHost` in `src/ui/settingsPortalRuntime.js` creates one host element, `#nostrodomus-settings-portal-host-v1`, and appends it to the first of these that exists:
 
-The Settings panel is a Nostrodomus UI surface, but when Home Assistant uses a native modal `<dialog>`, the panel must be mounted inside that active dialog/top-layer subtree so it is not rendered inert behind the modal.
+1. the open top-layer `<dialog>` of the active editor,
+2. the shadow root of the active edit dialog, or the dialog element itself,
+3. the shadow root that contains the active code editor,
+4. the `home-assistant` root,
+5. `document.body`.
 
-## Required behavior
+The host covers the viewport and lets pointer events through; the panel inside it receives them. The settings panel does not share the overlay host of the completion popup.
 
-- Settings uses a dedicated portal host, not the completion popup overlay and not raw `document.body` during an active native HA modal.
-- Saved Settings position remains viewport-based.
-- Rendered `left/top` are converted to portal-local coordinates when mounted in a dialog portal.
-- Header click without real movement does not save a new drag position.
-- Dragging uses smooth transform/frame behavior and commits position only after real movement.
-- Ordinary settings changes preserve active tab and scroll position.
-- Range/color style controls use lightweight live preview during input and defer expensive save/full-apply work to commit/debounce.
+When the host is not inside a top-layer dialog, the panel is shown with the Popover API (`popover="manual"`), so it is still drawn above the page.
 
-## Forbidden approaches
+## Position and size
 
-- Do not mount Settings outside the active native modal dialog when the HA card editor is modal.
-- Do not use z-index as a substitute for top-layer ownership; content outside a native modal can be inert regardless of z-index.
-- Do not close/reopen Settings for ordinary control changes.
-- Do not reset active tab or scroll position on checkbox/dropdown/slider changes.
-- Do not make range `input` events trigger heavy full lifecycle work on every tick.
+- The saved position (`settings.settingsPos`) and size (`settings.settingsSize`) are viewport coordinates.
+- `applySettingsPanelViewportPosition` in `src/ui/settings/settingsGeometry.js` converts the saved position into coordinates of the portal host before it sets `left` and `top`.
+- Positions are clamped to the viewport.
 
-## Verification
+## Dragging
 
-Runtime smoke checks:
+- Dragging by the header moves the panel with a transform, one update per animation frame.
+- The new position is saved when the pointer is released, and only if the pointer moved at least 4 px. A click on the header without movement saves nothing.
 
-```text
-- Open Settings from inside the HA editor dialog; all buttons, sliders, tabs, and text selection work.
-- Drag Settings by the header; it follows smoothly and does not jump down/left.
-- Click the header without dragging; saved position does not shift.
-- Change a Style slider; panel remains on the same tab and scroll position.
-- Press Escape; Nostrodomus Settings closes before the HA editor dialog when appropriate.
-```
+## While settings change
 
-Static checks should confirm the Settings portal/drag/interactions tests remain present and that top-layer/dialog ownership tokens still exist in the runtime.
+- Changing a checkbox, a select or a slider keeps the active tab and the scroll position (`applySettingChangePreservingInteraction` in `src/ui/settingsInteractionRuntime.js`). The panel is not closed and reopened.
+- While a slider or a color control is being moved, only a light preview runs (`scheduleStyleRangeLivePreview`). Saving and the full style pass happen after the change is committed or after a short delay.
+- Escape closes the settings panel before it reaches the Home Assistant dialog.
 
-## Rollback
+## Ruled out
 
-If Settings becomes visible but unclickable, rollback the portal ownership change first. Do not attempt to fix an inert Settings panel with z-index, pointer-events spam, or document-body remounting.
+- Mounting the panel outside the active modal dialog while the card editor is modal.
+- Using `z-index` in place of mounting inside the dialog.
+- A separate overlay host on `document.documentElement` for the panel. `tests/test_settings_out_of_band_static.py` fails when the markers of that approach return.
+- Saving a position on a header click that did not move the panel, or saving portal-local coordinates as viewport coordinates.
+- Closing and reopening the panel for an ordinary control change, or resetting the tab or scroll position.
+- Running the full style pass on every `input` event of a slider.
+
+If the panel is visible but does not react to clicks, the mount point is wrong. Changing `z-index` or `pointer-events` does not fix that.
+
+## Tests
+
+- `tests/ui/settings_portal_runtime.test.mjs`, `tests/ui/settings_geometry_module.test.mjs`, `tests/ui/settings_panel_shell.test.mjs` and `tests/ui/settings_interaction_runtime_module.test.mjs` cover the modules named above.
+- `tests/e2e/settings-panel.spec.mjs` opens the panel in a browser: tab switch, drag, value change, persistence, a header click without drag, and Escape.
+- `tools/check_runtime_contracts.py` requires `ensureSettingsPortalHost`, `applySettingChangePreservingInteraction` and `scheduleStyleRangeLivePreview` to exist and rejects `document.body.appendChild(settings...)`.

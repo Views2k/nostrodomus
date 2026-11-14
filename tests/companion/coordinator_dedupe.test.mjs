@@ -1,6 +1,6 @@
-// ABSORB P1 — coordinator dedupe + companion coexistence/dormancy signal.
+// Coordinator dedupe + companion coexistence/dormancy signal.
 // (The frozen api-surface parity is asserted by coordinator_api_parity.test.mjs;
-// this covers install-order convergence and the new detection/dormancy layer.)
+// this covers install-order convergence and the detection/dormancy layer.)
 
 import test from 'node:test';
 import assert from 'node:assert/strict';

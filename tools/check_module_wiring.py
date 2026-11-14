@@ -20,11 +20,10 @@ ALLOWLIST = ROOT / "docs" / "contracts" / "MODULE_WIRING_ALLOWLIST.json"
 REPORT = ROOT / "reports" / "MODULE_WIRING_LAST.txt"
 IMPORT_RE = re.compile(r"(?:import|export)\s+(?:[^'\"]*?from\s*)?[\"'](\.[^\"']+)[\"']")
 
-# Phase-1b layer rule: src/core/** is the pure-utility layer and must not import UP
+# Layer rule: src/core/** is the pure-utility layer and must not import UP
 # from a feature layer. Composition glue that wires features together lives in
-# src/composition/. No exceptions: the former loggingRuntime -> diagnostics import was
-# removed in Phase 2 by injecting startupBadgeStatusFromHealth into loggingRuntime's
-# factory from src/main.legacy.js.
+# src/composition/. No exceptions: loggingRuntime does not import diagnostics;
+# src/main.legacy.js injects startupBadgeStatusFromHealth into its factory.
 FEATURE_LAYERS = ("ui", "editor", "providers", "completion", "diagnostics", "companion", "syntax", "yaml")
 CORE_LAYER_EXCEPTIONS = set()
 
@@ -78,7 +77,7 @@ def walk_import_graph(path: Path, seen: set[str]) -> None:
 
 
 def check_core_layer_purity() -> list[str]:
-    """Phase-1b rule: no src/core/** file may import from a feature layer."""
+    """Layer rule: no src/core/** file may import from a feature layer."""
     violations: list[str] = []
     for path in sorted((SRC / "core").rglob("*.js")):
         if not path.is_file():

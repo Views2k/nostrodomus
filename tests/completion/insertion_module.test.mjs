@@ -115,7 +115,6 @@ test('insertItem owns dispatch, suppression, and close behavior through explicit
   assert.deepEqual(closed, ['completion-accepted']);
 });
 
-// completion#7
 test('prepareInsertText indents the later lines of a same-line value snippet from the key, also behind a list dash', () => {
   const snippet = 'call-service\ntarget:\n  entity_id: light.example';
   const plain = { lang: 'yaml', valueKind: 'action', afterKeyColon: true, line: '    action:', beforeCursor: '    action:' };
@@ -124,7 +123,6 @@ test('prepareInsertText indents the later lines of a same-line value snippet fro
   assert.equal(prepareInsertText(snippet, listItem, { type: 'snippet' }), ' call-service\n    target:\n      entity_id: light.example', 'the key behind "  - " is in column 4 as well');
 });
 
-// completion#15
 test('every accepted row is dispatched as a completion, so undo does not join it with the typed prefix', () => {
   // CodeMirror's history joins a change that has no user event, or an input.type one, with the
   // change before it. The typed prefix is input.type; the accept is input.complete, the event
@@ -326,7 +324,7 @@ test('exit caret lands AFTER the last placeholder value when a snippet has no $0
   assert.notEqual(dispatches.at(-1).selection.anchor, last.start, 'NOT parked at the start of the last field');
 });
 
-test('Shift-Tab at the first placeholder stays put, it does not exit the snippet forward (bug hunt 3)', () => {
+test('Shift-Tab at the first placeholder stays put, it does not exit the snippet forward', () => {
   let doc = '';
   const view = {
     state: { get doc() { return { length: doc.length, sliceString: (f, t) => doc.slice(f, t), toString: () => doc }; }, selection: { main: { anchor: 0, head: 0 } } },
@@ -355,7 +353,7 @@ test('Shift-Tab at the first placeholder stays put, it does not exit the snippet
   assert.equal(rs.snippetSession, null, 'forward Tab past the last stop still exits the snippet');
 });
 
-test('mirror replication through the hooked dispatch does not double-shift later placeholders (bug hunt 3/4)', async () => {
+test('mirror replication through the hooked dispatch does not double-shift later placeholders', async () => {
   // The shipped button-card snippet mirrors ${3:detail} with ${4} sitting between the two copies.
   // Renaming stop 3 then Tab used to fire updateSnippetSessionAfterDispatch DURING the mirror dispatch,
   // shifting stop 4 a second time — so Tab selected "['sensor.examp" instead of sensor.example and
@@ -391,7 +389,7 @@ test('mirror replication through the hooked dispatch does not double-shift later
   assert.ok(doc.includes("states['sensor.example']"), 'the Jinja states[...] is intact, not corrupted');
 });
 
-test('updateSnippetSessionAfterDispatch tracks the current placeholder for edits before it and at its boundaries (bug hunt 3/4)', () => {
+test('updateSnippetSessionAfterDispatch tracks the current placeholder for edits before it and at its boundaries', () => {
   // The old "touched" test never shifted the current placeholder for an edit entirely BEFORE it
   // (a click+type earlier → returning to it selected a stale range) and mis-SHRANK it on a delete
   // just PAST its end. Model insert vs delete/replace explicitly. Current placeholder = [10,16].

@@ -1,50 +1,52 @@
-# Nostrodomus companion resources
+# Nostrodomus companion layer
 
-The two standalone companion files are superseded. Their behavior (editor layout/scrollbar
-styling, the codebox persistence engine, typing-quiet coordination, and the dormant picker
-visual fix) is absorbed into the main module (`src/companion/`, shipped in
-`dist/nostrodomus.js`). The standalone files are retained only as frozen references under
-`reference/companions/` (see its README); they are no longer distributed.
+The companion layer is the part of Nostrodomus that sizes and styles the editor around the code: the height of the codebox, the scrollbars, the dialog layout, and the re-apply logic that keeps this in place while Home Assistant rebuilds the dialog. It lives in `src/companion/` and ships inside `dist/nostrodomus.js`. No separate resource has to be registered for it.
 
-## Legacy resources (optional, superseded)
+The same behavior used to come from two standalone scripts, `nostrodomus_editor_v17_2_learned_reapply.js` and `nostrodomus-picker-safe.js`. They are not distributed any more. Copies are kept under `reference/companions/` because tests compare the bundled code with them (see the README in that directory).
 
-These two Lovelace resources, if you still have them registered, are **optional and superseded**:
+## Modules
 
-- `/local/nostrodomus_editor_v17_2_learned_reapply.js` — v17 editor layout/scrollbar controller.
-- `/local/nostrodomus-picker-safe.js` — picker/dropdown styling companion.
+| Module | What it does | Default |
+| --- | --- | --- |
+| `coordinatorRuntime.js` | Decides whether the layer is active, detects a loaded standalone script, reads the override key | - |
+| `scrollbarStyleRuntime.js` | Injects the scrollbar stylesheet and the editor layout stylesheets (dialog size, line wrapping, preview fill, optional hiding of editor warnings) | active |
+| `codeboxEnlargeRuntime.js` | Makes the codebox taller in editors without the option tab row and remembers the mode per dialog | active |
+| `companionSettleRuntime.js` | Re-applies the styling when the dashboard or the dialog changes: mutation observers plus a series of delayed passes up to 2800 ms after an event | active |
+| `inputQuietRuntime.js` | Postpones style, syntax refresh and diagnostics work while the user types | active |
+| `pickerStyleRuntime.js` | Transparency and blur fix for entity pickers and popovers | dormant |
 
-### Coexistence (safe to keep for now)
+The scrollbar and picker stylesheets are kept byte for byte equal to the stylesheets of the standalone scripts. `tests/companion/scrollbar_css_byte_identity.test.mjs` and `tests/companion/picker_style_runtime.test.mjs` fail when they differ.
 
-You can leave them loaded. The absorbed module detects an external companion (via the shared
-`window.__nostrodomusRuntimeCoordinatorV1` handshake) and stays **dormant** so the two never
-double-apply (first-injector-wins). Diagnostics reports `companion-layer: external` in that case.
+The companion layer sets heights and overflow on `.cm-editor` and `.cm-scroller`. The codebox style runtime in `src/ui/` leaves those elements alone (see `docs/contracts/STYLE_OWNERSHIP_CONTRACT.md`).
 
-### Removal (recommended once you've verified the module)
+## Active, dormant, external
 
-To switch fully to the absorbed module:
+Every companion module asks `src/companion/coordinatorRuntime.js` before it does anything:
 
-1. In Home Assistant, go to **Settings → Dashboards → ⋮ → Resources** and **delete** the two
-   entries above (`nostrodomus_editor_v17_2_learned_reapply.js` and `nostrodomus-picker-safe.js`).
-2. Delete the two files from your `/config/www/` folder.
-3. Hard-refresh. With no external companion present, the absorbed module takes over; diagnostics
-   reports `companion-layer: internal`.
+- `internal`: no standalone script is loaded. Each module follows its default from the table above.
+- `external`: a standalone script is loaded. It has registered itself in the shared runtime coordinator (`docs/RUNTIME_COORDINATOR.md`) as `v17-editor-bridge` or `picker-safe`. The bundled layer stays dormant so that the two do not apply the same styles twice.
+- `dormant(forced)`: the layer was switched off by hand.
 
-You can confirm the state any time with:
+The current value is part of the diagnostics:
 
 ```js
 window.__nostrodomus.exportDiagnostics().companionLayer
-// "internal" (absorbed, alone) | "external" (legacy file still loaded) | "dormant(forced)"
+// "internal" | "external" | "dormant(forced)"
 ```
 
-Other stale Nostrodomus-owned entries that should not remain registered:
+For debugging, the `nostrodomusCompanion` key in `localStorage` overrides the defaults: `dormant` switches the whole layer off, `active` switches on the modules that are dormant by default. Remove the key to return to the defaults. The value is read again within a second.
 
-- `/local/nostrodomus_editor_v16_*` — legacy editor layout stack (v17 superseded it).
-- `/local/nostrodomus-library-core-v1.js`, `/local/nostrodomus-library-webdev-v1.js`
-  — provider data is bundled into the main runtime.
+## Standalone scripts still registered
 
-## Runtime coordinator
+An installation that was set up before the companion layer moved into the bundle may still load the standalone scripts as dashboard resources:
 
-The main runtime and any still-loaded legacy companions share
-`window.__nostrodomusRuntimeCoordinatorV1` for browser-local quiet-window coordination, so they don't
-act as isolated runtime islands during the coexistence period. Routine companion logs are gated
-behind `localStorage.setItem("nostrodomusDebug", "1"); location.reload();`.
+- `/local/nostrodomus_editor_v17_2_learned_reapply.js`
+- `/local/nostrodomus-picker-safe.js`
+
+They keep working, and the bundled layer stays dormant while they are loaded. To switch to the bundled layer:
+
+1. In Home Assistant open Settings, Dashboards, the menu in the top right, Resources, and delete the two entries.
+2. Delete the two files from the `www` folder of the configuration directory.
+3. Reload the page without the cache. `companionLayer` in the diagnostics now reads `internal`.
+
+The completion data is bundled as well. Resources named `/local/nostrodomus-library-core-v1.js` or `/local/nostrodomus-library-webdev-v1.js` are not loaded by Nostrodomus and can be deleted in the same place.

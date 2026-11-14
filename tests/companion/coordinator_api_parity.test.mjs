@@ -1,14 +1,13 @@
-// ABSORB P0b — runtime coordinator API parity golden baseline. FROZEN.
+// Runtime coordinator API parity golden baseline.
 //
-// D-COEXIST rides on the __nostrodomusRuntimeCoordinatorV1 global keeping the EXACT
+// Coexistence rides on the __nostrodomusRuntimeCoordinatorV1 global keeping the EXACT
 // same shape and version handshake, so an externally-loaded legacy companion and
 // the absorbed module interoperate. This test freezes that shape: the api key set,
 // each key's typeof, the state object's key set, and the counter names — captured
 // from a verbatim transplant of the (byte-identical-across-both-companions)
 // installer. A faithfulness guard proves the transplant has not drifted from the
-// frozen source. When src/companion/coordinatorRuntime.js lands (P1), this same
-// unmodified test asserts the absorbed module produces the identical surface.
-// Do NOT modify this file during the ABSORB order.
+// frozen source. The same test asserts that src/companion/coordinatorRuntime.js
+// produces the identical surface. If it fails, fix the module, not this file.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -83,7 +82,7 @@ test('coordinator installer is byte-identical across both companions and the tra
 // returns the api with the identical frozen surface + version handshake.
 const COORDINATOR_MODULE = 'coordinatorRuntime.js';
 test('absorbed coordinator module produces the identical frozen surface', async () => {
-  assert.ok(absorbedModuleExists(COORDINATOR_MODULE), `src/companion/${COORDINATOR_MODULE} is missing — the absorb landed at v0.1.136 and this module is load-bearing; fix the move/rename, never skip`);
+  assert.ok(absorbedModuleExists(COORDINATOR_MODULE), `src/companion/${COORDINATOR_MODULE} is missing; this module is required, fix the move or rename`);
   const mod = await import(absorbedModulePath(COORDINATOR_MODULE));
   assert.equal(typeof mod.installRuntimeCoordinator, 'function', 'module must export installRuntimeCoordinator()');
   withCleanGlobal(() => {

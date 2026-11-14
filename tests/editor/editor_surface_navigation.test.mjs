@@ -1,4 +1,4 @@
-// UNIVERSAL A2 — on-open convergence for non-card-dialog panel editors.
+// UNIVERSAL — on-open convergence for non-card-dialog panel editors.
 // Guards onEditorSurfaceNavigation: when style.universalCodebox is on, an SPA route change
 // arms a TIME-BOXED opening window + a bounded settle-probe ladder so the panel editor styles
 // on open (no click); when the flag is off it is a strict no-op (dialog-only behavior).

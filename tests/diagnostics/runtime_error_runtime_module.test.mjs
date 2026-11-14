@@ -30,7 +30,7 @@ test('runtime error runtime records bounded errors and one-shot duplicates', () 
   assert.equal(readout.items.length, 2);
 });
 
-test('recordRuntimeErrorOnce FIFO-bounds its dedup set at 500 keys (audit QW7)', () => {
+test('recordRuntimeErrorOnce FIFO-bounds its dedup set at 500 keys', () => {
   const runtime = createRuntimeErrorRuntime({ state: {}, logWarnOnce: () => {} });
   // The once-key embeds the (variable) error message, so a long session could otherwise grow the
   // dedup set without limit. Fill it to exactly the cap with distinct messages.

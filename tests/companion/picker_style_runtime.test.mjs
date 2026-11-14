@@ -1,4 +1,4 @@
-// ABSORB P5 — picker visual-fix re-seam: byte-identity + bounded collection unit tests.
+// Picker visual fix: byte-identity + bounded collection unit tests.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -103,7 +103,7 @@ test('active apply injects the byte-identical stylesheet under the shared id (fi
   assert.equal(extShadow._styles[0].textContent, 'EXTERNAL');
 });
 
-test('Bug 5 regression: overlay host selector is included, not char-spread, in the picker scan selector', () => {
+test('overlay host selector is included, not char-spread, in the picker scan selector', () => {
   const src = readFileSync(new URL('../../src/companion/pickerStyleRuntime.js', import.meta.url), 'utf8');
   // OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR is a comma-joined STRING; spreading it (...) expands it
   // char-by-char into malformed selectors that throw in querySelectorAll. It must be included directly.

@@ -85,7 +85,6 @@ async function typeColon(docWithCaret, rows) {
 
 const row = (type, label, insert) => ({ type, label, insert, matchTier: 0 });
 
-// completion#5
 test('a colon typed over a key row puts one colon after the key', async () => {
   // Already correct: rows that end at their colon, and a row without one.
   assert.equal(await typeColon('type: entities\nent|', [row('key', 'entity:', 'entity: ')]), 'type: entities\nentity: |');

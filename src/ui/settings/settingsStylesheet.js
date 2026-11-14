@@ -5,7 +5,7 @@
 export function createSettingsStylesheet(deps = {}) {
   const { createSettingsElement } = deps;
 
-  // important-override registry (INSTRUCTIONS.md §11.9) — settings panel interaction css.
+  // important-override registry — settings panel interaction css.
 
   // external rules overridden: HA modal dialog / backdrop pointer-events management
 

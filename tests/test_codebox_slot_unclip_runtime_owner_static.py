@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MAIN = (ROOT / "src/main.legacy.js").read_text(encoding="utf-8", errors="replace")
 MODULE_PATH = ROOT / "src" / "ui" / "codeboxStyleRuntime.js"
 MODULE = MODULE_PATH.read_text(encoding="utf-8", errors="replace") if MODULE_PATH.exists() else ""
-# UI_DECOMP P2 (v0.1.x): the slot/dialog-body unclip function bodies were extracted verbatim out of
+# The slot/dialog-body unclip function bodies were extracted verbatim out of
 # codeboxStyleRuntime.js into this seam, which the runtime owner (createCodeboxStyleRuntime) imports and
 # wires via createCodeboxUnclip. The runtime is still the owner of the slot-unclip path; the bodies now
 # live here. Assertions that checked the bodies/telemetry against MODULE re-point to UNCLIP (same fact,

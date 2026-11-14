@@ -1,17 +1,16 @@
-// ABSORB v17-persistence regression — a CodeMirror nested in a visual-editor FORM FIELD must
-// NOT be treated as the codebox.
+// A CodeMirror nested in a visual-editor FORM FIELD must NOT be treated as the codebox.
 //
-// The persistence engine (companionSettleRuntime) now re-applies on open to editors a click
-// never reached, which widened discovery's blast radius. The owner hit this on a markdown
+// The persistence engine (companionSettleRuntime) re-applies on open to editors a click
+// never reached, which widened discovery's blast radius. It showed on a markdown
 // card's VISUAL editor: its content template field is a ha-code-editor inside
 // ha-selector-template / ha-form, and the companion force-sized it to calc(94vh - …),
-// overflowing the card and covering the "Show code editor" toggle. The fix guards
-// visibleStyleEditorCandidate to reject ANY ha-form / ha-selector-nested CodeMirror (general,
+// overflowing the card and covering the "Show code editor" toggle.
+// visibleStyleEditorCandidate rejects ANY ha-form / ha-selector-nested CodeMirror (general,
 // not markdown-specific — it must hold for condition/action editors and other form fields too).
 //
 // This spec opens the markdown card's VISUAL editor (never switches to YAML) and asserts the
 // template field's CodeMirror is NOT styled as the codebox: no companion stylesheet node, and
-// no enlarge inline height. Authored on-branch; RUN BY THE OWNER.
+// no enlarge inline height.
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';

@@ -7,7 +7,7 @@
 // runs it once per uniqueSearchStrings(item) on every MATCHED candidate per keystroke (capped at
 // maxRuntimeEntities=750).
 //
-// REALISM MATTERS (an earlier label-only version understated cost ~3-4x and gave a false green):
+// REALISM MATTERS (label-only rows understate the cost ~3-4x):
 //   * Production entity rows carry aliases ['entity', domain, friendly] (haRuntimeProvider.js:469),
 //     so uniqueSearchStrings = [id, 'entity', domain, friendly] => dpFuzzy runs ~4x/candidate, not 1x.
 //   * Real ids/friendly-names reach 50-120 chars — the costly band of the O(n*m=120) curve, not ~25.
@@ -20,11 +20,11 @@
 // NO CACHE is correct, not a flaw: the live cache is keyed on ctx.prefix (scoring.js:473), so every
 // keystroke changes the prefix => cache miss => full recompute. Do not "add the cache" to look faster.
 //
-// TWO THRESHOLDS, kept distinct (per owner: do NOT dress a pass-fitting number as the acceptance bar):
+// TWO THRESHOLDS, kept distinct (a number chosen so the test passes is NOT the acceptance bar):
 //   * REGRESSION TRIPWIRES (asserted, on `best`): generous gross-slowdown catches that never flake.
-//   * ACCEPTANCE BUDGET (LOGGED, not asserted — a product call for the report): a keystroke op should
+//   * ACCEPTANCE BUDGET (LOGGED, not asserted): a keystroke op should
 //     sit well under a 60fps frame (16.67ms) WITH headroom on REAL hardware. HA frontends run on
-//     Pi/old-laptop/phone, credibly 4-8x slower than this i9 sandbox — so the sandbox p90 must be a
+//     Pi/old-laptop/phone, credibly 4-8x slower than a desktop development machine — so the p90 there must be a
 //     SMALL fraction of a frame (~2-3ms) to be safe, NOT merely under one frame here.
 
 import test from 'node:test';
@@ -92,11 +92,11 @@ test('perf(dpRanking): worst-case keystroke scoring — 750 production-shaped en
     const off = sample(() => runOff(q));
     const on = sample(() => runOn(q));
     const delta = on.best - off.best;
-    const accVerdict = on.p90 <= FRAME_MS / 2 ? 'UNDER ~half-frame proxy' : on.p90 <= FRAME_MS ? 'over half-frame, under one frame (sandbox)' : 'OVER a full frame (sandbox)';
+    const accVerdict = on.p90 <= FRAME_MS / 2 ? 'UNDER ~half-frame proxy' : on.p90 <= FRAME_MS ? 'over half-frame, under one frame (this machine)' : 'OVER a full frame (this machine)';
     console.log(`dpRanking worst "${q}": OFF ${fmt(off)} | ON ${fmt(on)} | delta(best)=${delta.toFixed(2)}ms | ACCEPTANCE(p90 vs ${(FRAME_MS / 2).toFixed(1)}ms): ${accVerdict}`);
     if (!worst || on.best > worst.on.best) worst = { off, on, delta };
   }
-  console.log(`dpRanking ACCEPTANCE NOTE: judge p90 against real hardware = sandbox x ~4-8 (Pi/old-laptop/phone). A safe default-ON needs sandbox p90 ~<3ms; base OFF scorer is the dominant cost, dpRanking the surcharge on top.`);
+  console.log(`dpRanking ACCEPTANCE NOTE: judge p90 against real hardware = this machine x ~4-8 (Pi/old-laptop/phone). A safe default-ON needs p90 here ~<3ms; base OFF scorer is the dominant cost, dpRanking the surcharge on top.`);
 
   // REGRESSION TRIPWIRES (on the non-flaky floor; generous; NOT the acceptance bar — see header):
   assert.ok(worst.on.best < ON_GROSS_CEILING_MS, `dpRanking-ON worst best ${worst.on.best.toFixed(2)}ms exceeded the ${ON_GROSS_CEILING_MS}ms gross-regression ceiling`);

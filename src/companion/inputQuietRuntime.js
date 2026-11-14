@@ -3,7 +3,7 @@
 // The typing-session quiet window: mark -> active window, defer -> flush-after-quiet,
 // plus the CodeMirror hotpath predicate. The coordinator's `quietWindows`
 // "editor-input" channel is the shared substrate (same keys) so an externally-loaded
-// picker-safe still interoperates (D-COEXIST). The module-level functions are pure; the
+// picker-safe still interoperates. The module-level functions are pure; the
 // mutable state + clock/timer/coordinator are parameterized into the deps-factory.
 //
 // The one guard (deferDuringTyping) is the suppression-gap closure: every site that

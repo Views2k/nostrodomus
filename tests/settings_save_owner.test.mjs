@@ -24,7 +24,7 @@ test('settingsPanelRuntime owns saveSettings write/skip behavior', () => {
   });
 
   assert.equal(runtime.saveSettings('unit-write'), true);
-  // HARNESS P5: the stored payload stamps schemaVersion (storage metadata).
+  // The stored payload stamps schemaVersion (storage metadata).
   assert.equal(writes.length, 1);
   assert.equal(writes[0][0], 'nostrodomus.test.settings');
   assert.deepEqual(JSON.parse(writes[0][1]), { ...state.settings, schemaVersion: SETTINGS_SCHEMA_VERSION });
@@ -39,7 +39,7 @@ test('settingsPanelRuntime owns saveSettings write/skip behavior', () => {
   assert.equal(events.at(-1).name, 'settings-save-skipped-unchanged');
 });
 
-test('saveSettings fails dark when storage throws (quota/blocked), no exception escapes (bug hunt)', () => {
+test('saveSettings fails dark when storage throws (quota/blocked), no exception escapes', () => {
   const errs = [];
   let cacheClears = 0;
   const state = { settings: { enabled: true }, settingsLastSerialized: '', settingsSaveStats: null };
@@ -86,7 +86,7 @@ test('a failed save is remembered until a save succeeds', () => {
   assert.equal(state.settingsSaveStats.lastWriteError, '', 'a successful save clears the failure');
 });
 
-test('resetSettings clears the save-dedupe stamp so re-applying a pre-reset value persists (bug hunt 3)', () => {
+test('resetSettings clears the save-dedupe stamp so re-applying a pre-reset value persists', () => {
   const KEY = 'nostrodomus.test.settings';
   const store = new Map();
   const storage = {
@@ -127,7 +127,7 @@ test('resetSettings clears the save-dedupe stamp so re-applying a pre-reset valu
   assert.equal(JSON.parse(store.get(KEY)).keepOpen, true);
 });
 
-test('saveSettings never downgrades a future-build schemaVersion stamp (bug hunt 4)', () => {
+test('saveSettings never downgrades a future-build schemaVersion stamp', () => {
   const KEY = 'nostrodomus.test.settings';
   const store = new Map();
   const storage = { getItem: k => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, v), removeItem: k => store.delete(k) };

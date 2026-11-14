@@ -1,9 +1,7 @@
-// UI_DECOMP P0a — settings panel runtime API parity contract.
+// Settings panel runtime API parity contract.
 //
-// Frozen snapshot of createSettingsPanelRuntime's public return surface, captured
-// against the pre-decomposition runtime (v0.1.71). The decomposition order
-// (UI_DECOMP) must keep this exact surface: same keys, same typeof per key.
-// This test must not be modified during the UI_DECOMP order.
+// Frozen snapshot of createSettingsPanelRuntime's public return surface: same keys,
+// same typeof per key. A refactor that moves code must keep this exact surface.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';

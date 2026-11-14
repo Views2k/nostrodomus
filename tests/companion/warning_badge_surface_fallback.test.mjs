@@ -5,10 +5,10 @@ import { fileURLToPath } from 'node:url';
 
 import { createScrollbarStyleRuntime } from '../../src/companion/scrollbarStyleRuntime.js';
 
-// F2: the warning badge stopped appearing. Owner live probe (custom-card edit dialog):
+// The warning badge stopped appearing in a custom-card edit dialog:
 // the dialog IS present with its ha-alert inside, but visibleDialogSurface() filters it
 // out (HA 2026.7 body/wa-dialog visibility), so activeEditDialog() returns null and the
-// badge source no-ops. The fix routes the badge source through activeEditorWarningSurface,
+// badge source no-ops. The badge source goes through activeEditorWarningSurface,
 // which falls back to an edit-card candidate when the visible filter yields null. This
 // test drives the real injector on the resolved fallback surface (not the removed lane)
 // and pins the composition-root wiring.
@@ -43,7 +43,7 @@ test('the badge injects on the candidate fallback surface when activeEditDialog 
   const { surface, rootB, alertShadow } = makeCandidateSurface();
   const rt = createScrollbarStyleRuntime({ documentRef: fakeDoc, isActive: () => true, hideEditorWarnings: () => false });
 
-  // Pre-fix behaviour: no fallback -> null surface -> nothing injected (the reported bug).
+  // Without the fallback: null surface -> nothing injected.
   assert.equal(rt.applyEditorWarningHide(resolveSurface(() => null, () => [])), false);
 
   // Fixed behaviour: fall back to the present candidate (which holds the alert) -> badge injects.

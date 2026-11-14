@@ -1,10 +1,10 @@
-// uninstall-teardown.spec — promotes boot-cost's style-node diagnostic to a hard teardown assertion.
-// The contract uninstall() actually guarantees (per the public-API teardown unit tests + the A4 "uninstall
-// sticks" fix): opening an editor injects companion/editor style nodes; uninstall() tears the bulk of them
+// uninstall-teardown.spec — a hard teardown assertion on the style nodes boot-cost only reports.
+// The contract uninstall() guarantees (as in the public-API teardown unit tests):
+// opening an editor injects companion/editor style nodes; uninstall() tears the bulk of them
 // down; and — the key user guarantee — NOTHING re-injects when HA later mutates the DOM (observers/listeners
 // are truly disconnected). A small inert residual (e.g. a document-level syntax/base node uninstall does not
 // target) is reported, not failed on — the meaningful properties are "editor styling removed" and "no
-// re-injection". Consolidates Tier1 / Tier A / 0.1.258 teardown, unit-only until now. Owner-run.
+// re-injection".
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';

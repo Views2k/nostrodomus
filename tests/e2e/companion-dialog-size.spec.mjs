@@ -1,18 +1,17 @@
-// ABSORB CHECKPOINT A+B reopen — dialog SIZING regression (HA 2026.6 wa-dialog).
+// Dialog sizing on the HA 2026.6 wa-dialog.
 //
 // The frozen v17 DIALOG_ROOT_CSS sizes the editor dialog via `:host` / `ha-dialog` /
 // `--mdc-dialog-*`, which reach nothing on 2026.6's real modal — a `wa-dialog`
 // (WebAwesome) nested in ha-dialog's shadow whose surface is `::part(dialog)` (a native
-// top-layer <dialog>). Live diagnosis: wa-dialog stayed 726×0, the editor/preview panes
-// stacked vertically, and the codebox overlaid the dashboard. The fix injects an
-// additive sheet into ha-dialog's shadow root sizing `wa-dialog::part(dialog)` to
+// top-layer <dialog>). Without a sizing rule that reaches it, wa-dialog stayed 726×0, the
+// editor/preview panes stacked vertically, and the codebox overlaid the dashboard. The companion
+// injects an additive sheet into ha-dialog's shadow root sizing `wa-dialog::part(dialog)` to
 // 98vw×94vh. This spec is the regression guard: the dialog must be ~full-screen and the
 // .element-editor / .element-preview panes must sit SIDE-BY-SIDE.
 //
-// Runs on the entities-card path (the established companion-parity choreography). The
-// layer is force-active. Authored on-branch; RUN BY THE OWNER (host-only e2e). The
-// "panes side-by-side" assertion cannot be checked without a browser, so this spec
-// encodes it for the suite.
+// Runs on the entities-card path (the companion-parity choreography). The
+// layer is force-active. The "panes side-by-side" assertion needs a real browser,
+// so it lives in this spec.
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';

@@ -1,4 +1,4 @@
-// Smoke spec (HARNESS P1 / RUN CHECKPOINT 1): the seeded dashboard loads,
+// Smoke spec: the seeded dashboard loads,
 // the stale-resource guard passes, the Nostrodomus version banner appears in the
 // console, and the whole-session console policy is clean (the policy verdict
 // is enforced by the nostrodomusConsole fixture at teardown). Plus the 2026.6
@@ -28,7 +28,7 @@ test('ha boots: seeded dashboard renders fresh Nostrodomus with a clean console'
     .toBe(true);
 });
 
-// Compat canary (docs/COMPAT.md, observed manually on 2026-06-12): HA
+// Compat canary (docs/COMPAT.md): HA
 // 2026.6's built-in dashboards (the '/home' Overview and friends) do not
 // load custom Lovelace resources even though the resource is registered
 // globally. Pin the observed behavior: if this test ever fails, HA changed

@@ -74,8 +74,7 @@ export default [
       "data/**",
       "reference/companions/**",
       "coverage/**",
-      "tools/e2e/.ha-state/**",
-      "tools/e2e/.ha-state-beta/**",
+      "tools/e2e/.ha-state*/**",
       "tests/e2e/.playwright/**",
       "*.zip",
     ],
@@ -92,8 +91,7 @@ export default [
   },
   {
     // Composition root: its unused import/destructure bindings are pinned by the
-    // static grep gates (tests/test_*_static.py) and are owned by the planned
-    // composition-root extraction work; advisory here, error everywhere else.
+    // static grep gates (tests/test_*_static.py); advisory here, error everywhere else.
     files: ["src/main.legacy.js"],
     rules: {
       "no-unused-vars": [

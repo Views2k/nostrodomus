@@ -63,7 +63,7 @@ export function createInitialSyntaxPaintGate(deps) {
   ].join(",");
   const INITIAL_SYNTAX_PAINT_GATE_STYLE_ID = "nostrodomus-initial-syntax-paint-gate-v1";
 
-// important-override registry (INSTRUCTIONS.md §11.9) — first-paint reveal gate.
+// important-override registry — first-paint reveal gate.
 
 // external rules overridden: HA theme / card-mod universal transition and opacity
 

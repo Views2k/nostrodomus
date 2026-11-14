@@ -13,8 +13,8 @@ SETTINGS_OWNER_DIR = ROOT / "src" / "ui" / "settings"
 
 text = LEGACY.read_text(encoding="utf-8")
 settings_panel_text = SETTINGS_PANEL_RUNTIME.read_text(encoding="utf-8", errors="replace")
-# UI_DECOMP moved the settings owner functions out of settingsPanelRuntime.js
-# into src/ui/settings/* factories; the runtime file is now a thin composer.
+# The settings owner functions live in src/ui/settings/* factories;
+# settingsPanelRuntime.js is a thin composer.
 # Scan the owner modules too so the token assertions follow the code.
 for owner_module in sorted(SETTINGS_OWNER_DIR.glob("*.js")):
     settings_panel_text += "\n" + owner_module.read_text(encoding="utf-8", errors="replace")
@@ -50,7 +50,7 @@ assert not missing, "Missing settings resize/copy tokens: " + ", ".join(missing)
 assert '"width:440px"' not in text, "Settings panel width must come from persisted clampSettingsSize"
 assert '"max-height:76vh"' not in text, "Settings panel must use explicit persisted height, not fixed max-height only"
 
-# Post-UI_DECOMP truth: main.legacy.js no longer defines helpCard; it consumes
+# main.legacy.js does not define helpCard; it consumes
 # the owner function through the settingsPanelDelegates destructure.
 assert re.search(r"helpCard\s*\}\s*=\s*settingsPanelDelegates", text), "main.legacy must consume helpCard from settingsPanelDelegates"
 assert "function helpCard(title, lines = [])" in (SETTINGS_OWNER_DIR / "settingsSections.js").read_text(encoding="utf-8", errors="replace"), "settingsSections.js must own helpCard"

@@ -1,4 +1,4 @@
-// WARNING-BADGE/HIDE: surface-wide editor-warning reconcile (v0.1.163 redesign).
+// Surface-wide editor-warning reconcile (warning badge and warning hide).
 //
 // The warning (ha-alert) lives in nested shadow roots inside the card-edit dialog
 // (dialog → … → card-element-editor → ha-alert), which the old code-editor-only path never reached.
@@ -8,7 +8,7 @@
 //   • toggle ON → injects the narrowed display:none HIDE sheet (sprayed, inert without an ha-alert);
 //   • toggle OFF + layer INACTIVE → removes everything.
 // This pins that logic deterministically (no browser) with a fake nested-shadow DOM mirroring the
-// owner-instrumented structure, and guards the two glitch-fix invariants (narrow hide selector;
+// structure observed in Home Assistant, and guards the two glitch-fix invariants (narrow hide selector;
 // out-of-flow badge).
 
 import test from 'node:test';
@@ -80,7 +80,7 @@ test('BADGE (default — toggle OFF, layer active): host sheet into the alert co
 });
 
 test('REGRESSION: a deeply-nested alert the deep-walk cannot reach STILL gets the badge SHADOW sheet (paired with HOST)', () => {
-  // Owner bug (probe-confirmed): a custom card's validation alert (better-thermostat min_temp) is so
+  // A custom card's validation alert (better-thermostat min_temp) is so
   // deeply nested that deepShadowRootsWithin's depth/root cap reaches its CONTAINER root (HOST sheet
   // lands, collapsing it to a 22px dot) but NOT the alert's OWN shadow (SHADOW sheet missing) → the
   // badge is HALF-applied: the internal content + icon stay unstyled and spill out ("removes the
@@ -112,7 +112,7 @@ function fakeMutationObserver() {
 }
 
 test('RE-APPLY WATCHER: HA rebuilding the alert (drops our sheets) re-badges instantly via the container watcher', () => {
-  // Owner probe: typing makes HA REMOVE + re-ADD the ha-alert in the (stable) container shadow on every
+  // Typing makes HA REMOVE + re-ADD the ha-alert in the (stable) container shadow on every
   // keystroke, wiping our injected sheets → the alert flashes back to HA's full native yellow banner.
   const MO = fakeMutationObserver();
   const { surface, rootB, alertShadow } = makeSurface();
@@ -263,7 +263,7 @@ test('ICON COLOR: the bare caution-triangle icon still uses --nostrodomus-badge-
   assert.match(WARNING_BADGE_HOST_CSS, /var\(--nostrodomus-badge-accent,\s*hsl/i, 'has a cyan hsl fallback when no live color is available');
 });
 
-test('NO ORANGE PSEUDO SQUARE: HA\'s .issue-type::after solid warning-color box is removed (probe-confirmed the square is a pseudo-element, not an element background)', () => {
+test('NO ORANGE PSEUDO SQUARE: HA\'s .issue-type::after solid warning-color box is removed (the square is a pseudo-element, not an element background)', () => {
   assert.match(WARNING_BADGE_SHADOW_CSS, /:host\(\[alert-type\]\)\s+\.issue-type::before\s*,\s*:host\(\[alert-type\]\)\s+\.issue-type::after\s*\{[^}]*(content:\s*none|display:\s*none)/is, 'removes the .issue-type ::before/::after pseudo-element at raised specificity');
   assert.doesNotMatch(WARNING_BADGE_SHADOW_CSS, /!important/, 'still no !important');
 });

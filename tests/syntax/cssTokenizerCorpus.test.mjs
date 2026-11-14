@@ -7,7 +7,7 @@ import {
   smartSyntaxTokenizeCssLine,
 } from "../../src/syntax/smartSyntaxTokenizers.js";
 
-// Frozen corpus snapshot (senior-finish P5B). The CSS tokenizers are pure functions;
+// Frozen corpus snapshot. The CSS tokenizers are pure functions;
 // their token output over this corpus is pinned byte-for-byte. If this test fails,
 // tokenizer behavior changed — reconcile the change deliberately and regenerate the
 // fixture in the same commit with an explanation, never as a side effect.

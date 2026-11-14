@@ -22,7 +22,7 @@ test('runtime context owner injects current settings into active detector', () =
   assert.equal(calls[0].options.settings, state.settings);
 });
 
-test('P4: registryLaneEnabled rides onto the resolved ctx only when engineV2 + registryLane are on', () => {
+test('registry lane: registryLaneEnabled rides onto the resolved ctx only when engineV2 + registryLane are on', () => {
   const detect = (doc, pos, options) => ({ lang: 'yaml', pos, options });
   const make = settings => createRuntimeContextRuntime({ state: { settings }, detectRuntimeContext: detect });
 

@@ -1,121 +1,112 @@
-# Nostrodomus Project Structure
+# Nostrodomus project structure
 
-This document defines which files are active, which files are generated, and which
-historical artifacts should stay out of the repository.
+Where things are in the repository, which files are sources and which are generated.
 
-## Contracts and reference docs
-
-```text
-docs/contracts/RUNTIME_SCOPE_CONTRACT.md            runtime/editor/dashboard ownership boundary
-docs/contracts/RUNTIME_IDENTITY_MODULE_CONTRACT.md  runtime identity module rules
-docs/contracts/SETTINGS_STORAGE_KEYS_MODULE_CONTRACT.md settings storage keys module rules
-docs/contracts/RUNTIME_CONSTANTS_MODULE_CONTRACT.md runtime constants module rules
-docs/contracts/STYLE_OWNERSHIP_CONTRACT.md          codebox frame, syntax, CSS token, and style-registry ownership
-docs/contracts/SETTINGS_PORTAL_CONTRACT.md          Settings top-layer portal, drag, and interaction stability rules
-docs/contracts/VISUAL_LAYER_BASELINE_CONTRACT.md    protected visual layer baseline
-docs/contracts/FILE_OWNERSHIP_MAP.md                active file ownership and source-of-truth boundaries
-docs/contracts/NO_TOUCH_REGRESSION_LIST.md          historical failed approaches and forbidden patterns
-docs/contracts/MODULE_WIRING_ALLOWLIST.json         allowlist for intentionally unwired modules
-```
-
-These files exist to reduce future guesswork. They should be read before runtime or
-styling changes.
-
-## Active runtime/build ownership
+## Root
 
 ```text
-src/main.js                         bundler entry; must stay a one-line side-effect import
-src/main.legacy.js                  runtime composition root; wires the modules
-src/core/                           identity, constants, settings/state/logging runtimes, delegate bridge
-src/completion/                     popup, scoring, filtering, insertion, snippets runtime
-src/providers/                      provider registry/runtime and suggestion providers incl. live hass data
-src/yaml/                           context detection, branch state, YAML scanning
-src/syntax/                         tokenizers, highlight runtime, source-class builders
-src/editor/                         CodeMirror bridge, active-editor cache, dispatch
-src/ui/                             settings panel/portal and codebox frame/style runtimes
-src/ui/settings/                    settings owner factories: geometry, controls, stylesheet, sections, shell
-src/ui/codebox/                     codebox owner factories: preflight, settle/reapply, unclip
-src/diagnostics/                    health, context diagnostics, performance metrics, telemetry
-src/languages/                      embedded language detection, provider contract, lane ranking
-src/context/                        context snapshot runtime adapter + resolver
-src/companion/                      absorbed v17 companion runtimes: settle/reapply scheduler, codebox enlarge, scrollbar/picker styling, input-quiet, coordinator (default-dormant, gated by companionModuleDormant)
-src/snippets/                       snippet catalog module
-data/snippets.json                  validated snippet catalog
-dist/nostrodomus.js        browser resource built from src/main.js with esbuild
-reference/companions/               frozen companion references (behavior absorbed into src/companion/)
-                                    (nostrodomus_editor_v17_2_learned_reapply.js, nostrodomus-picker-safe.js)
+README.md                 project overview and installation
+DOCUMENTATION.md          user reference: settings, shortcuts, providers, themes, console API
+CHANGELOG.md              changes per version
+CONTRIBUTING.md           build, test and verification workflow
+DESIGN.md                 architecture for contributors
+SECURITY.md               security posture and how to report an issue
+SUPPORT.md                what to include in a bug report
+LICENSE                   MIT
+hacs.json                 HACS metadata (name, bundle file, minimum Home Assistant and HACS versions)
+PROJECT.json              project version, internal version string and project policies read by the tools
+package.json              npm scripts and development dependencies
+eslint.config.js, jsconfig.json, prettier.config.cjs, .editorconfig, .nvmrc
+                          lint, typecheck, format and editor configuration
+.github/workflows/ci.yml  CI: the gate on every push and pull request
 ```
 
-(Per-directory file counts are intentionally omitted here — they drift on every commit and become a standing staleness source; `npm run check:modules` reports the authoritative wired-module total.)
-
-## Active diagnostics and verification
+## Runtime source and bundle
 
 ```text
-tools/build.py                      reproducible build wrapper; writes reports/BUILD_LAST.txt
-tools/verify.py                     release/dev verification gate (runs tests/test_*_static.py)
-tools/check_module_wiring.py        fails on new unwired src modules
-tools/check_runtime_contracts.py    read-only known-bad runtime pattern scanner
-tools/verify_reproducible_build.py  compares a temp esbuild bundle against committed dist
-tools/validate_snippets.py          snippet catalog schema validation
-tools/version_bump.py               controlled version truth updater
-tools/run_node_tests.mjs            executed-test runner behind npm test (Node >= 20 unit-suite preflight; engines >= 22 is the product/e2e floor)
-tools/check_js_syntax.mjs           node --check sweep helper
-tools/public_runtime_contract_runner.mjs  public API contract enforcement helper
-tools/visual_layer_doctor.py        style-ownership validation helper
-tools/triage_catches.py             catch-block pattern triage helper
-tests/                              executed *.test.mjs behavior tests + test_*_static.py structural guards
-tests/ui/*parity*.test.mjs + settings_stylesheet_snapshot.test.mjs
-                                    frozen decomposition parity pins — never modify
-tests/perf/                         wall-clock budget tests; npm run test:perf only (excluded from npm test)
-reports/*.txt                       generated; not source of truth
+src/main.js               bundler entry; a one-line side-effect import of main.legacy.js
+src/main.legacy.js        runtime composition root; wires the modules together
+src/composition/          factories and adapters the composition root uses to build the runtimes
+src/core/                 version, constants, default settings, settings storage, state, logging, public API
+src/completion/           suggestion list, keymap, scoring, filtering, insertion, snippet sessions
+src/providers/            provider registry and the suggestion providers, including live Home Assistant data
+src/yaml/                 YAML context detection, branch state, scanning
+src/context/              context snapshot adapter and resolver
+src/languages/            embedded language detection and lane ranking
+src/snippets/             snippet catalog module
+src/syntax/               tokenizers, highlight ranges, source-class styling, paint scheduling
+src/editor/               CodeMirror bridge, active-editor discovery and cache, dispatch hook, Home Assistant selectors
+src/ui/                   settings panel and portal, codebox frame and style runtimes
+src/ui/settings/          settings panel parts: shell, sections, controls, geometry, stylesheet
+src/ui/codebox/           codebox parts: preflight style, settle and reapply, unclip
+src/diagnostics/          health check, diagnostics export, performance telemetry, runtime error buffer
+src/companion/            card dialog sizing, codebox fit, scrollbar and warning styling, picker styling,
+                          typing-quiet coordination. Active by default, except the picker styling.
+                          Stays dormant when a legacy companion resource is loaded.
+data/snippets.json        the snippet catalog, validated by tools/validate_snippets.py
+dist/nostrodomus.js       the browser resource, built from src/main.js with esbuild; committed
+reference/companions/     two frozen legacy companion scripts, kept as reference for the parity tests
 ```
 
-The full gate is `npm run gate` (lint, typecheck, module wiring, tests, build,
-release verify, reproducible build, snippet validation).
+`npm run check:modules` reports how many modules under `src/` are wired into the bundle and fails on a module that is not.
 
-## Required reference docs at root
+## Tools
 
 ```text
-README.md                           public project overview
-CONTRIBUTING.md                     build/test/verify workflow
-DESIGN.md                           product architecture for contributors
-SECURITY.md                         security posture
-SUPPORT.md                          support/issue triage
-SMOKE.md                            standing browser smoke checklist
-docs/SYNTAX_COLORING_REFERENCES.md  syntax coloring references and role model
+tools/build.py                        build dist/nostrodomus.js and write reports/BUILD_LAST.txt
+tools/verify.py                       verification gate; runs the static tests; --release adds the release checks
+tools/verify_reproducible_build.py    compare a fresh esbuild bundle with the committed dist
+tools/check_module_wiring.py          fail on a src module that is not wired
+tools/check_runtime_contracts.py      scan for forbidden runtime patterns and required contract text
+tools/visual_layer_doctor.py          check the codebox visual layer ownership
+tools/validate_snippets.py            validate the snippet catalog
+tools/version_bump.py                 update the version in PROJECT.json, package files and src/core/version.js
+tools/run_node_tests.mjs              run tests/**/*.test.mjs (npm test); --perf runs tests/perf only
+tools/check_js_syntax.mjs             node --check over the sources
+tools/check_lint_coverage.mjs         confirm that lint inspected every src module
+tools/public_runtime_contract_runner.mjs  helper that exercises the public API contract
+tools/triage_catches.py               inventory of catch blocks; --write produces reports/CATCH_TRIAGE.md
+tools/e2e/                            disposable Home Assistant container for the browser tests (see its README)
 ```
 
-## Non-functional artifacts
+The full gate is `npm run gate`: lint, typecheck, module wiring, tests, build, release verification, reproducible build, snippet validation.
 
-The following have no runtime, build, verify, test, Home Assistant, or HACS ownership and
-must not appear in the repository:
+## Tests
 
 ```text
-nostrodomus/               accidental nested repo copy
-*.backup_*                          local in-place edit backups
-*.tar.gz, *.tgz                     local archives
-reports/*.txt                       generated reports; recreated by build/verify
-old v30 dist filenames              superseded generated artifacts
+tests/**/*.test.mjs       executed behavior tests, by area (completion, providers, syntax, ui, yaml, ...)
+tests/test_*_static.py    static structure guards, run by tools/verify.py
+tests/fixtures/           shared fixtures
+tests/perf/               wall-clock budget tests; npm run test:perf only, not part of npm test
+tests/e2e/                Playwright browser tests against the container from tools/e2e (npm run e2e)
+tests/ui/*parity*.test.mjs, tests/ui/*_snapshot.test.mjs
+                          pin the settings stylesheet and control markup byte for byte
 ```
 
-`tools/verify.py` fails on backup files in the active tree and on legacy generated dist
-artifacts.
-
-## Syntax architecture baseline
-
-The current good syntax model:
+## Documentation
 
 ```text
-source-class CodeMirror styling + CSS Custom Highlight document ranges
+docs/KNOWN_ISSUES.md      current limitations
+docs/COMPAT.md            supported and tested Home Assistant versions, Home Assistant behavior to know
+docs/HACS_INSTALL.md      HACS packaging: bundle file, metadata, release verification
+docs/DIAGNOSTICS.md       diagnostics API and the runtime error buffer
+docs/PROJECT_STRUCTURE.md this file
+docs/contracts/           binding rules for runtime scope, styling, the settings portal and the pure modules
+docs/THREAT_MODEL.md      what the plugin protects against and how the build enforces it
+docs/*.md (other)         reference documents: provider contract, scoring, snippet schema, context descriptor,
+                          runtime coordinator, companion resources, syntax coloring
+docs/screenshots/         images used by README.md
 ```
 
-Do not return to broad whole-line color inheritance. Do not return to the old inline DOM
-token painter except as a fallback when Home Assistant no longer exposes CodeMirror
-internals or the browser lacks CSS Custom Highlight support.
+Read the relevant contract under `docs/contracts/` before changing runtime scope, settings, styling or syntax behavior.
 
-## Pure core modules
+## Generated files
 
-`src/core/version.js`, `src/core/settingsStorageKeys.js`, and
-`src/core/runtimeConstants.js` are pure constant modules (identity, settings storage
-keys, security/provider constants). They must stay free of browser globals; behavior
-that uses them lives in the runtime modules.
+```text
+dist/nostrodomus.js       committed; changes only together with the source change that produces it
+reports/                  written by the build, verify and test tools; ignored by git, not a source of truth
+tools/e2e/.ha-state*/     state of the test container; ignored by git
+node_modules/             ignored by git
+```
+
+`tools/verify.py` fails when it finds `*.backup_*` files in the tree or old generated bundle files next to `dist/nostrodomus.js`.

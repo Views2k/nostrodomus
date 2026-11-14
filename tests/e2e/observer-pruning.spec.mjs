@@ -1,5 +1,5 @@
 // observer-pruning.spec — 0.1.254: the sentinel/style observer Maps prune detached roots, so repeatedly
-// opening and closing the edit dialog does NOT grow the observer count unbounded. Unit-only until now.
+// opening and closing the edit dialog does NOT grow the observer count unbounded.
 // Cycles happen in ONE page session (no navigation) so a leak would actually accumulate.
 
 import { test, expect, openDashboard } from './session.mjs';
@@ -21,8 +21,16 @@ test('observer pruning: repeated dialog open/close keeps the sentinel observer c
   const baseline = await readObserverCount(page);
 
   for (let i = 0; i < CYCLES; i++) {
-    await page.keyboard.press('Escape'); // close the dialog
-    await page.locator(HUI_DIALOG_EDIT_CARD).first().waitFor({ state: 'detached', timeout: 8000 }).catch(() => {});
+    // Close the dialog. Home Assistant keeps the dialog element in the page after it closed, so
+    // "closed" means its Cancel button is gone from view. On Home Assistant 2026.6 Escape is taken
+    // by the code editor and the dialog stays open; the Cancel button closes it there.
+    const cancel = page.locator(HUI_DIALOG_EDIT_CARD).first().getByRole('button', { name: 'Cancel', exact: true });
+    await page.keyboard.press('Escape');
+    const closedByEscape = await cancel.waitFor({ state: 'hidden', timeout: 3000 }).then(() => true, () => false);
+    if (!closedByEscape) {
+      await cancel.click();
+      await cancel.waitFor({ state: 'hidden', timeout: 8000 });
+    }
     // Reopen via a card Edit button — same page session, so a leak would accumulate across cycles.
     await page.getByRole('button', { name: 'Edit', exact: true }).first().click();
     await page.locator(HUI_DIALOG_EDIT_CARD).first().waitFor({ state: 'attached', timeout: 15000 });

@@ -106,7 +106,7 @@ function primeCodeboxPreflightForEditor(editor, reason = "preflight-prime") {
   return true;
 }
 
-// important-override registry (INSTRUCTIONS.md §11.9) — preflight counterpart of the codebox host
+// important-override registry — preflight counterpart of the codebox host
 // frame/surface/unclip block in codeboxStyle.js, applied before settings load.
 // Same external rules, owner, reason, removal condition, and verification as the
 // registry attribution on codeboxStyleBuildRootCss.

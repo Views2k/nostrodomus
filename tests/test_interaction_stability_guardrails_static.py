@@ -96,8 +96,7 @@ for label, pattern in DIST_HANDLER_PATTERNS.items():
         )
 
 # --- Diagnostics action handlers must preserve interaction state, not rebuild the panel ---
-# NOTE: [data-diag-clear-history] was deliberately RETIRED in commit 0f98258 (shipshape
-# P3 dead-code excision) together with the whole ContextParityHistory diagnostics pilot
+# NOTE: [data-diag-clear-history] was removed together with the whole ContextParityHistory diagnostics pilot
 # (src/diagnostics/contextParityHistory.js + contextDiagnostics.clearParityHistory). The
 # button no longer exists anywhere in src or dist, so it is dropped from this check; the
 # surviving diagnostics actions ([data-diag-refresh], [data-diag-health]) still carry the

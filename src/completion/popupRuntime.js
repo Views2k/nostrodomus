@@ -42,7 +42,7 @@ export function removeCompletionOverlay(state, deps = {}) {
   }
 }
 
-// --- Accessibility (MD4/MD5): a live announcer for the active suggestion, and the ARIA combobox
+// --- Accessibility: a live announcer for the active suggestion, and the ARIA combobox
 // pattern wired onto the focused CodeMirror content element so a screen reader follows selection. ---
 
 function completionOptionKindLabel(item) {

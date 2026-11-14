@@ -1,12 +1,12 @@
-// Fully automated HA onboarding (tools/e2e/README.md is the binding contract).
+// Fully automated HA onboarding (see tools/e2e/README.md).
 //
 // Sequence: poll /api/onboarding → create owner → exchange auth code →
 // core_config → analytics → integration → long-lived token via WebSocket →
 // write gitignored state files. No UI, no interaction, no committed secrets.
 //
-// HARD boundary (zero attempts): if HA has changed the onboarding flow such
-// that this documented API sequence fails, STOP — park with
-// reports/HARNESS_BLOCKED.md. No manual-click fallbacks, no auth weakening.
+// If HA has changed the onboarding flow such that this documented API
+// sequence fails, the script exits with the failing step. There is no
+// manual-click fallback and no auth weakening.
 //
 // Idempotency: onboarding already complete + token on disk → no-op.
 // Onboarding complete but no token → the state is unusable; instruct reset.
@@ -82,7 +82,7 @@ const userRes = await httpJson('POST', '/api/onboarding/users', {
   json: { client_id: CLIENT_ID, name: 'e2e_owner', username: 'e2e_owner', password, language: 'en' },
 });
 if (!userRes.ok || !userRes.data?.auth_code) {
-  fail(`POST /api/onboarding/users failed (${userRes.status}): ${userRes.text.slice(0, 300)} — HARD boundary, park the order.`);
+  fail(`POST /api/onboarding/users failed (${userRes.status}): ${userRes.text.slice(0, 300)}`);
 }
 log(`owner created (auth_code ${redact(userRes.data.auth_code)})`);
 
@@ -91,7 +91,7 @@ const tokenRes = await httpJson('POST', '/auth/token', {
   form: { grant_type: 'authorization_code', code: userRes.data.auth_code, client_id: CLIENT_ID },
 });
 if (!tokenRes.ok || !tokenRes.data?.access_token) {
-  fail(`POST /auth/token failed (${tokenRes.status}): ${tokenRes.text.slice(0, 300)} — HARD boundary, park the order.`);
+  fail(`POST /auth/token failed (${tokenRes.status}): ${tokenRes.text.slice(0, 300)}`);
 }
 const { access_token, refresh_token, expires_in } = tokenRes.data;
 log(`token exchange ok (access ${redact(access_token)}, refresh ${redact(refresh_token)})`);
@@ -104,7 +104,7 @@ for (const [step, body] of [
 ]) {
   const res = await httpJson('POST', `/api/onboarding/${step}`, { token: access_token, json: body });
   if (!res.ok) {
-    fail(`POST /api/onboarding/${step} failed (${res.status}): ${res.text.slice(0, 300)} — HARD boundary, park the order.`);
+    fail(`POST /api/onboarding/${step} failed (${res.status}): ${res.text.slice(0, 300)}`);
   }
   log(`onboarding step done: ${step}`);
 }
@@ -114,7 +114,7 @@ const ws = new HaWebSocket();
 const haVersion = await ws.connect(access_token);
 const llat = await ws.call({ type: 'auth/long_lived_access_token', client_name: 'nostrodomus-e2e', lifespan: 3650 });
 ws.close();
-if (typeof llat !== 'string' || !llat) fail('auth/long_lived_access_token returned no token — HARD boundary, park the order.');
+if (typeof llat !== 'string' || !llat) fail('auth/long_lived_access_token returned no token');
 log(`long-lived token issued (${redact(llat)}) — HA ${haVersion}`);
 
 // 8. Write gitignored state.

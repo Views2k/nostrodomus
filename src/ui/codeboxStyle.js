@@ -170,7 +170,7 @@ export function codeboxStyleTokenMap(tokens) {
   };
 }
 
-// important-override registry (INSTRUCTIONS.md §11.9) — codebox host frame/surface/unclip block.
+// important-override registry — codebox host frame/surface/unclip block.
 // external rules overridden: HA ha-code-editor / dialog component styles (overflow,
 //   contain, clip-path clipping of the editor surface); the frozen v17 companion's
 //   reapply passes (it writes overflow, display, background, border-radius, box-shadow,
@@ -253,16 +253,16 @@ export function codeboxStyleBuildRootCss({ scrollbarThumb, scrollbarTrack, frame
         visibility: hidden !important;
         opacity: 0 !important;
       }
-      /* UNIVERSAL FIX 1 (Dev Tools → Template Result pane): the WHOLE pane (ha-card.render-pane) mirrors
+      /* Template tool result pane: the whole pane (ha-card.render-pane) mirrors
          the codebox frame — same border + glow + a UNIFORM frosted surface across the full pane — instead
          of an earlier partial blur on the inner pre.rendered (which only frosted the rendered-output
          strip, leaving a split-blur). The --nostrodomus-codebox-* vars are (re)defined on the pane
          from the same tokens the codebox uses, so changing codebox colors keeps the Result pane in sync;
-         the frame reads them via var() so a theme can still override them (D-THEME-BOUNDARY: the module
+         the frame reads them via var() so a theme can still override them (the plugin
          owns THIS pane's surface using codebox vars, overriding the theme's generic glass card for this
          pane only — the theme's --ha-card-* are not touched). ha-card.render-pane exists only on
          developer-tools/template, so the rule is inert on every other surface. This rides the codebox
-         root style Nostrodomus already injects into developer-tools-template's shadow root (probe-confirmed). */
+         root style Nostrodomus already injects into developer-tools-template's shadow root. */
       ha-card.render-pane {
         --nostrodomus-codebox-frame-border: ${frameBorder};
         --nostrodomus-codebox-frame-glow-inner: ${frameGlowInner};
@@ -326,14 +326,14 @@ export function codeboxStyleBuildRootCss({ scrollbarThumb, scrollbarTrack, frame
          .cm-activeLine/.cm-activeLineGutter, and (2) the focus-triggered BORDERS HA applies to the
          CodeMirror internals — .cm-content border-top + .cm-gutters(.cm-gutters-before) border-right,
          which go light-grey at rest and bright blue (rgb(0,154,199)) on focus = the L-shaped "90° line"
-         (live-console-proven). Both are driven by ${activeLineBackground}: "transparent" hides the whole
+         Both are driven by ${activeLineBackground}: "transparent" hides the whole
          indicator (style.hideActiveLineHighlight, default ON), else the faint wash + HA's native borders.
          This rule wins the cascade via the attribute selector + !important; no competing rule elsewhere. */
       .cm-editor[data-nostrodomus-codebox-style="1"] .cm-activeLine,
       .cm-editor[data-nostrodomus-codebox-style="1"] .cm-activeLineGutter {
         background: ${activeLineBackground} !important;
       }${activeLineBackground === "transparent" ? `
-      /* §11.9 NEW !important — registry-owned external-rule block:
+      /* Why this block uses !important:
            owner: active-line indicator (style.hideActiveLineHighlight, default ON / hidden).
            external rule overridden: HA's focus-state border on .cm-content (border-top) + .cm-gutters
              (border-right) — light-grey at rest, rgb(0,154,199) blue on focus (the visible "90° line").

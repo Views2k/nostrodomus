@@ -16,7 +16,7 @@ import { isServiceDataFieldKeyContext } from '../../src/completion/scoring.js';
 // at the exact position real editing produces. These matrices exercise the realistic
 // auto-indent column, never only a hand-typed deeper indent.
 //
-// Binding rule: completion/context tests MUST include the CM-auto-indent position.
+// Rule: completion/context tests MUST include the CM-auto-indent position.
 function path(doc) {
   return currentYamlPath(doc, doc.length);
 }

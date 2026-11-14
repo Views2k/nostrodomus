@@ -1,4 +1,4 @@
-// P3: the ha-runtime-value provider's Jinja entity arm. canHandle/provide fire for a template
+// The ha-runtime-value provider's Jinja entity arm. canHandle/provide fire for a template
 // entity-arg ONLY when the jinjaLane flag rode in on ctx; otherwise the provider is byte-identical
 // to its yaml-only self. Entity rows insert the BARE id (no added quotes — the cursor is already
 // inside the string literal). Fail-dark on empty/hostile runtime data.

@@ -1,8 +1,8 @@
 // native-autocomplete-suppression.spec — 0.1.182: while the Nostrodomus completion popup is open, HA's
 // native CodeMirror autocomplete tooltip (.cm-tooltip-autocomplete) must not show behind/over it (the
-// "gray native pane pops up too" bug). Owner-probe-only until now.
+// "gray native pane pops up too" bug).
 //
-// Append-to-valid-config setup (no typeless HA crash). Authored on-branch; owner-run.
+// Append-to-valid-config setup (no typeless HA crash).
 
 import { test, expect, openDashboard } from './session.mjs';
 import {
@@ -15,7 +15,7 @@ test('native autocomplete: HA native .cm-tooltip-autocomplete stays hidden while
   const stamp = await openDashboard(page);
   const { dialog } = await openSeededCardCodeEditor(page, stamp);
 
-  // Open the Nostrodomus popup on a fresh key prefix (the->theme, proven by editor-completion).
+  // Open the Nostrodomus popup on a fresh key prefix (the->theme, as in editor-completion).
   await page.keyboard.press('Enter');
   await page.keyboard.press('Shift+Home');
   await typeInYaml(page, 'the');

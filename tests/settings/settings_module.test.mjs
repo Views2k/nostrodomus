@@ -49,7 +49,7 @@ test('deepMerge keeps existing shallow runtime merge semantics', () => {
   assert.equal(DEFAULT_SETTINGS.providers[STATIC_PROVIDER_ID].enabled, true);
 });
 
-test('deepMerge drops prototype-polluting keys from stored settings (audit QW5)', () => {
+test('deepMerge drops prototype-polluting keys from stored settings', () => {
   // Simulate a hostile/corrupt localStorage payload: JSON.parse keeps a literal "__proto__" as an
   // own enumerable key, so an unguarded out[key] = value would poison Object.prototype.
   const patch = JSON.parse('{"__proto__": {"polluted": true}, "constructor": {"x": 1}, "maxItems": 9}');

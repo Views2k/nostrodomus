@@ -8,7 +8,7 @@
 // duplicate it, so this module does not: it exposes the 1-arg frozen-contract
 // installer (delegating to the single core impl) plus the external-companion
 // detection + dormancy signal that the other companion modules consult and
-// diagnostics reports (D-COEXIST, D-KILL-SWITCH).
+// diagnostics reports.
 
 import { installRuntimeCoordinator as installRuntimeCoordinatorCore } from '../core/runtimeCoordinator.js';
 
@@ -28,7 +28,7 @@ export const EXTERNAL_COMPANION_STYLE_IDS = Object.freeze([
   'nostrodomus-picker-only-final-v2',
 ]);
 
-// Companion-layer override (D-KILL-SWITCH) — one hidden localStorage key, mirrors
+// Companion-layer override — one hidden localStorage key, mirrors
 // the loggingRuntime nostrodomus* pattern. "dormant" force-disables the companion
 // layer (restoring the no-companion behavior); "active" force-enables it (an escape
 // hatch to flip a module active on a test instance without a code change). Absent/other
@@ -146,7 +146,7 @@ export function isExternalCompanionPresent(options = {}) {
   }
 }
 
-// The diagnostics companion-layer value (D-KILL-SWITCH ordering: forced wins, then
+// The diagnostics companion-layer value (ordering: forced wins, then
 // external ownership, else the companion layer is internal).
 /** @param {Record<string, any>} [options] */
 export function companionLayerStatus(options = {}) {

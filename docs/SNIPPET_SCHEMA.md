@@ -1,10 +1,10 @@
 # Nostrodomus Snippet Schema
 
-Status: active. `data/snippets.json` is the validated snippet catalog consumed by the bundled snippet provider.
-
-Snippets are declarative data in `data/snippets.json`. JavaScript provider code may route and rank snippets, but snippet definitions must not be hardcoded into provider logic.
+Snippets are data. They live in `data/snippets.json`, which `src/snippets/catalog.js` imports and the snippet provider (`src/providers/snippetProvider.js`) serves. Provider code selects and ranks snippets; it does not contain snippet definitions.
 
 ## Schema
+
+`data/snippets.json` is a JSON list of objects:
 
 ```json
 {
@@ -13,29 +13,29 @@ Snippets are declarative data in `data/snippets.json`. JavaScript provider code 
   "contextKind": "lovelace-action-block",
   "triggers": ["dashboard.action.perform_action"],
   "label": "tap/hold action: perform action",
-  "insert": "action: perform-action\nperform_action: ${1:light.turn_on}",
-  "aliases": ["tap_action", "perform-action"],
+  "insert": "action: perform-action\nperform_action: ${1:light.turn_on}\ntarget:\n  entity_id: ${2:light.example}\ndata:\n  ${3:brightness_pct}: ${4:100}",
+  "aliases": ["tap_action", "hold_action", "perform-action", "target"],
   "priority": 120,
-  "documentation": "Dashboard action template for service calls."
+  "documentation": "Dashboard action template for service calls using modern perform-action syntax."
 }
 ```
 
 Required fields:
 
-- `id`: unique stable snippet id, lowercase dotted/kebab/underscore safe.
-- `family`: one of the known Nostrodomus snippet families.
-- `contextKind`: provider-facing context bucket.
-- `triggers`: non-empty list of unique activation/intent keys. Triggers are unique across the catalog.
-- `label`: visible row label.
-- `insert`: inserted template text. Snippet placeholders use `${1:default}` or `$1`.
-- `documentation`: short help text shown in completion details.
+- `id`: unique id. Lower-case letters, digits, `.`, `_`, `:` and `-`, starting with a letter or digit.
+- `family`: one of the families listed below.
+- `contextKind`: the context in which the provider offers the snippet, one of the kinds listed below.
+- `triggers`: non-empty list of keys with the same character set as `id`. A trigger may appear only once in the whole catalog.
+- `label`: the text of the row in the popup.
+- `insert`: the inserted text.
+- `documentation`: short help text shown in the details of the row.
 
 Optional fields:
 
-- `aliases`: searchable synonyms.
-- `priority`: numeric sort hint, default `80`.
+- `aliases`: list of words the row can also be found by.
+- `priority`: number used for ranking. The default is `80`.
 
-Allowed families:
+Families:
 
 - `dashboard-action`
 - `dashboard-card`
@@ -46,7 +46,7 @@ Allowed families:
 - `card-mod-css`
 - `button-card-style`
 
-Allowed context kinds in this foundation:
+Context kinds:
 
 - `lovelace-action-block`
 - `lovelace-action-value`
@@ -57,23 +57,31 @@ Allowed context kinds in this foundation:
 - `target-block`
 - `style-block`
 
-## Validation contract
+The same two lists are in `tools/validate_snippets.py` (`ALLOWED_FAMILIES`, `ALLOWED_CONTEXT_KINDS`) and in `src/snippets/catalog.js`. A new family or context kind has to be added in both, and the provider has to offer it in `activeSnippetContextKinds`.
 
-`tools/validate_snippets.py` must pass before a snippet catalog is accepted. It checks:
+## Placeholders
 
-- JSON parses as a list of objects.
-- Required fields exist and have the correct type.
-- `id` values are unique and safe.
+`insert` may contain tab stops:
+
+- `${1:default}`: tab stop 1 with a default text.
+- `$1`: tab stop 1 without a default.
+
+Tab stop numbers start at 1, and the same number may appear more than once. `parseSnippetTemplate` in `src/completion/snippets.js` parses the template when a row is accepted. The parser also understands choice lists (`${1|a,b|}`) and a final cursor position (`$0`); the catalog validator rejects both, so catalog snippets do not use them.
+
+## Validation
+
+`tools/validate_snippets.py` checks the catalog:
+
+- The file parses as a JSON list of objects.
+- Required fields exist and have the right type.
+- `id` values are unique and use the allowed characters.
 - `family` and `contextKind` are known.
-- `triggers` are non-empty strings and unique across the catalog.
-- `aliases` are strings when present.
-- `priority` is numeric when present.
-- `insert` is non-empty and does not contain tab-indented YAML.
-- Snippet placeholders are balanced and use positive numeric indexes.
+- `triggers` is a non-empty list of strings, without duplicates in a snippet or across the catalog.
+- `aliases` entries are non-empty strings when the field is present.
+- `priority` is a number when the field is present.
+- `insert` is not blank, uses LF line ends, has no line that starts with a tab and no trailing spaces.
+- Every `${` belongs to a complete `${n}` or `${n:default}` placeholder, and placeholder numbers are greater than zero.
 
-A bad snippet must fail validation in CI rather than being silently dropped at runtime.
+Run it with `python3 tools/validate_snippets.py` or `npm run validate:snippets`. It is part of `npm run gate` and of the CI workflow, so a bad snippet fails the build and is not dropped at runtime.
 
-
-## Catalog size checkpoint
-
-As of the autocomplete closure snippet expansion the validated catalog contains 75 snippets. Future additions should change only `data/snippets.json` plus focused provider/fixture tests unless routing logic needs a deliberate contract update.
+A new snippet normally changes only `data/snippets.json` and the tests under `tests/snippets/`.

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { haRuntimeValueProvider } from '../../src/providers/haRuntimeProvider.js';
 import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 
-// Regression (bug hunt): with the schemaValues lane on, a service-data field VALUE position returned
+// With the schemaValues lane on, a service-data field VALUE position returned
 // runtimeRowsForKind('service-field-value'), which only yields a field's enumerated select options.
 // An entity/icon/etc.-selector field has none, so it returned []  — making entity/icon value
 // completion under data:/service_data: WORSE with schemaValues on than off. provide() now falls

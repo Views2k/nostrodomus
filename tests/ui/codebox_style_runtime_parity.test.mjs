@@ -1,6 +1,6 @@
-// UI_DECOMP P0c — codebox style runtime parity + style-builder snapshots.
+// Codebox style runtime parity + style-builder snapshots.
 //
-// Frozen snapshots captured against the pre-decomposition runtime (v0.1.71):
+// Frozen snapshots:
 // 1. createCodeboxStyleRuntime's exact public return surface (keys + typeof).
 // 2. SHA-256 of codeboxPreflightCss for both root kinds (CSS byte-identity).
 // 3. The owned property-level application set: codeboxStyleTokenMap's exact
@@ -8,7 +8,7 @@
 //    applyCodeboxStyleTokensToElement) and the STABLE_CODEBOX_STYLE_NODE_IDS
 //    membership wherever that set is declared in src/ui (load-bearing for
 //    stable-style-node churn protection).
-// This test must not be modified during the UI_DECOMP order.
+// A refactor that moves code must keep these snapshots unchanged.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -66,14 +66,8 @@ const EXPECTED_SURFACE = Object.freeze([
   'shouldCoalesceCodeboxStyleSettleReason',
 ]);
 
-// Re-pinned for the Nostrodomus rename Stage 2. NOT the UI_DECOMP order: this is the
-// separate, owner-approved identity rename. Batch A: --nostrodomus-codebox-* →
-// --nostrodomus-codebox-* (CSS custom properties). Batch B: the data-attribute
-// selectors in the preflight CSS, data-nostrodomus-assist-* → data-nostrodomus-* (drop
-// "assist"). Both are pure token substitution — value-identical (same selectors/
-// values), only the names change; re-pinned under the owner visual order + live
-// feel-check. OWNED_TOKEN_PROPERTIES below renamed in lockstep; the runtime API
-// surface above is unchanged.
+// The preflight CSS uses the --nostrodomus-codebox-* custom properties and the
+// data-nostrodomus-* attribute selectors; OWNED_TOKEN_PROPERTIES below uses the same names.
 const FROZEN_PREFLIGHT_DOCUMENT_SHA256 = 'ae952efb66c4a4fc89fcec8a7a80cbbf16ecd79ffb574f4998ebd90715411148';
 const FROZEN_PREFLIGHT_SHADOW_SHA256 = '149423742df2bba2d2d1231ed7475e263b9e17c495a6087364d8c44493f51664';
 

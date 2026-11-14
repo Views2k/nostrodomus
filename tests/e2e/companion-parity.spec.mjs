@@ -1,24 +1,22 @@
-// ABSORB P0d — companion-parity e2e (CLASS B: authored on-branch, RUN BY THE OWNER
-// at RUN CHECKPOINT A, never claimed green without that run).
+// companion-parity: the companion layer on a real editor (scrollbar stylesheet, variable
+// cascade, enlarge heights, no flash, diagnostics).
 //
 // The spec FORCE-ACTIVATES the absorbed companion layer on the test instance via the
-// D-KILL-SWITCH escape hatch (localStorage nostrodomusCompanion="active"), injected
-// before any document runs — so a plain `npm run e2e` exercises the ACTIVE layer with
-// no manual flip and no rebuild (the shipped dist already carries the companion code
-// behind this hatch). PRECONDITION still in force: NO external legacy
+// localStorage escape hatch (nostrodomusCompanion="active"), injected
+// before any document runs, so a plain `npm run e2e` exercises the ACTIVE layer with
+// no manual flip and no rebuild. PRECONDITION: NO external legacy
 // nostrodomus_editor_v17_2 / nostrodomus-picker-safe resources are loaded (the e2e seed
 // registers only nostrodomus.js, so this holds on the harness).
 //
-// PARITY MODEL (corrected — see ABSORB P2 reconciliation). v17's scrollbar CSS sets
+// PARITY MODEL. v17's scrollbar CSS sets
 //   scrollbar-color: var(--nostrodomus-codebox-scrollbar-thumb, <fallback>) var(--…-track, <fallback>)
 // and the absorbed module reproduces it BYTE-IDENTICALLY (proven by the frozen
 // scrollbar_css_byte_identity unit baseline — that is the CSS-string parity proof, and
 // it is never relaxed). The <fallback> literal is DEAD in the integrated product: the
 // main extension (src/ui/codeboxStyle.js) always defines --nostrodomus-codebox-scrollbar-thumb
 // from the user's scrollbar settings, and a Nostrodomus theme may override it
-// (D-THEME-BOUNDARY — the var names are kept precisely so it can). The earlier spec
-// asserted that dead fallback literal AND never activated the layer; both were defects.
-// This spec asserts the live truth instead:
+// (the var names are kept so it can). So this spec does not assert the fallback literal.
+// It asserts:
 //   (1) the companion's OWN stylesheet node is present in the CodeMirror shadow root
 //       (that id is the companion's alone — proves the layer is active and injecting
 //        into the root where its .cm-* rules actually take effect),
@@ -61,9 +59,8 @@ function normalizeCalc(value) {
     .join('+');
 }
 
-// ABSORB P3 enlarge inline-height value sets (src/companion/codeboxEnlargeRuntime.js):
-// [SIMPLE (no option-tab row → taller), tabbed]. The seeded editor may be either; the
-// owner's manual feel-check covers the simple-specific visual. Compared via
+// Enlarge inline-height value sets (src/companion/codeboxEnlargeRuntime.js):
+// [SIMPLE (no option-tab row → taller), tabbed]. The seeded editor may be either. Compared via
 // normalizeCalc() so Blink's calc() reserialization (operand reorder / sign flip)
 // does not cause a false miss.
 const ENLARGE_WRAPPER_HEIGHTS = ['calc(94vh - 150px)', 'calc(94vh - 340px)'];
@@ -77,8 +74,7 @@ const isEnlargeHeight = (value, formulas) => /^\d+px$/.test(String(value || '').
 test('companion-parity: layer active — scrollbar stylesheet + var cascade, codebox-enlarge inline heights, no flash, stable, diagnostics=internal', async ({ page }, testInfo) => {
   // Force the absorbed layer ACTIVE before any HA document runs. Set UNCONDITIONALLY
   // (try/catch swallows opaque-origin about:blank) so activation never depends on a
-  // hardcoded origin matching the harness — RUN CHECKPOINT A diagnosis flagged origin
-  // as a candidate, so this removes it as a variable entirely.
+  // hardcoded origin matching the harness.
   await page.addInitScript(() => {
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* opaque origin */ }
   });
@@ -99,8 +95,8 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
   // The companion injects on the editor SETTLE cycle (the sentinel re-attempts it on the
   // 60/180/420ms stable-hit probes, idempotently), riding the same cadence as the main
   // extension's style reapply. So WAIT for its node to appear rather than checking one
-  // instant after open — the instant check is itself a race (RUN CHECKPOINT A's warm
-  // in-suite run lost it). Mirrors the stale-resource expect.poll pattern in session.mjs.
+  // instant after open — the instant check is itself a race (a warm in-suite run
+  // loses it). Mirrors the stale-resource expect.poll pattern in session.mjs.
   await expect
     .poll(
       () => scroller.evaluate(
@@ -152,10 +148,10 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
     contentType: 'application/json',
   });
 
-  // Decisive activation diagnostic (RUN CHECKPOINT A decision tree): is the force-active
+  // Activation diagnostic: is the force-active
   // flag landing, is a real external companion registered in the coordinator (which
-  // would CORRECTLY keep the layer dormant by coexistence design — Checkpoint E
-  // scenario, not force-activatable), and what does the diagnostics row read? Logged
+  // would CORRECTLY keep the layer dormant by coexistence design and cannot be
+  // force-activated), and what does the diagnostics row read? Logged
   // so the terminal shows it whether the test passes or fails.
   const diag = await page.evaluate(() => {
     const out = {};
@@ -181,7 +177,7 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
 
   // (2) the scroller's scrollbar-color is set (not the host default 'auto') and its
   //     thumb RESOLVES TO the cascaded --nostrodomus-codebox-scrollbar-thumb — i.e. the
-  //     companion CSS defers to the shared var (D-THEME-BOUNDARY); it does not hardcode.
+  //     companion CSS defers to the shared var; it does not hardcode.
   expect(probe.scrollbarColor, 'scroller scrollbar-color is unset/auto — companion scrollbar rule not applied').toMatch(/rgba?\(/);
   expect(probe.thumbVarRaw, '--nostrodomus-codebox-scrollbar-thumb is not defined on the scroller').not.toBe('');
   const scrollbarThumbTriplet = rgbTriplet(probe.scrollbarColor);
@@ -192,16 +188,16 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
     `scrollbar-color thumb (${scrollbarThumbTriplet}) does not resolve to the cascaded --nostrodomus-codebox-scrollbar-thumb (${varThumbTriplet})`,
   ).toBe(varThumbTriplet);
 
-  // --- (3) ABSORB P3 enlarge layer (RUN CHECKPOINT B): the companion writes INLINE
+  // --- (3) Enlarge layer: the companion writes INLINE
   // heights to the ha-code-editor WRAPPER (host) + .cm-editor + .cm-scroller. The wrapper
-  // height landing on the HOST (not on the .cm-editor we were handed) is the Checkpoint B
-  // wrapper-target fix. Poll for it (settle cadence), then assert the inline values are
+  // height must land on the HOST (not on the .cm-editor the module is handed).
+  // Poll for it (settle cadence), then assert the inline values are
   // the enlarge module's set — SIMPLE (taller) or tabbed. ---
   const codeEditorHost = dialog.locator(HA_CODE_EDITOR).first();
   await expect
     .poll(() => codeEditorHost.evaluate((el) => (el.style && el.style.height ? el.style.height : '').trim()), {
       timeout: 8000,
-      message: 'ha-code-editor wrapper never received an inline height from the enlarge layer (Checkpoint B wrapper-target fix)',
+      message: 'ha-code-editor wrapper never received an inline height from the enlarge layer',
     })
     .not.toBe('');
   const enlarge = await codeEditorHost.evaluate((el) => {
@@ -247,7 +243,7 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
   expect(new Set(samples).size, `scrollHeight moved during 3s idle: [${samples.join(', ')}]`).toBe(1);
 
   // --- Diagnostics: companion layer reports internal. ---
-  // CONTRACT (P1 detection hook): exportDiagnostics().companionLayer is one of
+  // CONTRACT: exportDiagnostics().companionLayer is one of
   // 'internal' | 'external' | 'dormant(forced)'. With the absorbed layer active
   // and no external files, it reads 'internal'.
   const companionLayer = await page.evaluate(() => {

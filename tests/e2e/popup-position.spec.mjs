@@ -1,10 +1,10 @@
 // popup-position.spec — the 0.1.201/203 completion-popup anchoring: the popup opens AT the caret
 // (word-start anchor, self-corrected for the containing-block offset, ~2px gap below the caret line),
-// not parked a fixed ~170px from the editor's left edge. Owner-probe-only until now.
+// not parked a fixed ~170px from the editor's left edge.
 //
 // Measures the caret with the view's own coordsAtPos (authoritative) against the popup's rendered box.
 // Uses a caret pushed well to the right so a "parked near the left edge" regression is unmistakable.
-// Append-to-valid-config setup (no typeless HA crash). Authored on-branch; owner-run.
+// Append-to-valid-config setup (no typeless HA crash).
 
 import { test, expect, openDashboard } from './session.mjs';
 import {

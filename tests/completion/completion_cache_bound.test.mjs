@@ -5,7 +5,7 @@ import { cachePut, cacheGet, DEFAULT_SCORING_SETTINGS } from '../../src/completi
 import { scoreItems } from '../../src/completion/scoring.js';
 import { SECURITY_LIMITS } from '../../src/core/runtimeConstants.js';
 
-// Regression guard for the 9/10 audit's LEAK finding (2026-07-06): filtering.cachePut used to be a
+// Regression guard for a leak: filtering.cachePut used to be a
 // raw cache.set with no eviction, so state.completionCache — written once per keystroke via
 // scoreItems — grew without bound for the tab's lifetime. cachePut now FIFO-trims at
 // SECURITY_LIMITS.maxCacheEntries, matching the already-bounded cacheSet in staticLibraryProvider.

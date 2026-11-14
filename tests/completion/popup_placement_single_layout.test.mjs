@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { placeCompletionPopupAtCursor, renderCompletionPopup, updateCompletionPopupSelection } from '../../src/completion/popupRuntime.js';
 
-// completion#21. A placement read the box rectangle, wrote the position, and read the rectangle
+// A placement read the box rectangle, wrote the position, and read the rectangle
 // again to cancel a containing-block offset: two forced layouts per keystroke and per scroll
 // frame. The first read already shows the offset when the box has been placed before and is not
 // scaled, so the second read is left out then. The position must be the same either way.

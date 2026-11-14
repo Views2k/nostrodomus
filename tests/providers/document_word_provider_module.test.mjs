@@ -30,7 +30,7 @@ test('scoreItems shows buffer words only when real provider matches are sparse',
   assert.equal(scoreItems(ctx, [...real, word], { settings: { enabledLangs: { yaml: true }, wordFallback: true } }).some(row => row.id === 'w'), false);
 });
 
-test('Bug 1 regression: a capped scan does not strand the regex for the next document', () => {
+test('a capped scan does not strand the regex for the next document', () => {
   // Normalize the module-global /g regex state first (an empty scan leaves lastIndex at 0).
   tokenizeDocumentWords('', '');
   // A call that hits the maxWords cap breaks the loop mid-string, stranding the regex's lastIndex.

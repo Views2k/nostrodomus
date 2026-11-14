@@ -1,7 +1,6 @@
-// live-data.spec (HARNESS P2.5) — instance-aware completion end to end:
+// live-data.spec — instance-aware completion end to end:
 // a custom card seeded into window.customCards appears in `type:`
 // completion, and a real service's field keys appear under `data:`.
-// [Guards the RUNTIME_DATA features end to end.]
 //
 // The card is seeded via an origin-guarded init script (the runtime reads
 // window.customCards live through runtimeData()); the service is
@@ -57,16 +56,15 @@ test('live data: seeded custom card and real service fields reach completion', a
   // block. Build the action block line by line (CodeMirror auto-indents
   // after Enter; Home+spaces pins the indentation we mean).
   //
-  // Scope note (RUN CHECKPOINT 2 round 9): at the action-mapping key level
+  // Scope note: at the action-mapping key level
   // the provider returns the live lovelace action/card key schema
-  // (tap_action, action, data, target, …), which is exactly the live-context
-  // RUNTIME_DATA feature this leg guards. Asserting a *service field* key
+  // (tap_action, action, data, target, …), which is the live-context
+  // feature this leg guards. Asserting a *service field* key
   // (message/title) would require the cursor to land inside the `data:`
   // mapping with the service resolved — a precise context this line-by-line
-  // construction does not reliably reach. That deeper assertion is seeded in
-  // PRIORITIES.md (it needs dedicated cursor-context seeding), not chased
-  // here. We assert what the provider genuinely returns for the context we
-  // reach.
+  // construction does not reliably reach (launch-gates.spec covers that
+  // position). This leg asserts what the provider returns for the context it
+  // reaches.
   await typeInYaml(page, 'tap_action:');
   await page.keyboard.press('Enter');
   await page.keyboard.press('Home');

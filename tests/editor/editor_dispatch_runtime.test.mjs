@@ -94,7 +94,7 @@ test('editor dispatch runtime owns repeat-pressure quiet telemetry', () => {
   assert.ok(calls.some(row => row[0] === 'style' && row[1] === 'editor-dispatch-repeat-pressure-quiet'));
 });
 
-test('Bug 3 regression: unhookDispatch clears the armed repeat-pressure flush timer (no post-teardown fire)', () => {
+test('unhookDispatch clears the armed repeat-pressure flush timer (no post-teardown fire)', () => {
   const cleared = [];
   const state = { settings: {}, hookedView: null, originalDispatch: null };
   const runtime = createEditorDispatchRuntime({

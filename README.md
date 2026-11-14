@@ -32,9 +32,9 @@ The card editor with four different frame colors and syntax themes, each with th
 |---|---|
 | Home Assistant | 2026.6.0 or newer |
 | HACS | 2.0.0+ (recommended install path), or manual resource registration |
-| Where it works | Any Home Assistant code editor: the dashboard card-edit dialog, `card_mod` style blocks, and YAML config, automation, script, and Developer Tools panels |
+| Where it works | The dashboard card-edit dialog, `card_mod` style blocks, the dashboard raw configuration editor, the automation and script YAML editors, and the template editor of Developer Tools |
 
-Home Assistant's built-in 2026.6 dashboards (Overview, Lights, Security, and so on) do not load custom frontend resources, so Nostrodomus starts once you open a code editor on a custom dashboard or a YAML editor.
+Home Assistant's built-in dashboards (Overview, Lights, Security, and so on) do not load custom frontend resources, so Nostrodomus starts once a dashboard you created has been opened in the browser tab.
 
 ## Features
 
@@ -75,7 +75,7 @@ A draggable, keyboard-operable settings panel opens inside the editor dialog, sp
    - Type: JavaScript module
 3. Hard-reload your browser (clear the cache, or bump the resource URL query string after updates). No Home Assistant restart is needed.
 
-Open any card editor and click the Nostrodomus gear to configure it. Settings are stored in your browser's local storage, so there is no YAML setup.
+To configure it, open the code editor of any card, press `Ctrl+Space`, and click the gear in the header of the suggestion list (or press `Ctrl+,`). Settings are stored in your browser's local storage, so there is no YAML setup.
 
 ## Privacy and security
 
@@ -94,6 +94,7 @@ Quick links:
 - [Diagnostics and the window.__nostrodomus API](DOCUMENTATION.md#diagnostics-and-the-api)
 - [Troubleshooting](DOCUMENTATION.md#troubleshooting)
 - [Known issues](docs/KNOWN_ISSUES.md)
+- [Changelog](CHANGELOG.md)
 
 ## Troubleshooting (quick)
 

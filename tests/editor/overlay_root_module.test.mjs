@@ -145,8 +145,8 @@ test('overlay root supports targeted traversal with legacy wildcard fallback opt
 });
 
 test('universalEditorHosts targeted traversal descends through non-card-dialog editor panel hosts', () => {
-  // UNIVERSAL Track A regression: the base targeted selector stops short of the
-  // Dev Tools / raw-config / automation / script panel hosts (A0 styling gap).
+  // UNIVERSAL: the base targeted selector stops short of the
+  // Dev Tools / raw-config / automation / script panel hosts.
   // With universalEditorHosts on, the bounded walk must descend through them.
   const root = makeElement();
   const panel = makeElement({ className: 'ha-automation-editor' });
@@ -167,7 +167,7 @@ test('universalEditorHosts targeted traversal descends through non-card-dialog e
 });
 
 test('base targeted traversal descends THROUGH a stack-card editor to reach the nested sub-card codebox (apply-on-open fix)', () => {
-  // Owner-confirmed shadow-host chain on a stack card: hui-dialog-edit-card > hui-card-element-editor >
+  // Shadow-host chain on a stack card: hui-dialog-edit-card > hui-card-element-editor >
   // hui-stack-card-editor > hui-card-element-editor > ha-yaml-editor > ha-code-editor. Without
   // hui-stack-card-editor in the allowlist the bounded walk dead-ends at the stack editor, so the sub-card
   // codebox is found (and styled) only after a click. It is a card-dialog host → in the BASE selector
