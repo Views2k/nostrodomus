@@ -146,6 +146,45 @@ test('the Style tab is built with the panel whichever tab is open', () => {
   assert.equal(h.state.settings.style.hideEditorWarnings, true);
 });
 
+// The glass sheet of the card editor dialog belongs to the companion layer. The style reapply
+// does not run that layer, so the checkbox runs it on the active editor when it changes.
+test('the Glass editor dialog checkbox is in the Style tab, and a change re-applies the companion layer', () => {
+  const applied = [];
+  const editor = { id: 'active-editor' };
+  const h = createPanelHarness({ overrides: { applyCompanionEditorLayer: (target) => { applied.push(target); } } });
+  h.state.activeEditorCache.editor = editor;
+  const panel = h.open();
+
+  const selector = 'input[data-style-toggle="style.glassDialog"]';
+  const toggle = h.section('style').querySelector(selector);
+  assert.ok(toggle, 'the checkbox is in the Style tab');
+  assert.equal(panel.querySelectorAll(selector).length, 1, 'and in no other tab');
+  assert.equal(toggle.checked, true, 'checked with the default settings');
+  assert.equal(toggle.parentElement.textContent, 'Glass editor dialog');
+  const description = h.section('style').textContent;
+  assert.match(description, /Makes the card editor dialog translucent and blurs the dashboard behind it/);
+  assert.match(description, /On by default; turning it off saves graphics work on slow computers\./);
+
+  toggle.checked = false;
+  toggle.dispatch('change');
+  assert.equal(h.state.settings.style.glassDialog, false);
+  assert.deepEqual(h.named('setting-change').at(-1), ['setting-change', 'style-toggle']);
+  assert.deepEqual(h.named('scheduleCodeboxStyleReapply').at(-1), ['scheduleCodeboxStyleReapply', 'style-toggle-change']);
+  assert.equal(applied.length, 1, 'the companion layer is applied once, at the change');
+  assert.equal(applied[0] === editor, true, 'on the active editor');
+
+  // The choice is written with the other settings, and a panel opened later shows it.
+  assert.equal(h.runtime.saveSettings('settings'), true);
+  assert.equal(JSON.parse(h.stored.get('nostrodomus.settings')).style.glassDialog, false);
+  assert.equal(h.open().querySelector(selector).checked, false);
+
+  // A Style checkbox the companion layer has no part in does not run it.
+  const frame = h.state.settingsPanel.querySelector('input[data-style-toggle="style.codeboxFrameEnabled"]');
+  frame.checked = false;
+  frame.dispatch('change');
+  assert.equal(applied.length, 1);
+});
+
 test('without MutationObserver every tab is built with the panel', async () => {
   const h = createPanelHarness({ withObserver: false });
   const panel = h.open();

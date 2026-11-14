@@ -5,8 +5,8 @@
 // runtime reads. Update this file, PROJECT.json, package.json, package-lock.json,
 // src/core/changelogSummary.js, src/main.legacy.js import usage, and dist together for every patch.
 
-export const VERSION = "nostrodomus-v0.1.278-docs-and-comments";
-export const PROJECT_VERSION = "0.1.278";
+export const VERSION = "nostrodomus-v0.1.279-glass-dialog";
+export const PROJECT_VERSION = "0.1.279";
 export const PROJECT_RELEASE_STATE = "beta";
 export const LIVE_COMPANION_EDITOR_VERSION = "nostrodomus-editor-v17.2.65-runtime-coordinator";
 export const PRODUCT_NAME = "Nostrodomus";

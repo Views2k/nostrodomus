@@ -17,6 +17,7 @@ import {
   PREVIEW_FILL_STYLE_ID,
   EDITOR_GUTTER_STYLE_ID,
   STACKED_PANES_STYLE_ID,
+  GLASS_DIALOG_STYLE_ID,
   WA_DIALOG_STYLE_ID,
   WARNING_HIDE_STYLE_ID,
 } from '../../src/companion/scrollbarStyleRuntime.js';
@@ -90,8 +91,10 @@ test('applyToRoots injects each provided stylesheet once per root when active', 
   assert.ok(codeRoot.children[3].textContent.includes('Enter fullscreen'));
   assert.equal(codeRoot.children[4].id, NATIVE_AUTOCOMPLETE_HIDE_STYLE_ID, 'native-autocomplete-hide injected (ungated)');
   assert.ok(codeRoot.children[4].textContent.includes('.cm-tooltip-autocomplete'));
-  // dialogRoot gets the byte-frozen DIALOG_ROOT_CSS, then the additive preview-fill + editor-gutter sheets.
-  assert.equal(dialogRoot.children.length, 4);
+  // dialogRoot gets the byte-frozen DIALOG_ROOT_CSS, then the additive preview-fill, editor-gutter,
+  // stacked-panes and glass-dialog sheets.
+  assert.equal(dialogRoot.children.length, 5);
+  assert.equal(dialogRoot.children[4].id, GLASS_DIALOG_STYLE_ID, 'glass-dialog sheet injected after stacked-panes');
   assert.equal(dialogRoot.children[3].id, STACKED_PANES_STYLE_ID, 'stacked-panes sheet injected after editor-gutter');
   {
     // Everything in the stacked-panes sheet sits inside the narrow-window media query.
@@ -122,7 +125,7 @@ test('applyToRoots injects each provided stylesheet once per root when active', 
   // second apply is a no-op (ids already present) — never duplicates
   assert.equal(rt.applyToRoots({ codeRoot, dialogRoot, waDialogRoot }), false, 'second apply injects nothing');
   assert.equal(codeRoot.children.length, 5);
-  assert.equal(dialogRoot.children.length, 4);
+  assert.equal(dialogRoot.children.length, 5);
   assert.equal(waDialogRoot.children.length, 1);
 });
 
@@ -188,9 +191,11 @@ test('applyForEditor derives codeRoot from the editor and dialogRoot via compose
   assert.equal(dialog.shadowRoot.children[2]?.id, EDITOR_GUTTER_STYLE_ID, 'editor-gutter injected after preview-fill');
   // Pre-2026.6 (no nested ha-dialog/wa-dialog): the wa-dialog sheet is NOT injected. The
   // fakeRoot has no querySelectorAll, so the nested-editor warning walk finds nothing — the
-  // dialog shadow root carries only the dialog-root + preview-fill + editor-gutter sheets.
+  // dialog shadow root carries only the dialog-root, preview-fill, editor-gutter, stacked-panes
+  // and glass-dialog sheets.
   assert.equal(dialog.shadowRoot.children[3]?.id, STACKED_PANES_STYLE_ID, 'stacked-panes injected after editor-gutter');
-  assert.equal(dialog.shadowRoot.children.length, 4, 'no wa-dialog / warning sheet when there is no nested editor');
+  assert.equal(dialog.shadowRoot.children[4]?.id, GLASS_DIALOG_STYLE_ID, 'glass-dialog injected after stacked-panes');
+  assert.equal(dialog.shadowRoot.children.length, 5, 'no wa-dialog / warning sheet when there is no nested editor');
 });
 
 test('applyForEditor injects the wa-dialog sizing sheet into ha-dialog\'s shadow root (HA 2026.6)', () => {
@@ -359,6 +364,6 @@ test('an embedded editor in the card dialog gets no dialog-geometry sheet', () =
       `${label}: only the sheets every code editor gets`,
     );
     assert.equal(dialog.shadowRoot.children[0]?.id, DIALOG_ROOT_STYLE_ID, `${label}: the dialog itself is styled as before`);
-    assert.equal(dialog.shadowRoot.children.length, 4);
+    assert.equal(dialog.shadowRoot.children.length, 5);
   }
 });

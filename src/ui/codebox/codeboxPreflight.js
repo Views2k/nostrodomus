@@ -17,6 +17,7 @@ import {
   HUI_CARD_OPTIONS_EDITOR,
   HUI_DIALOG_EDIT_CARD,
 } from "../../editor/haSelectors.js";
+import { insideCardOwnEditor } from "../../editor/cardOwnEditor.js";
 
 export function createCodeboxPreflight(deps = {}) {
   const {
@@ -558,6 +559,7 @@ function installCodeboxPreflightStyle(reason = "preflight") {
   installIntoRoot(document);
   const tagEditor = (editor) => {
     if (!editor?.querySelector) return;
+    if (insideCardOwnEditor(editor)) return;
     try { editor.dataset.nostrodomusCodeboxStyle = "1"; } catch { /* detached node */ }
     try { editor.dataset.nostrodomusCodeboxFrameHost = "1"; } catch { /* detached node */ }
     try { editor.closest?.("ha-code-editor")?.setAttribute?.("data-nostrodomus-codebox-frame-host", "1"); } catch { /* detached node */ }
@@ -568,13 +570,14 @@ function installCodeboxPreflightStyle(reason = "preflight") {
   const scanRoot = (root, depth = 0) => {
     if (!root || depth > 5) return;
     try {
-      if (root.matches?.("ha-code-editor")) {
+      if (root.matches?.("ha-code-editor") && !insideCardOwnEditor(root)) {
         root.setAttribute("data-nostrodomus-codebox-frame-host", "1");
         root.setAttribute("data-nostrodomus-codebox-style", "1");
       }
     } catch { /* detached node */ }
     try {
       for (const host of root.querySelectorAll?.("ha-code-editor") || []) {
+        if (insideCardOwnEditor(host)) continue; // a code box of a custom card's own editor
         try { host.setAttribute("data-nostrodomus-codebox-frame-host", "1"); host.setAttribute("data-nostrodomus-codebox-style", "1"); } catch { /* detached node */ }
         try { installIntoRoot(host.shadowRoot); } catch { /* cross-origin root */ }
         try { for (const editor of host.shadowRoot?.querySelectorAll?.(".cm-editor") || []) tagEditor(editor); } catch { /* detached node */ }

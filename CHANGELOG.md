@@ -4,6 +4,24 @@ Versions before 0.1.266 are not listed.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Nostrodomus is in beta, with versions numbered `0.1.x`.
 
+## [0.1.279] - 2026-11-14
+
+### Added
+
+- Glass editor dialog: while the card editor dialog is open, its surface is translucent and blurs the dashboard behind it, and the card preview has no background of its own, so the dashboard shows through, softened. A Home Assistant theme that sets its own dialog surface or dialog blur keeps it. The setting is "Glass editor dialog" in Settings, Style (`style.glassDialog`), on by default. Turn it off on slow computers: the blur costs graphics work while the dialog is open.
+
+### Changed
+
+- The browser tests check the dialog and the codebox at 34 combinations of window size and pixel ratio, from phones to 4K and ultrawide monitors, in portrait and at device pixel ratios of 1.25, 1.5 and 2.
+- The browser tests open the visual editor of two custom cards, one that draws in a shadow root and one that does not, from the code editor and as saved cards, and check that the dialog, the card's note, fields, button, expandable section and embedded code box are as the card built them and still work. A third test editor is taller than the dialog; its last control and the Save row have to be reachable at three window sizes and after the window is narrowed.
+
+### Fixed
+
+- In a window shorter than about 667 pixels the card editor dialog ended a few pixels below the window and cut into the Save and Cancel row. The dialog height is now capped at the window height.
+- A note that a custom card shows in its own visual editor was drawn as a warning badge: a 22 pixel icon at the top left of the dialog, with the text on hover only. The badge and the "Hide editor warnings" setting now apply only to Home Assistant's own editor warnings, and a card's notes stay where the card put them.
+- After the code editor had been shown, a visual editor taller than the dialog could not be scrolled, so its lower controls were out of reach, and narrowing the window in that state left the Save and Cancel row below the window. The dialog layout for the codebox switches the scrolling of the editor pane and of the dialog body off, and that was not undone when a visual editor took the code editor's place. It is now: while the dialog does not show its code editor, the pane and the dialog scroll the way Home Assistant lays them out.
+- Clicking into a code box that a custom card embeds in its visual editor enlarged and restyled the whole dialog, put the Nostrodomus frame on that box and switched off the entity and icon suggestions the card had turned on for it. Nostrodomus now leaves everything inside a custom card's own visual editor alone. The rule goes by where an element sits in the dialog, not by a list of cards, so it holds for every custom card.
+
 ## [0.1.278] - 2026-11-14
 
 No change in behavior.

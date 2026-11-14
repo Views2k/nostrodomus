@@ -15,8 +15,8 @@ The browser test suite (`npm run e2e`, described in `tools/e2e/README.md`) loads
 
 | Home Assistant | Nostrodomus | Browser | Result |
 |---|---|---|---|
-| 2026.11.1 | 0.1.278 | Chromium | 55 passed, 2 skipped |
-| 2026.6.4 | 0.1.278 | Chromium | 55 passed, 2 skipped |
+| 2026.11.1 | 0.1.279 | Chromium | 102 passed, 2 skipped |
+| 2026.6.4 | 0.1.279 | Chromium | 102 passed, 2 skipped |
 | 2026.11.1 | 0.1.278 | Firefox 159 | 40 passed, 15 failed, 2 skipped |
 
 The two skipped tests are one syntax coloring case, once for the automation editor and once for the script editor, that the test setup cannot reproduce yet.

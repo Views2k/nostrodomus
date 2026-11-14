@@ -8,6 +8,7 @@ import {
   deepMerge,
 } from '../../src/core/settings.js';
 import { SETTINGS_MIGRATION_LEGACY_KEYS } from '../../src/core/settingsStorageKeys.js';
+import { createSettingsRuntime } from '../../src/core/settingsRuntime.js';
 import {
   HA_VALUE_PROVIDER_ID,
   LOVELACE_CONTEXT_PROVIDER_ID,
@@ -109,4 +110,31 @@ test('deepMerge checks nested values and ignores a non-object payload', () => {
 
   assert.deepEqual(deepMerge(DEFAULT_SETTINGS, ['a', 'b']), { ...DEFAULT_SETTINGS });
   assert.deepEqual(deepMerge(DEFAULT_SETTINGS, 'text'), { ...DEFAULT_SETTINGS });
+});
+
+// --- appended: the glass editor dialog setting ---
+test('style.glassDialog is on by default, and a stored choice survives a reload', () => {
+  assert.equal(DEFAULT_SETTINGS.style.glassDialog, true);
+  assert.equal(cloneDefaultSettings().style.glassDialog, true);
+
+  // What the runtime loads from the settings key, with the real defaults and merge.
+  const load = (stored) => {
+    const storage = new Map([[SETTINGS_WRITE_KEY, JSON.stringify(stored)]]);
+    return createSettingsRuntime({
+      storage: {
+        getItem: (key) => (storage.has(key) ? storage.get(key) : null),
+        setItem: (key, value) => { storage.set(key, String(value)); },
+        removeItem: (key) => { storage.delete(key); },
+      },
+      settingsWriteKey: SETTINGS_WRITE_KEY,
+      defaultSettings: DEFAULT_SETTINGS,
+      cloneDefaultSettingsImpl: cloneDefaultSettings,
+      deepMergeImpl: deepMerge,
+    }).loadSettings();
+  };
+  assert.equal(load({ style: { glassDialog: false } }).style.glassDialog, false, 'turned off stays off');
+  assert.equal(load({ style: { glassDialog: true } }).style.glassDialog, true);
+  assert.equal(load({ style: { codeboxGlowSize: 25 } }).style.glassDialog, true, 'settings saved before the setting existed get the default');
+  assert.equal(load({ style: { glassDialog: 'off' } }).style.glassDialog, true, 'a stored value of the wrong kind is ignored');
+  assert.equal(load({ style: { glassDialog: null } }).style.glassDialog, true);
 });

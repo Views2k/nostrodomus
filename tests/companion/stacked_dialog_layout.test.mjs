@@ -24,6 +24,16 @@ test('the dialog body is stopped from scrolling only in the side-by-side layout'
   assert.equal(CARD_DIALOG_STACKED_MEDIA, '(max-width: 999px)');
 });
 
+// Measured on Home Assistant 2026.6 and 2026.11 at 1280x600: the dialog starts 40px below the top
+// of the window and was 94vh high, so it ended 4px below the window, inside the Save row.
+test('the dialog height is capped at the window height minus its top margin', () => {
+  const css = WA_DIALOG_CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+  const cap = 'min(94vh, calc(100vh - var(--dialog-surface-margin-top, 40px)))';
+  assert.ok(css.includes(`height: ${cap} !important;`), 'height');
+  assert.ok(css.includes(`max-height: ${cap} !important;`), 'max-height');
+  assert.doesNotMatch(css, /height: 94vh !important/, 'no bare 94vh height');
+});
+
 test('stacked: the panes and the code take the full width, only below 1000px', () => {
   const strip = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '');
   const panes = strip(STACKED_PANES_CSS).trim();

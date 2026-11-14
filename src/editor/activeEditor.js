@@ -31,6 +31,7 @@ import {
   isPanelEditorRoute,
   surfaceFromHostTag,
 } from "./haSelectors.js";
+import { insideCardOwnEditor } from "./cardOwnEditor.js";
 
 // Autocomplete on non-card-dialog editors.
 //
@@ -238,6 +239,8 @@ export function dialogCodeEditorElement(dialog) {
       if (!root || depth > 12) return null;
       let editors = [];
       try { editors = Array.from(root.querySelectorAll?.(HA_CODE_EDITOR) || []); } catch { editors = []; }
+      // A code box inside a custom card's own visual editor is not the dialog's code editor.
+      editors = editors.filter((ed) => !insideCardOwnEditor(ed));
       for (const ed of editors) {
         const cm = ed?.shadowRoot?.querySelector?.(CM_EDITOR) || ed?.querySelector?.(CM_EDITOR);
         if (visible(ed) || (cm && visible(cm))) return ed;
@@ -307,6 +310,8 @@ function dialogHostsCodeEditor(dialog, deps = {}) {
 // dashboard events have no active edit dialog, so they stay out of scope.
 export function isScopedEditorEvent(ev, deps = {}) {
     const path = ev?.composedPath?.() || [];
+    // A key or click inside a custom card's own visual editor is that card's.
+    if (insideCardOwnEditor(path[0] || ev?.target)) return false;
     const dialog = activeEditDialog();
     if (dialog && pathHasEditorSurface(path) && path.some((n) => n === dialog || composedContains(dialog, n))) {
       if (!dialogEditorPresence.get(dialog)?.editor) dialogEditorPresence.delete(dialog);
@@ -357,6 +362,7 @@ export function isViewAllowed(view, deps = {}) {
     const runtimeWindow = deps.window || globalThis?.window || globalThis;
     const candidateView = view || runtimeState.view;
     if (!looksLikeView(candidateView) || !visible(candidateView.dom)) return false;
+    if (insideCardOwnEditor(candidateView.dom)) return false;
     const dialog = activeEditDialog();
     if (!dialog) {
       // No card dialog: allow a real, visible CM view whose DOM lives inside an allowlisted

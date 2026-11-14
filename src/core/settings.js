@@ -82,6 +82,13 @@ export const DEFAULT_SETTINGS = Object.freeze({
     // reapplied via scheduleCodeboxStyleReapply, with no separate competing sheet.
     hideActiveLineHighlight: true,
 
+    // Glass editor dialog. Default on: while the card editor dialog is open its surface is
+    // translucent and blurs what is behind it, and the preview pane has no background of its
+    // own, so the dashboard shows through. Values a theme defines for its dialogs are kept.
+    // Turn off to save the graphics work of the blur. The companion layer owns the sheet
+    // (scrollbarStyleRuntime.js); a change re-applies that layer at once.
+    glassDialog: true,
+
     // Default on: style/syntax every working HA codebox, not just the card-edit dialog.
     // When on, the targeted shadow walk also descends through the non-card-dialog editor
     // panel hosts (Dev Tools, dashboard raw config, automation / script YAML), so the

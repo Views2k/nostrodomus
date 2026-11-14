@@ -4,6 +4,8 @@
 import { codeMirrorNativeHighlightApiStatus, shouldSkipSourceClassNativeProbeForNativeFallback, shouldSuppressLegacySourceClassRefreshForNativeHighlight } from './codeMirrorNativeHighlight.js';
 import { sourceClassSmartSyntaxObserverReady, sourceClassSyntaxInstallForceRefresh, sourceClassSyntaxRefreshReasonUpdate } from './smartSyntaxScheduler.js';
 
+import { insideCardOwnEditor } from '../editor/cardOwnEditor.js';
+
 export function createSourceClassLifecycle(deps) {
   const {
     CODEMIRROR_SOURCE_CLASS_SYNTAX_STYLE_ID,
@@ -175,6 +177,8 @@ function refreshSourceClassSyntaxForOpenEditors(reason = "source-class-refresh")
     const add = (editor) => {
       if (!editor?.querySelector || seen.has(editor)) return;
       seen.add(editor);
+      // The walk below finds every code box on the page; one in a custom card's own editor is not ours.
+      if (insideCardOwnEditor(editor)) return;
       editors.push(editor);
     };
     try { add(activeCodeboxStyleEditor()); } catch { /* mid-frame HA mutation */ }

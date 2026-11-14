@@ -6,6 +6,16 @@
 
 export const CHANGELOG_SUMMARY = Object.freeze([
   {
+    version: "0.1.279",
+    title: "Glass editor dialog",
+    bullets: [
+      "The card editor dialog is translucent and blurs the dashboard behind it, and the card preview has no background of its own, so the dashboard shows through, softened. A theme that defines its own dialog surface or blur keeps it.",
+      "New setting in Settings, Style: Glass editor dialog, on by default. Turn it off on a slow computer: the blur costs graphics work while the dialog is open.",
+      "The visual editor a custom card brings with it is left alone. Its notes are no longer turned into the small warning icon, and working in a code box inside it no longer resizes the dialog, frames that box or switches off the suggestions the card turned on.",
+      "A visual editor taller than the dialog scrolls again after the code editor was shown, so its lower controls can be reached.",
+    ],
+  },
+  {
     version: "0.1.278",
     title: "Reference pages and comments brought up to date",
     bullets: [
@@ -40,15 +50,6 @@ export const CHANGELOG_SUMMARY = Object.freeze([
       "On a light Home Assistant theme the code is readable: the codebox surface is drawn dark and nearly opaque under the light text. The Parchment and Mist themes now get a light surface, dark plain text and dark line numbers.",
       "When the browser is narrower than 1000 pixels the card dialog scrolls to the preview, the Save and Cancel row stays in view, and the codebox no longer covers the top of the preview.",
       "With a dark Home Assistant theme and any other syntax theme nothing changes. Your saved settings, themes and snippets are unchanged.",
-    ],
-  },
-  {
-    version: "0.1.274",
-    title: "YAML colors, fewer checks per click, more completion fixes",
-    bullets: [
-      "Plain YAML lines are colored as YAML: comments at the end of a line, true and false, entity ids and card names no longer take CSS colors, and text inside a multi-line value is no longer colored as CSS.",
-      "A click in the card dialog now triggers four style checks instead of thirteen, Settings and Developer Tools pages without an editor no longer start a four second search, and the visual editor tab stops searching for a code editor after a few seconds.",
-      "Keys and clicks on the dialog's own buttons no longer act on the suggestion list, manual trigger mode keeps its list while you type, the list no longer covers the line you are typing in short editors, and the Copy and Log buttons work on plain HTTP installs.",
     ],
   },
 ]);
