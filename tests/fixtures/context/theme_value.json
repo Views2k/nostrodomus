@@ -1,0 +1,16 @@
+{
+  "name": "Theme value",
+  "rationale": "Theme values are a distinct Home Assistant runtime provider target and should not be treated as generic strings when a theme key is being edited.",
+  "sourceWithCursor": "theme: __CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "theme",
+    "yamlRole": "value",
+    "valueKind": "theme",
+    "focusKind": "",
+    "pathText": "theme",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

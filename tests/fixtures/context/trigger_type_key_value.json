@@ -1,0 +1,16 @@
+{
+  "name": "Trigger type key value",
+  "rationale": "Trigger dictionaries can use type instead of platform in some examples and provider ranking needs to recognize trigger-type values inside trigger paths.",
+  "sourceWithCursor": "trigger:\n  - type: __CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "type",
+    "yamlRole": "value",
+    "valueKind": "trigger-type",
+    "focusKind": "trigger-block",
+    "pathText": "trigger.type",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

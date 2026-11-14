@@ -1,0 +1,24 @@
+node_modules/
+reports/
+__pycache__/
+*.pyc
+.nostrodomus_payload
+EXPORT_FILE_LIST.txt
+PROVENANCE-*.txt
+tools/e2e/.ha-state/
+tools/e2e/.ha-state-beta/
+tests/e2e/.playwright/
+# e2e run output and browser traces
+.e2e-log
+.e2e-results.json
+test-results/
+Trace-*.json.gz
+# Local reference archives (personal media, never commit)
+nostrodomus-ha-resources.zip
+stellar-ha-resources.zip
+# Local scratch and host helpers (contain host name and personal paths)
+send-to-windows.sh
+docs/planned/
+
+sccb*.png
+*.debug.png

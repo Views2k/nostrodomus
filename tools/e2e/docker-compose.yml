@@ -1,0 +1,41 @@
+# Nostrodomus E2E test instance (tools/e2e/README.md is the binding contract).
+#
+# - HA_TAG selects the image tag: stable (default) or beta (the canary).
+# - HA_STATE selects the gitignored state dir: .ha-state (default) or
+#   .ha-state-beta — the beta canary never migrates the stable state forward.
+# - Host port 8124 -> container 8123. Never 8123 on the host: the real
+#   instance owns that port and this harness must never touch it.
+# - `npm run e2e:up` pre-creates the state dir host-owned (ensure_state.mjs)
+#   before this file runs, so Docker never creates the bind source as root and
+#   config/www exists at first HA boot (HA only registers /local/ if www/
+#   exists at startup).
+name: nostrodomus-e2e
+
+services:
+  homeassistant:
+    image: homeassistant/home-assistant:${HA_TAG:-stable}
+    container_name: nostrodomus-e2e-ha
+    restart: "no"
+    ports:
+      - "8124:8123"
+    volumes:
+      - ./${HA_STATE:-.ha-state}/config:/config
+    environment:
+      TZ: Etc/UTC
+    healthcheck:
+      # 200 on both the onboarding page (fresh state) and the normal frontend.
+      test:
+        [
+          "CMD",
+          "python3",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8123/', timeout=5)",
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 60
+      start_period: 30s
+
+networks:
+  default:
+    name: nostrodomus-e2e

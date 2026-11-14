@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "purpose": "Allowlist for src modules that are deliberately not reachable from src/main.js. tools/check_module_wiring.py fails if a new unwired module appears without an explicit entry here.",
+  "rule": "Do not add new src/**/*.js files unless they are imported into the runtime graph or deliberately added here with a rationale.",
+  "allowed_unwired_modules": {}
+}

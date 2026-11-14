@@ -1,0 +1,15 @@
+{
+  "name": "Jinja template filter",
+  "rationale": "A cursor after a Jinja pipe should be treated as Jinja so filter/function providers can participate without YAML key noise.",
+  "sourceWithCursor": "template:\n  - sensor:\n      - name: HVAC Runtime\n        state: \"{{ states('sensor.hvac_minutes') | | }}\"\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "jinja",
+    "yamlKey": "state",
+    "yamlRole": "value",
+    "valueKind": "",
+    "focusKind": "",
+    "pathText": "template.sensor.name.state",
+    "shouldSuggest": true
+  }
+}

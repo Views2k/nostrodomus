@@ -1,0 +1,1568 @@
+[
+  {
+    "id": "snip.dashboard.action.value.perform_action",
+    "family": "dashboard-action",
+    "contextKind": "lovelace-action-value",
+    "triggers": [
+      "dashboard.action.value.perform_action"
+    ],
+    "label": "perform-action + target",
+    "insert": "perform-action\nperform_action: ${1:light.turn_on}\ntarget:\n  entity_id: ${2:light.example}\ndata:\n  ${3:brightness_pct}: ${4:100}",
+    "aliases": [
+      "dashboard",
+      "tap_action",
+      "perform-action",
+      "target"
+    ],
+    "priority": 120,
+    "documentation": "Completes action: perform-action and adds the sibling perform_action/target/data shape."
+  },
+  {
+    "id": "snip.dashboard.action.value.navigate",
+    "family": "dashboard-action",
+    "contextKind": "lovelace-action-value",
+    "triggers": [
+      "dashboard.action.value.navigate"
+    ],
+    "label": "navigate + path",
+    "insert": "navigate\nnavigation_path: ${1:/lovelace/default}",
+    "aliases": [
+      "dashboard",
+      "navigate",
+      "path"
+    ],
+    "priority": 110,
+    "documentation": "Completes action: navigate and adds navigation_path."
+  },
+  {
+    "id": "snip.dashboard.action.value.url",
+    "family": "dashboard-action",
+    "contextKind": "lovelace-action-value",
+    "triggers": [
+      "dashboard.action.value.url"
+    ],
+    "label": "url + url_path",
+    "insert": "url\nurl_path: ${1:https://www.home-assistant.io}",
+    "aliases": [
+      "dashboard",
+      "url",
+      "url_path"
+    ],
+    "priority": 105,
+    "documentation": "Completes action: url and adds url_path."
+  },
+  {
+    "id": "snip.dashboard.action.perform_action",
+    "family": "dashboard-action",
+    "contextKind": "lovelace-action-block",
+    "triggers": [
+      "dashboard.action.perform_action"
+    ],
+    "label": "tap/hold action: perform action",
+    "insert": "action: perform-action\nperform_action: ${1:light.turn_on}\ntarget:\n  entity_id: ${2:light.example}\ndata:\n  ${3:brightness_pct}: ${4:100}",
+    "aliases": [
+      "tap_action",
+      "hold_action",
+      "perform-action",
+      "target"
+    ],
+    "priority": 120,
+    "documentation": "Dashboard action template for service calls using modern perform-action syntax."
+  },
+  {
+    "id": "snip.dashboard.action.more_info",
+    "family": "dashboard-action",
+    "contextKind": "lovelace-action-block",
+    "triggers": [
+      "dashboard.action.more_info"
+    ],
+    "label": "tap/hold action: more info",
+    "insert": "action: more-info",
+    "aliases": [
+      "tap_action",
+      "more-info"
+    ],
+    "priority": 100,
+    "documentation": "Simple dashboard action that opens more-info."
+  },
+  {
+    "id": "snip.dashboard.action.navigate",
+    "family": "dashboard-action",
+    "contextKind": "lovelace-action-block",
+    "triggers": [
+      "dashboard.action.navigate"
+    ],
+    "label": "tap/hold action: navigate",
+    "insert": "action: navigate\nnavigation_path: ${1:/lovelace/default}",
+    "aliases": [
+      "tap_action",
+      "navigate",
+      "navigation_path"
+    ],
+    "priority": 96,
+    "documentation": "Dashboard navigation action template."
+  },
+  {
+    "id": "snip.dashboard.action.confirmed",
+    "family": "dashboard-action",
+    "contextKind": "lovelace-action-block",
+    "triggers": [
+      "dashboard.action.confirmed"
+    ],
+    "label": "tap/hold action: confirmed perform action",
+    "insert": "action: perform-action\nperform_action: ${1:script.example}\ntarget:\n  entity_id: ${2:script.example}\nconfirmation:\n  text: ${3:Run this action?}",
+    "aliases": [
+      "confirmation",
+      "perform-action"
+    ],
+    "priority": 92,
+    "documentation": "Perform-action template with a confirmation prompt."
+  },
+  {
+    "id": "snip.trigger.state",
+    "family": "automation-trigger",
+    "contextKind": "trigger-block",
+    "triggers": [
+      "automation.trigger.state"
+    ],
+    "label": "automation trigger: state",
+    "insert": "- trigger: state\n  entity_id: ${1:binary_sensor.example}\n  to: ${2:on}\n  for:\n    minutes: ${3:1}",
+    "aliases": [
+      "automation",
+      "trigger",
+      "state"
+    ],
+    "priority": 115,
+    "documentation": "State trigger with optional duration."
+  },
+  {
+    "id": "snip.trigger.numeric_state",
+    "family": "automation-trigger",
+    "contextKind": "trigger-block",
+    "triggers": [
+      "automation.trigger.numeric_state"
+    ],
+    "label": "automation trigger: numeric state",
+    "insert": "- trigger: numeric_state\n  entity_id: ${1:sensor.example}\n  above: ${2:80}",
+    "aliases": [
+      "numeric_state",
+      "sensor"
+    ],
+    "priority": 108,
+    "documentation": "Numeric state trigger template."
+  },
+  {
+    "id": "snip.trigger.time",
+    "family": "automation-trigger",
+    "contextKind": "trigger-block",
+    "triggers": [
+      "automation.trigger.time"
+    ],
+    "label": "automation trigger: time",
+    "insert": "- trigger: time\n  at: ${1:07:00:00}",
+    "aliases": [
+      "time",
+      "schedule"
+    ],
+    "priority": 104,
+    "documentation": "Time trigger template."
+  },
+  {
+    "id": "snip.trigger.event",
+    "family": "automation-trigger",
+    "contextKind": "trigger-block",
+    "triggers": [
+      "automation.trigger.event"
+    ],
+    "label": "automation trigger: event",
+    "insert": "- trigger: event\n  event_type: ${1:mobile_app_notification_action}",
+    "aliases": [
+      "event",
+      "event_type"
+    ],
+    "priority": 96,
+    "documentation": "Event trigger template."
+  },
+  {
+    "id": "snip.condition.state",
+    "family": "automation-condition",
+    "contextKind": "condition-block",
+    "triggers": [
+      "automation.condition.state"
+    ],
+    "label": "condition: state",
+    "insert": "- condition: state\n  entity_id: ${1:binary_sensor.example}\n  state: ${2:on}",
+    "aliases": [
+      "condition",
+      "state"
+    ],
+    "priority": 112,
+    "documentation": "State condition template."
+  },
+  {
+    "id": "snip.condition.numeric_state",
+    "family": "automation-condition",
+    "contextKind": "condition-block",
+    "triggers": [
+      "automation.condition.numeric_state"
+    ],
+    "label": "condition: numeric state",
+    "insert": "- condition: numeric_state\n  entity_id: ${1:sensor.example}\n  above: ${2:80}",
+    "aliases": [
+      "numeric_state"
+    ],
+    "priority": 104,
+    "documentation": "Numeric state condition template."
+  },
+  {
+    "id": "snip.condition.template",
+    "family": "automation-condition",
+    "contextKind": "condition-block",
+    "triggers": [
+      "automation.condition.template"
+    ],
+    "label": "condition: template",
+    "insert": "- condition: template\n  value_template: \"{{ ${1:is_state('binary_sensor.example', 'on')} }}\"",
+    "aliases": [
+      "template",
+      "jinja"
+    ],
+    "priority": 96,
+    "documentation": "Template condition template."
+  },
+  {
+    "id": "snip.condition.and",
+    "family": "automation-condition",
+    "contextKind": "condition-block",
+    "triggers": [
+      "automation.condition.and"
+    ],
+    "label": "condition group: and",
+    "insert": "- condition: and\n  conditions:\n    - condition: state\n      entity_id: ${1:binary_sensor.example}\n      state: ${2:on}",
+    "aliases": [
+      "and",
+      "conditions"
+    ],
+    "priority": 92,
+    "documentation": "Grouped AND condition template."
+  },
+  {
+    "id": "snip.sequence.service",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.service"
+    ],
+    "label": "action: service call",
+    "insert": "- action: ${1:light.turn_on}\n  target:\n    entity_id: ${2:light.example}\n  data:\n    ${3:brightness_pct}: ${4:100}",
+    "aliases": [
+      "automation",
+      "script",
+      "service",
+      "target"
+    ],
+    "priority": 120,
+    "documentation": "Automation/script service action step."
+  },
+  {
+    "id": "snip.sequence.choose",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.choose"
+    ],
+    "label": "action: choose",
+    "insert": "- choose:\n    - conditions:\n        - condition: state\n          entity_id: ${1:binary_sensor.example}\n          state: ${2:on}\n      sequence:\n        - action: ${3:light.turn_on}\n          target:\n            entity_id: ${4:light.example}\n  default:\n    - action: ${5:light.turn_off}\n      target:\n        entity_id: ${6:light.example}",
+    "aliases": [
+      "choose",
+      "branch",
+      "default"
+    ],
+    "priority": 110,
+    "documentation": "Choose/default branching template."
+  },
+  {
+    "id": "snip.sequence.if",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.if"
+    ],
+    "label": "action: if / then / else",
+    "insert": "- if:\n    - condition: state\n      entity_id: ${1:binary_sensor.example}\n      state: ${2:on}\n  then:\n    - action: ${3:light.turn_on}\n      target:\n        entity_id: ${4:light.example}\n  else:\n    - action: ${5:light.turn_off}\n      target:\n        entity_id: ${6:light.example}",
+    "aliases": [
+      "if",
+      "then",
+      "else"
+    ],
+    "priority": 108,
+    "documentation": "If/then/else automation action template."
+  },
+  {
+    "id": "snip.sequence.wait_for_trigger",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.wait_for_trigger"
+    ],
+    "label": "action: wait for trigger",
+    "insert": "- wait_for_trigger:\n    - trigger: state\n      entity_id: ${1:binary_sensor.example}\n      to: ${2:on}\n  timeout:\n    minutes: ${3:5}\n  continue_on_timeout: ${4:false}",
+    "aliases": [
+      "wait_for_trigger",
+      "timeout"
+    ],
+    "priority": 100,
+    "documentation": "Wait-for-trigger action template."
+  },
+  {
+    "id": "snip.sequence.delay",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.delay"
+    ],
+    "label": "action: delay",
+    "insert": "- delay:\n    minutes: ${1:1}",
+    "aliases": [
+      "delay"
+    ],
+    "priority": 92,
+    "documentation": "Delay action template."
+  },
+  {
+    "id": "snip.target.entity",
+    "family": "target",
+    "contextKind": "target-block",
+    "triggers": [
+      "target.entity_id"
+    ],
+    "label": "target: entity_id",
+    "insert": "entity_id: $1",
+    "aliases": [
+      "target",
+      "entity_id"
+    ],
+    "priority": 100,
+    "documentation": "Common target entity_id line."
+  },
+  {
+    "id": "snip.target.area",
+    "family": "target",
+    "contextKind": "target-block",
+    "triggers": [
+      "target.area_id"
+    ],
+    "label": "target: area_id",
+    "insert": "area_id: $1",
+    "aliases": [
+      "target",
+      "area_id"
+    ],
+    "priority": 80,
+    "documentation": "Target an area."
+  },
+  {
+    "id": "snip.card_mod.ha_card",
+    "family": "card-mod-css",
+    "contextKind": "style-block",
+    "triggers": [
+      "style.card_mod.ha_card"
+    ],
+    "label": "card_mod: ha-card style",
+    "insert": "ha-card {\n  background: ${1:rgba(0, 0, 0, 0.35)};\n  border-radius: ${2:22px};\n  box-shadow: ${3:none};\n}",
+    "aliases": [
+      "card_mod",
+      "ha-card",
+      "css"
+    ],
+    "priority": 105,
+    "documentation": "card_mod CSS block targeting ha-card."
+  },
+  {
+    "id": "snip.button_card.styles_card",
+    "family": "button-card-style",
+    "contextKind": "style-block",
+    "triggers": [
+      "style.button_card.card"
+    ],
+    "label": "button-card styles: card",
+    "insert": "- border-radius: ${1:22px}\n- background: ${2:rgba(0, 0, 0, 0.35)}\n- box-shadow: ${3:none}\n- overflow: ${4:visible}",
+    "aliases": [
+      "button-card",
+      "styles",
+      "card"
+    ],
+    "priority": 95,
+    "documentation": "button-card styles.card list snippet."
+  },
+  {
+    "id": "snip.card.entities",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.entities"
+    ],
+    "label": "card: entities",
+    "insert": "type: entities\ntitle: ${1:Title}\nentities:\n  - entity: ${2:light.example}\n    name: ${3:Example}",
+    "aliases": [
+      "card",
+      "entities"
+    ],
+    "priority": 86,
+    "documentation": "Entities card template."
+  },
+  {
+    "id": "snip.card.grid",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.grid"
+    ],
+    "label": "card: grid with cards",
+    "insert": "type: grid\ncolumns: ${1:2}\nsquare: ${2:false}\ncards:\n  - type: tile\n    entity: ${3:light.example}",
+    "aliases": [
+      "card",
+      "grid",
+      "cards"
+    ],
+    "priority": 82,
+    "documentation": "Grid card template."
+  },
+  {
+    "id": "snip.dashboard.action.toggle",
+    "family": "dashboard-action",
+    "contextKind": "lovelace-action-block",
+    "triggers": [
+      "dashboard.action.toggle"
+    ],
+    "label": "tap/hold action: toggle",
+    "insert": "action: toggle",
+    "aliases": [
+      "tap_action",
+      "hold_action",
+      "toggle"
+    ],
+    "priority": 98,
+    "documentation": "Dashboard action that toggles the configured entity."
+  },
+  {
+    "id": "snip.dashboard.action.url_block",
+    "family": "dashboard-action",
+    "contextKind": "lovelace-action-block",
+    "triggers": [
+      "dashboard.action.url_block"
+    ],
+    "label": "tap/hold action: url",
+    "insert": "action: url\nurl_path: ${1:https://www.home-assistant.io}",
+    "aliases": [
+      "tap_action",
+      "url",
+      "url_path"
+    ],
+    "priority": 94,
+    "documentation": "Dashboard action that opens an external URL."
+  },
+  {
+    "id": "snip.dashboard.card.button_card",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.button_card"
+    ],
+    "label": "card: custom button-card",
+    "insert": "type: custom:button-card\nentity: ${1:light.example}\nname: ${2:Example}\nshow_state: true\ntap_action:\n  action: toggle",
+    "aliases": [
+      "button-card",
+      "dashboard",
+      "card",
+      "toggle"
+    ],
+    "priority": 90,
+    "documentation": "Starter Lovelace custom button-card with a toggle tap action."
+  },
+  {
+    "id": "snip.dashboard.card.mushroom_chips",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.mushroom_chips"
+    ],
+    "label": "card: mushroom chips",
+    "insert": "type: custom:mushroom-chips-card\nchips:\n  - type: entity\n    entity: ${1:sensor.example}\n  - type: action\n    icon: ${2:mdi:home}\n    tap_action:\n      action: navigate\n      navigation_path: ${3:/lovelace/default}",
+    "aliases": [
+      "mushroom",
+      "chips",
+      "dashboard",
+      "card"
+    ],
+    "priority": 88,
+    "documentation": "Starter Mushroom chips card with entity and navigation chips."
+  },
+  {
+    "id": "snip.dashboard.card.vertical_stack",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.vertical_stack"
+    ],
+    "label": "card: vertical stack",
+    "insert": "type: vertical-stack\ncards:\n  - type: entities\n    entities:\n      - entity: ${1:light.example}\n  - type: markdown\n    content: ${2:Status panel}",
+    "aliases": [
+      "vertical-stack",
+      "stack",
+      "dashboard",
+      "card"
+    ],
+    "priority": 84,
+    "documentation": "Basic vertical-stack card with nested cards."
+  },
+  {
+    "id": "snip.trigger.sun",
+    "family": "automation-trigger",
+    "contextKind": "trigger-block",
+    "triggers": [
+      "automation.trigger.sun"
+    ],
+    "label": "automation trigger: sun",
+    "insert": "- trigger: sun\n  event: ${1:sunset}\n  offset: \"${2:-00:15:00}\"",
+    "aliases": [
+      "sun",
+      "sunset",
+      "sunrise"
+    ],
+    "priority": 102,
+    "documentation": "Sunrise/sunset trigger with offset."
+  },
+  {
+    "id": "snip.trigger.webhook",
+    "family": "automation-trigger",
+    "contextKind": "trigger-block",
+    "triggers": [
+      "automation.trigger.webhook"
+    ],
+    "label": "automation trigger: webhook",
+    "insert": "- trigger: webhook\n  webhook_id: ${1:my_webhook_id}\n  allowed_methods:\n    - POST\n  local_only: true",
+    "aliases": [
+      "webhook",
+      "post",
+      "api"
+    ],
+    "priority": 94,
+    "documentation": "Webhook trigger template scoped to local requests by default."
+  },
+  {
+    "id": "snip.trigger.homeassistant_start",
+    "family": "automation-trigger",
+    "contextKind": "trigger-block",
+    "triggers": [
+      "automation.trigger.homeassistant_start"
+    ],
+    "label": "automation trigger: Home Assistant start",
+    "insert": "- trigger: homeassistant\n  event: start",
+    "aliases": [
+      "homeassistant",
+      "start",
+      "startup"
+    ],
+    "priority": 90,
+    "documentation": "Runs an automation when Home Assistant starts."
+  },
+  {
+    "id": "snip.condition.time",
+    "family": "automation-condition",
+    "contextKind": "condition-block",
+    "triggers": [
+      "automation.condition.time"
+    ],
+    "label": "condition: time window",
+    "insert": "- condition: time\n  after: ${1:07:00:00}\n  before: ${2:22:00:00}",
+    "aliases": [
+      "time",
+      "after",
+      "before"
+    ],
+    "priority": 100,
+    "documentation": "Time condition with after/before bounds."
+  },
+  {
+    "id": "snip.condition.sun",
+    "family": "automation-condition",
+    "contextKind": "condition-block",
+    "triggers": [
+      "automation.condition.sun"
+    ],
+    "label": "condition: sun",
+    "insert": "- condition: sun\n  after: ${1:sunset}\n  after_offset: \"${2:-00:15:00}\"",
+    "aliases": [
+      "sun",
+      "sunset",
+      "sunrise"
+    ],
+    "priority": 98,
+    "documentation": "Sun condition with offset support."
+  },
+  {
+    "id": "snip.condition.or",
+    "family": "automation-condition",
+    "contextKind": "condition-block",
+    "triggers": [
+      "automation.condition.or"
+    ],
+    "label": "condition group: or",
+    "insert": "- condition: or\n  conditions:\n    - condition: state\n      entity_id: ${1:binary_sensor.example}\n      state: ${2:on}\n    - condition: state\n      entity_id: ${3:binary_sensor.backup}\n      state: ${4:on}",
+    "aliases": [
+      "or",
+      "conditions",
+      "group"
+    ],
+    "priority": 90,
+    "documentation": "Grouped OR condition template."
+  },
+  {
+    "id": "snip.sequence.notification_mobile",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.notification_mobile"
+    ],
+    "label": "action: mobile notification",
+    "insert": "- action: notify.mobile_app_${1:phone_name}\n  data:\n    title: ${2:Home Assistant}\n    message: ${3:Something happened}",
+    "aliases": [
+      "notify",
+      "mobile_app",
+      "notification"
+    ],
+    "priority": 106,
+    "documentation": "Mobile app notification action template."
+  },
+  {
+    "id": "snip.sequence.scene_turn_on",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.scene_turn_on"
+    ],
+    "label": "action: scene turn on",
+    "insert": "- action: scene.turn_on\n  target:\n    entity_id: ${1:scene.example}",
+    "aliases": [
+      "scene",
+      "scene.turn_on"
+    ],
+    "priority": 104,
+    "documentation": "Scene activation action template."
+  },
+  {
+    "id": "snip.sequence.repeat_count",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.repeat_count"
+    ],
+    "label": "action: repeat count",
+    "insert": "- repeat:\n    count: ${1:3}\n    sequence:\n      - action: ${2:light.toggle}\n        target:\n          entity_id: ${3:light.example}\n      - delay:\n          seconds: ${4:1}",
+    "aliases": [
+      "repeat",
+      "loop",
+      "count"
+    ],
+    "priority": 102,
+    "documentation": "Repeat-count automation action block."
+  },
+  {
+    "id": "snip.sequence.parallel",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.parallel"
+    ],
+    "label": "action: parallel branches",
+    "insert": "- parallel:\n    - action: ${1:light.turn_on}\n      target:\n        entity_id: ${2:light.one}\n    - action: ${3:light.turn_on}\n      target:\n        entity_id: ${4:light.two}",
+    "aliases": [
+      "parallel",
+      "branches"
+    ],
+    "priority": 98,
+    "documentation": "Parallel action block with two service branches."
+  },
+  {
+    "id": "snip.sequence.variables",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.variables"
+    ],
+    "label": "action: variables",
+    "insert": "- variables:\n    ${1:target_light}: ${2:light.example}\n    ${3:message}: ${4:Hello}",
+    "aliases": [
+      "variables",
+      "template",
+      "vars"
+    ],
+    "priority": 94,
+    "documentation": "Automation variables action block."
+  },
+  {
+    "id": "snip.sequence.stop",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "automation.action.stop"
+    ],
+    "label": "action: stop",
+    "insert": "- stop: ${1:Stopped by Nostrodomus snippet}\n  error: ${2:false}",
+    "aliases": [
+      "stop",
+      "abort",
+      "error"
+    ],
+    "priority": 88,
+    "documentation": "Stop action with optional error flag."
+  },
+  {
+    "id": "snip.target.device",
+    "family": "target",
+    "contextKind": "target-block",
+    "triggers": [
+      "target.device"
+    ],
+    "label": "target: device_id",
+    "insert": "device_id: $1",
+    "aliases": [
+      "target",
+      "device_id"
+    ],
+    "priority": 86,
+    "documentation": "Target a device by device_id."
+  },
+  {
+    "id": "snip.target.label",
+    "family": "target",
+    "contextKind": "target-block",
+    "triggers": [
+      "target.label"
+    ],
+    "label": "target: label_id",
+    "insert": "label_id: $1",
+    "aliases": [
+      "target",
+      "label_id"
+    ],
+    "priority": 84,
+    "documentation": "Target entities by Home Assistant label id."
+  },
+  {
+    "id": "snip.card_mod.css.variables",
+    "family": "card-mod-css",
+    "contextKind": "style-block",
+    "triggers": [
+      "card_mod.css.variables"
+    ],
+    "label": "card-mod: CSS variables",
+    "insert": "ha-card {\n  --ha-card-background: ${1:rgba(20, 24, 34, 0.45)};\n  --ha-card-border-radius: ${2:22px};\n}",
+    "aliases": [
+      "card-mod",
+      "css",
+      "variables",
+      "ha-card"
+    ],
+    "priority": 100,
+    "documentation": "card_mod CSS variable starter for ha-card styling."
+  },
+  {
+    "id": "snip.button_card.state_styles",
+    "family": "button-card-style",
+    "contextKind": "style-block",
+    "triggers": [
+      "button_card.state_styles"
+    ],
+    "label": "button-card: state styles",
+    "insert": "state:\n  - value: ${1:on}\n    styles:\n      card:\n        - box-shadow: ${2:0 0 20px rgba(120, 220, 255, 0.35)}\n      name:\n        - color: ${3:#ffffff}",
+    "aliases": [
+      "button-card",
+      "state",
+      "styles"
+    ],
+    "priority": 92,
+    "documentation": "button-card state-specific styles starter."
+  },
+  {
+    "id": "snip.dashboard.card.vertical_stack_in_card",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.vertical_stack_in_card"
+    ],
+    "label": "vertical-stack-in-card skeleton",
+    "insert": "type: custom:vertical-stack-in-card\ncards:\n  - type: ${1:entities}\n    entities:\n      - ${2:light.example}",
+    "aliases": [
+      "vertical-stack-in-card",
+      "stack",
+      "cards"
+    ],
+    "priority": 96,
+    "documentation": "Starter vertical-stack-in-card wrapper with a nested card list."
+  },
+  {
+    "id": "snip.dashboard.card.atomic_calendar_revive",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.atomic_calendar_revive"
+    ],
+    "label": "atomic-calendar-revive skeleton",
+    "insert": "type: custom:atomic-calendar-revive\nname: ${1:Calendar}\nentities:\n  - entity: ${2:calendar.example}\nmaxDaysToShow: ${3:7}\nmaxEventCount: ${4:5}",
+    "aliases": [
+      "atomic-calendar",
+      "calendar",
+      "events"
+    ],
+    "priority": 94,
+    "documentation": "Starter Atomic Calendar Revive card with calendar entities and event limits."
+  },
+  {
+    "id": "snip.dashboard.card.clock_weather",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.clock_weather"
+    ],
+    "label": "clock-weather-card skeleton",
+    "insert": "type: custom:clock-weather-card\nentity: ${1:weather.home}\ntitle: ${2:Weather}\nforecast_rows: ${3:5}\nanimated_icon: ${4:true}",
+    "aliases": [
+      "clock-weather",
+      "weather",
+      "forecast"
+    ],
+    "priority": 93,
+    "documentation": "Starter clock-weather-card using the current forecast_rows option."
+  },
+  {
+    "id": "snip.dashboard.card.uptime",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.uptime"
+    ],
+    "label": "uptime-card skeleton",
+    "insert": "type: custom:uptime-card\nentity: ${1:binary_sensor.example}\nname: ${2:Uptime}\nhours_to_show: ${3:24}\nshow:\n  average: ${4:true}\n  status: ${5:true}",
+    "aliases": [
+      "uptime",
+      "monitor",
+      "binary_sensor"
+    ],
+    "priority": 92,
+    "documentation": "Starter uptime-card with a monitored binary sensor and visible summary rows."
+  },
+  {
+    "id": "snip.dashboard.card.flex_table",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.flex_table"
+    ],
+    "label": "flex-table-card skeleton",
+    "insert": "type: custom:flex-table-card\ntitle: ${1:Table}\nentities:\n  include:\n    - ${2:sensor.*}\ncolumns:\n  - name: ${3:State}\n    data: ${4:state}",
+    "aliases": [
+      "flex-table",
+      "table",
+      "columns"
+    ],
+    "priority": 91,
+    "documentation": "Starter flex-table-card with include filters and a first data column."
+  },
+  {
+    "id": "snip.dashboard.card.xiaomi_vacuum_map",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.xiaomi_vacuum_map"
+    ],
+    "label": "xiaomi-vacuum-map-card skeleton",
+    "insert": "type: custom:xiaomi-vacuum-map-card\nentity: ${1:vacuum.example}\nmap_source:\n  camera: ${2:camera.vacuum_map}\ncalibration_source:\n  camera: true",
+    "aliases": [
+      "vacuum-map",
+      "xiaomi",
+      "map"
+    ],
+    "priority": 90,
+    "documentation": "Starter Xiaomi Vacuum Map Card using manual YAML map and calibration source blocks."
+  },
+  {
+    "id": "snip.dashboard.card.kiosk_mode",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.kiosk_mode"
+    ],
+    "label": "kiosk-mode dashboard block",
+    "insert": "kiosk_mode:\n  hide_header: ${1:true}\n  hide_sidebar: ${2:true}\n  hide_menubutton: ${3:false}\n  mobile_settings:\n    hide_header: ${4:true}",
+    "aliases": [
+      "kiosk",
+      "hide_header",
+      "hide_sidebar"
+    ],
+    "priority": 89,
+    "documentation": "Starter kiosk-mode dashboard block for hiding Home Assistant chrome."
+  },
+  {
+    "id": "snip.dashboard.card.better_thermostat_ui",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.better_thermostat_ui"
+    ],
+    "label": "better-thermostat-ui-card skeleton",
+    "insert": "type: custom:better-thermostat-ui-card\nentity: ${1:climate.example}\nname: ${2:Thermostat}\ndisable_window: ${3:false}\ndisable_menu: ${4:false}",
+    "aliases": [
+      "better-thermostat",
+      "thermostat",
+      "climate"
+    ],
+    "priority": 88,
+    "documentation": "Starter Better Thermostat UI Card for a climate entity."
+  },
+  {
+    "id": "snip.dashboard.card.mushroom_entity",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.mushroom_entity"
+    ],
+    "label": "mushroom entity card",
+    "insert": "type: custom:mushroom-entity-card\nentity: ${1:light.example}\nname: ${2:Name}\nicon: ${3:mdi:lightbulb}\ntap_action:\n  action: ${4:toggle}",
+    "aliases": [
+      "mushroom",
+      "entity card",
+      "light",
+      "dashboard"
+    ],
+    "priority": 111,
+    "documentation": "Mushroom entity-card skeleton with a common toggle action."
+  },
+  {
+    "id": "snip.dashboard.card.mushroom_template",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.mushroom_template"
+    ],
+    "label": "mushroom template card",
+    "insert": "type: custom:mushroom-template-card\nprimary: ${1:Title}\nsecondary: \"{{ states('${2:sensor.example}') }}\"\nicon: ${3:mdi:home}\nicon_color: ${4:blue}\ntap_action:\n  action: ${5:more-info}",
+    "aliases": [
+      "mushroom",
+      "template",
+      "jinja",
+      "dashboard"
+    ],
+    "priority": 112,
+    "documentation": "Mushroom template-card skeleton with HA template text."
+  },
+  {
+    "id": "snip.dashboard.card.button_card_state",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.button_card_state"
+    ],
+    "label": "button-card state template",
+    "insert": "type: custom:button-card\nentity: ${1:light.example}\nname: ${2:Name}\nshow_state: true\nstate_display: |\n  [[[ return entity?.state ?? 'unknown'; ]]]\ntap_action:\n  action: ${3:toggle}",
+    "aliases": [
+      "button-card",
+      "state_display",
+      "javascript",
+      "template"
+    ],
+    "priority": 113,
+    "documentation": "button-card skeleton with state_display JavaScript template."
+  },
+  {
+    "id": "snip.dashboard.card.button_card_custom_field",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.button_card_custom_field"
+    ],
+    "label": "button-card custom field",
+    "insert": "type: custom:button-card\nentity: ${1:sensor.example}\nname: ${2:Name}\ncustom_fields:\n  ${3:detail}: |\n    [[[ return states['${4:sensor.example}']?.state ?? ''; ]]]\nstyles:\n  custom_fields:\n    ${3:detail}:\n      - font-size: ${5:12px}",
+    "aliases": [
+      "button-card",
+      "custom_fields",
+      "styles",
+      "javascript"
+    ],
+    "priority": 107,
+    "documentation": "button-card custom_fields pattern with paired style block."
+  },
+  {
+    "id": "snip.dashboard.card.mini_graph_temperature",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.mini_graph_temperature"
+    ],
+    "label": "mini-graph temperature trend",
+    "insert": "type: custom:mini-graph-card\nname: ${1:Temperature}\nentities:\n  - entity: ${2:sensor.temperature}\nhours_to_show: ${3:24}\npoints_per_hour: ${4:2}\nshow:\n  graph: line\n  extrema: true\n  average: true",
+    "aliases": [
+      "mini-graph-card",
+      "temperature",
+      "history",
+      "sensor"
+    ],
+    "priority": 110,
+    "documentation": "mini-graph-card trend skeleton for a temperature sensor."
+  },
+  {
+    "id": "snip.dashboard.card.mini_graph_state_map",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.mini_graph_state_map"
+    ],
+    "label": "mini-graph state map",
+    "insert": "type: custom:mini-graph-card\nname: ${1:State History}\nentities:\n  - entity: ${2:binary_sensor.example}\nstate_map:\n  - value: \"off\"\n    label: ${3:Off}\n  - value: \"on\"\n    label: ${4:On}\nshow:\n  graph: bar",
+    "aliases": [
+      "mini-graph-card",
+      "state_map",
+      "binary_sensor"
+    ],
+    "priority": 105,
+    "documentation": "mini-graph-card state_map skeleton for binary/state history."
+  },
+  {
+    "id": "snip.dashboard.card.apexcharts_line",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.apexcharts_line"
+    ],
+    "label": "apexcharts line series",
+    "insert": "type: custom:apexcharts-card\ngraph_span: ${1:24h}\nheader:\n  show: true\n  title: ${2:Trend}\nseries:\n  - entity: ${3:sensor.example}\n    name: ${4:Value}\n    type: line\n    group_by:\n      duration: ${5:1h}\n      func: avg",
+    "aliases": [
+      "apexcharts-card",
+      "series",
+      "line",
+      "chart"
+    ],
+    "priority": 111,
+    "documentation": "ApexCharts Card line chart with one grouped sensor series."
+  },
+  {
+    "id": "snip.dashboard.card.apexcharts_transform",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.apexcharts_transform"
+    ],
+    "label": "apexcharts transform series",
+    "insert": "type: custom:apexcharts-card\nseries:\n  - entity: ${1:sensor.example}\n    name: ${2:Converted}\n    transform: |\n      return Number(x) ${3:* 1};\n    group_by:\n      duration: ${4:1h}\n      func: avg",
+    "aliases": [
+      "apexcharts-card",
+      "transform",
+      "javascript",
+      "Number"
+    ],
+    "priority": 106,
+    "documentation": "ApexCharts Card series transform skeleton for JavaScript value conversion."
+  },
+  {
+    "id": "snip.dashboard.card.bubble_button",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.bubble_button"
+    ],
+    "label": "bubble button card",
+    "insert": "type: custom:bubble-card\ncard_type: button\nbutton_type: ${1:switch}\nentity: ${2:light.example}\nname: ${3:Name}\nshow_state: true\ntap_action:\n  action: ${4:toggle}",
+    "aliases": [
+      "bubble-card",
+      "button",
+      "mobile",
+      "dashboard"
+    ],
+    "priority": 110,
+    "documentation": "Bubble Card button skeleton for mobile-friendly dashboards."
+  },
+  {
+    "id": "snip.dashboard.card.bubble_popup",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.bubble_popup"
+    ],
+    "label": "bubble pop-up stack",
+    "insert": "type: custom:bubble-card\ncard_type: pop-up\nhash: \"#${1:popup}\"\nname: ${2:Popup}\nshow_header: true\ncards:\n  - type: ${3:entities}\n    entities:\n      - ${4:light.example}",
+    "aliases": [
+      "bubble-card",
+      "popup",
+      "hash",
+      "mobile"
+    ],
+    "priority": 108,
+    "documentation": "Bubble Card pop-up skeleton with nested card content."
+  },
+  {
+    "id": "snip.dashboard.card.bubble_module",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.bubble_module"
+    ],
+    "label": "bubble module hook",
+    "insert": "type: custom:bubble-card\ncard_type: button\nentity: ${1:light.example}\nmodules:\n  - ${2:module_id}\nstyles: |\n  ${3:.bubble-button-card-container { }}",
+    "aliases": [
+      "bubble-card",
+      "modules",
+      "styles",
+      "css"
+    ],
+    "priority": 103,
+    "documentation": "Bubble Card module-oriented skeleton with modules and styles fields."
+  },
+  {
+    "id": "snip.dashboard.card.auto_entities_battery",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.auto_entities_battery"
+    ],
+    "label": "auto-entities low battery list",
+    "insert": "type: custom:auto-entities\ncard:\n  type: entities\n  title: ${1:Low Batteries}\nfilter:\n  include:\n    - domain: sensor\n      attributes:\n        device_class: battery\n      state: \"<= ${2:25}\"\n  exclude:\n    - state: unavailable\nsort:\n  method: state\n  numeric: true",
+    "aliases": [
+      "auto-entities",
+      "battery",
+      "filter",
+      "sensor"
+    ],
+    "priority": 109,
+    "documentation": "auto-entities pattern for building a dynamic low-battery entity list."
+  },
+  {
+    "id": "snip.dashboard.card.layout_grid",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.layout_grid"
+    ],
+    "label": "layout-card grid view",
+    "insert": "type: custom:layout-card\nlayout_type: custom:grid-layout\nlayout:\n  grid-template-columns: ${1:repeat(2, minmax(0, 1fr))}\n  grid-template-areas: |\n    \"${2:left right}\"\ncards:\n  - type: ${3:entities}\n    view_layout:\n      grid-area: ${4:left}",
+    "aliases": [
+      "layout-card",
+      "grid-layout",
+      "view_layout",
+      "dashboard"
+    ],
+    "priority": 107,
+    "documentation": "layout-card grid-layout skeleton with grid-area placement."
+  },
+  {
+    "id": "snip.dashboard.card.stack_in_card_nested",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.stack_in_card_nested"
+    ],
+    "label": "stack-in-card nested cards",
+    "insert": "type: custom:stack-in-card\nmode: ${1:vertical}\ncards:\n  - type: ${2:entities}\n    entities:\n      - ${3:light.example}\n  - type: ${4:custom:mini-graph-card}\n    entities:\n      - entity: ${5:sensor.example}",
+    "aliases": [
+      "stack-in-card",
+      "nested cards",
+      "layout"
+    ],
+    "priority": 105,
+    "documentation": "stack-in-card nested card skeleton combining entities and a graph card."
+  },
+  {
+    "id": "snip.dashboard.card.swipe_carousel",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.swipe_carousel"
+    ],
+    "label": "swipe-card carousel",
+    "insert": "type: custom:swipe-card\nparameters:\n  slidesPerView: ${1:1}\n  spaceBetween: ${2:8}\n  pagination:\n    clickable: true\ncards:\n  - type: ${3:entities}\n    entities:\n      - ${4:light.example}",
+    "aliases": [
+      "swipe-card",
+      "carousel",
+      "swiper",
+      "mobile"
+    ],
+    "priority": 104,
+    "documentation": "swipe-card carousel skeleton with Swiper parameters and nested cards."
+  },
+  {
+    "id": "snip.dashboard.action.browser_mod_popup",
+    "family": "dashboard-action",
+    "contextKind": "lovelace-action-block",
+    "triggers": [
+      "dashboard.action.browser_mod_popup"
+    ],
+    "label": "browser_mod popup action",
+    "insert": "action: fire-dom-event\nbrowser_mod:\n  service: browser_mod.popup\n  data:\n    title: ${1:Title}\n    content:\n      type: ${2:entities}\n      entities:\n        - ${3:light.example}",
+    "aliases": [
+      "browser_mod",
+      "popup",
+      "fire-dom-event",
+      "tap_action"
+    ],
+    "priority": 118,
+    "documentation": "Lovelace fire-dom-event action that opens a browser_mod popup."
+  },
+  {
+    "id": "snip.card_mod.glass_card",
+    "family": "card-mod-css",
+    "contextKind": "style-block",
+    "triggers": [
+      "card_mod.glass_card"
+    ],
+    "label": "card-mod glass card",
+    "insert": "card_mod:\n  style: |\n    ha-card {\n      background: ${1:rgba(15, 23, 42, 0.42)};\n      backdrop-filter: blur(${2:14px});\n      border: 1px solid ${3:rgba(255, 255, 255, 0.12)};\n      box-shadow: ${4:0 18px 40px rgba(0, 0, 0, 0.28)};\n    }",
+    "aliases": [
+      "card-mod",
+      "glass",
+      "frosted",
+      "ha-card"
+    ],
+    "priority": 111,
+    "documentation": "card-mod frosted glass ha-card style skeleton."
+  },
+  {
+    "id": "snip.card_mod.mushroom_chip_row",
+    "family": "card-mod-css",
+    "contextKind": "style-block",
+    "triggers": [
+      "card_mod.mushroom_chip_row"
+    ],
+    "label": "card-mod mushroom chip style",
+    "insert": "card_mod:\n  style: |\n    mushroom-chip {\n      --chip-background: ${1:rgba(255, 255, 255, 0.08)};\n      --chip-border-radius: ${2:999px};\n    }",
+    "aliases": [
+      "card-mod",
+      "mushroom",
+      "chips",
+      "css"
+    ],
+    "priority": 103,
+    "documentation": "card-mod style skeleton for Mushroom chip rows."
+  },
+  {
+    "id": "snip.sequence.choose_by_trigger",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "sequence.choose_by_trigger"
+    ],
+    "label": "action: choose by trigger id",
+    "insert": "choose:\n  - conditions:\n      - condition: trigger\n        id: ${1:trigger_id}\n    sequence:\n      - action: ${2:light.turn_on}\n        target:\n          entity_id: ${3:light.example}\ndefault:\n  - action: ${4:logbook.log}\n    data:\n      name: ${5:Automation}\n      message: ${6:No trigger branch matched}",
+    "aliases": [
+      "choose",
+      "trigger id",
+      "automation",
+      "sequence"
+    ],
+    "priority": 110,
+    "documentation": "Automation choose/default branch scaffold keyed by trigger id."
+  },
+  {
+    "id": "snip.sequence.wait_template_timeout",
+    "family": "automation-action",
+    "contextKind": "automation-action",
+    "triggers": [
+      "sequence.wait_template_timeout"
+    ],
+    "label": "action: wait_template with timeout",
+    "insert": "wait_template: \"{{ is_state('${1:binary_sensor.example}', '${2:on}') }}\"\ntimeout: ${3:00:05:00}\ncontinue_on_timeout: ${4:false}",
+    "aliases": [
+      "wait_template",
+      "timeout",
+      "automation",
+      "script"
+    ],
+    "priority": 104,
+    "documentation": "Automation wait_template scaffold with timeout and continue_on_timeout."
+  },
+  {
+    "id": "snip.dashboard.card.vertical_stack_in_card_media_stack",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.vertical_stack_in_card_media_stack"
+    ],
+    "label": "vertical-stack-in-card media stack",
+    "insert": "type: custom:vertical-stack-in-card\ntitle: ${1:Room}\nhorizontal: ${2:false}\ncards:\n  - type: ${3:custom:mushroom-title-card}\n    title: ${4:Room}\n  - type: ${5:custom:mini-graph-card}\n    entity: ${6:sensor.example_temperature}\ncard_mod:\n  style: |\n    ha-card {\n      border-radius: ${7:24px};\n      overflow: hidden;\n    }",
+    "aliases": [
+      "vertical-stack-in-card",
+      "stack",
+      "cards",
+      "card_mod"
+    ],
+    "priority": 107,
+    "documentation": "vertical-stack-in-card scaffold for grouping dashboard cards with optional card-mod styling."
+  },
+  {
+    "id": "snip.dashboard.card.vertical_stack_in_card_horizontal_controls",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.vertical_stack_in_card_horizontal_controls"
+    ],
+    "label": "vertical-stack-in-card horizontal controls",
+    "insert": "type: custom:vertical-stack-in-card\nhorizontal: true\ncards:\n  - type: ${1:button}\n    entity: ${2:light.example}\n  - type: ${3:button}\n    entity: ${4:switch.example}",
+    "aliases": [
+      "vertical-stack-in-card",
+      "horizontal",
+      "controls"
+    ],
+    "priority": 96,
+    "documentation": "Horizontal control row using vertical-stack-in-card."
+  },
+  {
+    "id": "snip.dashboard.card.atomic_calendar_agenda",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.atomic_calendar_agenda"
+    ],
+    "label": "atomic-calendar-revive agenda",
+    "insert": "type: custom:atomic-calendar-revive\nname: ${1:Calendar}\nentities:\n  - entity: ${2:calendar.home}\n    name: ${3:Home}\nmaxDaysToShow: ${4:7}\nmaxEventCount: ${5:5}\nshowDate: true\nshowRelativeTime: true\nsortBy: ${6:start}",
+    "aliases": [
+      "atomic-calendar-revive",
+      "calendar",
+      "agenda",
+      "events"
+    ],
+    "priority": 108,
+    "documentation": "Atomic Calendar Revive agenda scaffold with per-calendar entity options."
+  },
+  {
+    "id": "snip.dashboard.card.atomic_calendar_filtered",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.atomic_calendar_filtered"
+    ],
+    "label": "atomic-calendar filtered events",
+    "insert": "type: custom:atomic-calendar-revive\nentities:\n  - entity: ${1:calendar.work}\n    blocklist: ${2:Canceled|Tentative}\n    blocklistLocation: ${3:Remote}\nshowEventIcon: ${4:true}\nshowCalendarName: ${5:true}\ncompactMode: ${6:false}",
+    "aliases": [
+      "atomic-calendar-revive",
+      "blocklist",
+      "filtered",
+      "calendar"
+    ],
+    "priority": 97,
+    "documentation": "Atomic Calendar Revive scaffold with blocklist filters and display toggles."
+  },
+  {
+    "id": "snip.dashboard.card.clock_weather_full",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.clock_weather_full"
+    ],
+    "label": "clock-weather full forecast",
+    "insert": "type: custom:clock-weather-card\nentity: ${1:weather.home}\nsun_entity: ${2:sun.sun}\ntitle: ${3:Weather}\nweather_icon_type: ${4:fill}\nanimated_icon: ${5:true}\nforecast_rows: ${6:5}\ntime_format: ${7:24}\ndate_pattern: ${8:cccc d LLLL}",
+    "aliases": [
+      "clock-weather-card",
+      "weather",
+      "forecast",
+      "clock"
+    ],
+    "priority": 108,
+    "documentation": "Clock Weather Card scaffold with weather, sun, forecast, and date/time controls."
+  },
+  {
+    "id": "snip.dashboard.card.clock_weather_compact",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.clock_weather_compact"
+    ],
+    "label": "clock-weather compact",
+    "insert": "type: custom:clock-weather-card\nentity: ${1:weather.home}\nhide_today_section: ${2:false}\nhide_forecast_section: ${3:true}\nshow_humidity: ${4:true}\nshow_wind_speed: ${5:true}",
+    "aliases": [
+      "clock-weather-card",
+      "compact",
+      "weather"
+    ],
+    "priority": 95,
+    "documentation": "Compact Clock Weather Card scaffold for small dashboard areas."
+  },
+  {
+    "id": "snip.dashboard.card.uptime_binary_sensor",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.uptime_binary_sensor"
+    ],
+    "label": "uptime-card binary sensor",
+    "insert": "type: custom:uptime-card\nentity: ${1:binary_sensor.service_status}\nname: ${2:Service uptime}\nhours_to_show: ${3:24}\nbar:\n  height: ${4:10}\n  round: ${5:4}\nshow:\n  title: true\n  status: true\n  timeline: true\n  average: true",
+    "aliases": [
+      "uptime-card",
+      "binary_sensor",
+      "status",
+      "monitoring"
+    ],
+    "priority": 106,
+    "documentation": "Uptime Card scaffold for binary_sensor availability history."
+  },
+  {
+    "id": "snip.dashboard.card.uptime_thresholds",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.uptime_thresholds"
+    ],
+    "label": "uptime-card thresholds",
+    "insert": "type: custom:uptime-card\nentity: ${1:binary_sensor.ping}\ncolor:\n  ok: ${2:\"#2ecc71\"}\n  ko: ${3:\"#e74c3c\"}\n  half: ${4:\"#f1c40f\"}\nduration:\n  quantity: ${5:24}\n  unit: ${6:hour}\nshow:\n  icon: true\n  footer: true",
+    "aliases": [
+      "uptime-card",
+      "thresholds",
+      "duration",
+      "colors"
+    ],
+    "priority": 94,
+    "documentation": "Uptime Card scaffold with color and duration display options."
+  },
+  {
+    "id": "snip.dashboard.card.flex_table_attributes",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.flex_table_attributes"
+    ],
+    "label": "flex-table entity attributes",
+    "insert": "type: custom:flex-table-card\ntitle: ${1:Devices}\nentities:\n  include: ${2:sensor.*}\ncolumns:\n  - name: ${3:Name}\n    data: ${4:name}\n  - name: ${5:State}\n    data: ${6:state}\n  - name: ${7:Battery}\n    data: ${8:attributes.battery_level}\n    suffix: ${9:\"%\"}\nsort_by: ${10:state}",
+    "aliases": [
+      "flex-table-card",
+      "table",
+      "attributes",
+      "columns"
+    ],
+    "priority": 109,
+    "documentation": "Flex Table Card scaffold for entity states and attributes."
+  },
+  {
+    "id": "snip.dashboard.card.flex_table_modify",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.flex_table_modify"
+    ],
+    "label": "flex-table modify column",
+    "insert": "type: custom:flex-table-card\nentities:\n  include: ${1:sensor.power_*}\ncolumns:\n  - name: ${2:Power}\n    data: ${3:state}\n    modify: ${4:return Number(x).toFixed(1)}\n    suffix: ${5:\" W\"}\n  - name: ${6:Updated}\n    data: ${7:last_changed}",
+    "aliases": [
+      "flex-table-card",
+      "modify",
+      "javascript",
+      "columns"
+    ],
+    "priority": 98,
+    "documentation": "Flex Table Card scaffold with JavaScript modify expression."
+  },
+  {
+    "id": "snip.dashboard.card.xiaomi_vacuum_map_rooms",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.xiaomi_vacuum_map_rooms"
+    ],
+    "label": "vacuum map rooms",
+    "insert": "type: custom:xiaomi-vacuum-map-card\nentity: ${1:vacuum.robot}\nmap_source:\n  camera: ${2:camera.vacuum_map}\ncalibration_source:\n  camera: true\nvacuum_platform: ${3:default}\nmap_modes:\n  - template: ${4:vacuum_clean_segment}\n    predefined_selections:\n      - id: ${5:1}\n        label:\n          text: ${6:Kitchen}",
+    "aliases": [
+      "xiaomi-vacuum-map-card",
+      "vacuum",
+      "rooms",
+      "segments"
+    ],
+    "priority": 106,
+    "documentation": "Vacuum Map Card scaffold for room/segment cleaning."
+  },
+  {
+    "id": "snip.dashboard.card.xiaomi_vacuum_map_icons",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.xiaomi_vacuum_map_icons"
+    ],
+    "label": "vacuum map custom icons",
+    "insert": "type: custom:xiaomi-vacuum-map-card\nentity: ${1:vacuum.robot}\nappend_icons:\n  - icon: ${2:mdi:play}\n    tooltip: ${3:Start}\n    tap_action:\n      action: call-service\n      service: ${4:vacuum.start}\n      target:\n        entity_id: ${5:vacuum.robot}\nappend_tiles:\n  - label: ${6:Battery}\n    entity: ${7:sensor.robot_battery}",
+    "aliases": [
+      "xiaomi-vacuum-map-card",
+      "icons",
+      "tiles",
+      "tap_action"
+    ],
+    "priority": 97,
+    "documentation": "Vacuum Map Card scaffold with custom icon and tile controls."
+  },
+  {
+    "id": "snip.dashboard.kiosk_mode_global",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.kiosk_mode_global"
+    ],
+    "label": "kiosk_mode global dashboard",
+    "insert": "kiosk_mode:\n  hide_header: ${1:true}\n  hide_sidebar: ${2:true}\n  hide_menubutton: ${3:true}\n  hide_overflow: ${4:false}\nviews:\n  - title: ${5:Wall Panel}\n    cards:\n      - type: ${6:vertical-stack}\n        cards: []",
+    "aliases": [
+      "kiosk-mode",
+      "kiosk_mode",
+      "hide_header",
+      "hide_sidebar"
+    ],
+    "priority": 110,
+    "documentation": "Dashboard root kiosk_mode scaffold for a wall-panel style dashboard."
+  },
+  {
+    "id": "snip.dashboard.kiosk_mode_entity_toggle",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.kiosk_mode_entity_toggle"
+    ],
+    "label": "kiosk_mode entity toggle",
+    "insert": "kiosk_mode:\n  entity_settings:\n    - entity: ${1:input_boolean.kiosk_mode}\n      hide_header: ${2:true}\n      hide_sidebar: ${3:true}\n  mobile_settings:\n    hide_header: ${4:true}\n    hide_sidebar: ${5:true}",
+    "aliases": [
+      "kiosk-mode",
+      "entity_settings",
+      "mobile_settings",
+      "conditional"
+    ],
+    "priority": 99,
+    "documentation": "kiosk_mode scaffold using entity and mobile settings."
+  },
+  {
+    "id": "snip.dashboard.card.better_thermostat_full",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.better_thermostat_full"
+    ],
+    "label": "better thermostat full card",
+    "insert": "type: custom:better-thermostat-ui-card\nentity: ${1:climate.living_room}\nname: ${2:Living Room}\neco_temperature: ${3:18}\ndisable_window: ${4:false}\ndisable_menu: ${5:false}\nshow_temperature: ${6:true}\nshow_humidity: ${7:true}\ncard_mod:\n  style: |\n    ha-card {\n      border-radius: ${8:24px};\n    }",
+    "aliases": [
+      "better-thermostat-ui-card",
+      "thermostat",
+      "climate",
+      "eco"
+    ],
+    "priority": 109,
+    "documentation": "Better Thermostat UI Card scaffold with common climate display options."
+  },
+  {
+    "id": "snip.dashboard.card.better_thermostat_mini",
+    "family": "dashboard-card",
+    "contextKind": "dashboard-root",
+    "triggers": [
+      "dashboard.card.better_thermostat_mini"
+    ],
+    "label": "better thermostat mini card",
+    "insert": "type: custom:bt-thermostat-card\nentity: ${1:climate.bedroom}\nname: ${2:Bedroom}\nstep: ${3:0.5}\nset_current_as_main: ${4:true}\ndisable_summer: ${5:false}",
+    "aliases": [
+      "bt-thermostat-card",
+      "better thermostat",
+      "mini",
+      "climate"
+    ],
+    "priority": 96,
+    "documentation": "Compact Better Thermostat card scaffold."
+  }
+]

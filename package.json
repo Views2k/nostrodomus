@@ -1,0 +1,62 @@
+{
+  "name": "nostrodomus",
+  "version": "0.1.277",
+  "description": "Context-aware autocomplete, snippets, and syntax styling for Home Assistant's card and YAML editors",
+  "license": "MIT",
+  "author": "Views2k",
+  "keywords": [
+    "home-assistant",
+    "homeassistant",
+    "hacs",
+    "lovelace",
+    "yaml",
+    "codemirror",
+    "autocomplete",
+    "completions",
+    "completion",
+    "syntax-highlighting",
+    "card-editor",
+    "jinja"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Views2k/nostrodomus.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Views2k/nostrodomus/issues"
+  },
+  "homepage": "https://github.com/Views2k/nostrodomus#readme",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "gate": "npm run lint && npm run typecheck && npm run check:modules && npm test && python3 tools/build.py && python3 tools/verify.py --release && npm run verify:reproducible && python3 tools/validate_snippets.py",
+    "e2e:up": "node tools/e2e/ensure_state.mjs && docker compose -f tools/e2e/docker-compose.yml up -d --wait && node tools/e2e/bootstrap.mjs && node tools/e2e/seed.mjs",
+    "e2e": "playwright test --config tests/e2e/playwright.config.mjs",
+    "e2e:beta": "HA_STATE=.ha-state-beta node tools/e2e/ensure_state.mjs && HA_TAG=beta HA_STATE=.ha-state-beta docker compose -f tools/e2e/docker-compose.yml up -d --wait && HA_STATE=.ha-state-beta node tools/e2e/bootstrap.mjs && HA_STATE=.ha-state-beta node tools/e2e/seed.mjs && HA_STATE=.ha-state-beta playwright test --config tests/e2e/playwright.config.mjs",
+    "e2e:down": "docker compose -f tools/e2e/docker-compose.yml down",
+    "build": "esbuild src/main.js --bundle --format=esm --target=es2020 --outfile=dist/nostrodomus.js --minify-syntax --minify-whitespace --log-level=warning --legal-comments=none --external:/local/*",
+    "verify": "python3 tools/verify.py",
+    "check": "node tools/check_js_syntax.mjs",
+    "test:exec": "node tools/run_node_tests.mjs",
+    "test": "npm run test:exec",
+    "test:perf": "node tools/run_node_tests.mjs --perf",
+    "validate:snippets": "python3 tools/validate_snippets.py",
+    "verify:reproducible": "python3 tools/verify_reproducible_build.py --require-esbuild",
+    "check:modules": "python3 tools/check_module_wiring.py",
+    "lint": "eslint src tools tests eslint.config.js --quiet && node tools/check_lint_coverage.mjs",
+    "lint:full": "eslint src tools tests eslint.config.js && node tools/check_lint_coverage.mjs",
+    "format": "prettier --check eslint.config.js prettier.config.cjs jsconfig.json package.json",
+    "typecheck": "tsc --project jsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.0",
+    "esbuild": "0.25.0",
+    "eslint": "^10.14.0",
+    "prettier": "^3.10.1",
+    "typescript": "^6.0.3"
+  }
+}

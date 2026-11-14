@@ -1,0 +1,13 @@
+{
+  "name": "Quoted hash stays in value",
+  "rationale": "A # character inside quotes is data, not a YAML comment, so context detection must keep the active key/value intact.",
+  "sourceWithCursor": "type: markdown\ncontent: \"Status #1 active\"|\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "content",
+    "yamlRole": "value",
+    "pathText": "content",
+    "shouldSuggest": true
+  }
+}

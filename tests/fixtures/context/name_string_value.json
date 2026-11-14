@@ -1,0 +1,16 @@
+{
+  "name": "Name string value",
+  "rationale": "Display-name fields should be classified as string scalar contexts so future providers can prefer string templates over entities or services.",
+  "sourceWithCursor": "name: Kitchen__CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "prefix": "Kitchen",
+    "yamlKey": "name",
+    "yamlRole": "value",
+    "valueKind": "string",
+    "focusKind": "",
+    "pathText": "name",
+    "shouldSuggest": true
+  }
+}

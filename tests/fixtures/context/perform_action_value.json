@@ -1,0 +1,16 @@
+{
+  "name": "Perform action value",
+  "rationale": "Home Assistant renamed service call UI language toward perform action, so the context descriptor must treat perform_action as a service-domain value.",
+  "sourceWithCursor": "sequence:\n  - perform_action: __CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "perform_action",
+    "yamlRole": "value",
+    "valueKind": "service",
+    "focusKind": "automation-action",
+    "pathText": "sequence.perform_action",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

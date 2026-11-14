@@ -1,0 +1,16 @@
+{
+  "name": "Automation trigger platform value",
+  "rationale": "An automation trigger platform value should be recognized as trigger-type context so trigger providers can rank platform snippets over generic YAML keys.",
+  "sourceWithCursor": "alias: Porch Motion\ntrigger:\n  - platform: __CURSOR__\ncondition: []\naction: []\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "platform",
+    "yamlRole": "value",
+    "valueKind": "trigger-type",
+    "focusKind": "trigger-block",
+    "pathText": "trigger.platform",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

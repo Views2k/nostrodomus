@@ -1,0 +1,16 @@
+{
+  "name": "Jinja inside folded block scalar",
+  "rationale": "Templates often live inside folded YAML block scalars; the descriptor should keep the owning YAML key while exposing Jinja language context for template providers.",
+  "sourceWithCursor": "script:\n  sequence:\n    - service: notify.mobile_app\n      data:\n        message: >\n          The value is {{ states('sensor.outdoor_temp') | rou__CURSOR__ }}\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "jinja",
+    "prefix": "rou",
+    "yamlKey": "message",
+    "yamlRole": "value",
+    "valueKind": "",
+    "focusKind": "automation-action",
+    "pathText": "script.sequence.service.data.message",
+    "shouldSuggest": true
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "card_mod style block CSS",
+  "rationale": "A cursor inside a card_mod style block should surface CSS context without asking providers to reparsed embedded YAML block scalar content.",
+  "sourceWithCursor": "type: custom:mushroom-template-card\ncard_mod:\n  style: |\n    ha-card {\n      border-radius: |\n    }\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "css",
+    "yamlKey": "style",
+    "yamlRole": "value",
+    "valueKind": "",
+    "focusKind": "style-block",
+    "pathText": "card_mod.style",
+    "shouldSuggest": true
+  }
+}

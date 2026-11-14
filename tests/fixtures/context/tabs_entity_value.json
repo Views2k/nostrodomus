@@ -1,0 +1,16 @@
+{
+  "name": "Tab-indented entity value",
+  "rationale": "Users occasionally paste tab-indented YAML; descriptor generation must not throw and should still infer the active entity value context.",
+  "sourceWithCursor": "type: entities\nentities:\n\t- entity: __CURSOR__\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "entity",
+    "yamlRole": "value",
+    "valueKind": "entity",
+    "focusKind": "entity-list",
+    "pathText": "entities.entity",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

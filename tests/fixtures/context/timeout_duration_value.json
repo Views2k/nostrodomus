@@ -1,0 +1,16 @@
+{
+  "name": "Timeout duration value",
+  "rationale": "Timeout, delay, and interval keys should produce duration-oriented suggestions and scalar handling instead of generic number-only handling.",
+  "sourceWithCursor": "action:\n  - timeout: __CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "timeout",
+    "yamlRole": "value",
+    "valueKind": "duration",
+    "focusKind": "automation-action",
+    "pathText": "action.timeout",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

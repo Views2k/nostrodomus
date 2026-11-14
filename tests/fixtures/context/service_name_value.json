@@ -1,0 +1,16 @@
+{
+  "name": "Legacy service_name value",
+  "rationale": "Older examples and some blueprints still use service_name, so provider hints should route it to Home Assistant service suggestions like service and perform_action.",
+  "sourceWithCursor": "action:\n  - service_name: __CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "service_name",
+    "yamlRole": "value",
+    "valueKind": "service",
+    "focusKind": "automation-action",
+    "pathText": "action.service_name",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

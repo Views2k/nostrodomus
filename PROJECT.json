@@ -1,0 +1,32 @@
+{
+  "project": "nostrodomus",
+  "version": "0.1.277",
+  "created": "2026-05-27",
+  "source_entry": "src/main.js",
+  "legacy_runtime": "src/main.legacy.js",
+  "dist_entry": "dist/nostrodomus.js",
+  "internal_version": "nostrodomus-v0.1.277-low-audit-findings",
+  "last_step": "v0.1.277-low-audit-findings",
+  "innerhtml_max": 0,
+  "release_state": "released",
+  "interaction_stability_policy": "Ordinary settings controls must use applySettingChangePreservingInteraction or equivalent in-place mutation; they must not close and reopen settings or reset the active tab/scroll position.",
+  "ux_refinement_policy": {
+    "settings_tabs": "Keep settings categories task-oriented and consolidated; General owns suggestion behavior/provider controls, Context owns live context and suggestion-quality inspection, Diagnostics owns health/changelog actions, Help owns docs/reset actions.",
+    "accessibility": "Settings controls should be real buttons/inputs where practical, expose focus-visible states, avoid color-only state, and preserve selectable text.",
+    "interaction_stability": "Ordinary setting changes must preserve active tab and scroll position; no close/open cycles for live controls."
+  },
+  "style_customization_policy": {
+    "scope": "Style controls use bounded local color bars and sliders for codebox text size, scrollbar color/opacity/saturation, border color/opacity/saturation, glow color/opacity/saturation, surface color/opacity/saturation, a full syntax theme dropdown, and Ctrl+Space popup size/density.",
+    "safety": "No arbitrary user CSS is accepted; style changes are local-only and applied in place to the active CodeMirror editor.",
+    "interaction_stability": "Style option, toggle, hue-bar, and range changes must preserve active tab and settings scroll position; no close/open settings cycle.",
+    "frame_model": "The codebox frame uses one integrated host-owned border/glow/shadow model: codebox chrome is owned by single ha-code-editor / :host layers, where ::before owns the border/glow, ::after owns the frosted/blurry surface, and the host uses isolation: isolate. Controls must not create a second independent frame/glow owner, and neither .cm-editor nor any CodeMirror internal may own the decorative outer frame/glow because those paint areas can be bounded by CodeMirror/Home Assistant wrappers. The old external/measured overlay frame path is a known failure and must stay disabled.",
+    "scrollbar_override": "Do not make v31 increasingly aggressive against v17. Patch v17 to use --nostrodomus-codebox-scrollbar-thumb/track variables so v31 owns user-facing style controls and v17 owns layout/height.",
+    "regression_guard": "Style controls must keep formatter helpers used by rendered controls and must preserve the ownership split: the ha-code-editor / :host layers own the chrome (::before owns the border/glow, ::after owns the frosted/blurry surface) and the host is both geometry anchor and visual chrome owner, while the CodeMirror panes (.cm-editor, .cm-scroller, .cm-content) stay transparent and own content/scroll only, and .cm-scroller owns scrollbar styling. The external frame overlay path is disabled (the dedicated external codebox frame stays display:none; the host pseudo-elements own the chrome).",
+    "lifecycle_ownership": "Nostrodomus applies bounded style variables to the active CodeMirror editor without root-wide observers or style wars. The companion v17 resource must consume --nostrodomus-codebox-* variables for scrollbar/frame colors instead of writing hard-coded maroon inline styles.",
+    "syntax_preset_behavior": "Syntax coloring uses a full theme dropdown. Custom syntax color bars are intentionally removed so YAML/Lovelace, Jinja, CSS/card_mod, providers, strings, numbers, booleans, operators, punctuation, and comments can remain distinct in every option.",
+    "root_style_registry": "Nostrodomus must initialize style tokens at integration load and install full CodeMirror style sheets into discovered Document/ShadowRoot contexts before the first click inside CodeMirror.",
+    "settings_ownership": "Settings must mount through a dedicated portal host in the active Home Assistant edit dialog/root context and may use manual popover promotion; it must not mount through the editor-scoped completion overlay or raw document.body while the HA card editor is open.",
+    "settings_top_layer_pointer_events": "When Home Assistant uses a native modal <dialog>, Settings must mount inside that dialog subtree, not merely in the parent HA shadow root, because outside content is inert/click-through regardless of z-index.",
+    "settings_top_layer_drag": "When Settings is mounted inside the active native HA modal dialog, saved positions remain viewport-based but rendered CSS left/top must be converted to the portal host coordinate system. Header clicks must not commit drag position unless movement crosses a threshold; live drag should use transform frames rather than repeated left/top layout updates."
+  }
+}

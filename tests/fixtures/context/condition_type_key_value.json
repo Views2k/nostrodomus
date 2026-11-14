@@ -1,0 +1,16 @@
+{
+  "name": "Condition type key value",
+  "rationale": "Condition dictionaries can use type-like values in condition paths; recognizing them as condition-type prevents generic card type suggestions from ranking above condition snippets.",
+  "sourceWithCursor": "condition:\n  - type: __CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "type",
+    "yamlRole": "value",
+    "valueKind": "condition-type",
+    "focusKind": "condition-block",
+    "pathText": "condition.type",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

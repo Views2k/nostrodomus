@@ -1,0 +1,25 @@
+{
+  "name": "automation action service context favors matching runtime services",
+  "rationale": "When valueKind is service inside an automation action, service rows from the Home Assistant runtime provider should beat generic structural keys, and the requested domain should lead.",
+  "ctx": {
+    "lang": "yaml",
+    "prefix": "light.t",
+    "pathText": "automation.actions.0.service",
+    "yamlPath": ["automation", "actions", "0", "service"],
+    "yamlKey": "service",
+    "yamlRole": "value",
+    "valueKind": "service",
+    "focusKind": "automation-action",
+    "scope": "actions.service",
+    "shouldSuggest": true,
+    "triggerKind": "typing",
+    "isTriggerChar": true,
+    "afterKeyColon": true
+  },
+  "candidates": [
+    { "id": "runtime.light_turn_on", "lang": "yaml", "type": "service", "label": "light.turn_on", "insert": "light.turn_on", "source": "ha-runtime-values", "aliases": ["turn on light"], "meta": { "domain": "light", "family": "runtime" } },
+    { "id": "runtime.script_notify", "lang": "yaml", "type": "service", "label": "script.notify_phone", "insert": "script.notify_phone", "source": "ha-runtime-values", "aliases": ["notify"], "meta": { "domain": "script", "family": "runtime" } },
+    { "id": "static.service_key", "lang": "yaml", "type": "key", "label": "service", "insert": "service: ", "source": "static-library", "aliases": [], "meta": { "family": "static" } }
+  ],
+  "expectedTopIds": ["runtime.light_turn_on"]
+}

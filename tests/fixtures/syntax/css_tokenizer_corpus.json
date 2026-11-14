@@ -1,0 +1,12829 @@
+{
+ "description": "Frozen token output of smartSyntaxTokenizeCssLine + smartSyntaxCssTokenKind over the CSS line corpus and language fixtures. Regenerate ONLY for an intentional, documented tokenizer behavior change.",
+ "entries": [
+  {
+   "text": "/* card frame */",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 16,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "comment"
+   ]
+  },
+  {
+   "text": "/* card frame */",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 16,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "comment"
+   ]
+  },
+  {
+   "text": "/* card frame */",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 16,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "comment"
+   ]
+  },
+  {
+   "text": "/* card frame */",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 16,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "comment"
+   ]
+  },
+  {
+   "text": "color: red; /* trailing note */",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 10,
+     "kind": "cssValue"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 31,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "comment"
+   ]
+  },
+  {
+   "text": "color: red; /* trailing note */",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 10,
+     "kind": "cssValue"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 31,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "comment"
+   ]
+  },
+  {
+   "text": "color: red; /* trailing note */",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 10,
+     "kind": "cssValue"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 31,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "comment"
+   ]
+  },
+  {
+   "text": "color: red; /* trailing note */",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 10,
+     "kind": "cssValue"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 31,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "comment"
+   ]
+  },
+  {
+   "text": "/* unterminated comment",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 23,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "comment"
+   ]
+  },
+  {
+   "text": "/* unterminated comment",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 23,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "comment"
+   ]
+  },
+  {
+   "text": "/* unterminated comment",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 23,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "comment"
+   ]
+  },
+  {
+   "text": "/* unterminated comment",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 23,
+     "kind": "comment"
+    }
+   ],
+   "tokenKinds": [
+    "comment"
+   ]
+  },
+  {
+   "text": "ha-card { color: #ff00aa !important; }",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 8,
+     "end": 9,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 15,
+     "kind": "cssProp"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 24,
+     "kind": "cssValue"
+    },
+    {
+     "start": 25,
+     "end": 35,
+     "kind": "cssGlow"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "filter",
+    "punct",
+    "cssValue",
+    "cssGlow",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "ha-card { color: #ff00aa !important; }",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 8,
+     "end": 9,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 15,
+     "kind": "cssProp"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 24,
+     "kind": "cssValue"
+    },
+    {
+     "start": 25,
+     "end": 35,
+     "kind": "cssGlow"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "filter",
+    "punct",
+    "cssValue",
+    "cssGlow",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "ha-card { color: #ff00aa !important; }",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 8,
+     "end": 9,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 15,
+     "kind": "cssProp"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 24,
+     "kind": "cssValue"
+    },
+    {
+     "start": 25,
+     "end": 35,
+     "kind": "cssGlow"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "filter",
+    "punct",
+    "cssValue",
+    "cssGlow",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "ha-card { color: #ff00aa !important; }",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 8,
+     "end": 9,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 15,
+     "kind": "cssProp"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 24,
+     "kind": "cssValue"
+    },
+    {
+     "start": 25,
+     "end": 35,
+     "kind": "cssGlow"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "filter",
+    "punct",
+    "cssValue",
+    "cssGlow",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ".card-header > .title + span ~ em { font-weight: 600; }",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 12,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "op"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 16,
+     "end": 21,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "op"
+    },
+    {
+     "start": 24,
+     "end": 28,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "op"
+    },
+    {
+     "start": 31,
+     "end": 33,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 47,
+     "kind": "cssProp"
+    },
+    {
+     "start": 47,
+     "end": 48,
+     "kind": "punct"
+    },
+    {
+     "start": 49,
+     "end": 52,
+     "kind": "number"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "op",
+    "punct",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ".card-header > .title + span ~ em { font-weight: 600; }",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 12,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "op"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 16,
+     "end": 21,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "op"
+    },
+    {
+     "start": 24,
+     "end": 28,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "op"
+    },
+    {
+     "start": 31,
+     "end": 33,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 47,
+     "kind": "cssProp"
+    },
+    {
+     "start": 47,
+     "end": 48,
+     "kind": "punct"
+    },
+    {
+     "start": 49,
+     "end": 52,
+     "kind": "number"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "op",
+    "punct",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ".card-header > .title + span ~ em { font-weight: 600; }",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 12,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "op"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 16,
+     "end": 21,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "op"
+    },
+    {
+     "start": 24,
+     "end": 28,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "op"
+    },
+    {
+     "start": 31,
+     "end": 33,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 47,
+     "kind": "cssProp"
+    },
+    {
+     "start": 47,
+     "end": 48,
+     "kind": "punct"
+    },
+    {
+     "start": 49,
+     "end": 52,
+     "kind": "number"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "op",
+    "punct",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ".card-header > .title + span ~ em { font-weight: 600; }",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 12,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "op"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 16,
+     "end": 21,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "op"
+    },
+    {
+     "start": 24,
+     "end": 28,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "op"
+    },
+    {
+     "start": 31,
+     "end": 33,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 47,
+     "kind": "cssProp"
+    },
+    {
+     "start": 47,
+     "end": 48,
+     "kind": "punct"
+    },
+    {
+     "start": 49,
+     "end": 52,
+     "kind": "number"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "op",
+    "punct",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "#root [data-active='1'] *: hover {}",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 18,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 18,
+     "end": 19,
+     "kind": "op"
+    },
+    {
+     "start": 19,
+     "end": 22,
+     "kind": "string"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "punct"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "op"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 32,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 33,
+     "end": 35,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "op",
+    "string",
+    "punct",
+    "comment",
+    "punct",
+    "cssSelector",
+    "punct"
+   ]
+  },
+  {
+   "text": "#root [data-active='1'] *: hover {}",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 18,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 18,
+     "end": 19,
+     "kind": "op"
+    },
+    {
+     "start": 19,
+     "end": 22,
+     "kind": "string"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "punct"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "op"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 32,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 33,
+     "end": 35,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "op",
+    "string",
+    "punct",
+    "comment",
+    "punct",
+    "cssSelector",
+    "punct"
+   ]
+  },
+  {
+   "text": "#root [data-active='1'] *: hover {}",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 18,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 18,
+     "end": 19,
+     "kind": "op"
+    },
+    {
+     "start": 19,
+     "end": 22,
+     "kind": "string"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "punct"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "op"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 32,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 33,
+     "end": 35,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "op",
+    "string",
+    "punct",
+    "comment",
+    "punct",
+    "cssSelector",
+    "punct"
+   ]
+  },
+  {
+   "text": "#root [data-active='1'] *: hover {}",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 18,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 18,
+     "end": 19,
+     "kind": "op"
+    },
+    {
+     "start": 19,
+     "end": 22,
+     "kind": "string"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "punct"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "op"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 32,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 33,
+     "end": 35,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "op",
+    "string",
+    "punct",
+    "comment",
+    "punct",
+    "cssSelector",
+    "punct"
+   ]
+  },
+  {
+   "text": "ha-card.glow#main:focus-within::after {}",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 17,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 30,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 37,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct"
+   ]
+  },
+  {
+   "text": "ha-card.glow#main:focus-within::after {}",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 17,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 30,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 37,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct"
+   ]
+  },
+  {
+   "text": "ha-card.glow#main:focus-within::after {}",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 17,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 30,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 37,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct"
+   ]
+  },
+  {
+   "text": "ha-card.glow#main:focus-within::after {}",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 17,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 30,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 37,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct"
+   ]
+  },
+  {
+   "text": "color: #fff;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 11,
+     "kind": "cssValue"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "color: #fff;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 11,
+     "kind": "cssValue"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "color: #fff;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 11,
+     "kind": "cssValue"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "color: #fff;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 11,
+     "kind": "cssValue"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "background: #ff00aa88;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "background: #ff00aa88;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "background: #ff00aa88;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "background: #ff00aa88;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "margin: 12px 0.5em -3rem 100%;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 12,
+     "kind": "number"
+    },
+    {
+     "start": 13,
+     "end": 18,
+     "kind": "number"
+    },
+    {
+     "start": 19,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 28,
+     "kind": "number"
+    },
+    {
+     "start": 28,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "number",
+    "number",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "margin: 12px 0.5em -3rem 100%;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 12,
+     "kind": "number"
+    },
+    {
+     "start": 13,
+     "end": 18,
+     "kind": "number"
+    },
+    {
+     "start": 19,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 28,
+     "kind": "number"
+    },
+    {
+     "start": 28,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "number",
+    "number",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "margin: 12px 0.5em -3rem 100%;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 12,
+     "kind": "number"
+    },
+    {
+     "start": 13,
+     "end": 18,
+     "kind": "number"
+    },
+    {
+     "start": 19,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 28,
+     "kind": "number"
+    },
+    {
+     "start": 28,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "number",
+    "number",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "margin: 12px 0.5em -3rem 100%;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 12,
+     "kind": "number"
+    },
+    {
+     "start": 13,
+     "end": 18,
+     "kind": "number"
+    },
+    {
+     "start": 19,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 28,
+     "kind": "number"
+    },
+    {
+     "start": 28,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "number",
+    "number",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "transition: all 0.3s ease-in-out;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 15,
+     "kind": "cssValue"
+    },
+    {
+     "start": 16,
+     "end": 20,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "number",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "transition: all 0.3s ease-in-out;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 15,
+     "kind": "cssValue"
+    },
+    {
+     "start": 16,
+     "end": 20,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "number",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "transition: all 0.3s ease-in-out;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 15,
+     "kind": "cssValue"
+    },
+    {
+     "start": 16,
+     "end": 20,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "number",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "transition: all 0.3s ease-in-out;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 15,
+     "kind": "cssValue"
+    },
+    {
+     "start": 16,
+     "end": 20,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "number",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "rotate: 45deg; width: 2fr; resolution: 300dpi;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 13,
+     "kind": "number"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 20,
+     "kind": "cssProp"
+    },
+    {
+     "start": 20,
+     "end": 21,
+     "kind": "punct"
+    },
+    {
+     "start": 22,
+     "end": 25,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 37,
+     "kind": "cssProp"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 45,
+     "kind": "number"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "rotate: 45deg; width: 2fr; resolution: 300dpi;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 13,
+     "kind": "number"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 20,
+     "kind": "cssProp"
+    },
+    {
+     "start": 20,
+     "end": 21,
+     "kind": "punct"
+    },
+    {
+     "start": 22,
+     "end": 25,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 37,
+     "kind": "cssProp"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 45,
+     "kind": "number"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "rotate: 45deg; width: 2fr; resolution: 300dpi;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 13,
+     "kind": "number"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 20,
+     "kind": "cssProp"
+    },
+    {
+     "start": 20,
+     "end": 21,
+     "kind": "punct"
+    },
+    {
+     "start": 22,
+     "end": 25,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 37,
+     "kind": "cssProp"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 45,
+     "kind": "number"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "rotate: 45deg; width: 2fr; resolution: 300dpi;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 13,
+     "kind": "number"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 20,
+     "kind": "cssProp"
+    },
+    {
+     "start": 20,
+     "end": 21,
+     "kind": "punct"
+    },
+    {
+     "start": 22,
+     "end": 25,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 37,
+     "kind": "cssProp"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 45,
+     "kind": "number"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "filter: blur(12px) saturate(135%);",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 12,
+     "kind": "filter"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 17,
+     "kind": "number"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 27,
+     "kind": "filter"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 31,
+     "kind": "number"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 34,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "filter: blur(12px) saturate(135%);",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 12,
+     "kind": "filter"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 17,
+     "kind": "number"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 27,
+     "kind": "filter"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 31,
+     "kind": "number"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 34,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "filter: blur(12px) saturate(135%);",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 12,
+     "kind": "filter"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 17,
+     "kind": "number"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 27,
+     "kind": "filter"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 31,
+     "kind": "number"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 34,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "filter: blur(12px) saturate(135%);",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 12,
+     "kind": "filter"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 17,
+     "kind": "number"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 27,
+     "kind": "filter"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 31,
+     "kind": "number"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 34,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "background: linear-gradient(90deg, rgba(0,0,0,.4), hsl(210 40% 30%));",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 27,
+     "kind": "filter"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 33,
+     "kind": "number"
+    },
+    {
+     "start": 33,
+     "end": 34,
+     "kind": "punct"
+    },
+    {
+     "start": 35,
+     "end": 39,
+     "kind": "filter"
+    },
+    {
+     "start": 39,
+     "end": 40,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "number"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "number"
+    },
+    {
+     "start": 43,
+     "end": 44,
+     "kind": "punct"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "number"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 46,
+     "end": 48,
+     "kind": "number"
+    },
+    {
+     "start": 48,
+     "end": 50,
+     "kind": "punct"
+    },
+    {
+     "start": 51,
+     "end": 54,
+     "kind": "filter"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 58,
+     "kind": "number"
+    },
+    {
+     "start": 59,
+     "end": 61,
+     "kind": "number"
+    },
+    {
+     "start": 61,
+     "end": 62,
+     "kind": "cssValue"
+    },
+    {
+     "start": 63,
+     "end": 65,
+     "kind": "number"
+    },
+    {
+     "start": 65,
+     "end": 66,
+     "kind": "cssValue"
+    },
+    {
+     "start": 66,
+     "end": 69,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "cssValue",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "number",
+    "op",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "background: linear-gradient(90deg, rgba(0,0,0,.4), hsl(210 40% 30%));",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 27,
+     "kind": "filter"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 33,
+     "kind": "number"
+    },
+    {
+     "start": 33,
+     "end": 34,
+     "kind": "punct"
+    },
+    {
+     "start": 35,
+     "end": 39,
+     "kind": "filter"
+    },
+    {
+     "start": 39,
+     "end": 40,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "number"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "number"
+    },
+    {
+     "start": 43,
+     "end": 44,
+     "kind": "punct"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "number"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 46,
+     "end": 48,
+     "kind": "number"
+    },
+    {
+     "start": 48,
+     "end": 50,
+     "kind": "punct"
+    },
+    {
+     "start": 51,
+     "end": 54,
+     "kind": "filter"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 58,
+     "kind": "number"
+    },
+    {
+     "start": 59,
+     "end": 61,
+     "kind": "number"
+    },
+    {
+     "start": 61,
+     "end": 62,
+     "kind": "cssValue"
+    },
+    {
+     "start": 63,
+     "end": 65,
+     "kind": "number"
+    },
+    {
+     "start": 65,
+     "end": 66,
+     "kind": "cssValue"
+    },
+    {
+     "start": 66,
+     "end": 69,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "cssValue",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "number",
+    "op",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "background: linear-gradient(90deg, rgba(0,0,0,.4), hsl(210 40% 30%));",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 27,
+     "kind": "filter"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 33,
+     "kind": "number"
+    },
+    {
+     "start": 33,
+     "end": 34,
+     "kind": "punct"
+    },
+    {
+     "start": 35,
+     "end": 39,
+     "kind": "filter"
+    },
+    {
+     "start": 39,
+     "end": 40,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "number"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "number"
+    },
+    {
+     "start": 43,
+     "end": 44,
+     "kind": "punct"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "number"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 46,
+     "end": 48,
+     "kind": "number"
+    },
+    {
+     "start": 48,
+     "end": 50,
+     "kind": "punct"
+    },
+    {
+     "start": 51,
+     "end": 54,
+     "kind": "filter"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 58,
+     "kind": "number"
+    },
+    {
+     "start": 59,
+     "end": 61,
+     "kind": "number"
+    },
+    {
+     "start": 61,
+     "end": 62,
+     "kind": "cssValue"
+    },
+    {
+     "start": 63,
+     "end": 65,
+     "kind": "number"
+    },
+    {
+     "start": 65,
+     "end": 66,
+     "kind": "cssValue"
+    },
+    {
+     "start": 66,
+     "end": 69,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "cssValue",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "number",
+    "op",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "background: linear-gradient(90deg, rgba(0,0,0,.4), hsl(210 40% 30%));",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 27,
+     "kind": "filter"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 33,
+     "kind": "number"
+    },
+    {
+     "start": 33,
+     "end": 34,
+     "kind": "punct"
+    },
+    {
+     "start": 35,
+     "end": 39,
+     "kind": "filter"
+    },
+    {
+     "start": 39,
+     "end": 40,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "number"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "number"
+    },
+    {
+     "start": 43,
+     "end": 44,
+     "kind": "punct"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "number"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 46,
+     "end": 48,
+     "kind": "number"
+    },
+    {
+     "start": 48,
+     "end": 50,
+     "kind": "punct"
+    },
+    {
+     "start": 51,
+     "end": 54,
+     "kind": "filter"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 58,
+     "kind": "number"
+    },
+    {
+     "start": 59,
+     "end": 61,
+     "kind": "number"
+    },
+    {
+     "start": 61,
+     "end": 62,
+     "kind": "cssValue"
+    },
+    {
+     "start": 63,
+     "end": 65,
+     "kind": "number"
+    },
+    {
+     "start": 65,
+     "end": 66,
+     "kind": "cssValue"
+    },
+    {
+     "start": 66,
+     "end": 69,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "cssValue",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "number",
+    "op",
+    "number",
+    "op",
+    "punct"
+   ]
+  },
+  {
+   "text": "width: calc(100% - var(--side, 4px));",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 11,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 15,
+     "kind": "number"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "cssValue"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "op"
+    },
+    {
+     "start": 19,
+     "end": 22,
+     "kind": "filter"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "punct"
+    },
+    {
+     "start": 23,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 31,
+     "end": 34,
+     "kind": "number"
+    },
+    {
+     "start": 34,
+     "end": 37,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "op",
+    "op",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "width: calc(100% - var(--side, 4px));",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 11,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 15,
+     "kind": "number"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "cssValue"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "op"
+    },
+    {
+     "start": 19,
+     "end": 22,
+     "kind": "filter"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "punct"
+    },
+    {
+     "start": 23,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 31,
+     "end": 34,
+     "kind": "number"
+    },
+    {
+     "start": 34,
+     "end": 37,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "op",
+    "op",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "width: calc(100% - var(--side, 4px));",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 11,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 15,
+     "kind": "number"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "cssValue"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "op"
+    },
+    {
+     "start": 19,
+     "end": 22,
+     "kind": "filter"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "punct"
+    },
+    {
+     "start": 23,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 31,
+     "end": 34,
+     "kind": "number"
+    },
+    {
+     "start": 34,
+     "end": 37,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "op",
+    "op",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "width: calc(100% - var(--side, 4px));",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 11,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 15,
+     "kind": "number"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "cssValue"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "op"
+    },
+    {
+     "start": 19,
+     "end": 22,
+     "kind": "filter"
+    },
+    {
+     "start": 22,
+     "end": 23,
+     "kind": "punct"
+    },
+    {
+     "start": 23,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 31,
+     "end": 34,
+     "kind": "number"
+    },
+    {
+     "start": 34,
+     "end": 37,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "op",
+    "op",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "--card-glow-size: 8px;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 16,
+     "kind": "cssProp"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 21,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "--card-glow-size: 8px;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 16,
+     "kind": "cssProp"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 21,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "--card-glow-size: 8px;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 16,
+     "kind": "cssProp"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 21,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "--card-glow-size: 8px;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 16,
+     "kind": "cssProp"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 21,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "border: var(--ha-card-border-width) solid transparent;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 11,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 34,
+     "kind": "cssValue"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 41,
+     "kind": "cssValue"
+    },
+    {
+     "start": 42,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "border: var(--ha-card-border-width) solid transparent;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 11,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 34,
+     "kind": "cssValue"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 41,
+     "kind": "cssValue"
+    },
+    {
+     "start": 42,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "border: var(--ha-card-border-width) solid transparent;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 11,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 34,
+     "kind": "cssValue"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 41,
+     "kind": "cssValue"
+    },
+    {
+     "start": 42,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "border: var(--ha-card-border-width) solid transparent;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 11,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 34,
+     "kind": "cssValue"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 41,
+     "kind": "cssValue"
+    },
+    {
+     "start": 42,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "position: sticky; display: flex; inset: unset;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 8,
+     "kind": "cssProp"
+    },
+    {
+     "start": 8,
+     "end": 9,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "cssValue"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "cssProp"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 31,
+     "kind": "cssValue"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 38,
+     "kind": "cssProp"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 45,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "position: sticky; display: flex; inset: unset;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 8,
+     "kind": "cssProp"
+    },
+    {
+     "start": 8,
+     "end": 9,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "cssValue"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "cssProp"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 31,
+     "kind": "cssValue"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 38,
+     "kind": "cssProp"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 45,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "position: sticky; display: flex; inset: unset;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 8,
+     "kind": "cssProp"
+    },
+    {
+     "start": 8,
+     "end": 9,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "cssValue"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "cssProp"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 31,
+     "kind": "cssValue"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 38,
+     "kind": "cssProp"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 45,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "position: sticky; display: flex; inset: unset;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 8,
+     "kind": "cssProp"
+    },
+    {
+     "start": 8,
+     "end": 9,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "cssValue"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "cssProp"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 31,
+     "kind": "cssValue"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 38,
+     "kind": "cssProp"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 45,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: \"}{ not a block\";",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 25,
+     "kind": "string"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: \"}{ not a block\";",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 25,
+     "kind": "string"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: \"}{ not a block\";",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 25,
+     "kind": "string"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: \"}{ not a block\";",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 25,
+     "kind": "string"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "font-family: 'Roboto Mono', monospace;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 11,
+     "kind": "cssProp"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 26,
+     "kind": "string"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 37,
+     "kind": "cssValue"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "string",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "font-family: 'Roboto Mono', monospace;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 11,
+     "kind": "cssProp"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 26,
+     "kind": "string"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 37,
+     "kind": "cssValue"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "string",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "font-family: 'Roboto Mono', monospace;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 11,
+     "kind": "cssProp"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 26,
+     "kind": "string"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 37,
+     "kind": "cssValue"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "string",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "font-family: 'Roboto Mono', monospace;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 11,
+     "kind": "cssProp"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 26,
+     "kind": "string"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 37,
+     "kind": "cssValue"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "string",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: 'escaped \\' quote';",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 27,
+     "kind": "string"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: 'escaped \\' quote';",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 27,
+     "kind": "string"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: 'escaped \\' quote';",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 27,
+     "kind": "string"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: 'escaped \\' quote';",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 27,
+     "kind": "string"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "box-shadow: 0 0 12px 2px rgba(255, 0, 170, 0.35) !important;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "number"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "number"
+    },
+    {
+     "start": 16,
+     "end": 20,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 29,
+     "kind": "filter"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 33,
+     "kind": "number"
+    },
+    {
+     "start": 33,
+     "end": 34,
+     "kind": "punct"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "number"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 41,
+     "kind": "number"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 47,
+     "kind": "number"
+    },
+    {
+     "start": 47,
+     "end": 48,
+     "kind": "punct"
+    },
+    {
+     "start": 49,
+     "end": 59,
+     "kind": "cssGlow"
+    },
+    {
+     "start": 59,
+     "end": 60,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "number",
+    "number",
+    "number",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "cssGlow",
+    "punct"
+   ]
+  },
+  {
+   "text": "box-shadow: 0 0 12px 2px rgba(255, 0, 170, 0.35) !important;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "number"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "number"
+    },
+    {
+     "start": 16,
+     "end": 20,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 29,
+     "kind": "filter"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 33,
+     "kind": "number"
+    },
+    {
+     "start": 33,
+     "end": 34,
+     "kind": "punct"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "number"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 41,
+     "kind": "number"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 47,
+     "kind": "number"
+    },
+    {
+     "start": 47,
+     "end": 48,
+     "kind": "punct"
+    },
+    {
+     "start": 49,
+     "end": 59,
+     "kind": "cssGlow"
+    },
+    {
+     "start": 59,
+     "end": 60,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "number",
+    "number",
+    "number",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "cssGlow",
+    "punct"
+   ]
+  },
+  {
+   "text": "box-shadow: 0 0 12px 2px rgba(255, 0, 170, 0.35) !important;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "number"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "number"
+    },
+    {
+     "start": 16,
+     "end": 20,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 29,
+     "kind": "filter"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 33,
+     "kind": "number"
+    },
+    {
+     "start": 33,
+     "end": 34,
+     "kind": "punct"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "number"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 41,
+     "kind": "number"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 47,
+     "kind": "number"
+    },
+    {
+     "start": 47,
+     "end": 48,
+     "kind": "punct"
+    },
+    {
+     "start": 49,
+     "end": 59,
+     "kind": "cssGlow"
+    },
+    {
+     "start": 59,
+     "end": 60,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "number",
+    "number",
+    "number",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "cssGlow",
+    "punct"
+   ]
+  },
+  {
+   "text": "box-shadow: 0 0 12px 2px rgba(255, 0, 170, 0.35) !important;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 10,
+     "kind": "cssProp"
+    },
+    {
+     "start": 10,
+     "end": 11,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "number"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "number"
+    },
+    {
+     "start": 16,
+     "end": 20,
+     "kind": "number"
+    },
+    {
+     "start": 21,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 25,
+     "end": 29,
+     "kind": "filter"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 33,
+     "kind": "number"
+    },
+    {
+     "start": 33,
+     "end": 34,
+     "kind": "punct"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "number"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 41,
+     "kind": "number"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 47,
+     "kind": "number"
+    },
+    {
+     "start": 47,
+     "end": 48,
+     "kind": "punct"
+    },
+    {
+     "start": 49,
+     "end": 59,
+     "kind": "cssGlow"
+    },
+    {
+     "start": 59,
+     "end": 60,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "number",
+    "number",
+    "number",
+    "number",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "cssGlow",
+    "punct"
+   ]
+  },
+  {
+   "text": "opacity: .85;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 12,
+     "kind": "number"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "opacity: .85;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 12,
+     "kind": "number"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "opacity: .85;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 12,
+     "kind": "number"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "opacity: .85;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 12,
+     "kind": "number"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "color: {{ states('sensor.color') }};",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 9,
+     "kind": "jinja"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "keyword"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 31,
+     "kind": "string"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 35,
+     "kind": "jinja"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "punct",
+    "cssSelector",
+    "punct",
+    "string",
+    "punct",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "color: {{ states('sensor.color') }};",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 9,
+     "kind": "jinja"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "keyword"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 31,
+     "kind": "string"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 35,
+     "kind": "jinja"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "punct",
+    "cssProp",
+    "punct",
+    "string",
+    "punct",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "color: {{ states('sensor.color') }};",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 9,
+     "kind": "jinja"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "keyword"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 31,
+     "kind": "string"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 35,
+     "kind": "jinja"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "punct",
+    "cssValue",
+    "punct",
+    "string",
+    "punct",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "color: {{ states('sensor.color') }};",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 9,
+     "kind": "jinja"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "keyword"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 31,
+     "kind": "string"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 35,
+     "kind": "jinja"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "filter",
+    "punct",
+    "punct",
+    "cssValue",
+    "punct",
+    "string",
+    "punct",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "{% if is_state('light.kitchen', 'on') %} border-color: gold; {% endif %}",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 2,
+     "kind": "jinja"
+    },
+    {
+     "start": 3,
+     "end": 5,
+     "kind": "keyword"
+    },
+    {
+     "start": 6,
+     "end": 14,
+     "kind": "keyword"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 30,
+     "kind": "string"
+    },
+    {
+     "start": 30,
+     "end": 31,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 36,
+     "kind": "string"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "jinja"
+    },
+    {
+     "start": 41,
+     "end": 53,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 59,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 59,
+     "end": 60,
+     "kind": "punct"
+    },
+    {
+     "start": 61,
+     "end": 63,
+     "kind": "jinja"
+    },
+    {
+     "start": 64,
+     "end": 69,
+     "kind": "keyword"
+    },
+    {
+     "start": 70,
+     "end": 72,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "cssSelector",
+    "cssSelector",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "cssSelector",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "cssSelector"
+   ]
+  },
+  {
+   "text": "{% if is_state('light.kitchen', 'on') %} border-color: gold; {% endif %}",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 2,
+     "kind": "jinja"
+    },
+    {
+     "start": 3,
+     "end": 5,
+     "kind": "keyword"
+    },
+    {
+     "start": 6,
+     "end": 14,
+     "kind": "keyword"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 30,
+     "kind": "string"
+    },
+    {
+     "start": 30,
+     "end": 31,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 36,
+     "kind": "string"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "jinja"
+    },
+    {
+     "start": 41,
+     "end": 53,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 59,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 59,
+     "end": 60,
+     "kind": "punct"
+    },
+    {
+     "start": 61,
+     "end": 63,
+     "kind": "jinja"
+    },
+    {
+     "start": 64,
+     "end": 69,
+     "kind": "keyword"
+    },
+    {
+     "start": 70,
+     "end": 72,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "cssProp",
+    "cssProp",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "cssProp",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssProp",
+    "cssProp",
+    "cssProp"
+   ]
+  },
+  {
+   "text": "{% if is_state('light.kitchen', 'on') %} border-color: gold; {% endif %}",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 2,
+     "kind": "jinja"
+    },
+    {
+     "start": 3,
+     "end": 5,
+     "kind": "keyword"
+    },
+    {
+     "start": 6,
+     "end": 14,
+     "kind": "keyword"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 30,
+     "kind": "string"
+    },
+    {
+     "start": 30,
+     "end": 31,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 36,
+     "kind": "string"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "jinja"
+    },
+    {
+     "start": 41,
+     "end": 53,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 59,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 59,
+     "end": 60,
+     "kind": "punct"
+    },
+    {
+     "start": 61,
+     "end": 63,
+     "kind": "jinja"
+    },
+    {
+     "start": 64,
+     "end": 69,
+     "kind": "keyword"
+    },
+    {
+     "start": 70,
+     "end": 72,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssValue",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "cssValue",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "{% if is_state('light.kitchen', 'on') %} border-color: gold; {% endif %}",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 2,
+     "kind": "jinja"
+    },
+    {
+     "start": 3,
+     "end": 5,
+     "kind": "keyword"
+    },
+    {
+     "start": 6,
+     "end": 14,
+     "kind": "keyword"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 30,
+     "kind": "string"
+    },
+    {
+     "start": 30,
+     "end": 31,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 36,
+     "kind": "string"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "jinja"
+    },
+    {
+     "start": 41,
+     "end": 53,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 59,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 59,
+     "end": 60,
+     "kind": "punct"
+    },
+    {
+     "start": 61,
+     "end": 63,
+     "kind": "jinja"
+    },
+    {
+     "start": 64,
+     "end": 69,
+     "kind": "keyword"
+    },
+    {
+     "start": 70,
+     "end": 72,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssValue",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "cssValue",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "width: {{ width | default(10) }}px;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 9,
+     "kind": "jinja"
+    },
+    {
+     "start": 10,
+     "end": 15,
+     "kind": "filter"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "op"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "keyword"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 26,
+     "end": 28,
+     "kind": "number"
+    },
+    {
+     "start": 28,
+     "end": 29,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "jinja"
+    },
+    {
+     "start": 32,
+     "end": 34,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "punct",
+    "number",
+    "punct",
+    "punct",
+    "cssSelector",
+    "punct"
+   ]
+  },
+  {
+   "text": "width: {{ width | default(10) }}px;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 9,
+     "kind": "jinja"
+    },
+    {
+     "start": 10,
+     "end": 15,
+     "kind": "filter"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "op"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "keyword"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 26,
+     "end": 28,
+     "kind": "number"
+    },
+    {
+     "start": 28,
+     "end": 29,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "jinja"
+    },
+    {
+     "start": 32,
+     "end": 34,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "cssProp",
+    "op",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct",
+    "cssProp",
+    "punct"
+   ]
+  },
+  {
+   "text": "width: {{ width | default(10) }}px;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 9,
+     "kind": "jinja"
+    },
+    {
+     "start": 10,
+     "end": 15,
+     "kind": "filter"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "op"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "keyword"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 26,
+     "end": 28,
+     "kind": "number"
+    },
+    {
+     "start": 28,
+     "end": 29,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "jinja"
+    },
+    {
+     "start": 32,
+     "end": 34,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "cssValue",
+    "op",
+    "cssValue",
+    "punct",
+    "number",
+    "punct",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "width: {{ width | default(10) }}px;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 9,
+     "kind": "jinja"
+    },
+    {
+     "start": 10,
+     "end": 15,
+     "kind": "filter"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "op"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "keyword"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 26,
+     "end": 28,
+     "kind": "number"
+    },
+    {
+     "start": 28,
+     "end": 29,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "jinja"
+    },
+    {
+     "start": 32,
+     "end": 34,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "cssValue",
+    "op",
+    "cssValue",
+    "punct",
+    "number",
+    "punct",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "{# comment #} color: blue;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 2,
+     "kind": "jinja"
+    },
+    {
+     "start": 3,
+     "end": 10,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 13,
+     "kind": "jinja"
+    },
+    {
+     "start": 14,
+     "end": 19,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 19,
+     "end": 20,
+     "kind": "punct"
+    },
+    {
+     "start": 21,
+     "end": 25,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "cssSelector",
+    "cssSelector",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "{# comment #} color: blue;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 2,
+     "kind": "jinja"
+    },
+    {
+     "start": 3,
+     "end": 10,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 13,
+     "kind": "jinja"
+    },
+    {
+     "start": 14,
+     "end": 19,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 19,
+     "end": 20,
+     "kind": "punct"
+    },
+    {
+     "start": 21,
+     "end": 25,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "cssProp",
+    "cssProp",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "{# comment #} color: blue;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 2,
+     "kind": "jinja"
+    },
+    {
+     "start": 3,
+     "end": 10,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 13,
+     "kind": "jinja"
+    },
+    {
+     "start": 14,
+     "end": 19,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 19,
+     "end": 20,
+     "kind": "punct"
+    },
+    {
+     "start": 21,
+     "end": 25,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssValue",
+    "cssValue",
+    "comment",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "{# comment #} color: blue;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 2,
+     "kind": "jinja"
+    },
+    {
+     "start": 3,
+     "end": 10,
+     "kind": "filter"
+    },
+    {
+     "start": 11,
+     "end": 13,
+     "kind": "jinja"
+    },
+    {
+     "start": 14,
+     "end": 19,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 19,
+     "end": 20,
+     "kind": "punct"
+    },
+    {
+     "start": 21,
+     "end": 25,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssValue",
+    "cssValue",
+    "comment",
+    "filter",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "a[href^='https'] { text-decoration: none; }",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 1,
+     "end": 2,
+     "kind": "punct"
+    },
+    {
+     "start": 2,
+     "end": 6,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 8,
+     "end": 15,
+     "kind": "string"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 34,
+     "kind": "cssProp"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 40,
+     "kind": "cssValue"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "punct"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "string",
+    "punct",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "a[href^='https'] { text-decoration: none; }",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 1,
+     "end": 2,
+     "kind": "punct"
+    },
+    {
+     "start": 2,
+     "end": 6,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 8,
+     "end": 15,
+     "kind": "string"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 34,
+     "kind": "cssProp"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 40,
+     "kind": "cssValue"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "punct"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "string",
+    "punct",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "a[href^='https'] { text-decoration: none; }",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 1,
+     "end": 2,
+     "kind": "punct"
+    },
+    {
+     "start": 2,
+     "end": 6,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 8,
+     "end": 15,
+     "kind": "string"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 34,
+     "kind": "cssProp"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 40,
+     "kind": "cssValue"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "punct"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "string",
+    "punct",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "a[href^='https'] { text-decoration: none; }",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 1,
+     "end": 2,
+     "kind": "punct"
+    },
+    {
+     "start": 2,
+     "end": 6,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 8,
+     "end": 15,
+     "kind": "string"
+    },
+    {
+     "start": 15,
+     "end": 16,
+     "kind": "punct"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 34,
+     "kind": "cssProp"
+    },
+    {
+     "start": 34,
+     "end": 35,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 40,
+     "kind": "cssValue"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "punct"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "string",
+    "punct",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "grid-template: auto / 1fr 2fr;",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 13,
+     "kind": "cssProp"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 19,
+     "kind": "cssValue"
+    },
+    {
+     "start": 20,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 22,
+     "end": 25,
+     "kind": "number"
+    },
+    {
+     "start": 26,
+     "end": 29,
+     "kind": "number"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "op",
+    "number",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "grid-template: auto / 1fr 2fr;",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 13,
+     "kind": "cssProp"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 19,
+     "kind": "cssValue"
+    },
+    {
+     "start": 20,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 22,
+     "end": 25,
+     "kind": "number"
+    },
+    {
+     "start": 26,
+     "end": 29,
+     "kind": "number"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "op",
+    "number",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "grid-template: auto / 1fr 2fr;",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 13,
+     "kind": "cssProp"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 19,
+     "kind": "cssValue"
+    },
+    {
+     "start": 20,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 22,
+     "end": 25,
+     "kind": "number"
+    },
+    {
+     "start": 26,
+     "end": 29,
+     "kind": "number"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "op",
+    "number",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "grid-template: auto / 1fr 2fr;",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 13,
+     "kind": "cssProp"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 19,
+     "kind": "cssValue"
+    },
+    {
+     "start": 20,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 22,
+     "end": 25,
+     "kind": "number"
+    },
+    {
+     "start": 26,
+     "end": 29,
+     "kind": "number"
+    },
+    {
+     "start": 29,
+     "end": 30,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "op",
+    "number",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "$weird . # - tokens",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "op"
+    },
+    {
+     "start": 1,
+     "end": 6,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 13,
+     "end": 19,
+     "kind": "cssSelector"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "op",
+    "cssSelector"
+   ]
+  },
+  {
+   "text": "$weird . # - tokens",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "op"
+    },
+    {
+     "start": 1,
+     "end": 6,
+     "kind": "cssValue"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 19,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "cssProp",
+    "punct",
+    "cssProp",
+    "op",
+    "cssProp"
+   ]
+  },
+  {
+   "text": "$weird . # - tokens",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "op"
+    },
+    {
+     "start": 1,
+     "end": 6,
+     "kind": "cssValue"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 19,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssValue",
+    "cssValue",
+    "punct",
+    "comment",
+    "op",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "$weird . # - tokens",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "op"
+    },
+    {
+     "start": 1,
+     "end": 6,
+     "kind": "cssValue"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 19,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssValue",
+    "cssValue",
+    "punct",
+    "comment",
+    "op",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "@media (max-width: 600px) { ha-card { display: none; } }",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 17,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "punct"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 35,
+     "kind": "cssValue"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 45,
+     "kind": "cssProp"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 47,
+     "end": 51,
+     "kind": "cssValue"
+    },
+    {
+     "start": 51,
+     "end": 52,
+     "kind": "punct"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 56,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "number",
+    "punct",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "@media (max-width: 600px) { ha-card { display: none; } }",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 17,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "punct"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 35,
+     "kind": "cssValue"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 45,
+     "kind": "cssProp"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 47,
+     "end": 51,
+     "kind": "cssValue"
+    },
+    {
+     "start": 51,
+     "end": 52,
+     "kind": "punct"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 56,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "number",
+    "punct",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "@media (max-width: 600px) { ha-card { display: none; } }",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 17,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "punct"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 35,
+     "kind": "cssValue"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 45,
+     "kind": "cssProp"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 47,
+     "end": 51,
+     "kind": "cssValue"
+    },
+    {
+     "start": 51,
+     "end": 52,
+     "kind": "punct"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 56,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "number",
+    "punct",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "@media (max-width: 600px) { ha-card { display: none; } }",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 17,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 19,
+     "end": 24,
+     "kind": "number"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "punct"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 35,
+     "kind": "cssValue"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 38,
+     "end": 45,
+     "kind": "cssProp"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 47,
+     "end": 51,
+     "kind": "cssValue"
+    },
+    {
+     "start": 51,
+     "end": 52,
+     "kind": "punct"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 56,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "number",
+    "punct",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ":host { --x: 1; }",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 11,
+     "kind": "cssProp"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "number"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "punct"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ":host { --x: 1; }",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 11,
+     "kind": "cssProp"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "number"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "punct"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ":host { --x: 1; }",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 11,
+     "kind": "cssProp"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "number"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "punct"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ":host { --x: 1; }",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 11,
+     "kind": "cssProp"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "number"
+    },
+    {
+     "start": 14,
+     "end": 15,
+     "kind": "punct"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "inherit",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector"
+   ]
+  },
+  {
+   "text": "inherit",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp"
+   ]
+  },
+  {
+   "text": "inherit",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssValue"
+   ]
+  },
+  {
+   "text": "inherit",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssValue"
+   ]
+  },
+  {
+   "text": "card_mod",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 8,
+     "kind": "cssSelector"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector"
+   ]
+  },
+  {
+   "text": "card_mod",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 8,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp"
+   ]
+  },
+  {
+   "text": "card_mod",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 8,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssValue"
+   ]
+  },
+  {
+   "text": "card_mod",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 8,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssValue"
+   ]
+  },
+  {
+   "text": "action: light.turn_on",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 13,
+     "kind": "cssValue"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 21,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "action: light.turn_on",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 13,
+     "kind": "cssValue"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 21,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "action: light.turn_on",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 13,
+     "kind": "cssValue"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 21,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "action: light.turn_on",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 6,
+     "kind": "cssProp"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 8,
+     "end": 13,
+     "kind": "cssValue"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 21,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "type: custom:mushroom-template-card",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 12,
+     "kind": "cssProp"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 35,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "type: custom:mushroom-template-card",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 12,
+     "kind": "cssProp"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 35,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "type: custom:mushroom-template-card",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 12,
+     "kind": "cssProp"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 35,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "type: custom:mushroom-template-card",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 12,
+     "kind": "cssProp"
+    },
+    {
+     "start": 12,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 13,
+     "end": 35,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "name: Kitchen Status",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 13,
+     "kind": "cssValue"
+    },
+    {
+     "start": 14,
+     "end": 20,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "name: Kitchen Status",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 13,
+     "kind": "cssValue"
+    },
+    {
+     "start": 14,
+     "end": 20,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "name: Kitchen Status",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 13,
+     "kind": "cssValue"
+    },
+    {
+     "start": 14,
+     "end": 20,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "name: Kitchen Status",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 13,
+     "kind": "cssValue"
+    },
+    {
+     "start": 14,
+     "end": 20,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "secondary: >\n  {{ states('sensor.kitchen_temperature') }}",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 9,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "op"
+    },
+    {
+     "start": 15,
+     "end": 17,
+     "kind": "jinja"
+    },
+    {
+     "start": 18,
+     "end": 24,
+     "kind": "keyword"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 53,
+     "kind": "string"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 57,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "punct",
+    "cssSelector",
+    "punct",
+    "string",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "secondary: >\n  {{ states('sensor.kitchen_temperature') }}",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 9,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "op"
+    },
+    {
+     "start": 15,
+     "end": 17,
+     "kind": "jinja"
+    },
+    {
+     "start": 18,
+     "end": 24,
+     "kind": "keyword"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 53,
+     "kind": "string"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 57,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "punct",
+    "cssProp",
+    "punct",
+    "string",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "secondary: >\n  {{ states('sensor.kitchen_temperature') }}",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 9,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "op"
+    },
+    {
+     "start": 15,
+     "end": 17,
+     "kind": "jinja"
+    },
+    {
+     "start": 18,
+     "end": 24,
+     "kind": "keyword"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 53,
+     "kind": "string"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 57,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "punct",
+    "cssValue",
+    "punct",
+    "string",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "secondary: >\n  {{ states('sensor.kitchen_temperature') }}",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 9,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "op"
+    },
+    {
+     "start": 15,
+     "end": 17,
+     "kind": "jinja"
+    },
+    {
+     "start": 18,
+     "end": 24,
+     "kind": "keyword"
+    },
+    {
+     "start": 24,
+     "end": 25,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 53,
+     "kind": "string"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    },
+    {
+     "start": 55,
+     "end": 57,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "punct",
+    "cssValue",
+    "punct",
+    "string",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: |\n  {% if is_state('binary_sensor.door', 'on') %}Open{% endif %}",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "jinja"
+    },
+    {
+     "start": 16,
+     "end": 18,
+     "kind": "keyword"
+    },
+    {
+     "start": 19,
+     "end": 27,
+     "kind": "keyword"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 48,
+     "kind": "string"
+    },
+    {
+     "start": 48,
+     "end": 49,
+     "kind": "punct"
+    },
+    {
+     "start": 50,
+     "end": 54,
+     "kind": "string"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    },
+    {
+     "start": 56,
+     "end": 58,
+     "kind": "jinja"
+    },
+    {
+     "start": 58,
+     "end": 62,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 62,
+     "end": 64,
+     "kind": "jinja"
+    },
+    {
+     "start": 65,
+     "end": 70,
+     "kind": "keyword"
+    },
+    {
+     "start": 71,
+     "end": 73,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "cssValue",
+    "cssSelector",
+    "cssSelector",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "cssSelector",
+    "cssSelector",
+    "cssSelector"
+   ]
+  },
+  {
+   "text": "content: |\n  {% if is_state('binary_sensor.door', 'on') %}Open{% endif %}",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "jinja"
+    },
+    {
+     "start": 16,
+     "end": 18,
+     "kind": "keyword"
+    },
+    {
+     "start": 19,
+     "end": 27,
+     "kind": "keyword"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 48,
+     "kind": "string"
+    },
+    {
+     "start": 48,
+     "end": 49,
+     "kind": "punct"
+    },
+    {
+     "start": 50,
+     "end": 54,
+     "kind": "string"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    },
+    {
+     "start": 56,
+     "end": 58,
+     "kind": "jinja"
+    },
+    {
+     "start": 58,
+     "end": 62,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 62,
+     "end": 64,
+     "kind": "jinja"
+    },
+    {
+     "start": 65,
+     "end": 70,
+     "kind": "keyword"
+    },
+    {
+     "start": 71,
+     "end": 73,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "cssValue",
+    "cssProp",
+    "cssProp",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "cssProp",
+    "cssProp",
+    "cssProp",
+    "cssProp",
+    "cssProp"
+   ]
+  },
+  {
+   "text": "content: |\n  {% if is_state('binary_sensor.door', 'on') %}Open{% endif %}",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "jinja"
+    },
+    {
+     "start": 16,
+     "end": 18,
+     "kind": "keyword"
+    },
+    {
+     "start": 19,
+     "end": 27,
+     "kind": "keyword"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 48,
+     "kind": "string"
+    },
+    {
+     "start": 48,
+     "end": 49,
+     "kind": "punct"
+    },
+    {
+     "start": 50,
+     "end": 54,
+     "kind": "string"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    },
+    {
+     "start": 56,
+     "end": 58,
+     "kind": "jinja"
+    },
+    {
+     "start": 58,
+     "end": 62,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 62,
+     "end": 64,
+     "kind": "jinja"
+    },
+    {
+     "start": 65,
+     "end": 70,
+     "kind": "keyword"
+    },
+    {
+     "start": 71,
+     "end": 73,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "cssValue",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "cssValue",
+    "cssValue",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "content: |\n  {% if is_state('binary_sensor.door', 'on') %}Open{% endif %}",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "jinja"
+    },
+    {
+     "start": 16,
+     "end": 18,
+     "kind": "keyword"
+    },
+    {
+     "start": 19,
+     "end": 27,
+     "kind": "keyword"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 48,
+     "kind": "string"
+    },
+    {
+     "start": 48,
+     "end": 49,
+     "kind": "punct"
+    },
+    {
+     "start": 50,
+     "end": 54,
+     "kind": "string"
+    },
+    {
+     "start": 54,
+     "end": 55,
+     "kind": "punct"
+    },
+    {
+     "start": 56,
+     "end": 58,
+     "kind": "jinja"
+    },
+    {
+     "start": 58,
+     "end": 62,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 62,
+     "end": 64,
+     "kind": "jinja"
+    },
+    {
+     "start": 65,
+     "end": 70,
+     "kind": "keyword"
+    },
+    {
+     "start": 71,
+     "end": 73,
+     "kind": "jinja"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "cssValue",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "cssValue",
+    "cssValue",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "name: Sensor {{ label ",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 12,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "jinja"
+    },
+    {
+     "start": 16,
+     "end": 21,
+     "kind": "filter"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector"
+   ]
+  },
+  {
+   "text": "name: Sensor {{ label ",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 12,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "jinja"
+    },
+    {
+     "start": 16,
+     "end": 21,
+     "kind": "filter"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssProp"
+   ]
+  },
+  {
+   "text": "name: Sensor {{ label ",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 12,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "jinja"
+    },
+    {
+     "start": 16,
+     "end": 21,
+     "kind": "filter"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "name: Sensor {{ label ",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 12,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "jinja"
+    },
+    {
+     "start": 16,
+     "end": 21,
+     "kind": "filter"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "style: |\n  ha-card {\n    border-radius: 18px;\n  }",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 18,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 19,
+     "end": 20,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 38,
+     "kind": "cssProp"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 44,
+     "kind": "number"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "punct"
+    },
+    {
+     "start": 48,
+     "end": 49,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "style: |\n  ha-card {\n    border-radius: 18px;\n  }",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 18,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 19,
+     "end": 20,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 38,
+     "kind": "cssProp"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 44,
+     "kind": "number"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "punct"
+    },
+    {
+     "start": 48,
+     "end": 49,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "style: |\n  ha-card {\n    border-radius: 18px;\n  }",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 18,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 19,
+     "end": 20,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 38,
+     "kind": "cssProp"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 44,
+     "kind": "number"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "punct"
+    },
+    {
+     "start": 48,
+     "end": 49,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "style: |\n  ha-card {\n    border-radius: 18px;\n  }",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 18,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 19,
+     "end": 20,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 38,
+     "kind": "cssProp"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 40,
+     "end": 44,
+     "kind": "number"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "punct"
+    },
+    {
+     "start": 48,
+     "end": 49,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ":host {\n  --ha-card-background: rgba(0,0,0,0.35);\n}",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 30,
+     "kind": "cssProp"
+    },
+    {
+     "start": 30,
+     "end": 31,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 36,
+     "kind": "filter"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "number"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 40,
+     "kind": "number"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "punct"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "number"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 47,
+     "kind": "number"
+    },
+    {
+     "start": 47,
+     "end": 49,
+     "kind": "punct"
+    },
+    {
+     "start": 50,
+     "end": 51,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ":host {\n  --ha-card-background: rgba(0,0,0,0.35);\n}",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 30,
+     "kind": "cssProp"
+    },
+    {
+     "start": 30,
+     "end": 31,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 36,
+     "kind": "filter"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "number"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 40,
+     "kind": "number"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "punct"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "number"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 47,
+     "kind": "number"
+    },
+    {
+     "start": 47,
+     "end": 49,
+     "kind": "punct"
+    },
+    {
+     "start": 50,
+     "end": 51,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ":host {\n  --ha-card-background: rgba(0,0,0,0.35);\n}",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 30,
+     "kind": "cssProp"
+    },
+    {
+     "start": 30,
+     "end": 31,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 36,
+     "kind": "filter"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "number"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 40,
+     "kind": "number"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "punct"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "number"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 47,
+     "kind": "number"
+    },
+    {
+     "start": 47,
+     "end": 49,
+     "kind": "punct"
+    },
+    {
+     "start": 50,
+     "end": 51,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": ":host {\n  --ha-card-background: rgba(0,0,0,0.35);\n}",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 1,
+     "kind": "punct"
+    },
+    {
+     "start": 1,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 30,
+     "kind": "cssProp"
+    },
+    {
+     "start": 30,
+     "end": 31,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 36,
+     "kind": "filter"
+    },
+    {
+     "start": 36,
+     "end": 37,
+     "kind": "punct"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "number"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 40,
+     "kind": "number"
+    },
+    {
+     "start": 40,
+     "end": 41,
+     "kind": "punct"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "number"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 47,
+     "kind": "number"
+    },
+    {
+     "start": 47,
+     "end": 49,
+     "kind": "punct"
+    },
+    {
+     "start": 50,
+     "end": 51,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "filter",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "number",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "style: horizontal ",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 17,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "style: horizontal ",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 17,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "style: horizontal ",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 17,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "style: horizontal ",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssProp"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 17,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "name: |\n  [[[ return entity.attributes.friendly_name; ]]]",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "op"
+    },
+    {
+     "start": 10,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 20,
+     "kind": "cssValue"
+    },
+    {
+     "start": 21,
+     "end": 27,
+     "kind": "cssValue"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 38,
+     "kind": "cssValue"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 52,
+     "kind": "cssValue"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 57,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "name: |\n  [[[ return entity.attributes.friendly_name; ]]]",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "op"
+    },
+    {
+     "start": 10,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 20,
+     "kind": "cssValue"
+    },
+    {
+     "start": 21,
+     "end": 27,
+     "kind": "cssValue"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 38,
+     "kind": "cssValue"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 52,
+     "kind": "cssValue"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 57,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "name: |\n  [[[ return entity.attributes.friendly_name; ]]]",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "op"
+    },
+    {
+     "start": 10,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 20,
+     "kind": "cssValue"
+    },
+    {
+     "start": 21,
+     "end": 27,
+     "kind": "cssValue"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 38,
+     "kind": "cssValue"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 52,
+     "kind": "cssValue"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 57,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "name: |\n  [[[ return entity.attributes.friendly_name; ]]]",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "op"
+    },
+    {
+     "start": 10,
+     "end": 13,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 20,
+     "kind": "cssValue"
+    },
+    {
+     "start": 21,
+     "end": 27,
+     "kind": "cssValue"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 28,
+     "end": 38,
+     "kind": "cssValue"
+    },
+    {
+     "start": 38,
+     "end": 39,
+     "kind": "punct"
+    },
+    {
+     "start": 39,
+     "end": 52,
+     "kind": "cssValue"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 57,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "label: |\n  [[[ const v = states['sensor.temp'].state; return `${v}°`; ]]]",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 20,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 23,
+     "end": 24,
+     "kind": "op"
+    },
+    {
+     "start": 25,
+     "end": 31,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 45,
+     "kind": "string"
+    },
+    {
+     "start": 45,
+     "end": 47,
+     "kind": "punct"
+    },
+    {
+     "start": 47,
+     "end": 52,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 60,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 61,
+     "end": 62,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 62,
+     "end": 63,
+     "kind": "op"
+    },
+    {
+     "start": 63,
+     "end": 64,
+     "kind": "punct"
+    },
+    {
+     "start": 64,
+     "end": 65,
+     "kind": "cssValue"
+    },
+    {
+     "start": 65,
+     "end": 66,
+     "kind": "punct"
+    },
+    {
+     "start": 66,
+     "end": 68,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 68,
+     "end": 69,
+     "kind": "punct"
+    },
+    {
+     "start": 70,
+     "end": 73,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "punct",
+    "string",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "label: |\n  [[[ const v = states['sensor.temp'].state; return `${v}°`; ]]]",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 20,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 23,
+     "end": 24,
+     "kind": "op"
+    },
+    {
+     "start": 25,
+     "end": 31,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 45,
+     "kind": "string"
+    },
+    {
+     "start": 45,
+     "end": 47,
+     "kind": "punct"
+    },
+    {
+     "start": 47,
+     "end": 52,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 60,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 61,
+     "end": 62,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 62,
+     "end": 63,
+     "kind": "op"
+    },
+    {
+     "start": 63,
+     "end": 64,
+     "kind": "punct"
+    },
+    {
+     "start": 64,
+     "end": 65,
+     "kind": "cssValue"
+    },
+    {
+     "start": 65,
+     "end": 66,
+     "kind": "punct"
+    },
+    {
+     "start": 66,
+     "end": 68,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 68,
+     "end": 69,
+     "kind": "punct"
+    },
+    {
+     "start": 70,
+     "end": 73,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "punct",
+    "string",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "cssSelector",
+    "punct",
+    "cssProp",
+    "punct",
+    "cssProp",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "label: |\n  [[[ const v = states['sensor.temp'].state; return `${v}°`; ]]]",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 20,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 23,
+     "end": 24,
+     "kind": "op"
+    },
+    {
+     "start": 25,
+     "end": 31,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 45,
+     "kind": "string"
+    },
+    {
+     "start": 45,
+     "end": 47,
+     "kind": "punct"
+    },
+    {
+     "start": 47,
+     "end": 52,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 60,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 61,
+     "end": 62,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 62,
+     "end": 63,
+     "kind": "op"
+    },
+    {
+     "start": 63,
+     "end": 64,
+     "kind": "punct"
+    },
+    {
+     "start": 64,
+     "end": 65,
+     "kind": "cssValue"
+    },
+    {
+     "start": 65,
+     "end": 66,
+     "kind": "punct"
+    },
+    {
+     "start": 66,
+     "end": 68,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 68,
+     "end": 69,
+     "kind": "punct"
+    },
+    {
+     "start": 70,
+     "end": 73,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "punct",
+    "string",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "cssSelector",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "label: |\n  [[[ const v = states['sensor.temp'].state; return `${v}°`; ]]]",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 5,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 5,
+     "end": 6,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "op"
+    },
+    {
+     "start": 11,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 15,
+     "end": 20,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 21,
+     "end": 22,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 23,
+     "end": 24,
+     "kind": "op"
+    },
+    {
+     "start": 25,
+     "end": 31,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 31,
+     "end": 32,
+     "kind": "punct"
+    },
+    {
+     "start": 32,
+     "end": 45,
+     "kind": "string"
+    },
+    {
+     "start": 45,
+     "end": 47,
+     "kind": "punct"
+    },
+    {
+     "start": 47,
+     "end": 52,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "punct"
+    },
+    {
+     "start": 54,
+     "end": 60,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 61,
+     "end": 62,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 62,
+     "end": 63,
+     "kind": "op"
+    },
+    {
+     "start": 63,
+     "end": 64,
+     "kind": "punct"
+    },
+    {
+     "start": 64,
+     "end": 65,
+     "kind": "cssValue"
+    },
+    {
+     "start": 65,
+     "end": 66,
+     "kind": "punct"
+    },
+    {
+     "start": 66,
+     "end": 68,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 68,
+     "end": 69,
+     "kind": "punct"
+    },
+    {
+     "start": 70,
+     "end": 73,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "op",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "op",
+    "cssSelector",
+    "punct",
+    "string",
+    "punct",
+    "cssSelector",
+    "punct",
+    "cssSelector",
+    "cssSelector",
+    "cssSelector",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: |\n  [Open dashboard](https://example.invalid)",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 18,
+     "kind": "cssValue"
+    },
+    {
+     "start": 19,
+     "end": 28,
+     "kind": "cssValue"
+    },
+    {
+     "start": 28,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 35,
+     "kind": "cssProp"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 45,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 46,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "comment",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: |\n  [Open dashboard](https://example.invalid)",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 18,
+     "kind": "cssValue"
+    },
+    {
+     "start": 19,
+     "end": 28,
+     "kind": "cssValue"
+    },
+    {
+     "start": 28,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 35,
+     "kind": "cssProp"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 45,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 46,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "comment",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: |\n  [Open dashboard](https://example.invalid)",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 18,
+     "kind": "cssValue"
+    },
+    {
+     "start": 19,
+     "end": 28,
+     "kind": "cssValue"
+    },
+    {
+     "start": 28,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 35,
+     "kind": "cssProp"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 45,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 46,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "comment",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: |\n  [Open dashboard](https://example.invalid)",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 14,
+     "kind": "punct"
+    },
+    {
+     "start": 14,
+     "end": 18,
+     "kind": "cssValue"
+    },
+    {
+     "start": 19,
+     "end": 28,
+     "kind": "cssValue"
+    },
+    {
+     "start": 28,
+     "end": 30,
+     "kind": "punct"
+    },
+    {
+     "start": 30,
+     "end": 35,
+     "kind": "cssProp"
+    },
+    {
+     "start": 35,
+     "end": 36,
+     "kind": "punct"
+    },
+    {
+     "start": 36,
+     "end": 45,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 46,
+     "kind": "punct"
+    },
+    {
+     "start": 46,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "punct",
+    "cssValue",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "comment",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "data: {\"brightness_pct\": 45, \"transition\": 1}",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 23,
+     "kind": "string"
+    },
+    {
+     "start": 23,
+     "end": 24,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 27,
+     "kind": "number"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 29,
+     "end": 41,
+     "kind": "string"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 44,
+     "kind": "number"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "string",
+    "punct",
+    "number",
+    "punct",
+    "string",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "data: {\"brightness_pct\": 45, \"transition\": 1}",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 23,
+     "kind": "string"
+    },
+    {
+     "start": 23,
+     "end": 24,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 27,
+     "kind": "number"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 29,
+     "end": 41,
+     "kind": "string"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 44,
+     "kind": "number"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "string",
+    "punct",
+    "number",
+    "punct",
+    "string",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "data: {\"brightness_pct\": 45, \"transition\": 1}",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 23,
+     "kind": "string"
+    },
+    {
+     "start": 23,
+     "end": 24,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 27,
+     "kind": "number"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 29,
+     "end": 41,
+     "kind": "string"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 44,
+     "kind": "number"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "string",
+    "punct",
+    "number",
+    "punct",
+    "string",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "data: {\"brightness_pct\": 45, \"transition\": 1}",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 7,
+     "kind": "punct"
+    },
+    {
+     "start": 7,
+     "end": 23,
+     "kind": "string"
+    },
+    {
+     "start": 23,
+     "end": 24,
+     "kind": "punct"
+    },
+    {
+     "start": 25,
+     "end": 27,
+     "kind": "number"
+    },
+    {
+     "start": 27,
+     "end": 28,
+     "kind": "punct"
+    },
+    {
+     "start": 29,
+     "end": 41,
+     "kind": "string"
+    },
+    {
+     "start": 41,
+     "end": 42,
+     "kind": "punct"
+    },
+    {
+     "start": 43,
+     "end": 44,
+     "kind": "number"
+    },
+    {
+     "start": 44,
+     "end": 45,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "string",
+    "punct",
+    "number",
+    "punct",
+    "string",
+    "punct",
+    "number",
+    "punct"
+   ]
+  },
+  {
+   "text": "payload: {\"type\": \"call_service\", \"domain\": \"light\"}",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "string"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 32,
+     "kind": "string"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    },
+    {
+     "start": 34,
+     "end": 42,
+     "kind": "string"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    },
+    {
+     "start": 44,
+     "end": 51,
+     "kind": "string"
+    },
+    {
+     "start": 51,
+     "end": 52,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "payload: {\"type\": \"call_service\", \"domain\": \"light\"}",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "string"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 32,
+     "kind": "string"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    },
+    {
+     "start": 34,
+     "end": 42,
+     "kind": "string"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    },
+    {
+     "start": 44,
+     "end": 51,
+     "kind": "string"
+    },
+    {
+     "start": 51,
+     "end": 52,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "payload: {\"type\": \"call_service\", \"domain\": \"light\"}",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "string"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 32,
+     "kind": "string"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    },
+    {
+     "start": 34,
+     "end": 42,
+     "kind": "string"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    },
+    {
+     "start": 44,
+     "end": 51,
+     "kind": "string"
+    },
+    {
+     "start": 51,
+     "end": 52,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "payload: {\"type\": \"call_service\", \"domain\": \"light\"}",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssSelector"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 16,
+     "kind": "string"
+    },
+    {
+     "start": 16,
+     "end": 17,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 32,
+     "kind": "string"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    },
+    {
+     "start": 34,
+     "end": 42,
+     "kind": "string"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "punct"
+    },
+    {
+     "start": 44,
+     "end": 51,
+     "kind": "string"
+    },
+    {
+     "start": 51,
+     "end": 52,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssSelector",
+    "punct",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct",
+    "string",
+    "punct"
+   ]
+  },
+  {
+   "text": "entity_id: [light.kitchen, light.hall]",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 9,
+     "kind": "cssProp"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 17,
+     "kind": "cssValue"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "cssValue"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 37,
+     "kind": "cssValue"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "entity_id: [light.kitchen, light.hall]",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 9,
+     "kind": "cssProp"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 17,
+     "kind": "cssValue"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "cssValue"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 37,
+     "kind": "cssValue"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "entity_id: [light.kitchen, light.hall]",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 9,
+     "kind": "cssProp"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 17,
+     "kind": "cssValue"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "cssValue"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 37,
+     "kind": "cssValue"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "entity_id: [light.kitchen, light.hall]",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 9,
+     "kind": "cssProp"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 11,
+     "end": 12,
+     "kind": "punct"
+    },
+    {
+     "start": 12,
+     "end": 17,
+     "kind": "cssValue"
+    },
+    {
+     "start": 17,
+     "end": 18,
+     "kind": "punct"
+    },
+    {
+     "start": 18,
+     "end": 25,
+     "kind": "cssValue"
+    },
+    {
+     "start": 25,
+     "end": 26,
+     "kind": "punct"
+    },
+    {
+     "start": 27,
+     "end": 32,
+     "kind": "cssValue"
+    },
+    {
+     "start": 32,
+     "end": 33,
+     "kind": "punct"
+    },
+    {
+     "start": 33,
+     "end": 37,
+     "kind": "cssValue"
+    },
+    {
+     "start": 37,
+     "end": 38,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: |\n  ## Kitchen\n  Tap **lights** for controls.",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "op"
+    },
+    {
+     "start": 16,
+     "end": 23,
+     "kind": "cssValue"
+    },
+    {
+     "start": 26,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "op"
+    },
+    {
+     "start": 32,
+     "end": 38,
+     "kind": "cssValue"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "op"
+    },
+    {
+     "start": 41,
+     "end": 44,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "comment",
+    "cssValue",
+    "cssValue",
+    "comment",
+    "cssValue",
+    "comment",
+    "cssValue",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: |\n  ## Kitchen\n  Tap **lights** for controls.",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "op"
+    },
+    {
+     "start": 16,
+     "end": 23,
+     "kind": "cssValue"
+    },
+    {
+     "start": 26,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "op"
+    },
+    {
+     "start": 32,
+     "end": 38,
+     "kind": "cssValue"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "op"
+    },
+    {
+     "start": 41,
+     "end": 44,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "comment",
+    "cssValue",
+    "cssValue",
+    "comment",
+    "cssValue",
+    "comment",
+    "cssValue",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: |\n  ## Kitchen\n  Tap **lights** for controls.",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "op"
+    },
+    {
+     "start": 16,
+     "end": 23,
+     "kind": "cssValue"
+    },
+    {
+     "start": 26,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "op"
+    },
+    {
+     "start": 32,
+     "end": 38,
+     "kind": "cssValue"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "op"
+    },
+    {
+     "start": 41,
+     "end": 44,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "comment",
+    "cssValue",
+    "cssValue",
+    "comment",
+    "cssValue",
+    "comment",
+    "cssValue",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: |\n  ## Kitchen\n  Tap **lights** for controls.",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 15,
+     "kind": "op"
+    },
+    {
+     "start": 16,
+     "end": 23,
+     "kind": "cssValue"
+    },
+    {
+     "start": 26,
+     "end": 29,
+     "kind": "cssValue"
+    },
+    {
+     "start": 30,
+     "end": 32,
+     "kind": "op"
+    },
+    {
+     "start": 32,
+     "end": 38,
+     "kind": "cssValue"
+    },
+    {
+     "start": 38,
+     "end": 40,
+     "kind": "op"
+    },
+    {
+     "start": 41,
+     "end": 44,
+     "kind": "cssValue"
+    },
+    {
+     "start": 45,
+     "end": 53,
+     "kind": "cssValue"
+    },
+    {
+     "start": 53,
+     "end": 54,
+     "kind": "punct"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "comment",
+    "cssValue",
+    "cssValue",
+    "comment",
+    "cssValue",
+    "comment",
+    "cssValue",
+    "cssValue",
+    "punct"
+   ]
+  },
+  {
+   "text": "content: |\n  <ha-icon icon=\"mdi:lightbulb\"></ha-icon>",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 22,
+     "end": 26,
+     "kind": "cssValue"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "op"
+    },
+    {
+     "start": 27,
+     "end": 42,
+     "kind": "string"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "op"
+    },
+    {
+     "start": 43,
+     "end": 52,
+     "kind": "cssValue"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "op"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "cssValue",
+    "cssValue",
+    "op",
+    "string",
+    "op",
+    "cssValue",
+    "op"
+   ]
+  },
+  {
+   "text": "content: |\n  <ha-icon icon=\"mdi:lightbulb\"></ha-icon>",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 22,
+     "end": 26,
+     "kind": "cssValue"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "op"
+    },
+    {
+     "start": 27,
+     "end": 42,
+     "kind": "string"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "op"
+    },
+    {
+     "start": 43,
+     "end": 52,
+     "kind": "cssValue"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "op"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "cssValue",
+    "cssValue",
+    "op",
+    "string",
+    "op",
+    "cssValue",
+    "op"
+   ]
+  },
+  {
+   "text": "content: |\n  <ha-icon icon=\"mdi:lightbulb\"></ha-icon>",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 22,
+     "end": 26,
+     "kind": "cssValue"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "op"
+    },
+    {
+     "start": 27,
+     "end": 42,
+     "kind": "string"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "op"
+    },
+    {
+     "start": 43,
+     "end": 52,
+     "kind": "cssValue"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "op"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "cssValue",
+    "cssValue",
+    "op",
+    "string",
+    "op",
+    "cssValue",
+    "op"
+   ]
+  },
+  {
+   "text": "content: |\n  <ha-icon icon=\"mdi:lightbulb\"></ha-icon>",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 7,
+     "kind": "cssProp"
+    },
+    {
+     "start": 7,
+     "end": 8,
+     "kind": "punct"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "op"
+    },
+    {
+     "start": 13,
+     "end": 21,
+     "kind": "cssValue"
+    },
+    {
+     "start": 22,
+     "end": 26,
+     "kind": "cssValue"
+    },
+    {
+     "start": 26,
+     "end": 27,
+     "kind": "op"
+    },
+    {
+     "start": 27,
+     "end": 42,
+     "kind": "string"
+    },
+    {
+     "start": 42,
+     "end": 43,
+     "kind": "op"
+    },
+    {
+     "start": 43,
+     "end": 52,
+     "kind": "cssValue"
+    },
+    {
+     "start": 52,
+     "end": 53,
+     "kind": "op"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "op",
+    "cssValue",
+    "cssValue",
+    "op",
+    "string",
+    "op",
+    "cssValue",
+    "op"
+   ]
+  },
+  {
+   "text": "icon: mdi:lightbulb-on",
+   "lineKind": "cssSelector",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 9,
+     "kind": "cssProp"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 22,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "icon: mdi:lightbulb-on",
+   "lineKind": "cssProp",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 9,
+     "kind": "cssProp"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 22,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "icon: mdi:lightbulb-on",
+   "lineKind": "cssValue",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 9,
+     "kind": "cssProp"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 22,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  },
+  {
+   "text": "icon: mdi:lightbulb-on",
+   "lineKind": "cssGlow",
+   "tokens": [
+    {
+     "start": 0,
+     "end": 4,
+     "kind": "cssProp"
+    },
+    {
+     "start": 4,
+     "end": 5,
+     "kind": "punct"
+    },
+    {
+     "start": 6,
+     "end": 9,
+     "kind": "cssProp"
+    },
+    {
+     "start": 9,
+     "end": 10,
+     "kind": "punct"
+    },
+    {
+     "start": 10,
+     "end": 22,
+     "kind": "cssValue"
+    }
+   ],
+   "tokenKinds": [
+    "cssProp",
+    "punct",
+    "cssValue",
+    "punct",
+    "cssValue"
+   ]
+  }
+ ]
+}

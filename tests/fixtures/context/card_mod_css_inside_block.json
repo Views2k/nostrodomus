@@ -1,0 +1,16 @@
+{
+  "name": "CSS inside card_mod block scalar",
+  "rationale": "card_mod CSS is usually typed inside a YAML literal scalar, so cursor context must stay on card_mod.style while exposing CSS prefix text.",
+  "sourceWithCursor": "type: entities\ncard_mod:\n  style: |\n    ha-card {\n      color: r__CURSOR__\n    }\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "css",
+    "prefix": "r",
+    "yamlKey": "style",
+    "yamlRole": "value",
+    "valueKind": "",
+    "focusKind": "style-block",
+    "pathText": "card_mod.style",
+    "shouldSuggest": true
+  }
+}

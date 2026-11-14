@@ -1,0 +1,56 @@
+title: Nostrodomus Surface Coverage
+kiosk_mode:
+  hide_header: true
+  hide_sidebar: true
+  mobile_settings:
+    hide_header: true
+views:
+  - title: Wall Panel
+    path: wall
+    cards:
+      - type: custom:vertical-stack-in-card
+        title: Living Room
+        horizontal: false
+        cards:
+          - type: custom:clock-weather-card
+            entity: weather.home
+            sun_entity: sun.sun
+            forecast_rows: 5
+            show__CLOCK__
+          - type: custom:atomic-calendar-revive
+            entities:
+              - entity: calendar.home
+                name: Home
+            max__CAL__
+            showDate: true
+      - type: custom:uptime-card
+        entity: binary_sensor.router
+        hours_to_show: 24
+        bar:
+          height: 10
+          round: 4
+        sho__UPTIME__
+      - type: custom:flex-table-card
+        title: Devices
+        entities:
+          include: sensor.*
+        columns:
+          - name: Name
+            data: name
+          - name: Battery
+            data: attributes.battery_level
+            mod__FLEX__
+      - type: custom:xiaomi-vacuum-map-card
+        entity: vacuum.robot
+        map_source:
+          camera: camera.vacuum_map
+        map__VACUUM__
+        append_icons:
+          - icon: mdi:play
+            tap_action:
+              action: call-service
+              service: vacuum.start
+      - type: custom:bt-thermostat-card
+        entity: climate.living_room
+        show__THERM__
+        eco_temperature: 18

@@ -1,0 +1,13 @@
+{
+  "name": "Malformed partial YAML key",
+  "rationale": "Users type incomplete YAML constantly; descriptor generation must degrade to a key context instead of throwing.",
+  "sourceWithCursor": "type: entities\nentities:\n  - entity: light.kitchen\n  - na|\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "prefix": "na",
+    "yamlRole": "key",
+    "pathText": "entities.entity",
+    "shouldSuggest": true
+  }
+}

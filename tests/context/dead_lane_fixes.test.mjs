@@ -1,0 +1,105 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+
+import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
+import { yamlValueKind as adapterVK } from '../../src/yaml/runtimeContextAdapter.js';
+import { yamlValueKind as classifierVK } from '../../src/yaml/yamlContextClassifier.js';
+
+// Regression guards for the dead/mis-wired value lanes the 9/10 audit found (2026-07-06), all the same
+// class as the 0.1.262 registry bug (a branch present only in the runtime-dead 3rd classifier copy):
+//   - legacy `platform:` triggers returned '' (silent completion)
+//   - `condition:` under card `visibility:`, legacy singular `condition:` lists, and `repeat.while/until`
+//     returned '' (condition-type lane dead)
+//   - root-level `action:` (Dev Tools Actions / per-step YAML) classified as the DASHBOARD action enum
+//     instead of a service call
+// Binding realistic-position rule: exercise the CM-auto-indent columns 0/2/4/6 in BOTH lanes, and pin the
+// two LIVE classifier copies (adapter + classifier) equal at each site so a fix can never land in one only.
+const vk = (doc) => detectRuntimeContext(doc, doc.length, { triggerKind: 'explicit' }).valueKind;
+
+test('platform: legacy trigger key completes as trigger-type at the under-triggers indents (2/4/6)', () => {
+  // The dash indented UNDER triggers: (cols 2/4/6) is the position CM lands after Enter+space or a
+  // hand-indent. A dash at col 0 (block sequence at the parent key's own column) is a SEPARATE,
+  // pre-existing currentYamlPath limitation — the working modern `trigger:` misses it too (path becomes
+  // ["trigger"] not ["triggers","trigger"]) — so it is asserted below as the known gap, not as a
+  // platform-specific regression.
+  for (const n of [2, 4, 6]) {
+    const doc = `triggers:\n${' '.repeat(n)}- platform: `;
+    assert.equal(vk(doc), 'trigger-type', `platform trigger dead at indent ${n}:\n${doc}`);
+  }
+});
+
+test('platform: under the LEGACY singular trigger: key completes as trigger-type (bug hunt)', () => {
+  // Legacy automations (still fully supported by HA) use singular `trigger:` as the list key with
+  // `- platform: <type>`. The value lane checked only the plural path token 'triggers', so this
+  // dominant legacy form got no trigger-type completion and the popup never opened. Fixed to accept
+  // the singular parent for the platform key. Cover the CM-auto-indent columns 2/4/6.
+  for (const n of [2, 4, 6]) {
+    const doc = `trigger:\n${' '.repeat(n)}- platform: `;
+    assert.equal(vk(doc), 'trigger-type', `legacy singular platform dead at indent ${n}:\n${doc}`);
+  }
+  // The modern `trigger:` key still requires a plural `triggers:` parent (it must not fire on a bare
+  // singular `trigger:` scalar), and a non-automation platform key stays kindless.
+  assert.equal(vk('trigger:\n  - trigger: '), '', 'trigger key needs a plural triggers parent');
+  assert.equal(vk('sensor:\n  - platform: '), '', 'a non-automation platform: does not over-fire');
+});
+
+test('known limitation (pre-existing, not MD1): a col-0 dash under a key is not seen as nested', () => {
+  // Documents current behavior so a future currentYamlPath fix (list-at-parent-indent) flips these.
+  // Affects the working modern trigger: identically — proof it is a path-scanner gap, not a lane gap.
+  assert.equal(vk('triggers:\n- trigger: '), '', 'modern trigger at col-0 dash: same pre-existing gap');
+  assert.equal(vk('triggers:\n- platform: '), '', 'legacy platform at col-0 dash: same pre-existing gap');
+});
+
+test('condition: completes as condition-type under visibility / legacy list / repeat.while+until', () => {
+  const cases = [
+    'type: button\nvisibility:\n  - condition: ',      // card visibility block
+    'condition:\n  - condition: ',                      // legacy singular condition list
+    'repeat:\n  while:\n    - condition: ',             // repeat.while
+    'repeat:\n  until:\n    - condition: ',             // repeat.until
+    'conditions:\n  - condition: ',                     // modern (control — must stay working)
+    'choose:\n  - conditions:\n      - condition: ',    // choose branch (control)
+  ];
+  for (const doc of cases) assert.equal(vk(doc), 'condition-type', `condition lane dead at:\n${doc}`);
+});
+
+test('root-level action: completes as a service call, not the dashboard action enum', () => {
+  assert.equal(vk('action: '), 'service', 'root action: should be a service (Dev Tools / per-step YAML)');
+  assert.equal(vk('action: light.tu'), 'service', 'root action value keeps the service lane');
+  // automation step action stays a service; dashboard tap_action.action stays the action enum.
+  assert.equal(vk('actions:\n  - action: '), 'service', 'automation step action stays a service');
+  assert.equal(vk('type: button\ntap_action:\n  action: '), 'action', 'dashboard tap_action.action stays the action enum');
+  assert.equal(vk('type: button\nhold_action:\n  action: '), 'action', 'dashboard hold_action.action stays the action enum');
+});
+
+test('no regression on the trigger/condition/service controls', () => {
+  assert.equal(vk('triggers:\n  - trigger: '), 'trigger-type');
+  assert.equal(vk('conditions:\n  - condition: '), 'condition-type');
+  assert.equal(vk('tap_action:\n  perform_action: '), 'service');
+  assert.equal(vk('foo: light.'), 'entity');
+});
+
+test('the fix landed in BOTH live classifier copies (adapter and classifier agree)', () => {
+  const ctxs = [
+    { yamlKey: 'platform', yamlPath: ['triggers'], yamlRole: 'value' },
+    { yamlKey: 'condition', yamlPath: ['visibility'], yamlRole: 'value' },
+    { yamlKey: 'condition', yamlPath: ['repeat', 'while'], yamlRole: 'value' },
+    { yamlKey: 'action', yamlPath: [], yamlRole: 'value' },
+    { yamlKey: 'action', yamlPath: ['tap_action'], yamlRole: 'value' },
+  ];
+  for (const ctx of ctxs) {
+    assert.equal(adapterVK(ctx), classifierVK(ctx), `copies diverged for ${JSON.stringify(ctx)}`);
+  }
+});
+
+test('mode: under a service data block is NOT the automation run-mode (bug hunt 3)', () => {
+  // A bare `mode:` was always classified automation-mode, which hard-filtered a service field's
+  // real values (e.g. humidifier.set_mode). Under data: it must fall through to the value lane.
+  assert.notEqual(vk('actions:\n  - action: humidifier.set_mode\n    data:\n      mode: '), 'automation-mode');
+  assert.equal(vk('actions:\n  - action: humidifier.set_mode\n    data:\n      mode: '), '');
+  // At automation/script config scope it stays the run-mode.
+  assert.equal(vk('alias: t\ntriggers: []\nmode: '), 'automation-mode');
+  assert.equal(vk('sequence: []\nmode: '), 'automation-mode');
+  // Both live classifier copies agree for mode under data.
+  const dataMode = { yamlKey: 'mode', yamlPath: ['actions', 'action', 'data'], yamlRole: 'value' };
+  assert.equal(adapterVK(dataMode), classifierVK(dataMode), 'copies diverged for mode under data');
+});

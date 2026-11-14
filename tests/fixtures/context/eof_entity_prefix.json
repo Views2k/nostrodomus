@@ -1,0 +1,16 @@
+{
+  "name": "EOF entity value prefix",
+  "rationale": "The cursor is often at end-of-file after a partially typed value; the descriptor should preserve the value prefix for ranking/filtering.",
+  "sourceWithCursor": "type: button\nentity: light.kit__CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "prefix": "light.kit",
+    "yamlKey": "entity",
+    "yamlRole": "value",
+    "valueKind": "entity",
+    "focusKind": "entity-list",
+    "pathText": "entity",
+    "shouldSuggest": true
+  }
+}

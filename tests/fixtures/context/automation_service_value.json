@@ -1,0 +1,16 @@
+{
+  "name": "Automation service value",
+  "rationale": "An automation action service line should produce a service valueKind and automation-action focus so service suggestions outrank generic keys.",
+  "sourceWithCursor": "alias: Evening lights\ntrigger:\n  - platform: state\n    entity_id: binary_sensor.motion\naction:\n  - service: |\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "service",
+    "yamlRole": "value",
+    "valueKind": "service",
+    "focusKind": "automation-action",
+    "pathText": "action.service",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

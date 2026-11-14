@@ -1,0 +1,16 @@
+{
+  "name": "Automation condition type value",
+  "rationale": "A condition block with the cursor after condition: should be identified as a condition-type value so condition snippets/providers can be focused.",
+  "sourceWithCursor": "condition:\n  - condition: __CURSOR__\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "condition",
+    "yamlRole": "value",
+    "valueKind": "condition-type",
+    "focusKind": "condition-block",
+    "pathText": "condition.condition",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

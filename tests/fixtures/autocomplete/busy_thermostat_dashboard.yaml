@@ -1,0 +1,77 @@
+views:
+  - title: Climate
+    path: climate
+    type: custom:grid-layout
+    layout:
+      grid-template-columns: repeat(2, minmax(0, 1fr))
+      grid-template-areas: |
+        "hero controls"
+        "graphs popup"
+    cards:
+      - type: custom:mushroom-template-card
+        primary: Living Room
+        secondary: "{{ states('sensor.living_room_temperature') }} °F"
+        icon: mdi:thermostat
+        view_layout:
+          grid-area: hero
+        tap_action:
+          action: more-info
+          entity: climate.living_room
+      - type: custom:better-thermostat-ui-card
+        entity: climate.living_room
+        name: Living Room
+        eco_temperature: 18
+        disable_window: false
+        disable_menu: false
+        __CURSOR__
+        card_mod:
+          style: |
+            ha-card {
+              background: rgba(15, 23, 42, 0.42);
+              backdrop-filter: blur(14px);
+            }
+      - type: custom:mini-graph-card
+        name: Temperature
+        entities:
+          - entity: sensor.living_room_temperature
+        hours_to_show: 24
+        points_per_hour: 2
+        show:
+          graph: line
+          extrema: true
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        header:
+          show: true
+          title: HVAC Trend
+        series:
+          - entity: sensor.living_room_temperature
+            name: Temperature
+            type: line
+            group_by:
+              duration: 1h
+              func: avg
+      - type: custom:bubble-card
+        card_type: pop-up
+        hash: "#climate"
+        name: Climate
+        cards:
+          - type: entities
+            entities:
+              - climate.living_room
+              - sensor.living_room_humidity
+      - type: custom:auto-entities
+        card:
+          type: entities
+          title: Climate Sensors
+        filter:
+          include:
+            - domain: sensor
+              entity_id: sensor.*temperature*
+          exclude:
+            - state: unavailable
+      - type: custom:swipe-card
+        parameters:
+          slidesPerView: 1
+          pagination:
+            clickable: true

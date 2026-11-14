@@ -1,0 +1,25 @@
+{
+  "name": "jinja pipe context favors filters",
+  "rationale": "When the prefix starts with a Jinja pipe, filter rows should outrank functions or generic helpers even when the label itself does not include the pipe character.",
+  "ctx": {
+    "lang": "jinja",
+    "prefix": "|ro",
+    "pathText": "template",
+    "yamlPath": ["template"],
+    "yamlKey": "value_template",
+    "yamlRole": "value",
+    "valueKind": "",
+    "focusKind": "template-expression",
+    "scope": "jinja template",
+    "shouldSuggest": true,
+    "triggerKind": "typing",
+    "isTriggerChar": true,
+    "afterKeyColon": false
+  },
+  "candidates": [
+    { "id": "jinja.round", "lang": "jinja", "type": "filter", "label": "round", "insert": "round(0)", "source": "static-library", "aliases": ["|round", "round filter"], "meta": { "family": "jinja" } },
+    { "id": "jinja.range", "lang": "jinja", "type": "function", "label": "range", "insert": "range()", "source": "static-library", "aliases": ["range function"], "meta": { "family": "jinja" } },
+    { "id": "yaml.entity", "lang": "yaml", "type": "key", "label": "entity", "insert": "entity: ", "source": "static-library", "aliases": [], "meta": { "family": "static" } }
+  ],
+  "expectedTopIds": ["jinja.round"]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "card_mod css context favors CSS properties",
+  "rationale": "Inside a card_mod/style block, CSS property rows should outrank generic card_mod/static rows when the prefix is a CSS property prefix.",
+  "ctx": {
+    "lang": "css",
+    "prefix": "back",
+    "pathText": "card_mod.style",
+    "yamlPath": ["card_mod", "style"],
+    "yamlKey": "style",
+    "yamlRole": "value",
+    "valueKind": "",
+    "focusKind": "style-block",
+    "scope": "card_mod styles",
+    "shouldSuggest": true,
+    "triggerKind": "typing",
+    "isTriggerChar": true,
+    "afterKeyColon": false
+  },
+  "candidates": [
+    { "id": "css.background", "lang": "css", "type": "property", "label": "background", "insert": "background: ", "source": "static-library", "aliases": ["background-color"], "meta": { "family": "css" } },
+    { "id": "css.border", "lang": "css", "type": "property", "label": "border-color", "insert": "border-color: ", "source": "static-library", "aliases": [], "meta": { "family": "css" } },
+    { "id": "yaml.card_mod", "lang": "yaml", "type": "key", "label": "card_mod", "insert": "card_mod:\n  style: |\n    ", "source": "static-library", "aliases": ["style"], "meta": { "family": "dashboard-card" } }
+  ],
+  "expectedTopIds": ["css.background"]
+}

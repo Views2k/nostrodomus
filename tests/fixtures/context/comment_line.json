@@ -1,0 +1,11 @@
+{
+  "name": "Whole-line YAML comment",
+  "rationale": "Comment-only lines should not offer completions, avoiding noisy suggestions in user comments.",
+  "sourceWithCursor": "type: entities\n# this is a note |\nentities:\n  - light.kitchen\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlRole": "comment",
+    "shouldSuggest": false
+  }
+}

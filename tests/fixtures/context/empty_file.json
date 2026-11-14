@@ -1,0 +1,13 @@
+{
+  "name": "Empty YAML file",
+  "rationale": "An empty editor should produce a blank but suggestable descriptor instead of null/undefined fields.",
+  "sourceWithCursor": "|",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "prefix": "",
+    "yamlRole": "blank",
+    "pathText": "",
+    "shouldSuggest": true
+  }
+}

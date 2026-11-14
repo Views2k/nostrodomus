@@ -1,0 +1,16 @@
+{
+  "name": "Multi-document Lovelace entity value",
+  "rationale": "Multi-document YAML separators should not leak stale path state into the current document when the user edits an entity value after a separator.",
+  "sourceWithCursor": "---\ntype: entities\nentities:\n  - light.old\n---\ntype: button\nentity: __CURSOR__\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "entity",
+    "yamlRole": "value",
+    "valueKind": "entity",
+    "focusKind": "entity-list",
+    "pathText": "entity",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

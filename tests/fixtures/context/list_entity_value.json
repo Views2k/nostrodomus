@@ -1,0 +1,16 @@
+{
+  "name": "List item entity value",
+  "rationale": "Entity lists are common in Lovelace and automation targets; a bare list item should still preserve entity-list focus and entity valueKind.",
+  "sourceWithCursor": "entities:\n  - entity: light.kitchen\n  - entity: __CURSOR__\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "entity",
+    "yamlRole": "value",
+    "valueKind": "entity",
+    "focusKind": "entity-list",
+    "pathText": "entities.entity",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

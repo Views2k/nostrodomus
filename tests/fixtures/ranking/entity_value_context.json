@@ -1,0 +1,25 @@
+{
+  "name": "entity value context favors runtime entity values",
+  "rationale": "When valueKind is entity, entity rows from the Home Assistant runtime provider must beat generic snippets and static keys.",
+  "ctx": {
+    "lang": "yaml",
+    "prefix": "light",
+    "pathText": "cards.0.entity",
+    "yamlPath": ["cards", "0", "entity"],
+    "yamlKey": "entity",
+    "yamlRole": "value",
+    "valueKind": "entity",
+    "focusKind": "entity-list",
+    "scope": "entity",
+    "shouldSuggest": true,
+    "triggerKind": "typing",
+    "isTriggerChar": true,
+    "afterKeyColon": true
+  },
+  "candidates": [
+    { "id": "runtime.light", "lang": "yaml", "type": "entity", "label": "light.kitchen", "insert": "light.kitchen", "source": "ha-runtime-values", "aliases": [], "meta": { "domain": "light", "family": "runtime" } },
+    { "id": "runtime.sensor", "lang": "yaml", "type": "entity", "label": "sensor.light_level", "insert": "sensor.light_level", "source": "ha-runtime-values", "aliases": [], "meta": { "domain": "sensor", "family": "runtime" } },
+    { "id": "static.entity", "lang": "yaml", "type": "key", "label": "entity", "insert": "entity: ", "source": "static-library", "aliases": [], "meta": { "family": "static" } }
+  ],
+  "expectedTopIds": ["runtime.light", "runtime.sensor"]
+}

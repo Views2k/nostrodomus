@@ -1,0 +1,16 @@
+{
+  "name": "Lovelace tap_action entity value",
+  "rationale": "A Lovelace card action targeting an entity should be recognized as an entity-list/value context so runtime entity providers can rank correctly.",
+  "sourceWithCursor": "type: button\nentity: light.kitchen\ntap_action:\n  action: call-service\n  service: light.turn_on\n  target:\n    entity_id: |\n",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "entity_id",
+    "yamlRole": "value",
+    "valueKind": "entity",
+    "focusKind": "entity-list",
+    "pathText": "tap_action.target.entity_id",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

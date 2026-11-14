@@ -1,0 +1,16 @@
+{
+  "name": "Automation action key service value",
+  "rationale": "Automation action blocks use the key action for service calls, so context must classify action values as service suggestions instead of dashboard action suggestions.",
+  "sourceWithCursor": "automation:\n  alias: Test\n  action:\n    - action: __CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "action",
+    "yamlRole": "value",
+    "valueKind": "service",
+    "focusKind": "automation-action",
+    "pathText": "automation.action.action",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}

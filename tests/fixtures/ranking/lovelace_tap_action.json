@@ -1,0 +1,25 @@
+{
+  "name": "lovelace tap_action context favors structural context rows",
+  "rationale": "Inside tap_action, Lovelace context child keys should outrank generic static root keys even when both match the prefix.",
+  "ctx": {
+    "lang": "yaml",
+    "prefix": "a",
+    "pathText": "cards.0.tap_action",
+    "yamlPath": ["cards", "0", "tap_action"],
+    "yamlKey": "tap_action",
+    "yamlRole": "key",
+    "valueKind": "",
+    "focusKind": "action-block",
+    "scope": "tap_action",
+    "shouldSuggest": true,
+    "triggerKind": "explicit",
+    "isTriggerChar": false,
+    "afterKeyColon": false
+  },
+  "candidates": [
+    { "id": "static.action", "lang": "yaml", "type": "key", "label": "action", "insert": "action: ", "source": "static-library", "aliases": [], "meta": { "family": "root" } },
+    { "id": "lovelace.action", "lang": "yaml", "type": "key", "label": "action", "insert": "action: ", "source": "lovelace-context", "aliases": [], "meta": { "family": "tap_action" } },
+    { "id": "snippet.action", "lang": "yaml", "type": "snippet", "label": "tap action call-service", "insert": "action: call-service\nservice: light.turn_on", "source": "snippet-templates", "aliases": ["call service"], "meta": { "family": "dashboard-action", "contextKind": "dashboard-action" } }
+  ],
+  "expectedTopIds": ["lovelace.action", "snippet.action"]
+}

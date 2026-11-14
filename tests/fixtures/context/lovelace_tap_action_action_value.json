@@ -1,0 +1,16 @@
+{
+  "name": "Lovelace tap_action action value",
+  "rationale": "Dashboard action blocks use the nested action key for Lovelace actions such as navigate or call-service, which must not be misclassified as an automation service.",
+  "sourceWithCursor": "type: button\ntap_action:\n  action: __CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "yamlKey": "action",
+    "yamlRole": "value",
+    "valueKind": "action",
+    "focusKind": "action-block",
+    "pathText": "tap_action.action",
+    "afterKeyColon": true,
+    "shouldSuggest": true
+  }
+}
