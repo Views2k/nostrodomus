@@ -14,6 +14,10 @@ Nostrodomus is a local-only Home Assistant frontend resource. It runs in the bro
 
 `tools/verify.py` checks the built bundle for the forbidden calls on every gate run.
 
-## Reporting issues
+## Reporting a vulnerability
 
-Report a security issue at <https://github.com/Views2k/nostrodomus/issues>. Include a minimal reproduction and a redacted diagnostics report (Settings, Diagnostics, Copy full report). Do not paste secrets, tokens, full Home Assistant YAML, or private URLs.
+Report security issues privately through GitHub: open the repository's Security tab and choose "Report a vulnerability", or go to <https://github.com/Views2k/nostrodomus/security/advisories/new>. Only you and the maintainer can see the report.
+
+Please do not open a public issue for a security problem. Other bugs go to <https://github.com/Views2k/nostrodomus/issues>.
+
+Include a minimal reproduction and a redacted diagnostics report (Settings, Diagnostics, Copy full report). Do not paste secrets, tokens, full Home Assistant YAML, or private URLs.
