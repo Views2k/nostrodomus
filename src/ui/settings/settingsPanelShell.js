@@ -474,6 +474,10 @@ export function createSettingsPanelShell(deps = {}) {
       styleRangeControl("Surface opacity", "style.codeboxSurfaceOpacity", s.style?.codeboxSurfaceOpacity ?? DEFAULT_SETTINGS.style.codeboxSurfaceOpacity, 0, 0.85, 0.01, percentLabel),
       styleRangeControl("Surface saturation", "style.codeboxSurfaceSaturation", s.style?.codeboxSurfaceSaturation ?? DEFAULT_SETTINGS.style.codeboxSurfaceSaturation, 0, 2.5, 0.01, sliderNumberLabel),
 
+      settingsTitle("Card editor dialog"),
+      settingDesc("Makes the card editor dialog translucent and blurs the dashboard behind it, so the dashboard shows through the dialog and around the card preview. On by default; turning it off saves graphics work on slow computers."),
+      styleToggle("Glass editor dialog", "style.glassDialog", s.style?.glassDialog ?? DEFAULT_SETTINGS.style.glassDialog),
+
       settingsTitle("Syntax theme"),
       settingDesc("Choose a full syntax color theme for YAML/Lovelace, CSS/card_mod, Jinja, providers, values, and punctuation. Each syntax role uses a distinct color inside every theme."),
       styleToggle("Enable syntax theme coloring", "style.syntaxTintEnabled", s.style?.syntaxTintEnabled ?? DEFAULT_SETTINGS.style.syntaxTintEnabled),
@@ -933,7 +937,9 @@ export function createSettingsPanelShell(deps = {}) {
           // Reapply does not call (that path re-applies main's tokens to the cached editor only). So
           // for style.hideEditorWarnings, re-run the companion layer on the active editor directly,
           // otherwise the toggle persists but the nested warning sheet is never injected/removed.
-          if (input.dataset.styleToggle === "style.hideEditorWarnings") {
+          // The glass sheet of the card editor dialog (style.glassDialog) is added and removed
+          // by the same layer.
+          if (input.dataset.styleToggle === "style.hideEditorWarnings" || input.dataset.styleToggle === "style.glassDialog") {
             try { applyCompanionEditorLayer(state.activeEditorCache?.editor); } catch { /* fail-dark */ }
           }
         });

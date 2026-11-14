@@ -15,14 +15,17 @@ Nostrodomus changes Home Assistant's code editors and nothing else on the page. 
 
 `isViewAllowed` and `viewFromEvent` in `src/editor/activeEditor.js` decide whether a keystroke or an editor view belongs to one of these surfaces. A key pressed on the dashboard and an editor inside a third-party card do not pass.
 
+The same holds inside the card edit dialog for the visual editor a custom card supplies. `insideCardOwnEditor` in `src/editor/cardOwnEditor.js` answers by position: an element is the card's when the nearest element editor above it (`hui-card-element-editor` and the like) holds it in its card editor area and the editor element there is not one of Home Assistant's. Editor discovery, the scope checks above, the dialog and codebox sizing, the companion stylesheets and the switch for Home Assistant's built-in suggestions all ask it and leave such elements alone. Home Assistant's YAML editor is never inside that area, also when it is nested in a visual editor (the card of a stack).
+
 DOM ownership:
 
 | Area | What Nostrodomus does there |
 | --- | --- |
 | Dashboard, sidebar, cards | Nothing: no styles, no pointer handlers, no keyboard handling |
-| Edit dialog and its top layer | Hosts the settings panel portal, receives the dialog layout styles |
+| Edit dialog and its top layer | Hosts the settings panel portal, receives the dialog layout styles. While `settings.style.glassDialog` is on (the default), the companion layer also makes the dialog surface translucent with a backdrop blur, through a stylesheet in the shadow root of `hui-dialog-edit-card` (`src/companion/scrollbarStyleRuntime.js`). The dashboard is seen through the dialog and is not styled |
 | `ha-code-editor` and the CodeMirror root | Completion popup, syntax styling, codebox frame |
-| Card preview | Observed only to avoid duplicate work. Home Assistant's `value-changed` and `input` events are never intercepted or replayed |
+| A custom card's own visual editor | Nothing: no styles, no sizing, no completion, no keyboard handling. A code box in it keeps the suggestions the card turned on. The dialog is not enlarged or restyled because of it |
+| Card preview | The cards in it are observed only to avoid duplicate work. Home Assistant's `value-changed` and `input` events are never intercepted or replayed. The preview pane itself (`.element-preview`) gets the dialog layout styles and, while `settings.style.glassDialog` is on, a transparent background, from the same companion module |
 
 ## Required behavior
 

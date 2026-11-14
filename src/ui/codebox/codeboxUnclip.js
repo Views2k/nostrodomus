@@ -12,6 +12,7 @@ import {
   HA_YAML_EDITOR,
   HUI_CARD_ELEMENT_EDITOR,
 } from "../../editor/haSelectors.js";
+import { insideCardOwnEditor } from "../../editor/cardOwnEditor.js";
 
 // Pure, testable predicate: an ancestor we may safely un-clip for glow overflow clips on some axis
 // (overflow != visible) but its content fits within a scrollbar-gutter artifact threshold (not a genuine
@@ -336,6 +337,9 @@ function allowCodeboxFrameOverflow(editor) {
     for (let i = 0; i < 8; i += 1) {
       const parent = codeboxComposedParent(node);
       if (!parent || parent === document.documentElement) break;
+      // A YAML editor that a custom card's editor nests for a sub-card: the elements around it
+      // are that card's layout and are not written on.
+      if (insideCardOwnEditor(parent)) break;
       const local = String(parent.localName || "").toLowerCase();
       if (local === HA_CODE_EDITOR || local === HA_YAML_EDITOR || local === HUI_CARD_ELEMENT_EDITOR) {
         markFrameSurface(parent, `frame-parent-${i}`);

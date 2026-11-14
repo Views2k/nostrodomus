@@ -24,7 +24,7 @@ It is beta (`0.1.x`), but stable and in daily use. Current limitations are liste
   </tr>
 </table>
 
-The card editor with four different frame colors and syntax themes, each with the settings panel open on another tab.
+The card editor with four different frame colors and syntax themes, each with the settings panel open on another tab. The dashboard behind the dialog, and its wallpaper, are the author's own; the dialog shows your dashboard.
 
 ## Requirements
 
@@ -32,6 +32,7 @@ The card editor with four different frame colors and syntax themes, each with th
 |---|---|
 | Home Assistant | 2026.6.0 or newer |
 | HACS | 2.0.0+ (recommended install path), or manual resource registration |
+| Browser | A Chromium-based browser (Chrome, Edge, Brave and others). Firefox is not supported yet, and Safari is not tested; see [Known issues](docs/KNOWN_ISSUES.md) |
 | Where it works | The dashboard card-edit dialog, `card_mod` style blocks, the dashboard raw configuration editor, the automation and script YAML editors, and the template editor of Developer Tools |
 
 Home Assistant's built-in dashboards (Overview, Lights, Security, and so on) do not load custom frontend resources, so Nostrodomus starts once a dashboard you created has been opened in the browser tab.
@@ -55,7 +56,13 @@ Action blocks complete like a form. Once you pick a service (`service: light.tur
 A validated set of snippets for the things you build often: dashboard cards, tap and hold actions, triggers, conditions, action sequences, targets, and `card_mod` styling. Snippets expand with tab-through placeholders, so you jump straight to the parts that need your values.
 
 ### Syntax styling
-YAML, Jinja templates, CSS inside `card_mod`, and embedded JSON each get their own coloring in the same document. Colors are applied per token, so one line can mix YAML, a template and CSS. There are 37 syntax themes: a VS Code Dark+ "Classic" default, a range of color-named palettes, and two light themes. Keywords, strings, numbers, booleans, operators, and comments stay distinct. The editor box itself gets a frame you can configure (border, glow, frosted surface, scrollbar), applied only to the active editor and nothing else on the dashboard.
+YAML, Jinja templates, CSS inside `card_mod`, and embedded JSON each get their own coloring in the same document. Colors are applied per token, so one line can mix YAML, a template and CSS. There are 37 syntax themes: a VS Code Dark+ "Classic" default, a range of color-named palettes, and two light themes. Keywords, strings, numbers, booleans, operators, and comments stay distinct. The editor box itself gets a frame you can configure (border, glow, frosted surface, scrollbar). The card editor dialog is translucent, with the dashboard softened behind it; this is the "Glass editor dialog" setting in the Style tab, which is on by default and can be turned off on slow computers. The styling is limited to the active editor and the card editor dialog it sits in, and nothing else on the dashboard is styled.
+
+### Editor dialog
+In the card editor dialog Nostrodomus enlarges the dialog to most of the window, with the editor and the card preview side by side, and fits the code editor to the space above the Save and Cancel row at every window size. In a window narrower than 1000 pixels, where Home Assistant puts the preview under the editor, the dialog scrolls instead. The dialog takes this size once its code editor has been shown.
+
+### Visual editors
+Nostrodomus works on Home Assistant's code editors. The visual editor that a custom card brings with it stays as the card built it, so a card can still be set up without writing YAML: its fields, toggles, buttons, expandable sections and notes are not changed, a code box inside it keeps its size, its look and the suggestions the card turned on, and the dialog stays the way Home Assistant drew it until you switch to the code editor. This goes by where an element sits in the dialog, not by a list of cards, so it holds for every custom card.
 
 ### Settings panel
 A draggable, keyboard-operable settings panel opens inside the editor dialog, split into five tabs: General, Context, Diagnostics, Style, and Help. Ordinary changes apply in place, and the panel keeps its position, tab, and scroll while you adjust.
@@ -79,7 +86,7 @@ To configure it, open the code editor of any card, press `Ctrl+Space`, and click
 
 ## Privacy and security
 
-Nostrodomus is a local-only frontend plugin. It makes no network requests. The shipped bundle contains no `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, telemetry, or remote-code path, and the build's verification gate enforces that. Every suggestion is derived from your running Home Assistant (its live registry and service schemas, read in the browser) or from a catalog bundled inside the plugin. Nothing about your instance, your dashboards, or your usage is sent anywhere. It renders only through safe DOM APIs (no `innerHTML`, no `eval`), and its styling is scoped to the active editor, not the wider dashboard. Settings live in your browser's local storage.
+Nostrodomus is a local-only frontend plugin. It makes no network requests. The shipped bundle contains no `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, telemetry, or remote-code path, and the build's verification gate enforces that. Every suggestion is derived from your running Home Assistant (its live registry and service schemas, read in the browser) or from a catalog bundled inside the plugin. Nothing about your instance, your dashboards, or your usage is sent anywhere. It renders only through safe DOM APIs (no `innerHTML`, no `eval`), and its styling is limited to the active editor and the card editor dialog it sits in, not the wider dashboard. Settings live in your browser's local storage.
 
 Security policy and reporting: [SECURITY.md](SECURITY.md).
 
@@ -101,7 +108,7 @@ Quick links:
 - No suggestions appear: make sure the editor has focus and press `Ctrl+Space`. Check the Diagnostics tab for provider status.
 - Health check: run `window.__nostrodomus.health()` in the browser console. `ok: true` means the runtime is healthy.
 - Stale version after an update: hard-reload the browser or bump the resource URL cache string. The running version is shown in the Diagnostics tab.
-- Styling looks off with a custom theme: adjust or reset the frame controls in the Style tab. Styling is scoped to the active editor only.
+- Styling looks off with a custom theme: adjust or reset the frame controls in the Style tab. Styling is limited to the active editor and the card editor dialog it sits in.
 
 More in [DOCUMENTATION.md, Troubleshooting](DOCUMENTATION.md#troubleshooting).
 

@@ -14,6 +14,7 @@
 // source (do not hand-edit); the byte-identity test fails if they drift by a byte.
 
 import { HA_FORM, HA_SELECTOR, HA_YAML_EDITOR, HUI_DIALOG_EDIT_CARD } from '../editor/haSelectors.js';
+import { CARD_EDITOR_AREA_SELECTOR, insideCardOwnEditor, nestedInCardOwnEditor } from '../editor/cardOwnEditor.js';
 import { OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR } from '../editor/overlayRoot.js';
 import { companionLayerActive } from './coordinatorRuntime.js';
 
@@ -115,6 +116,26 @@ export const WARNING_HIDE_STYLE_ID = 'nostrodomus-editor-v17-2-learned-style-war
 // icon-only).
 export const WARNING_BADGE_HOST_STYLE_ID = 'nostrodomus-editor-warning-badge-host';
 export const WARNING_BADGE_SHADOW_STYLE_ID = 'nostrodomus-editor-warning-badge-shadow';
+
+// Which alerts are editor warnings. Home Assistant draws its warnings ("Visual editor is not
+// supported", configuration errors, a condition that cannot be shown) in its own editors. An
+// ha-alert inside a custom card's own visual editor is a note the card's author put between its
+// controls, and it is left as the card drew it. Badging it took the note out of the editor and
+// left a 22px icon in its place.
+//
+// The warning walk does not enter a custom card's editor (see deepShadowRootsWithin), so its
+// shadow roots are never seen here. What is left is a card editor that draws without a shadow
+// root: its notes are in the element editor's own tree, under the card editor area, and the
+// sheets leave that area out with `:not(.gui-editor ...)`. This filter is the same rule for the
+// alerts that get the inner badge sheet.
+export function editorWarningAlerts(root) {
+  let alerts = [];
+  try { alerts = Array.from(root?.querySelectorAll?.('ha-alert') || []); } catch { alerts = []; }
+  return alerts.filter((alert) => {
+    try { if (alert?.closest?.(CARD_EDITOR_AREA_SELECTOR)) return false; } catch { /* detached */ }
+    return !insideCardOwnEditor(alert);
+  });
+}
 
 // Active by default. An external legacy companion or the force-dormant flag still keeps
 // this internal layer dormant (companionLayerActive).
@@ -379,12 +400,18 @@ const DIALOG_ROOT_CSS = `
 //             sizing hook this layer can use without !important, or once the editor dialog
 //             ships at this size natively.
 //   Verify:   companion-discovery-path e2e (dialog ≈ 98vw×94vh, panes side-by-side).
+//
+// The height is capped at the window height minus the dialog's top margin. Home Assistant places
+// the dialog that margin (40px) below the top of the window, so 94vh alone ends below the window
+// in windows shorter than about 667px and cuts into the row with Save and Cancel. From 667px up
+// the cap is larger than 94vh and changes nothing.
+export const WA_DIALOG_HEIGHT = 'min(94vh, calc(100vh - var(--dialog-surface-margin-top, 40px)))';
 export const WA_DIALOG_CSS = `
       wa-dialog::part(dialog) {
         width: 98vw !important;
         max-width: 98vw !important;
-        height: 94vh !important;
-        max-height: 94vh !important;
+        height: ${WA_DIALOG_HEIGHT} !important;
+        max-height: ${WA_DIALOG_HEIGHT} !important;
         box-sizing: border-box !important;
       }
 
@@ -634,6 +661,95 @@ export const STACKED_PANES_CSS = `
       }
     `;
 
+// New !important — registry-owned external-rule block:
+//   Owner:    visual editor in the styled card dialog.
+//   Reason:   The frozen DIALOG_ROOT_CSS gives .element-editor a fixed height and
+//             `overflow: visible`, so the glow of the codebox is not cut off. Home Assistant's
+//             own rule lets that pane scroll (overflow: auto). The sheet stays in the dialog
+//             after the code editor is replaced by a visual editor, and a visual editor taller
+//             than the pane then ran out under the Save row with no way to scroll to its lower
+//             controls. Measured on Home Assistant 2026.6 and 2026.11 at 1280x720 with a 1638px
+//             editor: the last control was at 1795px and could not be brought into view.
+//             While the dialog does not show its main code editor this sheet gives the pane
+//             Home Assistant's scrolling back, with a thin scrollbar.
+//   Scope:    the dialog shadow root, only while the dialog-root sheet is there and the main
+//             code editor is not shown (reconcileVisualEditorPane). Removed when the code editor
+//             is shown again.
+//   Removal:  drop when the frozen dialog-root sheet no longer sets the pane's overflow.
+//   Verify:   custom-card-visual-editor e2e, "taller than the dialog".
+export const VISUAL_EDITOR_SCROLL_STYLE_ID = 'nostrodomus-editor-v17-2-learned-style-visual-editor-scroll';
+export const VISUAL_EDITOR_SCROLL_CSS = `
+      .element-editor,
+      .element-editor.ha-scrollbar {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        scrollbar-width: thin !important;
+      }
+    `;
+
+// Glass editor dialog (style.glassDialog, default on). A separate, additive sheet (own id) in
+// the dialog shadow root, built per dialog by buildGlassDialogCss. It makes the surface of the
+// card editor dialog translucent with a blur of what is behind it, and clears the background of
+// the preview pane, so the dashboard shows through, softened.
+//
+// The surface is not styled directly. Home Assistant's ha-dialog paints wa-dialog's surface with
+// `--ha-dialog-surface-background` (falling back to the card background) and gives it
+// `backdrop-filter: var(--ha-dialog-surface-backdrop-filter, none)`. The sheet sets those two
+// custom properties on `ha-dialog`; an outer-tree rule wins over ha-dialog's own `:host` rule,
+// so they need no important flag.
+//
+// A theme that styles its dialogs keeps its look. The same properties are read on the
+// hui-dialog-edit-card host, where only the theme's inherited values can be found (the sheet
+// sets them one level deeper, on ha-dialog), and each line the theme already covers is left out.
+//
+// New !important, registry-owned external-rule block:
+//   Owner:    glass editor dialog (style.glassDialog).
+//   Reason:   Home Assistant's dialog sheet gives `.element-preview` the theme's primary
+//             background color. That sheet is adopted by the same shadow root, and adopted
+//             sheets come after an appended style element, so a normal declaration with the same
+//             selector loses there. An important one wins (the frozen dialog-root sheet overrides
+//             the pane's padding and size the same way, with the same selector). No other sheet
+//             of this layer sets a background on the pane, so their order does not matter.
+//   Scope:    the shadow root of hui-dialog-edit-card; nothing on the dashboard.
+//   Removal:  drop when Home Assistant exposes a custom property for the preview background.
+//   Verify:   companion-glass-dialog e2e (translucent surface, blur, transparent preview; all
+//             three back to the theme's values with the setting off).
+export const GLASS_DIALOG_STYLE_ID = 'nostrodomus-editor-v17-2-learned-style-glass-dialog';
+// How much of the theme's card surface color stays; the rest is transparent.
+export const GLASS_DIALOG_SURFACE_OPACITY_PERCENT = 60;
+export const GLASS_DIALOG_BACKDROP_FILTER = 'blur(18px) saturate(135%)';
+
+// Pure: the glass sheet for one dialog, from the three theme values read on the dialog host.
+//   surfaceBackground      --ha-dialog-surface-background: when the theme sets it, the theme
+//                          owns the surface and the surface line is left out.
+//   surfaceBackdropFilter  --ha-dialog-surface-backdrop-filter: when the theme sets it, the
+//                          blur line is left out.
+//   scrimBackdropFilter    --ha-dialog-scrim-backdrop-filter: a theme that already blurs the
+//                          page behind the dialog gets no second blur on top of it.
+// The preview rule is always there.
+export function buildGlassDialogCss({ surfaceBackground = '', surfaceBackdropFilter = '', scrimBackdropFilter = '' } = {}) {
+  const themed = (value) => String(value ?? '').trim();
+  const lines = [];
+  if (!themed(surfaceBackground)) {
+    lines.push(`--ha-dialog-surface-background: color-mix(in srgb, var(--card-background-color, var(--ha-color-surface-default, #fff)) ${GLASS_DIALOG_SURFACE_OPACITY_PERCENT}%, transparent);`);
+  }
+  if (!themed(surfaceBackdropFilter) && !themed(scrimBackdropFilter).toLowerCase().includes('blur(')) {
+    lines.push(`--ha-dialog-surface-backdrop-filter: ${GLASS_DIALOG_BACKDROP_FILTER};`);
+  }
+  const surfaceRule = lines.length
+    ? `
+      ha-dialog {
+${lines.map((line) => `        ${line}`).join('\n')}
+      }
+`
+    : '';
+  return `${surfaceRule}
+      .element-preview {
+        background: transparent !important;
+      }
+    `;
+}
+
 // Registry-owned external-rule block (opt-in: style.hideEditorWarnings, default off):
 //   Owner:    warning-hide toggle.
 //   Reason:   When the user opts in, fully hide the editor warning/alert family. Narrowed to the
@@ -648,7 +764,7 @@ export const STACKED_PANES_CSS = `
 //             later change replaces this with the grouped per-type warning toggles.
 //   Verify:   `style.hideEditorWarnings` on hides the editor alerts; off (default) shows the badge.
 export const WARNING_HIDE_CSS = `
-      ha-alert {
+      ha-alert:not(.gui-editor ha-alert) {
         display: none !important;
       }
     `;
@@ -663,11 +779,13 @@ export const WARNING_HIDE_CSS = `
 // snapped, and a resizing trigger made the hover hit-area oscillate). Injected into the light-DOM root that
 // contains the <ha-alert>; `:has(> ha-alert)` makes that parent the positioning context. No `!important`
 // (outer-tree element selectors beat the alert's inner :host rules for normal declarations).
+// Every selector leaves out `.gui-editor`, the area that holds the card's own editor: an editor that
+// draws without a shadow root has its notes in this same tree, and they are the card's.
 export const WARNING_BADGE_HOST_CSS = `
-      :has(> ha-alert) {
+      :has(> ha-alert):not(.gui-editor, .gui-editor *) {
         position: relative;
       }
-      ha-alert {
+      ha-alert:not(.gui-editor ha-alert) {
         position: absolute;
         top: 8px;
         left: 8px;
@@ -697,14 +815,14 @@ export const WARNING_BADGE_HOST_CSS = `
          (0,1,1) over base (0,0,1) within this same outer sheet, so it wins reliably -- and works even if
          the SHADOW sheet is not yet paired. The non-hovered dot keeps overflow:hidden (the yellow-bar
          safety net) for the steady state. Stays important-flag-free (wins by outer-tree + specificity). */
-      ha-alert:hover,
-      ha-alert:focus-within {
+      ha-alert:not(.gui-editor ha-alert):hover,
+      ha-alert:not(.gui-editor ha-alert):focus-within {
         overflow: visible;
       }
-      ha-alert ~ ha-alert {
+      ha-alert ~ ha-alert:not(.gui-editor ha-alert) {
         top: 38px;
       }
-      ha-alert ~ ha-alert ~ ha-alert {
+      ha-alert ~ ha-alert ~ ha-alert:not(.gui-editor ha-alert) {
         top: 68px;
       }
     `;
@@ -831,7 +949,9 @@ function nestedEditorRootsForDialog(dialog) {
     try { hosts = Array.from(node.querySelectorAll(OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR) || []); } catch { hosts = []; }
     for (const el of hosts) {
       const sr = el && el.shadowRoot;
-      if (sr && !seen.has(sr)) { seen.add(sr); roots.push(sr); stack.push({ node: sr, depth: depth + 1 }); }
+      if (!sr || seen.has(sr)) continue;
+      if (insideCardOwnEditor(el)) continue; // a code box of a custom card's own editor
+      seen.add(sr); roots.push(sr); stack.push({ node: sr, depth: depth + 1 });
     }
   }
   return roots;
@@ -884,6 +1004,13 @@ export function createScrollbarStyleRuntime(deps = {}) {
     // Re-read on each apply, so a settings-toggle change reconciles the nested hide sheet.
     hideEditorWarnings = () => false,
     replaceNativeAutocomplete = () => true,
+    // "Glass editor dialog" (style.glassDialog). Default on. Re-read on each apply, so a change
+    // of the setting adds or removes the glass sheet.
+    glassDialog = () => true,
+    // Called once when a styled dialog stops showing its main code editor (a visual editor or
+    // another tab took its place). The composition root uses it to give the dialog body its own
+    // overflow back; that was changed for the codebox glow.
+    onMainEditorLeft = () => {},
     // Test seam: the MutationObserver ctor used to re-apply the warning badge when HA rebuilds the
     // alert (live config-validation recreates the ha-alert + drops our sheets on every keystroke).
     MutationObserver: MutationObserverCtor = globalRef?.MutationObserver,
@@ -912,6 +1039,17 @@ export function createScrollbarStyleRuntime(deps = {}) {
   let warningStyleActive = false;
   // ha-alert elements we set the inline --nostrodomus-badge-accent on, so teardown can clear it.
   const badgedAlerts = new Set();
+  // Glass editor dialog: dialogShadowRoot -> { haDialog, css }, one entry per dialog root that
+  // holds the glass sheet. It remembers the sheet text built from the theme, so the computed
+  // style of the dialog host is read once per opening of the dialog and not on every apply.
+  // Home Assistant keeps the hui-dialog-edit-card element (and with it the injected sheets) and
+  // renders a new ha-dialog inside it each time the dialog opens; an entry whose ha-dialog is
+  // no longer the current one is read again, so a theme chosen between two openings is seen.
+  // Entries go when the setting is turned off and on teardown. They are not pruned with the
+  // detached owned roots: a closed dialog that comes back brings its sheet with it, and turning
+  // the setting off in between has to reach that sheet. The dialog element is reused, so the
+  // map stays at one entry per dialog element.
+  const glassDialogSheets = new Map();
 
   function active() {
     if (typeof isActive === 'function') return !!isActive();
@@ -956,6 +1094,68 @@ export function createScrollbarStyleRuntime(deps = {}) {
       if (alert && alert.isConnected === false) badgedAlerts.delete(alert);
     }
     return pruned;
+  }
+
+  // The three theme values the glass sheet depends on, read on the hui-dialog-edit-card host.
+  // The sheet sets its own values on ha-dialog, inside the host's shadow root, so the host only
+  // ever carries what the theme defines. Without getComputedStyle (the headless test runtime) or
+  // on a failed read every value is empty, which is the answer for a theme that defines none.
+  function glassDialogThemeValues(dialogHost) {
+    const values = { surfaceBackground: '', surfaceBackdropFilter: '', scrimBackdropFilter: '' };
+    try {
+      const gcs = globalRef && globalRef.getComputedStyle;
+      if (typeof gcs !== 'function' || !dialogHost) return values;
+      // gcs is getComputedStyle read off the injected global, checked to be a function above.
+      // eslint-disable-next-line no-obj-calls
+      const computed = gcs(dialogHost);
+      const read = (name) => String(computed?.getPropertyValue?.(name) || '').trim();
+      values.surfaceBackground = read('--ha-dialog-surface-background');
+      values.surfaceBackdropFilter = read('--ha-dialog-surface-backdrop-filter');
+      values.scrimBackdropFilter = read('--ha-dialog-scrim-backdrop-filter');
+    } catch { /* detached host: treated as a theme that defines nothing */ }
+    return values;
+  }
+
+  // Glass editor dialog, one dialog root: add the sheet when the setting is on, remove it when
+  // it is off. The steady state (sheet present, same opening of the dialog) costs the one id
+  // lookup of injectOwnedStyle and no style read.
+  function reconcileGlassDialogSheet(dialogRoot, haDialog) {
+    if (!glassDialog()) {
+      glassDialogSheets.delete(dialogRoot);
+      return removeOwnedStyle(dialogRoot, GLASS_DIALOG_STYLE_ID);
+    }
+    let entry = glassDialogSheets.get(dialogRoot);
+    const sameOpening = !!entry && entry.haDialog === haDialog;
+    if (!sameOpening) {
+      entry = { haDialog, css: buildGlassDialogCss(glassDialogThemeValues(dialogRoot.host)) };
+    }
+    if (injectOwnedStyle(dialogRoot, GLASS_DIALOG_STYLE_ID, entry.css, documentRef)) {
+      ownedRoots.add(dialogRoot);
+      glassDialogSheets.set(dialogRoot, entry);
+      return true;
+    }
+    if (sameOpening) return false;
+    // The sheet is still there from an earlier opening of this dialog. Give it the text for the
+    // theme of this opening.
+    glassDialogSheets.set(dialogRoot, entry);
+    try {
+      const sheet = dialogRoot.querySelector(`#${GLASS_DIALOG_STYLE_ID}`);
+      if (sheet && sheet.textContent !== entry.css) { sheet.textContent = entry.css; return true; }
+    } catch { /* detached root */ }
+    return false;
+  }
+
+  // Glass editor dialog, setting off: remove the sheet from every dialog root that holds it.
+  // Runs at the start of applyForEditor, before an editor is required, because the editor the
+  // settings panel passes when the checkbox changes can be gone (the dialog shows its visual
+  // editor, or was closed). Costs nothing once the sheets are gone.
+  function removeGlassDialogSheets() {
+    let removed = false;
+    for (const root of Array.from(glassDialogSheets.keys())) {
+      if (removeOwnedStyle(root, GLASS_DIALOG_STYLE_ID)) removed = true;
+    }
+    glassDialogSheets.clear();
+    return removed;
   }
 
   function applyToRoots({ codeRoot = null, dialogRoot = null, waDialogRoot = null, warningRoots = [], codeRootDialogScoped = true } = {}) {
@@ -1029,6 +1229,13 @@ export function createScrollbarStyleRuntime(deps = {}) {
       ownedRoots.add(dialogRoot);
       applied = true;
     }
+    // Additive: the glass editor dialog (translucent surface, blur, transparent preview pane).
+    // Follows the "Glass editor dialog" setting: with the setting off the sheet is removed. The
+    // ha-dialog element (the host of the wa-dialog root) tells one opening of the dialog from
+    // the next.
+    if (dialogRoot && reconcileGlassDialogSheet(dialogRoot, waDialogRoot?.host || null)) {
+      applied = true;
+    }
     if (waDialogRoot && injectOwnedStyle(waDialogRoot, WA_DIALOG_STYLE_ID, WA_DIALOG_CSS, documentRef)) {
       ownedRoots.add(waDialogRoot);
       applied = true;
@@ -1100,10 +1307,19 @@ export function createScrollbarStyleRuntime(deps = {}) {
   // dialog root (composed walk-up), and the ha-dialog shadow root (for wa-dialog sizing on
   // 2026.6) from whatever editor node the caller passes, then inject. No-op while inactive
   // or when no CodeMirror root resolves.
+  // The main code editor last styled in each card dialog, by dialog shadow root.
+  const dialogMainEditors = new WeakMap();
+
   function applyForEditor(editor) {
-    if (!active() || !editor) return false;
+    if (!active()) return false;
+    // Glass editor dialog turned off: its sheets go even when there is no usable editor.
+    const glassRemoved = glassDialogSheets.size > 0 && !glassDialog() ? removeGlassDialogSheets() : false;
+    if (!editor) return glassRemoved;
+    // A code box inside a custom card's own visual editor: no sheet for it and none for the
+    // dialog on its account. Working in it used to enlarge and restyle the whole dialog.
+    if (insideCardOwnEditor(editor)) return glassRemoved;
     const codeRoot = codeShadowRootForEditor(editor);
-    if (!codeRoot) return false;
+    if (!codeRoot) return glassRemoved;
     const dialog = composedClosestSelector(editor, HUI_DIALOG_EDIT_CARD);
     const dialogRoot = dialog?.shadowRoot || null;
     const waDialogRoot = waDialogShadowRootForDialog(dialog);
@@ -1118,8 +1334,14 @@ export function createScrollbarStyleRuntime(deps = {}) {
     // the main codebox.
     const mainCodebox = !!dialog
       && !!composedClosestSelector(editor, HA_YAML_EDITOR)
-      && !composedClosestSelector(editor, `${HA_FORM}, ${HA_SELECTOR}`);
-    return applyToRoots({ codeRoot, dialogRoot, waDialogRoot, warningRoots, codeRootDialogScoped: mainCodebox });
+      && !composedClosestSelector(editor, `${HA_FORM}, ${HA_SELECTOR}`)
+      && !nestedInCardOwnEditor(editor);
+    // The dialog shows its code editor: the pane must not clip the glow (see reconcileVisualEditorPane).
+    if (dialogRoot && mainCodebox) {
+      dialogMainEditors.set(dialogRoot, editor);
+      removeOwnedStyle(dialogRoot, VISUAL_EDITOR_SCROLL_STYLE_ID);
+    }
+    return applyToRoots({ codeRoot, dialogRoot, waDialogRoot, warningRoots, codeRootDialogScoped: mainCodebox }) || glassRemoved;
   }
 
   // Warning badge/hide: reach HA's editor warnings (ha-alert) across an entire editor surface (a
@@ -1151,7 +1373,11 @@ export function createScrollbarStyleRuntime(deps = {}) {
         // the editor's alert was reached. It is also rebuilt on every keystroke.
         let inPreview = false;
         try { inPreview = !!el.closest?.(PREVIEW_PANE_SELECTOR); } catch { inPreview = false; }
-        if (!inPreview) stack.push({ node: sr, depth: depth + 1 });
+        if (inPreview) continue;
+        // A custom card's own editor is not walked either: its notes are the card's, and a large
+        // editor used up the root budget before Home Assistant's warning was reached.
+        if (insideCardOwnEditor(el)) continue;
+        stack.push({ node: sr, depth: depth + 1 });
       }
     }
     return out;
@@ -1159,7 +1385,7 @@ export function createScrollbarStyleRuntime(deps = {}) {
 
   // Surface-wide warning reconcile. Three states, decided per call:
   //   • hideEditorWarnings on  → hide: `display:none` on the precise <ha-alert> host. The narrowed
-  //     sheet is sprayed into every non-alert-shadow root (inert where there is no ha-alert), which
+  //     sheet is sprayed into every walked root (inert where there is no ha-alert), which
   //     keeps the toggle's reconcile observable and cannot collapse a structural [role="alert"]
   //     container (the "codebox extends down" glitch). Gated solely by the toggle (works regardless
   //     of the companion layer).
@@ -1178,7 +1404,7 @@ export function createScrollbarStyleRuntime(deps = {}) {
     let pendingShadow = false;
     if (injectOwnedStyle(root, WARNING_BADGE_HOST_STYLE_ID, WARNING_BADGE_HOST_CSS, documentRef)) { ownedRoots.add(root); applied = true; }
     try {
-      for (const alert of root.querySelectorAll('ha-alert')) {
+      for (const alert of editorWarningAlerts(root)) {
         const alertShadow = alert.shadowRoot;
         // A freshly HA-rebuilt alert attaches its shadow root in a later microtask/frame — so it can be
         // null right when the watcher fires. The HOST sheet already clamps it (safely clipped now), but
@@ -1246,7 +1472,31 @@ export function createScrollbarStyleRuntime(deps = {}) {
     } catch { /* fake/detached root in tests or a hostile node — degrade to no watcher */ }
   }
 
+  // The editor pane scrolls while the styled dialog does not show its main code editor (a visual
+  // editor, another tab). Runs with every warning reconcile, which the editor probe calls with and
+  // without an editor. Two lookups in the dialog root when nothing changes.
+  function reconcileVisualEditorPane(surfaceEl) {
+    const dialogRoot = surfaceEl?.shadowRoot || null;
+    if (!dialogRoot?.querySelector) return false;
+    if (!active() || !dialogRoot.querySelector(`#${DIALOG_ROOT_STYLE_ID}`)) {
+      return removeOwnedStyle(dialogRoot, VISUAL_EDITOR_SCROLL_STYLE_ID);
+    }
+    const editor = dialogMainEditors.get(dialogRoot) || null;
+    let shown = false;
+    if (editor && editor.isConnected !== false) {
+      try { shown = typeof editor.getClientRects !== 'function' || editor.getClientRects().length > 0; } catch { shown = false; }
+    }
+    if (shown) return removeOwnedStyle(dialogRoot, VISUAL_EDITOR_SCROLL_STYLE_ID);
+    if (injectOwnedStyle(dialogRoot, VISUAL_EDITOR_SCROLL_STYLE_ID, VISUAL_EDITOR_SCROLL_CSS, documentRef)) {
+      ownedRoots.add(dialogRoot);
+      try { onMainEditorLeft(surfaceEl); } catch { /* the hook must not stop the reconcile */ }
+      return true;
+    }
+    return false;
+  }
+
   function applyEditorWarningHide(surfaceEl) {
+    try { reconcileVisualEditorPane(surfaceEl); } catch { /* a root that went away mid-pass */ }
     const hide = !!hideEditorWarnings();
     const layerOn = active();
     // Fully dormant (companion off, toggle off, nothing injected) → skip the walk.
@@ -1276,8 +1526,7 @@ export function createScrollbarStyleRuntime(deps = {}) {
         }
         continue;
       }
-      let hasAlert = false;
-      try { hasAlert = !!root.querySelector?.('ha-alert'); } catch { hasAlert = false; }
+      const hasAlert = editorWarningAlerts(root).length > 0;
       if (hide) {
         // HIDE wins. Spray the narrowed sheet (inert without an ha-alert); drop any badge host sheet.
         removeOwnedStyle(root, WARNING_BADGE_HOST_STYLE_ID);
@@ -1293,7 +1542,7 @@ export function createScrollbarStyleRuntime(deps = {}) {
         ensureWarningReapplyObserver(root, surfaceEl);
         injectedAny = true;
       } else {
-        // Companion off, or no alert in this root: leave nothing of ours behind.
+        // Companion off, or no editor warning in this root: leave nothing of ours behind.
         if (removeOwnedStyle(root, WARNING_HIDE_STYLE_ID)) applied = true;
         if (removeOwnedStyle(root, WARNING_BADGE_HOST_STYLE_ID)) applied = true;
       }
@@ -1314,6 +1563,8 @@ export function createScrollbarStyleRuntime(deps = {}) {
       removeOwnedStyle(root, PREVIEW_FILL_STYLE_ID);
       removeOwnedStyle(root, EDITOR_GUTTER_STYLE_ID);
       removeOwnedStyle(root, STACKED_PANES_STYLE_ID);
+      removeOwnedStyle(root, VISUAL_EDITOR_SCROLL_STYLE_ID);
+      removeOwnedStyle(root, GLASS_DIALOG_STYLE_ID);
       removeOwnedStyle(root, WA_DIALOG_STYLE_ID);
       removeOwnedStyle(root, WARNING_HIDE_STYLE_ID);
       removeOwnedStyle(root, WARNING_BADGE_HOST_STYLE_ID);
@@ -1327,6 +1578,8 @@ export function createScrollbarStyleRuntime(deps = {}) {
       try { obs.disconnect(); } catch { /* already gone */ }
     }
     warningReapplyObservers.clear();
+    // A dialog root that was detached and pruned from ownedRoots can still hold the glass sheet.
+    removeGlassDialogSheets();
     ownedRoots.clear();
     warningStyleActive = false;
   }
@@ -1350,6 +1603,7 @@ export function createScrollbarStyleRuntime(deps = {}) {
     applyForEditor,
     applyToRoots,
     applyEditorWarningHide,
+    reconcileVisualEditorPane,
     ensureWarningReapplyObserver,
     pruneDetachedWarningReapplyObservers,
     warningObserverCount,

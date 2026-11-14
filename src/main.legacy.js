@@ -245,6 +245,14 @@ import { dashboardActionBranchState } from './yaml/runtimeContextAdapter.js';
     // via scheduleCodeboxStyleReapply, so this getter is re-read on each apply.
     hideEditorWarnings: () => state.settings?.style?.hideEditorWarnings === true,
     replaceNativeAutocomplete: () => state.settings?.replaceNativeAutocomplete !== false,
+    // "Glass editor dialog" (style.glassDialog, default true): while true the companion keeps
+    // the glass sheet in the card editor dialog; when false it removes it. Re-read on each
+    // apply; the Style checkbox re-applies the companion layer when it changes.
+    glassDialog: () => state.settings?.style?.glassDialog !== false,
+    // The dialog shows a visual editor again: the dialog body gets back the overflow that was
+    // changed for the codebox glow, so the dialog scrolls the way Home Assistant laid it out.
+    // The style pass sets it again when the code editor returns.
+    onMainEditorLeft: () => { try { cleanupCodeboxSlotUnclip("main-editor-left"); } catch { /* fail-dark */ } },
   });
   // Typing-quiet window + suppression-gap guard. The mark side already exists
   // (editorDispatchRuntime marks the coordinator 'editor-input' channel on

@@ -1,6 +1,6 @@
 # Nostrodomus Documentation
 
-Reference for Nostrodomus, a local-only autocomplete, snippets, and syntax-styling plugin for Home Assistant's code editors. This reference describes version 0.1.278 (beta).
+Reference for Nostrodomus, a local-only autocomplete, snippets, and syntax-styling plugin for Home Assistant's code editors. This reference describes version 0.1.279 (beta).
 
 - Product: Nostrodomus. Channel: beta. License: MIT.
 - Requires: Home Assistant 2026.6.0+, HACS 2.0.0+ (or manual install).
@@ -46,10 +46,11 @@ Two rules shape everything:
 | Automation and script editors in YAML mode | Completion, including modern `action:` steps, and styling. Editor warnings stay as Home Assistant draws them |
 | Developer Tools: the Template editor | Completion and styling. Editor warnings stay as Home Assistant draws them |
 | Composite cards with an embedded secondary editor | The main editor is sized. The embedded editor is left at native size |
+| A custom card's own visual editor | Not changed: controls, notes and layout stay as the card built them, a code box inside it keeps its size, its look and its own suggestions, and the dialog is not enlarged or restyled on its account |
 
 The YAML editors of the Actions and Events tools in Developer Tools are admitted by the same rule as the Template editor. The automated browser tests cover the card-edit dialog, the automation and script editors and the Template editor.
 
-In the card-edit dialog Nostrodomus also enlarges the dialog to most of the window and fits the code editor to the space above the dialog buttons. In a window narrower than 1000 pixels, where Home Assistant stacks the preview under the editor, the dialog scrolls instead.
+In the card-edit dialog Nostrodomus also enlarges the dialog to most of the window and fits the code editor to the space above the dialog buttons, and with the Glass editor dialog setting it makes the dialog translucent. The dialog takes this size and look once its code editor has been shown; a dialog that has only shown the visual editor keeps Home Assistant's own. In a window narrower than 1000 pixels, where Home Assistant stacks the preview under the editor, the dialog scrolls instead.
 
 Before Home Assistant 2026.11 Developer Tools is in the sidebar. Since 2026.11 it is under Settings, named Tools. Both are supported.
 
@@ -207,8 +208,9 @@ Local visual controls. Every color control is a real hue bar with its own enable
 - Scrollbar: enable, color, opacity (default 0.78), saturation.
 - Border and glow: enable, border color, opacity, and saturation, glow color, opacity, and saturation, and glow size (-100 fully inside to +100 fully outside, 0 is off, default -100).
 - Frosted surface: enable, color, opacity (default 0.35), saturation. The surface takes the brightness the text needs: dark under the light-text themes, light under Parchment and Mist. Where that is the opposite of the Home Assistant theme (a light Home Assistant theme with a light-text syntax theme, or a dark one with Parchment or Mist) it is drawn at 0.92 opacity or more, so the page behind it does not wash the text out. In those two cases the surface is drawn even when it is switched off, because the text could not be read without it.
+- Glass editor dialog (`style.glassDialog`, default on). The card editor dialog is translucent and blurs the dashboard behind it, and the card preview has no background of its own, so the dashboard shows through, softened. A Home Assistant theme that sets its own dialog surface or dialog blur keeps it. The blur costs graphics work while the dialog is open; turn the setting off on slow computers. A change applies at once.
 - Syntax theme: enable, theme dropdown (37 themes), opacity, saturation.
-- Hide editor warnings (`style.hideEditorWarnings`, default off). In the card-edit dialog an editor warning (for example "Visual editor is not supported") is drawn as a small badge that shows the message on hover. With this setting on, the warnings are hidden.
+- Hide editor warnings (`style.hideEditorWarnings`, default off). In the card-edit dialog an editor warning from Home Assistant (for example "Visual editor is not supported") is drawn as a small badge that shows the message on hover. With this setting on, those warnings are hidden. A note that a card shows in its own visual editor is not an editor warning: it stays as the card draws it, with the setting on or off.
 - Hide active-line highlight (`style.hideActiveLineHighlight`, default on).
 - Ctrl+Space popup: size (Compact, Comfort, Large), Show details pane (default off), plus Commit keys on `:`, Offer buffer words, and Accept mode (Replace word tail, Insert at cursor).
 
@@ -275,6 +277,7 @@ One integrated frame. It does not stack a second glow.
 | Surface color | `style.codeboxSurfaceHue` | 210 | 0 to 360 |
 | Surface opacity | `style.codeboxSurfaceOpacity` | 0.35 | 0 to 0.85 |
 | Surface saturation | `style.codeboxSurfaceSaturation` | 0.72 | 0 to 2.5 |
+| Glass editor dialog | `style.glassDialog` | on | boolean |
 | Syntax coloring enable | `style.syntaxTintEnabled` | on | |
 | Syntax theme | `style.syntaxTintPreset` | `vscodeDarkPlus` (Classic) | one of 37 (below) |
 | Syntax theme opacity | `style.syntaxThemeOpacity` | 1 | 0.35 to 1 |
@@ -343,7 +346,7 @@ Everything below is local-only and reads live state in your browser. The stable 
 ### Common console commands
 
 ```js
-window.__nostrodomus.version                 // for example "nostrodomus-v0.1.278-docs-and-comments"
+window.__nostrodomus.version                 // for example "nostrodomus-v0.1.279-glass-dialog"
 window.__nostrodomus.health()                // { ok, status, warningCount, checks[], ... }
 window.__nostrodomus.runtimeErrors()         // { ok:true, localOnly:true, stats, items[] }  (last 40)
 window.__nostrodomus.exportDiagnostics()     // full, redacted diagnostics object (redact:true by default)
@@ -398,7 +401,7 @@ Use Diagnostics, Copy full report (or `exportDiagnostics()`), which produces a r
   - `nostrodomus.settings.activeCategory`: the settings tab that was open last.
   - `nostrodomus.frecency`: a small history of the suggestions you accepted most, used to rank suggestions. It is written only while Remember your favorites (General tab, experimental, off by default) is on.
 
-  Nostrodomus also reads a few keys that exist only if you set them yourself in the browser console: `nostrodomusDebug` (`"1"` turns on verbose logging), `nostrodomusPerf` (`"legacy"` records performance telemetry all the time instead of only while it is shown), and `nostrodomusCompanion` (`"dormant"` switches off the dialog sizing, scrollbar styling and warning badge layer; a change made in the same tab takes up to a second to apply). None of these hold personal data.
+  Nostrodomus also reads a few keys that exist only if you set them yourself in the browser console: `nostrodomusDebug` (`"1"` turns on verbose logging), `nostrodomusPerf` (`"legacy"` records performance telemetry all the time instead of only while it is shown), and `nostrodomusCompanion` (`"dormant"` switches off the dialog sizing, glass editor dialog, scrollbar styling and warning badge layer; a change made in the same tab takes up to a second to apply). None of these hold personal data.
 
   If the browser blocks site data, Nostrodomus still starts and runs with the default settings. Changes cannot be saved then, and the header of the settings panel says so.
 
@@ -408,8 +411,8 @@ Security policy and reporting: [SECURITY.md](SECURITY.md).
 
 - Minimum Home Assistant version: 2026.6.0 (per `hacs.json`).
 - Tested Home Assistant versions (automated browser tests, Chromium):
-  - 2026.11.1 with Nostrodomus 0.1.278.
-  - 2026.6.4 with Nostrodomus 0.1.278.
+  - 2026.11.1 with Nostrodomus 0.1.279.
+  - 2026.6.4 with Nostrodomus 0.1.279.
 - Browsers: Chromium-based browsers are supported. Firefox is not supported yet (see [Known issues](docs/KNOWN_ISSUES.md)).
 - HACS: 2.0.0+.
 - Details and the Home Assistant behaviors to know are in [docs/COMPAT.md](docs/COMPAT.md).
@@ -426,6 +429,7 @@ A short list. The full list is in [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). 
 - Browsers: only Chromium-based browsers are covered by the automated browser tests.
 - Syntax coloring: comments are not italic, because colors are applied through highlight ranges, which cannot set a font style. Lines that come into view during fast scrolling can show Home Assistant's colors for a few frames.
 - Composite card editors: the main dialog editor is sized. An embedded secondary editor is left at native size.
+- Custom card visual editors: Nostrodomus does not complete, color or style a code box inside a custom card's own visual editor; that box works the way the card set it up. Switch to the dialog's code editor for Nostrodomus. The rule goes by position (anything inside the editor element a custom card supplies), so it needs no list of cards. The browser tests check it with two test editors built from Home Assistant's own elements (a note, fields, a button, an expandable section and an embedded code box with entity and icon suggestions); third-party cards are not downloaded for the tests.
 - Editor warnings: the warning badge and the Hide editor warnings setting work in the card-edit dialog. In the automation, script, and Developer Tools editors the warnings stay as Home Assistant draws them.
 - Scrollbar: current Chromium-based browsers show their standard thin scrollbar in the color you set, not the custom thumb shape.
 - Settings are per browser. There is no sync between browsers or devices.

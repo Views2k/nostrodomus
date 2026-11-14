@@ -6,6 +6,7 @@
 
 import { formatStyleRangeValue, styleRangeGroupTouchesSyntax } from './settingsRange.js';
 import { uiAccentVarsFromSettings } from './codeboxStyle.js';
+import { insideCardOwnEditor } from '../editor/cardOwnEditor.js';
 
 export function createSettingsInteractionRuntime(ctx = {}) {
   const {
@@ -102,6 +103,7 @@ export function createSettingsInteractionRuntime(ctx = {}) {
     add(frameHost);
     let node = root?.host || editor;
     for (let i = 0; node && i < 6; i += 1) {
+      if (insideCardOwnEditor(node)) break; // the elements of a custom card's own editor are not written on
       add(node);
       node = node.parentElement || node.getRootNode?.()?.host || null;
     }

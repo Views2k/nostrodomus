@@ -3,6 +3,7 @@
 // Cross-module calls go through the shared syntax runtime api object.
 
 import { sourceClassSyntaxContentPainted } from './smartSyntaxStyles.js';
+import { insideCardOwnEditor } from '../editor/cardOwnEditor.js';
 import {
   CM_CONTENT,
   CM_EDITOR,
@@ -147,6 +148,7 @@ function revealInitialSyntaxContent(content, reason = "initial-syntax-reveal") {
 
 function scheduleInitialSyntaxPaintGate(content, reason = "initial-syntax-paint-gate") {
     if (!content?.querySelectorAll || !content?.dataset || !state.enabled) return false;
+    if (insideCardOwnEditor(content)) return false; // a code box of a custom card's own editor
     try { installInitialSyntaxPaintGateStyle(content.getRootNode?.()); } catch { /* cross-origin root */ }
     if (content.dataset.nostrodomusInitialSyntaxReady === "1" || state.initialSyntaxGateContents?.has?.(content)) return false;
     state.initialSyntaxGateContents?.add?.(content);

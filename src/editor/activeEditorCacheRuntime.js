@@ -5,6 +5,8 @@
 // are injected so it stays free of circular imports with the syntax/style
 // runtimes.
 
+import { insideCardOwnEditor } from './cardOwnEditor.js';
+
 export function createActiveEditorCacheRuntime(ctx = {}) {
   const {
     W = globalThis.window,
@@ -83,6 +85,8 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
   function suppressNativeAutocompleteForEditor(editor, reason = 'active-editor') {
     const host = haCodeEditorHostForEditor(editor);
     if (!host) return false;
+    // A code box in a custom card's own editor keeps the suggestions the card turned on for it.
+    if (insideCardOwnEditor(host)) return false;
     if (!replaceNativeAutocompleteEnabled()) {
       restoreNativeAutocomplete('setting-disabled');
       return false;
@@ -327,6 +331,9 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
 
   function visibleStyleEditorCandidate(editor) {
     if (!editor?.querySelector) return false;
+    // A code box that a custom card embeds in its own visual editor is that card's, whatever its
+    // size and whether or not it is a form field (see cardOwnEditor.js). Asked before measuring.
+    if (insideCardOwnEditor(editor)) return false;
     if (!editor.querySelector(".cm-scroller") || !editor.querySelector(".cm-content")) return false;
     const rect = editor.getBoundingClientRect?.();
     // The 200x80 minimum separates the codebox from small embedded editors at discovery. The
@@ -350,6 +357,7 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
       styleEditorFromNode(source?.cmContent) ||
       styleEditorFromNode(source?.codeEditor);
     if (!editor?.querySelector) return null;
+    if (insideCardOwnEditor(editor)) return null;
     const scroller = source?.cmScroller || editor.querySelector?.(".cm-scroller");
     const content = source?.cmContent || editor.querySelector?.(".cm-content");
     if (!scroller || !content) return null;

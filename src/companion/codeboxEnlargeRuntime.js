@@ -19,6 +19,7 @@
 // flag (companionLayerActive).
 
 import { companionLayerActive } from './coordinatorRuntime.js';
+import { insideCardOwnEditor, nestedInCardOwnEditor } from '../editor/cardOwnEditor.js';
 import { OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR } from '../editor/overlayRoot.js';
 import { CARD_DIALOG_EDITOR_PANE, CARD_DIALOG_STACKED_MEDIA, PANEL_ROW_EDITOR_HOST } from '../editor/haSelectors.js';
 import { HA_DIALOG, HA_DIALOG_FOOTER, HA_FORM, HA_SELECTOR, HA_YAML_EDITOR, HUI_CARD_ELEMENT_EDITOR, HUI_DIALOG_EDIT_CARD, OPTION_TAB_CONTAINERS, OPTION_TABS, WA_DIALOG } from '../editor/haSelectors.js';
@@ -532,7 +533,9 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     // nested in ha-form) would otherwise inherit the 94vh heights and blow off-screen.
     // Registry-only, layout-free -- a belt against a discovery mis-selection.
     const isMainCodebox = !!composedClosestSelector(editor, HA_YAML_EDITOR)
-      && !composedClosestSelector(editor, `${HA_FORM}, ${HA_SELECTOR}`);
+      && !composedClosestSelector(editor, `${HA_FORM}, ${HA_SELECTOR}`)
+      && !insideCardOwnEditor(editor)
+      && !nestedInCardOwnEditor(editor);
     if (!isMainCodebox) return { embedded: true };
 
     watch.sized = { wrapper, cmEditor, cmScroller };

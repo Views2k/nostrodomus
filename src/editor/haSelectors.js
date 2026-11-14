@@ -185,6 +185,14 @@ export const HA_DIALOG_BODY_SCROLLBAR = "div.body.ha-scrollbar";
 
 /** The pane of the card dialog that holds the editor (the preview pane is its sibling). */
 export const CARD_DIALOG_EDITOR_PANE = ".element-editor";
+/** Home Assistant's element editors (hui-card-element-editor, hui-row-element-editor and the like): the host of a card's YAML editor or of its visual editor. Breaks: telling a custom card's own editor from Home Assistant's; the editor-warning badge. */
+export const ELEMENT_EDITOR_HOST = /^hui-(?:[a-z0-9]+-)*element-editor$/;
+/** The area inside an element editor that holds the editor element a card supplies. Breaks: a custom card's visual editor is treated like any other part of the dialog again. */
+export const ELEMENT_EDITOR_CARD_AREA = ".gui-editor";
+/** Name prefix of Home Assistant's own dashboard elements, its visual editors included. Breaks: the same rule. */
+export const HUI_ELEMENT_PREFIX = "hui-";
+/** What Home Assistant itself puts in the card editor area besides the editor element: the Config, Visibility and Layout tab row and the loading placeholder. Breaks: a click on those counts as a click in a custom card's editor (the suggestion list closes, nothing else). */
+export const ELEMENT_EDITOR_OWN_CHILDREN = Object.freeze(["ha-tab-group", "ha-fade-in", "ha-spinner", "ha-circular-progress"]);
 /**
  * Window widths at which the card dialog stacks the preview under the editor instead of beside it
  * (Home Assistant's own breakpoint). In that layout the dialog body has to scroll, so the rules

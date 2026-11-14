@@ -20,6 +20,7 @@ import {
   WARNING_BADGE_HOST_CSS,
   WARNING_BADGE_SHADOW_CSS,
   badgeAccentFromBorderColor,
+  editorWarningAlerts,
 } from '../../src/companion/scrollbarStyleRuntime.js';
 
 // A fake shadow/light root. `alerts` is what querySelector('ha-alert')/querySelectorAll('ha-alert')
@@ -177,8 +178,8 @@ test('SAFETY NET + hover escape: the dot clips at rest, but the HOST sheet itsel
   // `:host{overflow:visible}`) BEFORE specificity — so the flyout escape must NOT rely on the SHADOW
   // sheet. It lives in the HOST (outer) sheet as a :hover/:focus-within rule, which wins reliably and
   // works even when the SHADOW sheet is not (yet) paired.
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert\s*\{[^}]*overflow:\s*hidden/i, 'HOST clips the alert box to the dot at rest');
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:hover[\s\S]*?overflow:\s*visible/i, 'HOST sheet un-clips on hover/focus so the flyout escapes regardless of SHADOW pairing');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*overflow:\s*hidden/i, 'HOST clips the alert box to the dot at rest');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\):hover[\s\S]*?overflow:\s*visible/i, 'HOST sheet un-clips on hover/focus so the flyout escapes regardless of SHADOW pairing');
   assert.match(WARNING_BADGE_SHADOW_CSS, /:host\s*\{[^}]*overflow:\s*visible/i, 'SHADOW :host overflow:visible is a belt-and-suspenders inner-tree hint (cannot override the outer host overflow alone)');
 });
 
@@ -231,31 +232,31 @@ test('GLITCH GUARD: the hide sheet no longer carries the container-collapsing se
   assert.doesNotMatch(WARNING_HIDE_CSS, /\[role="alert"\]/, 'must not match the broad [role="alert"] container');
   assert.doesNotMatch(WARNING_HIDE_CSS, /issue-type/, 'must not match the structural .issue-type container');
   assert.doesNotMatch(WARNING_HIDE_CSS, /height:\s*0|max-height:\s*0|overflow:\s*hidden/i, 'must not force the collapse props that flatten a container');
-  assert.match(WARNING_HIDE_CSS, /ha-alert\s*\{[^}]*display:\s*none/i, 'hides the precise ha-alert host with display:none');
+  assert.match(WARNING_HIDE_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*display:\s*none/i, 'hides the precise ha-alert host with display:none');
 });
 
 test('GLITCH GUARD: the badge takes ha-alert OUT of flow (position:absolute) so it cannot reflow the editor', () => {
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert\s*\{[^}]*position:\s*absolute/i, 'the ha-alert badge is absolutely positioned (out of normal flow)');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*position:\s*absolute/i, 'the ha-alert badge is absolutely positioned (out of normal flow)');
   assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /!important/, 'the badge adds no !important (relies on outer-tree + :host specificity)');
 });
 
 // --- v0.1.165 native-dot redesign (small, border-color accent, smooth deterministic flyout) ---
 
 test('PLACEMENT: the badge anchors TOP-LEFT (left, not right) so it clears HA top-right toolbar', () => {
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert\s*\{[^}]*left:\s*8px/i, 'badge is left-anchored (top-left)');
-  assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /ha-alert\s*\{[^}]*right:\s*\d/i, 'badge is no longer right-anchored over the toolbar');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*left:\s*8px/i, 'badge is left-anchored (top-left)');
+  assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*right:\s*\d/i, 'badge is no longer right-anchored over the toolbar');
 });
 
 test('SMALL + NATIVE: the badge is a small (22px) icon at top-left, NOT a 34px chip, NOT orange', () => {
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert\s*\{[^}]*width:\s*22px/i, 'icon footprint is small (22px)');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*width:\s*22px/i, 'icon footprint is small (22px)');
   assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /--warning-color|#ffa726|--error-color|--info-color|--success-color/i, 'no orange/severity chip backgrounds anymore');
 });
 
 test('NO CIRCLE (v0.1.175): the chrome around the caution triangle is removed — transparent background, no border ring, no glow', () => {
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert\s*\{[^}]*background:\s*transparent/i, 'no surface behind the icon');
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert\s*\{[^}]*border:\s*0/i, 'no accent ring around the icon');
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert\s*\{[^}]*box-shadow:\s*none/i, 'no glow ring');
-  assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /ha-alert\s*\{[^}]*border-radius:\s*50%/i, 'no circle');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*background:\s*transparent/i, 'no surface behind the icon');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*border:\s*0/i, 'no accent ring around the icon');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*box-shadow:\s*none/i, 'no glow ring');
+  assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*border-radius:\s*50%/i, 'no circle');
 });
 
 test('ICON COLOR: the bare caution-triangle icon still uses --nostrodomus-badge-accent (the live codebox border color), with a cyan fallback', () => {
@@ -315,3 +316,143 @@ test('the card preview is left out of the warning walk; the editor alert is reac
   assert.equal(previewAlertShadows.filter((root) => root._styles.length > 0).length, 0, 'no preview alert is restyled');
   assert.equal(previewReads, 0, 'the preview is not read');
 });
+
+// A custom card's visual editor (Bubble Card and many others) puts its own notes between its
+// controls as ha-alert elements. Those are part of the card's editor, not editor warnings.
+// Measured on Home Assistant 2026.11 before this rule: the note of a custom card editor was
+// 22px by 22px and sat outside the editor.
+//
+// These fakes carry the positions the rule reads: the root an element is in, its parent chain
+// and the card editor area (.gui-editor) of the element editor.
+function placed(localName, { root, parent = null, classes = [], ...rest } = {}) {
+  return {
+    localName,
+    parentElement: parent,
+    classes,
+    getRootNode: () => root,
+    closest(selector) {
+      if (selector !== '.gui-editor') return null;
+      for (let n = this; n; n = n.parentElement) if ((n.classes || []).includes('gui-editor')) return n;
+      return null;
+    },
+    ...rest,
+  };
+}
+function rootOf(hostElement, options) {
+  const root = makeRoot(hostElement.localName, options);
+  root.host = hostElement;
+  hostElement.shadowRoot = root;
+  return root;
+}
+
+// dialog > element editor > [ .gui-editor > the card's editor (own shadow root, with a note) ] + Home Assistant's warning
+function makeCardEditorSurface({ cardEditorName = 'my-card-editor' } = {}) {
+  const dialogHost = placed('hui-dialog-edit-card', { root: {} });
+  const elementEditorHost = placed('hui-card-element-editor', { root: null });
+  const cardEditorHost = placed(cardEditorName, { root: null });
+  const note = placed('ha-alert', { root: null, style: { setProperty() { note.accentSet = true; }, removeProperty() {} } });
+  const warning = placed('ha-alert', { root: null, style: { setProperty() {}, removeProperty() {} } });
+
+  const noteShadow = rootOf(note);
+  const warningShadow = rootOf(warning);
+  const cardEditorRoot = rootOf(cardEditorHost, { childHosts: [note], alerts: [note] });
+  const elementEditorRoot = rootOf(elementEditorHost, { childHosts: [cardEditorHost, warning], alerts: [warning] });
+  const dialogRoot = rootOf(dialogHost, { childHosts: [elementEditorHost] });
+
+  const area = placed('div', { root: elementEditorRoot, classes: ['gui-editor'] });
+  cardEditorHost.parentElement = area;
+  cardEditorHost.getRootNode = () => elementEditorRoot;
+  note.getRootNode = () => cardEditorRoot;
+  warning.getRootNode = () => elementEditorRoot;
+  elementEditorHost.getRootNode = () => dialogRoot;
+  return { surface: dialogHost, dialogRoot, elementEditorRoot, cardEditorRoot, note, noteShadow, warningShadow };
+}
+
+test('a note in a card\'s own visual editor is not badged; the editor warning next to it is', () => {
+  const { surface, cardEditorRoot, note, noteShadow, elementEditorRoot, warningShadow } = makeCardEditorSurface();
+  const rt = createScrollbarStyleRuntime({ documentRef: fakeDoc, isActive: () => true, hideEditorWarnings: () => false });
+  rt.applyEditorWarningHide(surface);
+  assert.equal(cardEditorRoot._styles.length, 0, 'nothing is injected into the card editor root');
+  assert.equal(noteShadow._styles.length, 0, 'nothing is injected into the note');
+  assert.notEqual(note.accentSet, true, 'no accent is written on the note');
+  assert.ok(hasStyle(elementEditorRoot, 'nostrodomus-editor-warning-badge-host'), 'the editor warning is still badged');
+  assert.ok(hasStyle(warningShadow, 'nostrodomus-editor-warning-badge-shadow'), 'the editor warning has its badge internals');
+});
+
+test('"Hide editor warnings" hides the editor warning and leaves the card\'s own note', () => {
+  const { surface, cardEditorRoot, noteShadow, elementEditorRoot, dialogRoot } = makeCardEditorSurface();
+  const rt = createScrollbarStyleRuntime({ documentRef: fakeDoc, isActive: () => true, hideEditorWarnings: () => true });
+  rt.applyEditorWarningHide(surface);
+  assert.ok(hasHide(elementEditorRoot), 'the element editor root gets the hide sheet');
+  assert.ok(hasHide(dialogRoot), 'and the dialog root');
+  assert.ok(!hasHide(cardEditorRoot), 'the card editor root does not');
+  assert.equal(noteShadow._styles.length, 0, 'nothing is injected into the note');
+});
+
+// Home Assistant draws warnings in its own visual editors too (a condition that cannot be shown,
+// a form error). Those are handled as before: the rule only leaves out a custom card's editor.
+test('a warning inside one of Home Assistant\'s own visual editors is still badged and hidden', () => {
+  for (const hide of [false, true]) {
+    const { surface, cardEditorRoot, noteShadow } = makeCardEditorSurface({ cardEditorName: 'hui-conditional-card-editor' });
+    const rt = createScrollbarStyleRuntime({ documentRef: fakeDoc, isActive: () => true, hideEditorWarnings: () => hide });
+    rt.applyEditorWarningHide(surface);
+    if (hide) {
+      assert.ok(hasHide(cardEditorRoot), 'hidden with the setting on');
+    } else {
+      assert.ok(hasStyle(cardEditorRoot, 'nostrodomus-editor-warning-badge-host'), 'badged in its container');
+      assert.ok(hasStyle(noteShadow, 'nostrodomus-editor-warning-badge-shadow'), 'with the badge internals');
+    }
+  }
+});
+
+// A card editor that draws without a shadow root: its note is in the element editor's own tree,
+// under the card editor area, in the same root as Home Assistant's warning.
+test('a card editor without a shadow root: its note is left alone, the warning in the same root is badged', () => {
+  const dialogHost = placed('hui-dialog-edit-card', { root: {} });
+  const elementEditorHost = placed('hui-card-element-editor', { root: null });
+  const note = placed('ha-alert', { root: null, style: { setProperty() { note.accentSet = true; }, removeProperty() {} } });
+  const warning = placed('ha-alert', { root: null, style: { setProperty() { warning.accentSet = true; }, removeProperty() {} } });
+  const noteShadow = rootOf(note);
+  const warningShadow = rootOf(warning);
+  const elementEditorRoot = rootOf(elementEditorHost, { childHosts: [note, warning], alerts: [note, warning] });
+  const dialogRoot = rootOf(dialogHost, { childHosts: [elementEditorHost] });
+  const area = placed('div', { root: elementEditorRoot, classes: ['gui-editor'] });
+  const cardEditor = placed('my-card-editor', { root: elementEditorRoot, parent: area });
+  note.parentElement = cardEditor;
+  note.getRootNode = () => elementEditorRoot;
+  warning.getRootNode = () => elementEditorRoot;
+  elementEditorHost.getRootNode = () => dialogRoot;
+
+  assert.deepEqual(editorWarningAlerts(elementEditorRoot), [warning], 'only the warning is an editor warning');
+  const rt = createScrollbarStyleRuntime({ documentRef: fakeDoc, isActive: () => true, hideEditorWarnings: () => false });
+  rt.applyEditorWarningHide(dialogHost);
+  assert.ok(hasStyle(elementEditorRoot, 'nostrodomus-editor-warning-badge-host'), 'the root is badged for the warning');
+  assert.ok(hasStyle(warningShadow, 'nostrodomus-editor-warning-badge-shadow'), 'the warning has its badge internals');
+  assert.equal(noteShadow._styles.length, 0, 'nothing is injected into the note');
+  assert.notEqual(note.accentSet, true, 'no accent is written on the note');
+
+  // The badge and hide sheets are in that shared tree, so every selector of every rule leaves
+  // the card editor area out.
+  const selectors = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '').split('}')
+    .map((rule) => rule.split('{')[0].trim()).filter(Boolean)
+    .flatMap((list) => list.split(',').map((s) => s.trim()).filter((s) => !/^\.gui-editor/.test(s) && !/\*\)$/.test(s)));
+  for (const selector of [...selectors(WARNING_BADGE_HOST_CSS), ...selectors(WARNING_HIDE_CSS)]) {
+    assert.match(selector, /:not\(\.gui-editor/, `"${selector}" leaves out the card editor area`);
+  }
+});
+
+// With the setting on, the companion apply for the main editor and the warning reconcile agree
+// about which roots hold the hide sheet, so a pass does not add a sheet that the other removes.
+test('"Hide editor warnings": the nested roots of the companion apply keep their sheet through the reconcile', () => {
+  const { surface, elementEditorRoot } = makeSurfaceForHide();
+  const rt = createScrollbarStyleRuntime({ documentRef: fakeDoc, isActive: () => true, hideEditorWarnings: () => true });
+  rt.applyEditorWarningHide(surface);
+  const before = elementEditorRoot._styles.length;
+  rt.applyEditorWarningHide(surface);
+  assert.equal(elementEditorRoot._styles.length, before, 'a second reconcile changes nothing');
+  assert.ok(hasHide(elementEditorRoot));
+});
+function makeSurfaceForHide() {
+  const { surface, rootB } = makeSurface();
+  return { surface, elementEditorRoot: rootB };
+}
