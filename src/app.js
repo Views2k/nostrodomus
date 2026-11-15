@@ -700,6 +700,12 @@ import { dashboardActionBranchState } from './yaml/runtimeContextAdapter.js';
     recordRuntimeError,
     recordRuntimeErrorOnce,
     logIndexed: detail => logDebug("indexed", detail),
+    // The names of an icon set arrive in the background. An open list of icons is refreshed so it
+    // has them. requestCompletionLiveUpdate is destructured further down; the names never arrive
+    // before that.
+    onIconSetsChanged: () => {
+      if (isOpen() && state.context?.valueKind === "icon") requestCompletionLiveUpdate("icon-sets");
+    },
   });
 
   const providerDelegates = createProviderRuntimeDelegates(() => providerRuntime);

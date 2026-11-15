@@ -1,6 +1,6 @@
 # Nostrodomus Documentation
 
-Reference for Nostrodomus, a local-only autocomplete, snippets, and syntax-styling plugin for Home Assistant's code editors. This reference describes version 0.1.281 (beta).
+Reference for Nostrodomus, a local-only autocomplete, snippets, and syntax-styling plugin for Home Assistant's code editors. This reference describes version 0.1.282 (beta).
 
 - Product: Nostrodomus. Channel: beta. License: MIT.
 - Requires: Home Assistant 2026.6.0+. Installed through the Marketplace built into Home Assistant 2026.11 and later, HACS 2.0.0+ on earlier versions, or by hand.
@@ -33,7 +33,7 @@ Nostrodomus attaches to Home Assistant's built-in CodeMirror editors. As you typ
 
 Two rules shape everything:
 
-- Live from your instance, or bundled, never the network. Entities, services, service-field schemas, themes, icons and your installed custom cards are read from the running `hass` object in your browser. Common community cards and Jinja and YAML vocabulary come from a catalog bundled inside the plugin. There are no network calls.
+- Live from your instance, or bundled, never the network. Entities, services, service-field schemas, themes and your installed custom cards are read from the running `hass` object in your browser, and icon names from the icon sets installed in Home Assistant. Common community cards and Jinja and YAML vocabulary come from a catalog bundled inside the plugin. There are no network calls.
 - Scoped to the active editor. All styling applies only to the editor you are working in and, in the card editor, its dialog, marked with internal data attributes. It never touches the rest of your dashboard or your Home Assistant theme.
 
 ## Supported editors and surfaces
@@ -81,6 +81,15 @@ Home Assistant loads custom dashboard resources when a dashboard that you create
 - Each row shows the suggestion and its kind (Entity, Service, Key, Snippet, and so on). The header shows the language the list was built for and the gear that opens Settings.
 - An optional details pane (off by default) shows the highlighted suggestion with its source and, where there is one, its description. The Context tab of the settings panel always shows the selected suggestion and its source.
 - The size buttons under Ctrl+Space popup in the Style tab (Compact, Comfort, Large) control density. Suggestion count is the separate Maximum suggestions setting.
+
+### Icons
+- `icon:` values and keys that end in `_icon` complete with 39 common Material Design icons and the icons of every icon set installed in Home Assistant that lists its icons for Home Assistant's icon picker, such as Material Symbols (`m3o:`, `m3of:`, `m3r:`, `m3rf:`, `m3s:`, `m3sf:`). A set installed while the page is open is read the next time icons are suggested.
+- The typed text matches the whole name (`m3o:li`) or the part after the prefix (`light`). Names that start with it come first, then names with a word that starts with it (`add-home` for `home`). Among equal matches the common Material Design icons come first.
+- Each row shows the icon, drawn by Home Assistant's own icon element.
+- A value can be bare, in single quotes or in double quotes. After an opening quote the list stays open, and the accepted icon goes inside the quotes. An existing value is replaced up to its closing quote.
+- In a template, a string that starts with `mdi:` or with the prefix of an installed icon set gets the icon list, for example `{{ 'm3o:light' if is_state('light.desk', 'on') else 'm3o:light-off' }}`.
+- In a snippet, pressing Tab to reach a placeholder that holds an icon (`icon: ${2:mdi:home}`) opens the icon list.
+- The Diagnostics tab shows the number of icon sets and their icons.
 
 ## Keyboard shortcuts
 
@@ -134,7 +143,7 @@ Nostrodomus asks each provider that can handle the cursor position for candidate
 | Snippets (Context snippets) | Multi-line building blocks with tab-through placeholders | Bundled and validated |
 | Lovelace context (Lovelace context rows) | Focused rows for the active YAML path, for example action, trigger, condition or card child keys that belong where your cursor is | The document you are editing |
 | HACS catalog (HACS catalog provider) | Common community `custom:` card types and their usual keys | Bundled catalog |
-| Home Assistant runtime (Home Assistant runtime values) | Entity ids, services, service-field schemas, themes, icons, your installed custom cards. Area, device, floor and label ids with the experimental option for them | Live from your running `hass` |
+| Home Assistant runtime (Home Assistant runtime values) | Entity ids, services, service-field schemas, themes, icons (common Material Design icons and the icons of installed icon sets such as Material Symbols), your installed custom cards. Area, device, floor and label ids with the experimental option for them | Live from your running `hass` |
 | Document words (Word fallback) | Words already present in the current buffer (a fallback when other providers are thin) | The document you are editing |
 
 Providers added through `window.__nostrodomus.registerProvider()` are asked after the built-in ones and get their own toggle.
@@ -161,7 +170,7 @@ Snippets are multi-line templates with tab-through placeholders. Placeholder syn
 - `$0` or `${0}`: the explicit final cursor position.
 - Repeated indexes (for example two `${1}`) are mirrors: text you type in one fills all of them.
 
-Navigate with `Tab` and `Shift+Tab`, and press `Esc` to leave the session. Categories cover dashboard cards, tap and hold actions, triggers, conditions, action sequences, targets, and `card_mod` styling. Completion mode (General tab) decides how snippets are mixed in: Both (the default) lists keys and snippets, Snippets lists only snippets, and Keys leaves out the snippet rows of the static library while the context snippets stay in the list.
+Navigate with `Tab` and `Shift+Tab`, and press `Esc` to leave the session. When `Tab` reaches a stop that holds an icon (`icon: ${2:mdi:home}`), the icon list opens; accepting an icon replaces the text of the stop and keeps it selected. Categories cover dashboard cards, tap and hold actions, triggers, conditions, action sequences, targets, and `card_mod` styling. Completion mode (General tab) decides how snippets are mixed in: Both (the default) lists keys and snippets, Snippets lists only snippets, and Keys leaves out the snippet rows of the static library while the context snippets stay in the list.
 
 ## Settings reference
 
@@ -346,7 +355,7 @@ Everything below is local-only and reads live state in your browser. The stable 
 ### Common console commands
 
 ```js
-window.__nostrodomus.version                 // for example "nostrodomus-v0.1.281-cleanup"
+window.__nostrodomus.version                 // for example "nostrodomus-v0.1.282-icon-sets"
 window.__nostrodomus.health()                // { ok, status, warningCount, checks[], ... }
 window.__nostrodomus.runtimeErrors()         // { ok:true, localOnly:true, stats, items[] }  (last 40)
 window.__nostrodomus.exportDiagnostics()     // full, redacted diagnostics object (redact:true by default)
@@ -393,6 +402,7 @@ Use Diagnostics, Copy full report (or `exportDiagnostics()`), which produces a r
 ## Privacy, security, and storage
 
 - Local-only, no network. The shipped bundle contains no `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, telemetry, or remote-code path, verified by the build's gate in `src` and in the built `dist`.
+- Icon previews in the suggestion list are drawn by Home Assistant's `ha-icon` element, which loads each icon from your Home Assistant the same way the icon picker does. The icon names come from the icon sets installed in Home Assistant, in the browser.
 - Safe rendering. No `innerHTML`, no `eval` or `new Function`. DOM is built with `textContent` and `createElement`.
 - No arbitrary user CSS injection. Styling is scoped to the active editor and, in the card editor, its dialog.
 - Diagnostics are redacted by default and never leave your browser. Capability snapshots are coarse (`privacyLevel: "coarse-browser-capability-snapshot"`).
@@ -411,8 +421,8 @@ Security policy and reporting: [SECURITY.md](SECURITY.md).
 
 - Minimum Home Assistant version: 2026.6.0 (per `hacs.json`).
 - Tested Home Assistant versions (automated browser tests, Chromium):
-  - 2026.11.1 with Nostrodomus 0.1.281.
-  - 2026.6.4 with Nostrodomus 0.1.281.
+  - 2026.11.1 with Nostrodomus 0.1.282.
+  - 2026.6.4 with Nostrodomus 0.1.282.
 - Browsers: Chromium-based browsers are supported. Firefox is not supported yet (see [Known issues](docs/KNOWN_ISSUES.md)).
 - Installers: the Marketplace built into Home Assistant 2026.11 and later, or HACS 2.0.0+ on earlier versions. Both download the file `nostrodomus.js` attached to the GitHub release (see [docs/HACS_INSTALL.md](docs/HACS_INSTALL.md)).
 - Details and the Home Assistant behaviors to know are in [docs/COMPAT.md](docs/COMPAT.md).

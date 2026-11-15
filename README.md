@@ -46,6 +46,9 @@ Suggestions follow your cursor. Nostrodomus reads the surrounding YAML to know w
 
 The list knows which language the cursor is in. Here it is inside a `card_mod` style block, between two Jinja blocks: typing `overflow` lists the CSS property, its common values and the other properties that match, and the header shows the language the list was built for.
 
+### Icon completion
+`icon:` values, and keys that end in `_icon`, complete with common Material Design icons and the icons of the icon sets installed in your Home Assistant, such as Material Symbols (`m3o:`, `m3r:`, `m3s:` and their filled variants). Each suggestion shows the icon. Type the full name (`m3o:light`) or only the part after the prefix (`light`) to see that icon in every set. A value can be bare, in single or double quotes, or inside a template string (`{{ 'm3o:light' if is_state('light.desk', 'on') else 'm3o:light-off' }}`). In a snippet, pressing Tab to reach an icon placeholder opens the icon list.
+
 ### Instance-aware card completion
 `type:` completion uses both Home Assistant's live registry and a catalog of common Lovelace and HACS cards (mini-graph, ApexCharts, Mushroom, button-card, and others). `custom:` completions show up for cards you already have installed and for ones you have not installed yet, each with its readable name.
 

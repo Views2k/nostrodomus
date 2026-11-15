@@ -176,8 +176,36 @@ export function createCompletionRuntime(deps = {}) {
     });
   }
 
+  // A placeholder that holds an icon (`icon: ${2:mdi:home}`) offers the icons, those of the
+  // installed icon sets included, the way a placeholder with choices offers its choices:
+  // accepting one replaces the placeholder text and keeps it selected for Tab. Typing over the
+  // placeholder narrows the list as usual.
+  function snippetIconRows(session) {
+    const current = session?.placeholders?.[session.index];
+    if (!current || typeof detectContext !== 'function' || typeof scoreItems !== 'function') return [];
+    try {
+      const doc = getDoc();
+      const start = Number(session.from || 0) + Number(current.start || 0);
+      const ctx = detectContext(doc, start, 'explicit');
+      if (ctx?.lang !== 'yaml' || ctx.valueKind !== 'icon') return [];
+      ctx.explicitSession = true;
+      ctx.documentText = doc;
+      ctx.documentWordToken = documentIdentityToken(doc);
+      return scoreItems(ctx)
+        .filter(item => item?.type === 'icon')
+        .map(item => Object.freeze({
+          ...item,
+          meta: Object.freeze({ ...(item.meta || {}), snippetChoice: true, placeholderIndex: current.index }),
+        }));
+    } catch (err) {
+      recordRuntimeErrorOnce?.('completion:snippet-icon-rows', err, { phase: 'snippetIconRows' });
+      return [];
+    }
+  }
+
   function showSnippetChoicePopup() {
-    const rows = currentSnippetChoiceRows(state.snippetSession);
+    const choices = currentSnippetChoiceRows(state.snippetSession);
+    const rows = choices.length ? choices : snippetIconRows(state.snippetSession);
     if (!rows.length) return false;
     state.context = snippetChoiceContext(rows);
     state.items = rows;

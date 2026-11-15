@@ -12,6 +12,7 @@ import {
 } from './yamlScanner.js';
 import { directYamlKey, stripYamlComment, yamlCurrentKey } from './plainYamlKey.js';
 import { getProviderSurfaceByCardType } from '../providers/hacsProviderCatalog.js';
+import { BUILT_IN_ICON_PREFIXES } from '../providers/iconSetCatalog.js';
 import { blockScalarContextAt, classifyJinjaCallArg } from './yamlCompletionContext.js';
 import { lineNumberAt, recentLinesBeforeCursor } from './recentLines.js';
 
@@ -59,6 +60,42 @@ function yamlValuePrefixLooksLikeEntityId(value = '', runtimeData = null) {
   const match = /^([a-z_][a-z0-9_]*)\.[A-Za-z0-9_]*$/.exec(token);
   if (!match) return false;
   return runtimeEntityDomainSet(runtimeData).has(match[1]);
+}
+
+// The text of the template string the cursor is in (`{{ 'm3o:li|`), or null outside a string. It
+// reads from the last {{ or {% before the cursor; a string does not span lines.
+function templateStringBeforeCursor(recent) {
+  const text = String(recent || '');
+  const open = Math.max(text.lastIndexOf('{{'), text.lastIndexOf('{%'));
+  if (open < 0) return null;
+  let quote = '';
+  let start = -1;
+  for (let i = open + 2; i < text.length; i += 1) {
+    const ch = text[i];
+    if (quote) {
+      if (ch === '\\') i += 1;
+      else if (ch === quote) quote = '';
+    } else if (ch === "'" || ch === '"') {
+      quote = ch;
+      start = i + 1;
+    }
+  }
+  if (!quote) return null;
+  const literal = text.slice(start);
+  return literal.includes('\n') ? null : literal;
+}
+
+const ICON_NAME_START_RX = /^([a-z0-9][a-z0-9_-]*):[a-z0-9_.-]*$/i;
+
+// Whether `text` starts like an icon name: the prefix of mdi or of an installed icon set, then a
+// colon.
+function looksLikeIconName(text, runtimeData = null) {
+  const match = ICON_NAME_START_RX.exec(String(text || ''));
+  if (!match) return false;
+  const prefix = match[1].toLowerCase();
+  if (BUILT_IN_ICON_PREFIXES.includes(prefix)) return true;
+  const data = typeof runtimeData === 'function' ? runtimeData() : runtimeData;
+  return Array.isArray(data?.iconSetPrefixes) && data.iconSetPrefixes.includes(prefix);
 }
 
 function yamlValueLinePrefix(info) {
@@ -557,7 +594,7 @@ export function detectRuntimeContext(doc, pos, options = {}) {
 
   const triggerChar = info.beforeCursor.slice(-1);
   const triggerChars = [':', '.', '{', '%', '<', '-', '_', '#', '$', '/'];
-  const isTriggerChar = triggerChars.includes(triggerChar);
+  let isTriggerChar = triggerChars.includes(triggerChar);
 
   const lineTrim = info.line.trim();
   const isBlankLine = lineTrim === '';
@@ -594,6 +631,13 @@ export function detectRuntimeContext(doc, pos, options = {}) {
       valueKind = 'entity';
     }
   }
+  // The opening quote of a value right after its key (`icon: '`) asks for the value list, as the
+  // space after the colon does. The value is completed inside the quotes.
+  if (lang === 'yaml' && yamlRole === 'value' && valueKind && /:\s+['"]$/.test(info.beforeCursor)) isTriggerChar = true;
+  // An icon name in a template string (`icon: "{{ 'm3o:light' if is_state(...) else ... }}"`): a
+  // string that starts with the prefix of mdi or of an installed icon set and a colon gets the
+  // icon suggestions, as the value of an icon: key does.
+  if (lang === 'jinja' && looksLikeIconName(templateStringBeforeCursor(recent), runtimeData)) valueKind = 'icon';
 
   const scalarValueContext = lang === 'yaml' && yamlRole === 'value' && !!yamlKey && isScalarValueKind(valueKind || yamlScalarValueKind({ yamlKey, yamlPath, yamlRole }));
   // A key with a value kind of its own (icon:, name:, label:, state:) takes its value on the same

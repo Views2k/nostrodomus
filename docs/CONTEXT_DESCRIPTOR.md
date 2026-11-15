@@ -66,7 +66,7 @@ The runtime descriptor has no `descriptorVersion` field. Its fields:
 | `yamlPath`, `pathText` | The keys above the cursor as an array and as a lower-case dotted string |
 | `yamlRole` | `blank`, `comment`, `key`, `list-key` or `value` for YAML; `code` for other languages |
 | `yamlKey` | The key on the cursor line |
-| `valueKind` | The base value kinds, plus `area`, `device`, `floor` and `label` when `completions.engineV2` and `completions.registryLane` are on |
+| `valueKind` | The base value kinds, plus `area`, `device`, `floor` and `label` when `completions.engineV2` and `completions.registryLane` are on. In a template, `icon` when the cursor is in a string that starts with `mdi:` or the prefix of an installed icon set |
 | `focusKind` | `valueKind` when one is set, otherwise `target-block`, `action-block`, `style-block`, `trigger-block`, `condition-block`, `automation-action`, `entity-list` or empty |
 | `branchState` | See below |
 | `scalarValueContext` | True when the value position expects a number, duration or plain string |

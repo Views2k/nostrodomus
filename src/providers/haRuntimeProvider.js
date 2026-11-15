@@ -1,10 +1,11 @@
 // Home Assistant runtime values: the data snapshot read from hass (entities, services and their
-// fields, registries, themes, custom cards) and the provider that turns it into value rows.
-// The window, document and runtime state come in through the options (globalThis when no window
-// is given).
+// fields, registries, themes, custom cards) and the installed icon sets, and the provider that
+// turns it into value rows. The window, document and runtime state come in through the options
+// (globalThis when no window is given).
 
 import { HA_VALUE_PROVIDER_ID, NATIVE_CARD_TYPES, SECURITY_LIMITS } from '../core/runtimeConstants.js';
 import { safeString } from '../core/string.js';
+import { iconSetLabel } from './iconSetCatalog.js';
 import { normalizeItem as normalizeLibraryItem } from './staticLibraryProvider.js';
 import { surfaceAllows } from './surfaceScope.js';
 import * as classifier from '../yaml/yamlContextClassifier.js';
@@ -311,13 +312,62 @@ export function isServiceDataFieldValueContext(ctx) {
   return container === "data" || container === "service_data";
 }
 
+// Common Material Design icons, offered before the names of the icon sets. Home Assistant has no
+// list of its Material Design icons that a page can read.
+const COMMON_ICONS = Object.freeze([
+  "mdi:home", "mdi:lightbulb", "mdi:thermometer", "mdi:water-percent", "mdi:fan",
+  "mdi:power", "mdi:power-plug", "mdi:wifi", "mdi:router-wireless", "mdi:server",
+  "mdi:car", "mdi:garage", "mdi:door", "mdi:lock", "mdi:shield-home",
+  "mdi:motion-sensor", "mdi:cctv", "mdi:weather-partly-cloudy", "mdi:battery", "mdi:solar-power",
+  "mdi:bell", "mdi:calendar", "mdi:camera", "mdi:chart-line", "mdi:chevron-right",
+  "mdi:clock-outline", "mdi:cog", "mdi:fire", "mdi:flash", "mdi:home-assistant",
+  "mdi:information-outline", "mdi:light-switch", "mdi:play", "mdi:robot", "mdi:script-text",
+  "mdi:thermostat", "mdi:toggle-switch", "mdi:transmission-tower", "mdi:weather-night"
+]);
+
+const NO_ICON_SET_ICONS = Object.freeze([]);
+
+// The installed icon sets, read through the catalog the caller keeps (options.iconSets, see
+// iconSetCatalog.js). Null without one.
+function iconSetView(options) {
+  const catalog = options?.iconSets;
+  if (!catalog || typeof catalog.current !== "function") return null;
+  return guardedRead(() => {
+    if (typeof catalog.sync === "function") catalog.sync();
+    return catalog.current();
+  }, null);
+}
+
+// The snapshot fields that come from the icon sets.
+function iconSetFields(view) {
+  return {
+    iconSetIcons: view?.ids || NO_ICON_SET_ICONS,
+    iconSetPrefixes: view?.prefixes || NO_ICON_SET_ICONS,
+    iconKeywords: view?.keywords || null,
+    iconSetVersion: view ? view.version : 0,
+  };
+}
+
+// A kept snapshot with the names of icon sets that arrived since it was built. The rest of the
+// data stays; the object is new, so a list scored with the old names is not served again.
+function withIconSets(runtimeState, cache, view, now) {
+  const next = { ...cache, ...iconSetFields(view), at: now };
+  const services = servicesBySnapshot.get(cache);
+  if (services) servicesBySnapshot.set(next, services);
+  if (runtimeState) runtimeState.runtimeCache = next;
+  return next;
+}
+
 export function runtimeData(options = {}) {
   const runtimeState = options?.state;
   const limits = options?.limits || SECURITY_LIMITS;
   const nowFn = typeof options?.now === "function" ? options.now : Date.now;
   const now = nowFn();
+  const iconView = iconSetView(options);
+  const iconSetsChanged = cache => !!iconView && (cache.iconSetVersion || 0) !== iconView.version;
   if (runtimeState?.runtimeCache && now - runtimeState.runtimeCache.at < limits.runtimeCacheMs) {
-    return runtimeState.runtimeCache;
+    const cache = runtimeState.runtimeCache;
+    return iconSetsChanged(cache) ? withIconSets(runtimeState, cache, iconView, cache.at) : cache;
   }
 
   const hass = guardedRead(() => (typeof options?.findHass === "function" ? options.findHass() : findHass(options)), null);
@@ -337,6 +387,7 @@ export function runtimeData(options = {}) {
   const kept = runtimeState?.runtimeCacheSources;
   if (hass && runtimeState?.runtimeCache && kept && now - kept.builtAt < 30000
     && kept.sources.length === sources.length && kept.sources.every((value, index) => value === sources[index])) {
+    if (iconSetsChanged(runtimeState.runtimeCache)) return withIconSets(runtimeState, runtimeState.runtimeCache, iconView, now);
     runtimeState.runtimeCache.at = now;
     return runtimeState.runtimeCache;
   }
@@ -377,16 +428,7 @@ export function runtimeData(options = {}) {
   const cards = Array.from(new Set([...NATIVE_CARDS, ...liveCards.cards])).sort();
   const cardMeta = liveCards.cardMeta;
 
-  const icons = [
-    "mdi:home", "mdi:lightbulb", "mdi:thermometer", "mdi:water-percent", "mdi:fan",
-    "mdi:power", "mdi:power-plug", "mdi:wifi", "mdi:router-wireless", "mdi:server",
-    "mdi:car", "mdi:garage", "mdi:door", "mdi:lock", "mdi:shield-home",
-    "mdi:motion-sensor", "mdi:cctv", "mdi:weather-partly-cloudy", "mdi:battery", "mdi:solar-power",
-    "mdi:bell", "mdi:calendar", "mdi:camera", "mdi:chart-line", "mdi:chevron-right",
-    "mdi:clock-outline", "mdi:cog", "mdi:fire", "mdi:flash", "mdi:home-assistant",
-    "mdi:information-outline", "mdi:light-switch", "mdi:play", "mdi:robot", "mdi:script-text",
-    "mdi:thermostat", "mdi:toggle-switch", "mdi:transmission-tower", "mdi:weather-night"
-  ];
+  const icons = COMMON_ICONS;
 
   const actions = [
     "more-info", "toggle", "perform-action", "call-service", "navigate", "url", "assist", "fire-dom-event", "none"
@@ -416,6 +458,7 @@ export function runtimeData(options = {}) {
     devices: deviceCat.ids, deviceNames: deviceCat.names,
     floors: floorCat.ids, floorNames: floorCat.names,
     labels: labelCat.ids, labelNames: labelCat.names,
+    ...iconSetFields(iconView),
   };
   servicesBySnapshot.set(cache, services);
   if (runtimeState) {
@@ -569,6 +612,94 @@ function entityRowFor(id, friendly, normalizeItem, normalizeKey, providerId) {
   return item || null;
 }
 
+function iconKeywordsMatch(words, query) {
+  if (!Array.isArray(words)) return false;
+  return words.some(word => String(word).toLowerCase().startsWith(query));
+}
+
+// The icon ids the typed text can match, best first, cut at `cap` before any row is built: with
+// icon sets installed there are tens of thousands of names. `lists` holds the common icons of the
+// snapshot and the names of the icon sets, `keywords` the keywords of the names that have them.
+// The text matches the whole id (`m3o:ho`) or the name after the prefix (`light`): ids that start
+// with it, then names that start with it, names with a word that starts with it (`ceiling-light`),
+// names with a keyword that starts with it, names that contain it, and names that hold its
+// letters in order. An empty text keeps the order of the lists. An id that is in the first list
+// and in a later one is offered once.
+export function filterIconIdsByQuery(lists, query, keywords = null, cap = SECURITY_LIMITS.maxRuntimeIcons) {
+  const sources = Array.isArray(lists) ? lists.filter(Array.isArray) : [];
+  const q = typeof query === "string" ? query.trim().toLowerCase() : "";
+  // The scorer matches letters in order only for a text of letters and digits.
+  const looseMatch = q.length >= 2 && /^[a-z0-9]+$/.test(q);
+  const first = new Set(sources[0] || []);
+  const groups = [[], [], [], [], [], []];
+  for (let s = 0; s < sources.length; s += 1) {
+    for (const raw of sources[s]) {
+      const id = typeof raw === "string" ? raw : "";
+      if (!id || (s > 0 && first.has(id))) continue;
+      if (!q) {
+        groups[0].push(id);
+        if (groups[0].length >= cap) return groups[0];
+        continue;
+      }
+      const low = id.toLowerCase();
+      if (low.startsWith(q)) {
+        groups[0].push(id);
+        continue;
+      }
+      const name = low.slice(low.indexOf(":") + 1);
+      if (name.startsWith(q)) groups[1].push(id);
+      else if (name.includes(`-${q}`) || name.includes(`_${q}`)) groups[2].push(id);
+      else if (keywords && iconKeywordsMatch(keywords.get(id), q)) groups[3].push(id);
+      else if (name.includes(q)) groups[4].push(id);
+      else if (looseMatch && isSubsequenceMatch(name, q)) groups[5].push(id);
+    }
+  }
+  const out = [];
+  for (const group of groups) {
+    for (const id of group) {
+      if (out.length >= cap) return out;
+      out.push(id);
+    }
+  }
+  return out;
+}
+
+// Icon rows by id, kept like the entity rows. A row depends on the id, its keywords and whether it
+// is one of the common icons, which the scorer ranks first among equal matches.
+const ICON_ROW_CACHE_LIMIT = 5000;
+const iconRowCache = { normalizeItem: null, providerId: "", rows: new Map() };
+function iconRowFor(id, keywords, common, normalizeItem, normalizeKey, providerId) {
+  if (iconRowCache.normalizeItem !== normalizeKey || iconRowCache.providerId !== providerId) {
+    iconRowCache.normalizeItem = normalizeKey;
+    iconRowCache.providerId = providerId;
+    iconRowCache.rows = new Map();
+  }
+  const known = iconRowCache.rows.get(id);
+  if (known && known.keywords === keywords && known.common === common) return known.item;
+  const colon = id.indexOf(":");
+  const prefix = colon > 0 ? id.slice(0, colon) : "mdi";
+  const name = colon > 0 ? id.slice(colon + 1) : id;
+  const setLabel = iconSetLabel(prefix);
+  const item = normalizeItem(
+    [`ha.icon.${id}`, "yaml", "icon", id, id, [name, ...(keywords || [])]],
+    providerId
+  );
+  if (item) {
+    item.meta = Object.freeze({
+      ...(item.meta || {}),
+      domain: prefix,
+      sourceDetail: setLabel,
+      documentation: `Icon from ${setLabel}.`,
+      ...(common ? { commonIcon: true } : {}),
+    });
+    if (Array.isArray(item.aliases)) Object.freeze(item.aliases);
+    Object.freeze(item);
+  }
+  if (iconRowCache.rows.size >= ICON_ROW_CACHE_LIMIT) iconRowCache.rows.clear();
+  iconRowCache.rows.set(id, { keywords, common, item: item || null });
+  return item || null;
+}
+
 export function runtimeRowsForKind(kind, options = {}) {
   const data = typeof options?.runtimeData === "function" ? options.runtimeData() : runtimeData(options);
   const items = [];
@@ -661,7 +792,18 @@ export function runtimeRowsForKind(kind, options = {}) {
       pushRuntime([`ha.card.${id}`, "yaml", "card", id, id, ["type", "card", "lovelace", info?.name || ""].filter(Boolean)], meta);
     }
   } else if (kind === "icon") {
-    for (const id of data.icons || []) pushRuntime([`ha.icon.${id}`, "yaml", "icon", id, id, ["mdi", "icon"]], { domain: "mdi" });
+    // The common icons and the names of the installed icon sets (Material Symbols and others),
+    // filtered by the typed text before the cap, like the entities.
+    const limits = options?.limits || SECURITY_LIMITS;
+    const common = Array.isArray(data.icons) ? data.icons : [];
+    const keywords = data.iconKeywords instanceof Map ? data.iconKeywords : null;
+    const ids = filterIconIdsByQuery([common, data.iconSetIcons || []], options?.prefix, keywords, limits.maxRuntimeIcons || SECURITY_LIMITS.maxRuntimeIcons);
+    const commonIds = new Set(common);
+    const normalizeKey = typeof options?.normalizeItem === "function" ? options.normalizeItem : limits;
+    for (const id of ids) {
+      const item = iconRowFor(id, keywords?.get(id) || null, commonIds.has(id), normalizeItem, normalizeKey, providerId);
+      if (item) items.push(item);
+    }
   } else if (kind === "action") {
     for (const id of data.actions || []) pushRuntime([`ha.action.${id}`, "yaml", "action", id, id, ["tap_action", "hold_action", "action"]], { domain: "action" });
   } else if (kind === "theme") {
@@ -719,6 +861,9 @@ export function haRuntimeValueProvider(options = {}) {
       // state_attr('|', ...)), when the jinjaLane flag is on. The context runtime sets these
       // ctx fields.
       if (ctx.lang === "jinja" && ctx.jinjaLaneEnabled === true && ctx.jinjaArg && ctx.jinjaArg.expectKind === "entity") return true;
+      // An icon name in a template string (`{{ 'm3o:light' if ... }}`); the context adapter sets
+      // the icon kind there.
+      if (ctx.lang === "jinja" && ctx.valueKind === "icon") return true;
       if (ctx.lang !== "yaml") return false;
       // The value of a service-data field (`effect: |`), when the schemaValues flag is on.
       if (ctx.schemaValuesEnabled === true && isServiceDataFieldValueContext(ctx)) return true;
@@ -735,6 +880,7 @@ export function haRuntimeValueProvider(options = {}) {
       if (ctx && ctx.lang === "jinja" && ctx.jinjaLaneEnabled === true && ctx.jinjaArg && ctx.jinjaArg.expectKind === "entity") {
         return runtimeRowsForKind("entity", { ...options, prefix });
       }
+      if (ctx.lang === "jinja") return ctx.valueKind === "icon" ? runtimeRowsForKind("icon", { ...options, prefix }) : [];
       if (ctx.schemaValuesEnabled === true && isServiceDataFieldValueContext(ctx)) {
         const schemaRows = runtimeRowsForKind("service-field-value", { ...options, serviceId: serviceIdFromContext(ctx), fieldName: String(ctx.yamlKey || "") });
         // A select or boolean field gives its options. A field with another selector (entity,
@@ -768,6 +914,8 @@ export function runtimeSummary(runtimeState, options = {}) {
     themes: rt.themes?.length || 0,
     cards: rt.cards?.length || 0,
     icons: rt.icons?.length || 0,
+    iconSets: rt.iconSetPrefixes?.length || 0,
+    iconSetIcons: rt.iconSetIcons?.length || 0,
     actions: rt.actions?.length || 0,
     customCards: Array.isArray(rt.cards) ? rt.cards.filter(type => String(type || "").startsWith("custom:")).length : 0,
     serviceFieldServices: rt.serviceFields && typeof rt.serviceFields === "object" ? Object.keys(rt.serviceFields).length : 0,
