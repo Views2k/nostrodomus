@@ -71,7 +71,10 @@ check(CHANGELOG_SUMMARY_MODULE.exists(), f"Missing changelog summary module: {CH
 check(project.get("source_entry") == "src/main.js", "PROJECT.json source_entry must be src/main.js")
 check(project.get("legacy_runtime") == "src/main.legacy.js", "PROJECT.json legacy_runtime must be src/main.legacy.js")
 check(project.get("dist_entry") == "dist/nostrodomus.js", "PROJECT.json dist_entry must be dist/nostrodomus.js")
-check(str(hacs.get("filename") or "") == str(project.get("dist_entry") or ""), "hacs.json filename must match PROJECT.json dist_entry")
+# HACS and the Home Assistant Marketplace take "filename" as a file name: the release asset, or the
+# file of that name in dist/. A path, or content_in_root, makes both download nothing (0.1.279).
+check(str(hacs.get("filename") or "") == Path(str(project.get("dist_entry") or "")).name, "hacs.json filename must be the file name of PROJECT.json dist_entry, without a path")
+check(not hacs.get("content_in_root"), "hacs.json must not set content_in_root: the plugin file is in dist/ and attached to each release, not in the repository root")
 version_value = str(project.get("version") or "")
 internal_version = str(project.get("internal_version") or "")
 RUNTIME_LAYER_ROLLBACK = "runtime-layer-rollback" in internal_version

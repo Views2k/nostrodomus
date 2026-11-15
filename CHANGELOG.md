@@ -4,6 +4,18 @@ Versions before 0.1.266 are not listed.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Nostrodomus is in beta, with versions numbered `0.1.x`.
 
+## [0.1.280] - 2026-11-14
+
+### Fixed
+
+- Installing through HACS or the Marketplace built into Home Assistant 2026.11 did not install anything. `hacs.json` named the plugin file with its path (`dist/nostrodomus.js`) and set `content_in_root`, so both installers skipped the release file. HACS then reported a successful install and registered a resource that returned 404, and the Marketplace refused the install. `hacs.json` now names the file `nostrodomus.js`, which each release carries, and the release check rejects a path or `content_in_root` there.
+- On the repository page in HACS and the Marketplace, the four screenshots at the top of the README and three of its badges did not display, because relative paths in that part are not rewritten there. Those paths are now absolute.
+
+### Changed
+
+- The README describes installing through the Marketplace on Home Assistant 2026.11 and later, removing an earlier manual install first, dashboards whose resources are defined in YAML, and when a restart is needed.
+- The repository runs HACS's own validation on every push and pull request and once a day.
+
 ## [0.1.279] - 2026-11-14
 
 ### Added

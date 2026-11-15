@@ -1,6 +1,6 @@
 # Nostrodomus HACS/plugin layout
 
-How the repository is packaged as a HACS dashboard plugin (a frontend resource). The installation steps for users are in [README.md](../README.md#installation).
+How the repository is packaged as a dashboard plugin (a frontend resource) for HACS and for the Marketplace built into Home Assistant 2026.11 and later. The installation steps for users are in [README.md](../README.md#installation).
 
 ## Bundle file
 
@@ -8,7 +8,9 @@ How the repository is packaged as a HACS dashboard plugin (a frontend resource).
 dist/nostrodomus.js
 ```
 
-This single file is the browser resource. It is built from `src/main.js` and committed, so HACS can serve it from the repository without a build step.
+This single file is the browser resource. It is built from `src/main.js` and committed. Each GitHub release carries the same file as the asset `nostrodomus.js`, and that asset is what HACS and the Marketplace download. If a release has no such asset, they take `dist/nostrodomus.js` from the tagged tree.
+
+They write it to `www/community/nostrodomus/nostrodomus.js` in the Home Assistant configuration folder. The Marketplace serves it as `/local/community/nostrodomus/nostrodomus.js`, HACS 2.0 as `/hacsfiles/nostrodomus/nostrodomus.js`, and on dashboards managed in the UI the resource is registered with a version query that changes with each update.
 
 ## HACS metadata
 
@@ -18,14 +20,21 @@ This single file is the browser resource. It is built from `src/main.js` and com
 {
   "name": "Nostrodomus",
   "render_readme": true,
-  "content_in_root": true,
-  "filename": "dist/nostrodomus.js",
+  "filename": "nostrodomus.js",
   "homeassistant": "2026.6.0",
   "hacs": "2.0.0"
 }
 ```
 
-There is no `version` field in `hacs.json`. HACS takes the version from GitHub releases and tags, or from the default branch commit when no release exists.
+`filename` is a file name, not a path, and `content_in_root` is not set. With `content_in_root` the installers look only in the repository root, and with a path in `filename` they download nothing; 0.1.279 had both and could not be installed. `tools/verify.py` checks both rules.
+
+HACS and the Marketplace read `hacs.json` from the release tag they install, so a change to it reaches users with the next release.
+
+There is no `version` field in `hacs.json`. The version offered is the tag of the latest GitHub release (`v` followed by the version, for example `v0.1.280`), or the default branch commit when no release exists.
+
+## Release
+
+A release is a full GitHub release, not only a tag, with `dist/nostrodomus.js` attached under the name `nostrodomus.js`. The workflow `.github/workflows/validate.yml` runs HACS's own repository validation on every push, on pull requests and once a day; it has to pass before a release is published.
 
 ## Build and release verification
 

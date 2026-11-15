@@ -1,6 +1,6 @@
 {
   "name": "nostrodomus",
-  "version": "0.1.279",
+  "version": "0.1.280",
   "description": "Context-aware autocomplete, snippets, and syntax styling for Home Assistant's card and YAML editors",
   "license": "MIT",
   "author": "Views2k",
