@@ -72,7 +72,9 @@ A draggable, keyboard-operable settings panel opens inside the editor dialog, sp
 ### Marketplace or HACS
 From Home Assistant 2026.11, HACS is built in as the Marketplace (Settings, Marketplace). On earlier versions, use HACS 2.0 or later.
 
-1. Search for Nostrodomus. If it is not listed, open the three-dot menu, choose Custom repositories, and add `https://github.com/Views2k/nostrodomus` with the type Dashboard. The Marketplace asks you to connect GitHub before it adds a custom repository.
+[![Open Nostrodomus in the Marketplace or HACS of your Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Views2k&repository=nostrodomus&category=plugin)
+
+1. Open Nostrodomus with the button above, or search for it. If it is not listed, open the three-dot menu, choose Custom repositories, and add `https://github.com/Views2k/nostrodomus` with the type Dashboard. The Marketplace asks you to connect GitHub before it adds a custom repository.
 2. Install Nostrodomus. On dashboards managed in the UI, the resource is registered for you.
 3. Reload the browser without its cache. If Home Assistant asks for a restart, restart it once.
 
