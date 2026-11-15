@@ -1,9 +1,9 @@
 # Nostrodomus Documentation
 
-Reference for Nostrodomus, a local-only autocomplete, snippets, and syntax-styling plugin for Home Assistant's code editors. This reference describes version 0.1.279 (beta).
+Reference for Nostrodomus, a local-only autocomplete, snippets, and syntax-styling plugin for Home Assistant's code editors. This reference describes version 0.1.280 (beta).
 
 - Product: Nostrodomus. Channel: beta. License: MIT.
-- Requires: Home Assistant 2026.6.0+, HACS 2.0.0+ (or manual install).
+- Requires: Home Assistant 2026.6.0+. Installed through the Marketplace built into Home Assistant 2026.11 and later, HACS 2.0.0+ on earlier versions, or by hand.
 - Changes per version: [CHANGELOG.md](CHANGELOG.md).
 - Runtime API namespace: `window.__nostrodomus`.
 
@@ -346,7 +346,7 @@ Everything below is local-only and reads live state in your browser. The stable 
 ### Common console commands
 
 ```js
-window.__nostrodomus.version                 // for example "nostrodomus-v0.1.279-glass-dialog"
+window.__nostrodomus.version                 // for example "nostrodomus-v0.1.280-hacs-install"
 window.__nostrodomus.health()                // { ok, status, warningCount, checks[], ... }
 window.__nostrodomus.runtimeErrors()         // { ok:true, localOnly:true, stats, items[] }  (last 40)
 window.__nostrodomus.exportDiagnostics()     // full, redacted diagnostics object (redact:true by default)
@@ -411,12 +411,12 @@ Security policy and reporting: [SECURITY.md](SECURITY.md).
 
 - Minimum Home Assistant version: 2026.6.0 (per `hacs.json`).
 - Tested Home Assistant versions (automated browser tests, Chromium):
-  - 2026.11.1 with Nostrodomus 0.1.279.
-  - 2026.6.4 with Nostrodomus 0.1.279.
+  - 2026.11.1 with Nostrodomus 0.1.280.
+  - 2026.6.4 with Nostrodomus 0.1.280.
 - Browsers: Chromium-based browsers are supported. Firefox is not supported yet (see [Known issues](docs/KNOWN_ISSUES.md)).
-- HACS: 2.0.0+.
+- Installers: the Marketplace built into Home Assistant 2026.11 and later, or HACS 2.0.0+ on earlier versions. Both download the file `nostrodomus.js` attached to the GitHub release (see [docs/HACS_INSTALL.md](docs/HACS_INSTALL.md)).
 - Details and the Home Assistant behaviors to know are in [docs/COMPAT.md](docs/COMPAT.md).
-- Versioning: SemVer `0.1.x`, currently beta. There is no `version` field in `hacs.json`. HACS versioning uses GitHub releases and tags, or the default-branch commit.
+- Versioning: SemVer `0.1.x`, currently beta. There is no `version` field in `hacs.json`. The version that the Marketplace and HACS offer is the tag of the latest GitHub release.
 - Changelog: [CHANGELOG.md](CHANGELOG.md). The running version is always visible in the Diagnostics tab and through `window.__nostrodomus.version`.
 - Updates: hard-reload the browser (or bump the resource cache string). No Home Assistant restart is needed.
 
@@ -450,7 +450,7 @@ A short list. The full list is in [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). 
 ## Uninstalling
 
 - Turn it off until the next page load: `window.__nostrodomus.disable()` in the browser console removes the listeners, observers, the suggestion list, the settings panel and the styles, restores the editor and dialog sizing, and deletes `window.__nostrodomus`. Reloading the page loads the plugin again.
-- Remove it: uninstall through HACS, or delete the resource under Settings, Dashboards, Resources and remove the `nostrodomus.js` file you copied into `www`. Then hard-reload.
+- Remove it: uninstall through the Marketplace or HACS, or delete the resource under Settings, Dashboards, Resources and remove the `nostrodomus.js` file you copied into `www`. If your resources are defined in YAML, also delete the Nostrodomus entry there. Then hard-reload.
 - Stored data: removing the plugin does not clear the browser's local storage. The keys `nostrodomus.settings`, `nostrodomus.settings.activeCategory` and, if you used Remember your favorites, `nostrodomus.frecency` stay until you clear them. To remove them, run this in the browser console on your Home Assistant address, in each browser you used:
 
 ```js

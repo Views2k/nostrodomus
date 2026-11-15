@@ -1,26 +1,26 @@
 # Nostrodomus
 
 [![CI](https://github.com/Views2k/nostrodomus/actions/workflows/ci.yml/badge.svg)](https://github.com/Views2k/nostrodomus/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/Views2k/nostrodomus/blob/main/LICENSE)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-2026.6%2B-41BDF5.svg)](https://www.home-assistant.io/)
-[![Status: beta](https://img.shields.io/badge/status-beta%20(0.1.x)-orange.svg)](docs/KNOWN_ISSUES.md)
+[![Status: beta](https://img.shields.io/badge/status-beta%20(0.1.x)-orange.svg)](https://github.com/Views2k/nostrodomus/blob/main/docs/KNOWN_ISSUES.md)
 
-[![Documentation](https://img.shields.io/badge/Documentation-read-2ea44f.svg)](DOCUMENTATION.md)
+[![Documentation](https://img.shields.io/badge/Documentation-read-2ea44f.svg)](https://github.com/Views2k/nostrodomus/blob/main/DOCUMENTATION.md)
 
 Context-aware autocomplete, snippets, and syntax styling for Home Assistant's card and YAML editors.
 
 Nostrodomus adds autocomplete, snippets, and syntax coloring to the code editors you already use in Home Assistant: the dashboard card editor, `card_mod` blocks, and YAML configuration. Suggestions come from your own running instance or a bundled catalog. It makes no network calls.
 
-It is beta (`0.1.x`), but stable and in daily use. Current limitations are listed in [Known issues](docs/KNOWN_ISSUES.md). There is no YAML to configure and no Home Assistant restart needed.
+It is beta (`0.1.x`), but stable and in daily use. Current limitations are listed in [Known issues](docs/KNOWN_ISSUES.md). There is no YAML to configure.
 
 <table>
   <tr>
-    <td><img src="docs/screenshots/settings-providers.webp" alt="Card editor with the settings panel open on the provider list" width="100%"></td>
-    <td><img src="docs/screenshots/settings-help.webp" alt="Card editor with the settings panel open on the Help tab" width="100%"></td>
+    <td><img src="https://raw.githubusercontent.com/Views2k/nostrodomus/main/docs/screenshots/settings-providers.webp" alt="Card editor with the settings panel open on the provider list" width="100%"></td>
+    <td><img src="https://raw.githubusercontent.com/Views2k/nostrodomus/main/docs/screenshots/settings-help.webp" alt="Card editor with the settings panel open on the Help tab" width="100%"></td>
   </tr>
   <tr>
-    <td><img src="docs/screenshots/settings-general.webp" alt="Card editor with the settings panel open on the completion options" width="100%"></td>
-    <td><img src="docs/screenshots/settings-style.webp" alt="Card editor with the settings panel open on the Style tab" width="100%"></td>
+    <td><img src="https://raw.githubusercontent.com/Views2k/nostrodomus/main/docs/screenshots/settings-general.webp" alt="Card editor with the settings panel open on the completion options" width="100%"></td>
+    <td><img src="https://raw.githubusercontent.com/Views2k/nostrodomus/main/docs/screenshots/settings-style.webp" alt="Card editor with the settings panel open on the Style tab" width="100%"></td>
   </tr>
 </table>
 
@@ -31,7 +31,7 @@ The card editor with four different frame colors and syntax themes, each with th
 | | |
 |---|---|
 | Home Assistant | 2026.6.0 or newer |
-| HACS | 2.0.0+ (recommended install path), or manual resource registration |
+| Installer | The Marketplace built into Home Assistant 2026.11 and later, HACS 2.0.0 or later on earlier versions, or manual resource registration |
 | Browser | A Chromium-based browser (Chrome, Edge, Brave and others). Firefox is not supported yet, and Safari is not tested; see [Known issues](docs/KNOWN_ISSUES.md) |
 | Where it works | The dashboard card-edit dialog, `card_mod` style blocks, the dashboard raw configuration editor, the automation and script YAML editors, and the template editor of Developer Tools |
 
@@ -69,18 +69,33 @@ A draggable, keyboard-operable settings panel opens inside the editor dialog, sp
 
 ## Installation
 
-### HACS (custom repository)
-1. In HACS, open the three-dot menu and choose Custom repositories.
-2. Add this repository's URL with type Dashboard (frontend plugin).
-3. Find Nostrodomus in HACS and install it.
-4. HACS registers the resource for you. If it does not, add it manually (below).
+### Marketplace or HACS
+From Home Assistant 2026.11, HACS is built in as the Marketplace (Settings, Marketplace). On earlier versions, use HACS 2.0 or later.
+
+1. Search for Nostrodomus. If it is not listed, open the three-dot menu, choose Custom repositories, and add `https://github.com/Views2k/nostrodomus` with the type Dashboard. The Marketplace asks you to connect GitHub before it adds a custom repository.
+2. Install Nostrodomus. On dashboards managed in the UI, the resource is registered for you.
+3. Reload the browser without its cache. If Home Assistant asks for a restart, restart it once.
+
+If you installed Nostrodomus by hand before, first delete the `/local/nostrodomus.js` resource and the `nostrodomus.js` file in `www`, so that only one copy loads.
+
+If your dashboard resources are defined in YAML, add the installed file yourself and raise the `v` number after each update:
+
+```yaml
+lovelace:
+  resource_mode: yaml
+  resources:
+    - url: /local/community/nostrodomus/nostrodomus.js?v=1
+      type: module
+```
+
+With HACS on Home Assistant before 2026.11, the URL is `/hacsfiles/nostrodomus/nostrodomus.js?v=1`.
 
 ### Manual resource registration
-1. Copy `dist/nostrodomus.js` into your Home Assistant `www` folder, for example `/config/www/nostrodomus.js`.
+1. Download `nostrodomus.js` from the [latest release](https://github.com/Views2k/nostrodomus/releases/latest) and copy it into your Home Assistant `www` folder, for example `/config/www/nostrodomus.js`. If the `www` folder did not exist before, restart Home Assistant once so that it serves the folder.
 2. Go to Settings, Dashboards, the three-dot menu, Resources, and add:
    - URL: `/local/nostrodomus.js`
    - Type: JavaScript module
-3. Hard-reload your browser (clear the cache, or bump the resource URL query string after updates). No Home Assistant restart is needed.
+3. Hard-reload your browser. After you replace the file with a newer version, change the resource URL to `/local/nostrodomus.js?v=2` (and so on) so that browsers load the new copy.
 
 To configure it, open the code editor of any card, press `Ctrl+Space`, and click the gear in the header of the suggestion list (or press `Ctrl+,`). Settings are stored in your browser's local storage, so there is no YAML setup.
 

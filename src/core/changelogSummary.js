@@ -6,6 +6,14 @@
 
 export const CHANGELOG_SUMMARY = Object.freeze([
   {
+    version: "0.1.280",
+    title: "Installs through HACS and the Marketplace",
+    bullets: [
+      "Installing through HACS or the Marketplace built into Home Assistant 2026.11 now downloads the plugin and registers a resource that loads it. Before, the install reported success with nothing written.",
+      "The screenshots and badges of the README display on the repository page in HACS and the Marketplace.",
+    ],
+  },
+  {
     version: "0.1.279",
     title: "Glass editor dialog",
     bullets: [
@@ -41,15 +49,6 @@ export const CHANGELOG_SUMMARY = Object.freeze([
       "Each refresh of the suggestion list reads the text before the cursor once instead of seven or eight times, ranks the candidates in about half the time, and reuses the entity rows and the syntax tokens it already built. The suggestions and their order are unchanged.",
       "The settings panel opens without building the Diagnostics tab; that tab is built when you select it.",
       "On a light Home Assistant theme the dark codebox no longer flashes before the adjusted colors arrive, and the surface is drawn even when it is switched off if the text could not be read without it. Below 1000 pixels the editor, its code and the preview use the full width of the card dialog.",
-    ],
-  },
-  {
-    version: "0.1.275",
-    title: "Readable on light themes, card dialog on narrow screens",
-    bullets: [
-      "On a light Home Assistant theme the code is readable: the codebox surface is drawn dark and nearly opaque under the light text. The Parchment and Mist themes now get a light surface, dark plain text and dark line numbers.",
-      "When the browser is narrower than 1000 pixels the card dialog scrolls to the preview, the Save and Cancel row stays in view, and the codebox no longer covers the top of the preview.",
-      "With a dark Home Assistant theme and any other syntax theme nothing changes. Your saved settings, themes and snippets are unchanged.",
     ],
   },
 ]);

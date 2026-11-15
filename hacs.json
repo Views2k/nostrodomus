@@ -1,8 +1,7 @@
 {
   "name": "Nostrodomus",
   "render_readme": true,
-  "content_in_root": true,
-  "filename": "dist/nostrodomus.js",
+  "filename": "nostrodomus.js",
   "homeassistant": "2026.6.0",
   "hacs": "2.0.0"
 }
