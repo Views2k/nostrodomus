@@ -34,11 +34,11 @@ test('clampSettingsPosition tolerates a missing or invalid width', () => {
 
 // --- a window smaller than the panel's usual minimum size ---
 test('the panel is never wider or taller than the window minus its margins', () => {
-  // A 360px-wide phone: the old 380px minimum put the right edge off the screen.
+  // A 360px-wide phone: a 380px minimum would put the right edge off the screen.
   assert.deepEqual(clampSettingsSize(null, { innerWidth: 360, innerHeight: 640 }), { w: 344, h: 486 });
   assert.deepEqual(clampSettingsSize({ w: 440, h: 700 }, { innerWidth: 360, innerHeight: 640 }), { w: 344, h: 624 });
   assert.deepEqual(clampSettingsSize({ w: 100, h: 100 }, { innerWidth: 360, innerHeight: 640 }), { w: 344, h: 360 });
-  // A phone on its side: the old 360px minimum was taller than the window.
+  // A phone on its side: a 360px minimum would be taller than the window.
   assert.deepEqual(clampSettingsSize(null, { innerWidth: 640, innerHeight: 320 }), { w: 440, h: 304 });
   assert.deepEqual(clampSettingsSize({ w: 100, h: 100 }, { innerWidth: 640, innerHeight: 320 }), { w: 380, h: 304 });
   // The usual minimum still holds wherever it fits.
@@ -61,6 +61,6 @@ test('the default position puts the whole panel inside a narrow or short window'
   assert.deepEqual(geometry({ settingsSize: null, settingsPos: null }).clampSettingsPosition(null), { x: 696, y: 72 });
   assert.deepEqual(clampSettingsPosition(null, { innerWidth: 640, innerHeight: 320 }, 440, 304), { x: 190, y: 8 });
   assert.deepEqual(clampSettingsPosition(null, { innerWidth: 640, innerHeight: 320 }, 440, NaN), { x: 190, y: 72 }, 'no height given: the usual offset');
-  // A position the user chose is kept as before, also when it leaves part of the panel below the window.
+  // A position the user chose is kept, also when it leaves part of the panel below the window.
   assert.deepEqual(clampSettingsPosition({ x: 20, y: 150 }, { innerWidth: 640, innerHeight: 320 }, 440, 304), { x: 20, y: 150 });
 });

@@ -69,41 +69,34 @@ export const DEFAULT_SETTINGS = Object.freeze({
     syntaxTintSaturation: 1.18,
     syntaxTintOpacity: 0.22,
 
-    // Opt-in: hide HA's in-editor warning/alert banners (e.g. "Visual editor is not
-    // supported"). Default off so real config-validation errors stay visible; when on,
-    // the companion hides the editor warning surfaces so they stop overlapping the
-    // bottom-left "Show visual/code editor" buttons. Editor-scoped only.
+    // Hides Home Assistant's warning banners in the editor (such as "Visual editor is not
+    // supported"), which can cover the "Show visual editor" and "Show code editor" buttons. Off by
+    // default so configuration errors stay visible. Only the editor's own warnings are affected.
     hideEditorWarnings: false,
 
-    // Hide CodeMirror's active-line highlight: the faint wash on the row the cursor is on
-    // (the current-row highlight and its gutter), which reads blue over the cyan frosted
-    // surface. Default on (hidden); turn off to restore the wash. Drives the single
-    // authoritative active-line rule in the codebox root style (codeboxStyle.js),
-    // reapplied via scheduleCodeboxStyleReapply, with no separate competing sheet.
+    // Hides CodeMirror's active-line highlight (the faint wash on the cursor's row and its gutter),
+    // which looks blue on the frosted cyan surface. On by default. Applied by the active-line rule
+    // of the codebox root style (codeboxStyle.js).
     hideActiveLineHighlight: true,
 
-    // Glass editor dialog. Default on: while the card editor dialog is open its surface is
+    // Glass editor dialog, on by default: while the card editor dialog is open its surface is
     // translucent and blurs what is behind it, and the preview pane has no background of its
     // own, so the dashboard shows through. Values a theme defines for its dialogs are kept.
-    // Turn off to save the graphics work of the blur. The companion layer owns the sheet
-    // (scrollbarStyleRuntime.js); a change re-applies that layer at once.
+    // Turning it off saves the graphics work of the blur. The companion layer adds the sheet
+    // (companionStyleRuntime.js); a change re-applies that layer at once.
     glassDialog: true,
 
-    // Default on: style/syntax every working HA codebox, not just the card-edit dialog.
-    // When on, the targeted shadow walk also descends through the non-card-dialog editor
-    // panel hosts (Dev Tools, dashboard raw config, automation / script YAML), so the
-    // per-editor decorative chrome reaches them. Kill switch only: there is no visible
-    // toggle yet (a settings control would change the frozen settings stylesheet bytes).
-    // Flip false to restore the card-dialog-only reach.
+    // On by default: style and color the panel editors as well as the card dialog's (Developer
+    // Tools, the dashboard raw configuration editor, automation and script YAML); the shadow walk
+    // then also enters their hosts. Set it to false for the card dialog only. The settings panel
+    // has no control for it.
     universalCodebox: true,
 
-    // Default on: also activate autocomplete (Ctrl+Space / auto-open) on the universal panel
-    // editors, not just the card-edit dialog. Granular kill switch layered on universalCodebox:
-    // autocomplete is admitted only when both flags are on (so turning off universalCodebox
-    // reverts styling and autocomplete; turning off only this keeps panel styling but disables
-    // panel autocomplete, e.g. if a surface's suggestions need their context adapter first). The
-    // completion scope gate still requires the keystroke/view to resolve to a real ha-code-editor
-    // inside an allowlisted panel host, so this never leaks onto the dashboard.
+    // On by default: completion (Ctrl+Space and automatic opening) in the panel editors as well.
+    // It needs universalCodebox too: turning universalCodebox off removes panel styling and panel
+    // completion, turning only this off keeps the styling. The scope check still requires a real
+    // ha-code-editor inside one of the panel hosts, so a dashboard is never in scope. The settings
+    // panel has no control for it.
     universalAutocomplete: true,
   }),
   enabledLangs: Object.freeze({
@@ -123,11 +116,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
     [WORD_FALLBACK_PROVIDER_ID]: Object.freeze({ enabled: true }),
   }),
 
-  // Universal-completions feature flags — a default-OFF namespace (see
-  // src/core/completionSettings.js). Lives outside `style` so it never touches the frozen
-  // settings stylesheet bytes; every flag ships false, so completion behavior is unchanged
-  // until a flag is flipped. No visible control yet (a settings toggle would change the
-  // frozen stylesheet).
+  // The experimental completion options, all off by default; see src/core/completionSettings.js.
+  // They are under "Smart completion (experimental)" in the General tab of the settings panel.
   completions: DEFAULT_COMPLETION_SETTINGS,
 });
 
@@ -136,9 +126,9 @@ export function cloneDefaultSettings() {
   return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
 }
 
-// Keys that walk the prototype chain. Stored settings are JSON.parsed straight into `patch`, and
-// JSON.parse keeps a literal "__proto__" as an OWN key, so an assignment `out.__proto__ = value`
-// would poison the prototype. Skip them entirely — settings never legitimately carry these names.
+// Keys that reach the prototype chain. Stored settings are parsed straight into `patch`, and
+// JSON.parse keeps a literal "__proto__" as an own key, so `out.__proto__ = value` would replace
+// the prototype. Settings never use these names, so they are skipped.
 const UNSAFE_MERGE_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
 // A stored value replaces a default only when it is the same kind of value. Keys whose default is
@@ -157,8 +147,8 @@ export function deepMerge(base, patch) {
   for (const [key, value] of Object.entries(patch)) {
     if (UNSAFE_MERGE_KEYS.has(key)) continue;
     const expected = base?.[key];
-    // Wrong-typed stored value (hand-edited storage, or a payload written by another build):
-    // keep the default instead of handing null / a string / an array to code that expects an object.
+    // A stored value of the wrong type (hand-edited storage, or a payload written by another
+    // build) keeps the default, so code that expects an object never gets null, a string or an array.
     if (!sameKindAsDefault(expected, value)) continue;
     if (expected && typeof expected === 'object' && !Array.isArray(expected)) {
       out[key] = deepMerge(expected, value);

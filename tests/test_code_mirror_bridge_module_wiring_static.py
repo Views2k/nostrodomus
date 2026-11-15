@@ -5,15 +5,15 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / 'src/editor/codeMirrorBridge.js'
-LEGACY = ROOT / 'src/main.legacy.js'
+APP = ROOT / 'src/app.js'
 DISPATCH_RUNTIME = ROOT / 'src/editor/editorDispatchRuntime.js'
 BRIDGE = ROOT / 'src/composition/runtimeDelegateBridge.js'
-ADAPTERS = ROOT / 'src/composition/mainLegacyAdapters.js'
+ADAPTERS = ROOT / 'src/composition/appAdapters.js'
 ALLOWLIST = ROOT / 'docs/contracts/MODULE_WIRING_ALLOWLIST.json'
 REPORT = ROOT / 'reports/CODE_MIRROR_BRIDGE_MODULE_WIRING_STATIC_REPORT.txt'
 
 module = MODULE.read_text(encoding='utf-8', errors='replace')
-legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
+app = APP.read_text(encoding='utf-8', errors='replace')
 dispatch_runtime = DISPATCH_RUNTIME.read_text(encoding='utf-8', errors='replace')
 bridge = BRIDGE.read_text(encoding='utf-8', errors='replace')
 adapters = ADAPTERS.read_text(encoding='utf-8', errors='replace')
@@ -28,24 +28,21 @@ def require(ok, message):
     else:
         errors.append(message)
 
-require("from '../editor/codeMirrorBridge.js'" in adapters, 'main legacy adapters import CodeMirror bridge module')
-require('codeMirrorBridge.getDocLength(view)' in adapters, 'main legacy adapters delegate helper: codeMirrorBridge.getDocLength(view)')
-require('lineInfoFromCodeMirrorBridgeModule(doc, pos)' not in legacy, 'runtime context adapter now owns lineInfo use outside main.legacy.js')
+require("from '../editor/codeMirrorBridge.js'" in adapters, 'app adapters import CodeMirror bridge module')
+require('codeMirrorBridge.getDocLength(view)' in adapters, 'app adapters delegate helper: codeMirrorBridge.getDocLength(view)')
+require('lineInfoFromCodeMirrorBridgeModule(doc, pos)' not in app, 'app.js does not call lineInfo; the runtime context adapter does')
 
-require('src/editor/codeMirrorBridge.js' not in allowed, 'CodeMirror bridge module removed from unwired allowlist')
+require('src/editor/codeMirrorBridge.js' not in allowed, 'CodeMirror bridge module is not on the unwired allowlist')
 
 for token in [
-    'export function hookDispatch',
-    'export function unhookDispatch',
     'export function getDoc',
     'export function getPos',
-    'export function lineInfo',
     'export function getDocLength',
 ]:
     require(token in module, f'module export present: {token}')
 
-# Runtime dispatch lifecycle ownership moved out of main into the editor dispatch runtime.
-require("from './editor/editorDispatchRuntime.js'" in legacy, 'main imports editor dispatch runtime owner')
+# The editor dispatch runtime owns the dispatch hook lifecycle.
+require("from './editor/editorDispatchRuntime.js'" in app, 'main imports editor dispatch runtime owner')
 for token in [
     'export function createEditorDispatchRuntime',
     'function hookDispatch(view)',

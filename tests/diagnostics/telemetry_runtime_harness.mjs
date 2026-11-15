@@ -1,10 +1,10 @@
-// The real diagnostics runtime (src/diagnostics/telemetryRuntime.js) on the settings panel DOM
+// The real diagnostics runtime (src/diagnostics/diagnosticsRuntime.js) on the settings panel DOM
 // stand-in, for tests of the Diagnostics and Context tab markup and their refresh.
 
-import { createDiagnosticsRuntime } from '../../src/diagnostics/telemetryRuntime.js';
+import { createDiagnosticsRuntime } from '../../src/diagnostics/diagnosticsRuntime.js';
 import { safeContextSummary, diagnosticsReadoutBundle } from '../../src/diagnostics/diagnosticsCore.js';
 import * as diagnosticsHealth from '../../src/diagnostics/diagnosticsHealth.js';
-import { formatPerformanceEventMetric } from '../../src/diagnostics/diagnosticsFastLaneHelpers.js';
+import { formatPerformanceEventMetric } from '../../src/diagnostics/diagnosticsReadoutHelpers.js';
 import { createEmbeddedLanguageDiagnostics } from '../../src/languages/embeddedLanguageDiagnostics.js';
 import { createSuggestionQualityRuntime } from '../../src/completion/suggestionQualityRuntime.js';
 import { itemDetail, itemDocumentation, itemSourceLabel, completionVisualKind } from '../../src/ui/suggestionPopup.js';
@@ -45,7 +45,6 @@ export function createTelemetryHarness(overrides = {}) {
   const runtime = createDiagnosticsRuntime({
     CHANGELOG_SUMMARY: {},
     DEFAULT_SETTINGS: { style: {} },
-    LIVE_COMPANION_EDITOR_VERSION: 'nostrodomus-editor-v17.2.65-runtime-coordinator',
     PRODUCT_NAME: 'Nostrodomus',
     PROJECT_RELEASE_STATE: 'beta',
     PROJECT_VERSION: '0.0.0',
@@ -115,7 +114,6 @@ export function createTelemetryHarness(overrides = {}) {
     },
     settingsPortalRoot: () => document.body,
     state,
-    styleCssModuleStatus: () => ({}),
     suggestionQualityPayload: quality.suggestionQualityPayload,
     ...overrides.deps,
   });

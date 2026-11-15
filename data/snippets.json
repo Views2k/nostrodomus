@@ -25,7 +25,7 @@
       "dashboard.action.value.navigate"
     ],
     "label": "navigate + path",
-    "insert": "navigate\nnavigation_path: ${1:/lovelace/default}",
+    "insert": "navigate\nnavigation_path: ${1:/my-dashboard/home}",
     "aliases": [
       "dashboard",
       "navigate",
@@ -93,7 +93,7 @@
       "dashboard.action.navigate"
     ],
     "label": "tap/hold action: navigate",
-    "insert": "action: navigate\nnavigation_path: ${1:/lovelace/default}",
+    "insert": "action: navigate\nnavigation_path: ${1:/my-dashboard/home}",
     "aliases": [
       "tap_action",
       "navigate",
@@ -253,7 +253,7 @@
     "triggers": [
       "automation.action.service"
     ],
-    "label": "action: service call",
+    "label": "action: perform action",
     "insert": "- action: ${1:light.turn_on}\n  target:\n    entity_id: ${2:light.example}\n  data:\n    ${3:brightness_pct}: ${4:100}",
     "aliases": [
       "automation",
@@ -488,7 +488,7 @@
       "dashboard.card.mushroom_chips"
     ],
     "label": "card: mushroom chips",
-    "insert": "type: custom:mushroom-chips-card\nchips:\n  - type: entity\n    entity: ${1:sensor.example}\n  - type: action\n    icon: ${2:mdi:home}\n    tap_action:\n      action: navigate\n      navigation_path: ${3:/lovelace/default}",
+    "insert": "type: custom:mushroom-chips-card\nchips:\n  - type: entity\n    entity: ${1:sensor.example}\n  - type: action\n    icon: ${2:mdi:home}\n    tap_action:\n      action: navigate\n      navigation_path: ${3:/my-dashboard/home}",
     "aliases": [
       "mushroom",
       "chips",
@@ -757,7 +757,7 @@
     "triggers": [
       "card_mod.css.variables"
     ],
-    "label": "card-mod: CSS variables",
+    "label": "card_mod: CSS variables",
     "insert": "ha-card {\n  --ha-card-background: ${1:rgba(20, 24, 34, 0.45)};\n  --ha-card-border-radius: ${2:22px};\n}",
     "aliases": [
       "card-mod",
@@ -1214,7 +1214,7 @@
     "triggers": [
       "card_mod.glass_card"
     ],
-    "label": "card-mod glass card",
+    "label": "card_mod: glass card",
     "insert": "card_mod:\n  style: |\n    ha-card {\n      background: ${1:rgba(15, 23, 42, 0.42)};\n      backdrop-filter: blur(${2:14px});\n      border: 1px solid ${3:rgba(255, 255, 255, 0.12)};\n      box-shadow: ${4:0 18px 40px rgba(0, 0, 0, 0.28)};\n    }",
     "aliases": [
       "card-mod",
@@ -1223,7 +1223,7 @@
       "ha-card"
     ],
     "priority": 111,
-    "documentation": "card-mod frosted glass ha-card style skeleton."
+    "documentation": "card_mod frosted glass ha-card style skeleton."
   },
   {
     "id": "snip.card_mod.mushroom_chip_row",
@@ -1232,7 +1232,7 @@
     "triggers": [
       "card_mod.mushroom_chip_row"
     ],
-    "label": "card-mod mushroom chip style",
+    "label": "card_mod: mushroom chip style",
     "insert": "card_mod:\n  style: |\n    mushroom-chip {\n      --chip-background: ${1:rgba(255, 255, 255, 0.08)};\n      --chip-border-radius: ${2:999px};\n    }",
     "aliases": [
       "card-mod",
@@ -1241,7 +1241,7 @@
       "css"
     ],
     "priority": 103,
-    "documentation": "card-mod style skeleton for Mushroom chip rows."
+    "documentation": "card_mod style skeleton for Mushroom chip rows."
   },
   {
     "id": "snip.sequence.choose_by_trigger",

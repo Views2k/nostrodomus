@@ -17,12 +17,12 @@ Nostrodomus defends against accidental and opportunistic misuse inside the brows
 - No `innerHTML`. The interface is built with `createElement`, `textContent` and explicit attribute setters. The helpers in `src/core/dom.js` accept a fixed set of tag names and reject event-handler attributes (`on*`), `javascript:` URLs and `srcdoc`.
 - Listeners are attached with `addEventListener`, not with handler attributes.
 - Text from providers and from Home Assistant (labels, details, documentation, entity ids, names) is rendered as text nodes. Rows built from the bundled library and from Home Assistant data are cut to fixed lengths (`SECURITY_LIMITS` in `src/core/runtimeConstants.js`).
-- Behavior is limited to code editors. Keyboard and pointer handling, styles and the popup apply to the active editor and its dialog, not to the dashboard (`docs/contracts/RUNTIME_SCOPE_CONTRACT.md`).
+- Behavior is limited to code editors. Keyboard and pointer handling, styles and the suggestion list apply to the active editor and its dialog, not to the dashboard (`docs/contracts/RUNTIME_SCOPE_CONTRACT.md`).
 - Diagnostics are redacted by default. `window.__nostrodomus.exportDiagnostics()` replaces editor text, labels and names unless it is called with `{ redact: false }`, and the copy button in Settings always copies the redacted form.
 - Data read from Home Assistant degrades quietly: a missing, partial or throwing object leads to fewer suggestions, not to an exception (`docs/PROVIDER_CONTRACT.md`).
 - `window.__nostrodomus.uninstall()` removes the listeners, observers, style elements and overlays that Nostrodomus added.
 
-`tools/verify.py` enforces the first three points on `dist/nostrodomus.js`: it fails when one of the forbidden strings appears in the bundle or when the number of `innerHTML` occurrences exceeds `innerhtml_max` in `PROJECT.json`, which is 0. `tools/check_runtime_contracts.py` scans `src/main.legacy.js` and the bundle for `eval`, `new Function`, `sendBeacon` and `fetch` calls.
+`tools/verify.py` enforces the first three points on `dist/nostrodomus.js`: it fails when one of the forbidden strings appears in the bundle or when the number of `innerHTML` occurrences exceeds `innerhtml_max` in `PROJECT.json`, which is 0. `tools/check_runtime_contracts.py` scans `src/app.js` and the bundle for `eval`, `new Function`, `sendBeacon` and `fetch` calls.
 
 ## Actors
 
@@ -77,7 +77,7 @@ Never done:
 
 ## Storage
 
-Settings are stored in `localStorage` under `nostrodomus.settings`, and the counts of accepted completions under `nostrodomus.frecency`. A stored value replaces a default only when it has the same type, the keys `__proto__`, `constructor` and `prototype` are ignored, and the two item counts are clamped to the range the settings panel offers (`src/core/settings.js`, `src/core/settingsRuntime.js`). Nothing from the editor text is stored.
+Settings are stored in `localStorage` under `nostrodomus.settings`, the last open settings tab under `nostrodomus.settings.activeCategory`, and the counts of accepted completions under `nostrodomus.frecency`. A stored value replaces a default only when it has the same type, the keys `__proto__`, `constructor` and `prototype` are ignored, and the two item counts are clamped to the range the settings panel offers (`src/core/settings.js`, `src/core/settingsRuntime.js`). Nothing from the editor text is stored.
 
 ## Diagnostics
 

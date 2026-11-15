@@ -3,11 +3,10 @@ import assert from 'node:assert/strict';
 
 import { scoreItems } from '../../src/completion/scoring.js';
 
-// Regression guard: the scoreItems cache
-// key omitted the completion lane-gate flags. Because the candidate set a provider yields for a
-// fixed context depends on those flags (engineV2/registryLane/schemaValues/surfaceScope/jinjaLane/
-// lazyResolve) and the settings-save cache clear is debounced, a flag toggle could serve rows
-// scored under the old config from state.completionCache. The key now carries every completion flag.
+// The rows a provider yields for a context depend on the completion lane flags (engineV2,
+// registryLane, schemaValues, surfaceScope, jinjaLane, lazyResolve), and the cache clear after a
+// settings save is debounced. The scoreItems cache key therefore carries every completion flag, so a
+// toggled flag never serves rows scored under the previous settings.
 
 const ctx = () => ({ shouldSuggest: true, lang: 'yaml', prefix: 'x', triggerKind: 'explicit' });
 const row = (label) => ({ id: label, lang: 'yaml', label, insert: label, source: 'static-library' });

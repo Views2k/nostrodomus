@@ -26,7 +26,7 @@ They write it to `www/community/nostrodomus/nostrodomus.js` in the Home Assistan
 }
 ```
 
-`filename` is a file name, not a path, and `content_in_root` is not set. With `content_in_root` the installers look only in the repository root, and with a path in `filename` they download nothing; 0.1.279 had both and could not be installed. `tools/verify.py` checks both rules.
+`filename` is a file name, not a path, and `content_in_root` is not set. With `content_in_root` the installers look only in the repository root, and with a path in `filename` they download nothing. `tools/verify.py` checks both rules.
 
 HACS and the Marketplace read `hacs.json` from the release tag they install, so a change to it reaches users with the next release.
 

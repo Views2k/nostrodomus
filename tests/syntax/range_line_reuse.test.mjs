@@ -1,6 +1,6 @@
-// A range pass built every highlight range of every rendered line again, also when one line had
-// changed. A line whose element, text, tokens and text nodes are the ones of the pass that built
-// its ranges now keeps them. These tests compare the registered highlights after each step with
+// A range pass keeps the ranges of a line whose element, text, tokens and text nodes are the ones
+// of the pass that built them, so an edit of one line does not rebuild every rendered line. These
+// tests compare the registered highlights after each step with
 // the highlights a new runtime registers in one full pass over the same lines: they must be the
 // same ranges (text node, start, end) in the same order for every kind.
 

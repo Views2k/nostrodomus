@@ -29,7 +29,7 @@ test('uiAccentVarsFromSettings derives brand/accent (border hue) + scrollbar (sc
   const red = uiAccentVarsFromSettings({ codeboxBorderHue: 0, codeboxBorderSaturation: 1 });
   const [rr, rg, rb] = red.brand.split(',').map((n) => Number(n));
   assert.ok(rr > rg && rr > rb, 'red border hue yields a red-dominant brand');
-  // scrollbar tracks the codebox SCROLLBAR hue independently of the border hue
+  // scrollbar tracks the codebox scrollbar hue independently of the border hue
   const split = uiAccentVarsFromSettings({ codeboxBorderHue: 0, codeboxBorderSaturation: 1, scrollbarHue: 240, scrollbarSaturation: 1 });
   const [sbr, sbg, sbb] = split.brand.split(',').map((n) => Number(n));
   const [ssr, ssg, ssb] = split.scrollbar.split(',').map((n) => Number(n));
@@ -40,7 +40,7 @@ test('uiAccentVarsFromSettings derives brand/accent (border hue) + scrollbar (sc
   assert.match(bad.brand, /^\d+, \d+, \d+$/);
 });
 
-test('codeboxStyleTokenMap preserves legacy CSS variable mapping', () => {
+test('codeboxStyleTokenMap maps each token to its CSS variable and drops unknown keys', () => {
   const tokens = {
     scrollbarThumb: 'thumb',
     scrollbarTrack: 'track',
@@ -74,7 +74,7 @@ test('codeboxStyleTokenMap preserves legacy CSS variable mapping', () => {
 });
 
 
-test('codeboxStyleBuildRootCss preserves legacy root CSS selectors and token interpolation', () => {
+test('codeboxStyleBuildRootCss emits the root selectors and interpolates every token', () => {
   const css = codeboxStyleBuildRootCss({
     scrollbarThumb: 'thumb-token',
     scrollbarTrack: 'track-token',
@@ -109,15 +109,14 @@ test('codeboxStyleBuildRootCss preserves legacy root CSS selectors and token int
   assert.match(css, /font-size: 17px !important;/);
   assert.match(css, /filter: var\(--nostrodomus-codebox-syntax-filter, hue-rotate\(10deg\) saturate\(1\.20\)\) !important;/);
   assert.match(css, /border: 2px solid var\(--nostrodomus-codebox-scrollbar-thumb-border, thumb-border-token\) !important;/);
-  // UNIVERSAL: the Dev Tools → Template Result pane (the whole ha-card.render-pane) mirrors the
-  // codebox frame — border + glow + uniform frosted surface — with the codebox vars (re)defined on the
-  // pane from the same tokens so it stays color-synced.
+  // The Developer Tools template result pane (ha-card.render-pane) gets the codebox frame: border,
+  // glow and frosted surface, with the codebox variables defined on the pane from the same tokens.
   assert.match(css, /ha-card\.render-pane\s*\{/);
   assert.match(css, /ha-card\.render-pane\s*\{[^}]*--nostrodomus-codebox-surface: surface-token;/);
   assert.match(css, /ha-card\.render-pane\s*\{[^}]*border: 1px solid var\(--nostrodomus-codebox-frame-border\) !important;/);
   assert.match(css, /ha-card\.render-pane\s*\{[^}]*backdrop-filter: var\(--nostrodomus-codebox-surface-blur\) !important;/);
   assert.match(css, /ha-card\.render-pane\s*\{[^}]*0 0 52px var\(--nostrodomus-codebox-frame-glow-outer-soft\) !important;/);
-  // the v0.1.145 partial pre.rendered blur is gone (superseded by the full-pane frame)
+  // The frame covers the whole pane, so pre.rendered has no rule of its own.
   assert.doesNotMatch(css, /pre\.rendered\s*\{/);
 });
 
@@ -135,7 +134,7 @@ test('applyingCodeboxStyle reset is guarded by try/finally and kept deferred', (
   const src = readFileSync(new URL('../../src/ui/codeboxStyleRuntime.js', import.meta.url), 'utf8');
   // The guard set true must be followed by a try, and the reset must live in a finally so a throw between
   // set and reset can never strand the flag true (which permanently gates the observer's reapply). The
-  // reset must stay DEFERRED (setTimeout, not synchronous) — the defer holds the guard through the
+  // reset must stay deferred (setTimeout, not synchronous) — the defer holds the guard through the
   // synchronous mutation storm so the just-installed observers don't fire a re-entrant reapply.
   assert.match(src, /state\.applyingCodeboxStyle = true;\s*try \{/, 'guard set is wrapped in try');
   assert.match(src, /\} finally \{\s*setTimeout\(\(\) => \{ state\.applyingCodeboxStyle = false; \}, 0\);\s*\}/, 'reset is deferred inside finally');
@@ -147,20 +146,19 @@ test('codeboxStyleBuildRootCss drives the active-line wash from activeLineBackgr
     frameGlowInner: 't', frameGlowInnerSoft: 't', frameGlowOuter: 't', frameGlowOuterSoft: 't',
     editorSurface: 't', size: { value: '16px' }, syntaxFilter: 'none', thumbBorder: 't',
   };
-  // default param: the faint wash (so the pure function's legacy output is unchanged) + HA's native
-  // focus borders left intact (no suppression emitted when shown)
+  // Default: the faint wash, and HA's own focus borders are left alone.
   const shown = codeboxStyleBuildRootCss(base);
   assert.match(shown, /\.cm-activeLineGutter \{\s*background: rgba\(255, 255, 255, 0\.045\) !important;/);
   assert.doesNotMatch(shown, /border-top-color: transparent !important;/);
   assert.doesNotMatch(shown, /border-right-color: transparent !important;/);
-  // hidden: transparent wash AND suppress the focus-border "90° line" (.cm-content top + .cm-gutters right)
+  // hidden: transparent wash and suppress the focus-border "90° line" (.cm-content top + .cm-gutters right)
   const hidden = codeboxStyleBuildRootCss({ ...base, activeLineBackground: 'transparent' });
   assert.match(hidden, /\.cm-activeLineGutter \{\s*background: transparent !important;/);
   assert.match(hidden, /\.cm-content \{\s*border-top-color: transparent !important;/);
   assert.match(hidden, /\.cm-gutters\.cm-gutters-before \{\s*border-right-color: transparent !important;/);
 });
 
-test('codeboxStyleBuildRootCss preserves default syntax foreground fallback token', () => {
+test('codeboxStyleBuildRootCss falls back to the default syntax foreground', () => {
   const css = codeboxStyleBuildRootCss({
     scrollbarThumb: 'thumb',
     scrollbarTrack: 'track',
@@ -181,7 +179,7 @@ test('codeboxStyleBuildRootCss preserves default syntax foreground fallback toke
   assert.match(css, /var\(--nostrodomus-codebox-syntax-fg, #d4d4d4\)/);
 });
 
-test('codeboxStyleSignature preserves legacy stable JSON shape and defaults', () => {
+test('codeboxStyleSignature returns a stable JSON shape', () => {
   const signature = codeboxStyleSignature({
     settings: {
       scrollbarStyleEnabled: false,
@@ -223,7 +221,7 @@ test('codeboxStyleSignature preserves legacy stable JSON shape and defaults', ()
   });
 });
 
-test('codeboxStyleSignature preserves v31 legacy truthy default behavior', () => {
+test('codeboxStyleSignature treats missing switches as on', () => {
   assert.deepEqual(JSON.parse(codeboxStyleSignature({})), {
     size: '',
     frameEnabled: true,
@@ -235,7 +233,7 @@ test('codeboxStyleSignature preserves v31 legacy truthy default behavior', () =>
   });
 });
 
-test('codeboxStyleReasonRequiresFullApply preserves legacy state and reason triggers', () => {
+test('codeboxStyleReasonRequiresFullApply is true before the first apply, after invalidation and for full-apply reasons', () => {
   assert.equal(codeboxStyleReasonRequiresFullApply('', { lastAppliedAt: 123, cacheInvalidated: false }), false);
   assert.equal(codeboxStyleReasonRequiresFullApply('', { lastAppliedAt: 0, cacheInvalidated: false }), true);
   assert.equal(codeboxStyleReasonRequiresFullApply('', { lastAppliedAt: 123, cacheInvalidated: true }), true);
@@ -255,7 +253,7 @@ test('codeboxStyleReasonRequiresFullApply preserves legacy state and reason trig
   }
 });
 
-test('codeboxStyleReasonRequiresSyntaxPaint preserves legacy dirty-editor reason triggers', () => {
+test('codeboxStyleReasonRequiresSyntaxPaint is true for reasons that dirty the editor', () => {
   assert.equal(codeboxStyleReasonRequiresSyntaxPaint('', { lastAppliedAt: 123, cacheInvalidated: false }), false);
   assert.equal(codeboxStyleReasonRequiresSyntaxPaint('settings-open', { lastAppliedAt: 123, cacheInvalidated: false }), true);
 
@@ -275,7 +273,7 @@ test('codeboxStyleReasonRequiresSyntaxPaint preserves legacy dirty-editor reason
 });
 
 
-test('codeboxStyleReasonIsSourceClassSteadyState preserves source-class skip reason matching', () => {
+test('codeboxStyleReasonIsSourceClassSteadyState matches the source-class skip reasons', () => {
   assert.equal(codeboxStyleReasonIsSourceClassSteadyState(''), false);
   assert.equal(codeboxStyleReasonIsSourceClassSteadyState('typing'), false);
   assert.equal(codeboxStyleReasonIsSourceClassSteadyState(null), false);
@@ -293,7 +291,7 @@ test('codeboxStyleReasonIsSourceClassSteadyState preserves source-class skip rea
 });
 
 
-test('codeboxStyleSourceClassSteadyStateSkipDecision preserves legacy skip guards', () => {
+test('codeboxStyleSourceClassSteadyStateSkipDecision skips only when every guard holds', () => {
   const base = {
     reason: 'editor-dispatch',
     cacheInvalidated: false,
@@ -318,7 +316,7 @@ test('codeboxStyleSourceClassSteadyStateSkipDecision preserves legacy skip guard
 });
 
 
-test('codeboxStyleSettleReasonCoalesceDecision preserves legacy settle coalescing guards', () => {
+test('codeboxStyleSettleReasonCoalesceDecision coalesces a repeated or empty reason while a settle timer is pending', () => {
   assert.deepEqual(codeboxStyleSettleReasonCoalesceDecision({
     reason: 'style-range-change',
     activeTimerCount: 2,
@@ -355,7 +353,7 @@ test('codeboxStyleSettleReasonCoalesceDecision preserves legacy settle coalescin
   }).coalesce, false);
 });
 
-test('codeboxStyleReasonNeedsSettle preserves legacy bounded settle reasons', () => {
+test('codeboxStyleReasonNeedsSettle is true only for the bounded settle reasons', () => {
   assert.equal(codeboxStyleReasonNeedsSettle('typing'), false);
   assert.equal(codeboxStyleReasonNeedsSettle('mutation'), false);
 
@@ -377,7 +375,7 @@ test('codeboxStyleReasonNeedsSettle preserves legacy bounded settle reasons', ()
 
 
 
-test('codeboxStyleTokensFromSettings preserves legacy enabled token derivation', () => {
+test('codeboxStyleTokensFromSettings derives the tokens for enabled switches', () => {
   const tokens = codeboxStyleTokensFromSettings({
     scrollbarStyleEnabled: true,
     codeboxFrameEnabled: true,
@@ -412,7 +410,7 @@ test('codeboxStyleTokensFromSettings preserves legacy enabled token derivation',
   });
 });
 
-test('codeboxStyleTokensFromSettings preserves disabled fallback tokens and default glow size', () => {
+test('codeboxStyleTokensFromSettings returns fallback tokens for disabled switches', () => {
   const tokens = codeboxStyleTokensFromSettings({
     scrollbarStyleEnabled: false,
     codeboxFrameEnabled: false,

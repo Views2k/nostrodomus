@@ -13,7 +13,7 @@ import {
   codeboxStyleTokensFromSettings,
   cssColorIsDark,
 } from '../../src/ui/codeboxStyle.js';
-import { createMainLegacySettingsAdapters } from '../../src/composition/mainLegacyAdapters.js';
+import { createAppSettingsAdapters } from '../../src/composition/appAdapters.js';
 import { STYLE_SYNTAX_PRESETS } from '../../src/ui/settingsStyle.js';
 
 const STYLE = {
@@ -157,7 +157,7 @@ test('the root CSS takes the text, line number and caret colors, and is unchange
 
 test('the tokens the runtimes receive follow the measured theme and the chosen preset', () => {
   const state = { codeboxThemeIsLight: false, settings: { style: {} } };
-  const adapters = createMainLegacySettingsAdapters({
+  const adapters = createAppSettingsAdapters({
     defaultSettings: { style: { ...STYLE, syntaxTintPreset: 'vscodeDarkPlus' } },
     getState: () => state,
     settingsRuntime: {},

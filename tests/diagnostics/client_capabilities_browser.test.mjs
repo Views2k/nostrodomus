@@ -3,10 +3,9 @@ import assert from 'node:assert/strict';
 
 import { createClientCapabilitiesRuntime } from '../../src/diagnostics/clientCapabilitiesRuntime.js';
 
-// Behavior coverage for browserInfoSnapshot (previously only structurally grep-pinned). Writing these
-// intended-behavior tests surfaced a real bug: the UA-fallback used one alternation regex that matched
-// the leftmost token, so Edge/Opera — whose UA carries "Chrome/…" before "Edg/…"/"OPR/…" — were both
-// misreported as Chrome. Detection now checks the most-specific token first.
+// Behavior tests for browserInfoSnapshot. The user-agent fallback checks the most specific token
+// first: Edge and Opera user agents carry "Chrome/…" before "Edg/…" or "OPR/…", so a single
+// alternation regex that takes the leftmost token would report both as Chrome.
 
 const snap = (navigatorRef) => createClientCapabilitiesRuntime({ navigatorRef }).browserInfoSnapshot();
 const UA = {
@@ -48,7 +47,7 @@ test('userAgentData brands take precedence over the UA string and drop "Not.A/Br
   assert.equal(s.userAgentBrands.length, 3);
 });
 
-test('an empty navigator fails dark to "unknown"', () => {
+test('an empty navigator gives "unknown"', () => {
   const s = snap({});
   assert.equal(s.name, 'unknown');
   assert.equal(s.version, '');

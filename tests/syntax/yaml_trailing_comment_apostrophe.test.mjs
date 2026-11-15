@@ -27,6 +27,19 @@ test('a # inside a quoted scalar is still part of the string', () => {
   assert.deepEqual(kinds("items: [a, 'b # c'] # real").slice(-1), ['comment:# real']);
 });
 
+test('the trailing comment starts at the #, after any run of blanks', () => {
+  assert.deepEqual(kinds('name: Hall   # note'), ['key:name', 'punct::', 'string:Hall', 'comment:# note']);
+  assert.deepEqual(kinds('  - entity: light.a \t# main').slice(-1), ['comment:# main']);
+  assert.deepEqual(kinds('  - light.a   # main').slice(-1), ['comment:# main'], 'as for a list item without a key');
+});
+
+test("an escaped quote ('') does not end a single-quoted scalar", () => {
+  assert.deepEqual(kinds("name: 'Bob''s # 1 fan' # real"), [
+    'key:name', 'punct::', "string:'Bob''s", 'string:#', 'string:1', "string:fan'", 'comment:# real',
+  ]);
+  assert.equal(kinds("  - 'it''s # here'").some((kind) => kind.startsWith('comment:')), false);
+});
+
 // A quote opens a scalar only where a scalar can start. After a word of a plain scalar it is an
 // ordinary character, also when it follows a space: `rock 'n roll` has no quoted part.
 test('a word that starts with an apostrophe inside a plain scalar does not hide the trailing comment', () => {

@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import { createCompanionSettleRuntime, INTERACTION_LADDER_MS, SETTLE_BURST_MS, SETTLE_LADDER_MS } from '../../src/companion/companionSettleRuntime.js';
 import { editCardDialogCandidates, editCardDialogElements } from '../../src/editor/activeEditor.js';
 
-// Measured on a live instance: one click armed three 13-rung ladders (pointerdown, mousedown,
-// click), and because Home Assistant keeps a closed edit-card dialog element attached, that
-// held on every dashboard for the rest of the session. These tests pin the click cost.
+// A click fires pointerdown, mousedown and click, and Home Assistant keeps a closed edit-card
+// dialog element attached for the rest of the session. These tests pin the cost of one click on a
+// dashboard (measured on a live instance: three 13-rung ladders per click when this is not handled).
 
 function harness({ dialogPresent = () => false, editorKnown = () => false, dialogElements = () => [] } = {}) {
   let clock = 1000;
@@ -100,7 +100,7 @@ test('with a known editor but no dialog a click re-applies once and arms no ladd
   assert.equal(h.reapplied.length, appliesBefore + 1);
 });
 
-test('the boot ladder rungs are not labelled as install applies', () => {
+test('the boot ladder rungs are not labeled as install applies', () => {
   const h = harness();
   h.rt.boot('install');
   h.flushRaf();
@@ -151,7 +151,7 @@ test('a dialog element is watched for opening; opening arms a ladder without any
 test('a closed edit-card dialog element (empty shadow root) is not a present dialog', () => {
   const openDialog = { shadowRoot: { childElementCount: 1 } };
   const closedDialog = { shadowRoot: { childElementCount: 0 } };
-  const legacyDialog = {}; // no shadow root information: keep the old behavior
+  const legacyDialog = {}; // no shadow root information: counts as present
   const previous = globalThis.document;
   globalThis.document = {
     querySelectorAll: (selector) => (selector === 'hui-dialog-edit-card' ? [openDialog, closedDialog, legacyDialog] : []),
@@ -178,8 +178,8 @@ test('the settle engine registers no input, beforeinput or compositionupdate lis
 });
 
 
-// The plugin's own stylesheets are added to the dialog's shadow root while it is open. The
-// open/close watcher took those records for the dialog opening and armed extra ladders.
+// The plugin adds its own stylesheets to the dialog's shadow root while it is open. The open/close
+// watcher must not take those records for the dialog opening.
 test('the plugin style elements added to the dialog do not arm a ladder', () => {
   let open = true;
   const dialog = { isConnected: true, shadowRoot: { childElementCount: 3 } };

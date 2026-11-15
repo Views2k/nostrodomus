@@ -47,14 +47,14 @@ test('isExternalCompanionPresent reflects only external descriptors', () => {
   assert.equal(isExternalCompanionPresent({ globalRef: g }), true, 'an external descriptor flips it on');
 });
 
-test('isExternalCompanionPresent matches by role too (and fails dark with no coordinator)', () => {
+test('isExternalCompanionPresent matches by role too, and is false without a coordinator', () => {
   const g = {};
   installRuntimeCoordinator({ id: 'some-future-picker', role: 'picker-companion-runtime' }, { globalRef: g });
   assert.equal(isExternalCompanionPresent({ globalRef: g }), true, 'role match counts');
   assert.equal(isExternalCompanionPresent({ globalRef: {} }), false, 'no coordinator -> not external');
 });
 
-test('isForceDormant reads the kill-switch key, fail-dark otherwise', () => {
+test('isForceDormant reads the dormant override from storage and is false when storage cannot be read', () => {
   assert.equal(isForceDormant({ storage: forceDormantStorage }), true);
   assert.equal(isForceDormant({ storage: emptyStorage }), false);
   assert.equal(isForceDormant({ storage: { getItem() { throw new Error('denied'); } } }), false);
@@ -73,7 +73,7 @@ test('companionLayerStatus precedence: forced > external > internal', () => {
   assert.equal(companionLayerStatus({ globalRef: external, storage: forceDormantStorage }), 'dormant(forced)');
 });
 
-test('companionModuleDormant is true when forced OR external, false for internal-only', () => {
+test('companionModuleDormant is true when forced or external, false for internal-only', () => {
   const internalOnly = {};
   installRuntimeCoordinator({ id: INTERNAL_COORDINATOR_DESCRIPTOR_ID, role: 'completion-runtime' }, { globalRef: internalOnly });
   assert.equal(companionModuleDormant({ globalRef: internalOnly, storage: emptyStorage }), false);

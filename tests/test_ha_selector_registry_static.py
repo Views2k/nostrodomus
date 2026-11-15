@@ -1,28 +1,20 @@
 #!/usr/bin/env python3
-# Selector-registry guard.
+# Selector registry check.
 #
-# Treadmill-coupled HA element selectors must live only in the registry
-# (src/editor/haSelectors.js), so an HA DOM rename is one edit in one file.
-# This guard scans RUNTIME src/ and fails if a treadmill-coupled selector
-# literal appears anywhere else.
-#
-# It polices runtime COUPLING, not prose: the flagged set is exactly the
-# element patterns that churn with HA releases —
+# Selectors for Home Assistant elements that change between HA releases must live only in
+# src/editor/haSelectors.js, so a renamed HA element is one edit in one file. This test scans
+# the string literals in src/ and fails when such a selector appears anywhere else:
 #   - any `hui-...` tag,
 #   - any `ha-panel-...` tag,
-#   - the exact `home-assistant` / `home-assistant-main` hosts,
-#   - any `.cm-...` class OUTSIDE the contracted CodeMirror set
-#     (.cm-editor / .cm-content / .cm-scroller / .cm-line, the stable CM6
-#     surface the editor/syntax contracts already depend on).
-# It deliberately does NOT flag `ha-code-editor`, `ha-dialog`, `wa-dialog`,
-# the contracted `.cm-*` classes, or `:modal` — those are either stable or
-# appear in CSS-generation prose; centralizing them is good practice (the
-# registry does) but is not enforced here, to keep the guard off the
-# treadmill itself.
+#   - the exact `home-assistant` and `home-assistant-main` hosts,
+#   - any `.cm-...` class outside .cm-editor, .cm-content, .cm-scroller and .cm-line, the stable
+#     CodeMirror classes the editor and syntax code rely on.
+# It does not flag `ha-code-editor`, `ha-dialog`, `wa-dialog`, those four `.cm-*` classes or
+# `:modal`: they are stable or appear in generated CSS. The registry defines them anyway.
 #
-# Exemptions (data, not DOM coupling): the registry itself, and HACS catalog
-# data files whose `home-assistant-core` slug / card-type names
-# (`hui-card`, `hui-entities-card`) are values, not querySelector targets.
+# Exempt files hold data, not DOM queries: the registry itself and the HACS catalog files,
+# whose `home-assistant-core` slug and card-type names (`hui-card`, `hui-entities-card`) are
+# values, not querySelector targets.
 
 import re
 import sys
@@ -39,7 +31,7 @@ EXEMPT_FILES = {
     # card-type names in nestedKeys are values, not DOM-query coupling.
     SRC / "providers" / "hacsProviderCatalog.js",
     # Provider capability declarations: `home-assistant` here is a capability
-    # TAG in a `capabilities: [...]` data array (these files have zero
+    # tag in a `capabilities: [...]` data array (these files have zero
     # querySelector/matches/closest/shadowRoot), not a DOM host selector.
     SRC / "providers" / "hacsCatalogProvider.js",
     SRC / "providers" / "snippetProvider.js",
@@ -53,7 +45,7 @@ TOKEN_SPLIT = re.compile(r"[\s,>+~]+")
 
 
 def selector_violation(token):
-    """Return a reason string if a selector token is treadmill-coupled, else None.
+    """Return a reason string if a selector token must come from the registry, else None.
 
     The token is normalized to its base element/class first: attribute
     filters (`[...]`) and pseudo-classes (`:hover`, `::before`) are stripped,
@@ -87,8 +79,7 @@ for path in sorted(SRC.rglob("*.js")):
     scanned += 1
     text = path.read_text(errors="replace")
     for lineno, line in enumerate(text.splitlines(), start=1):
-        # Skip pure comment lines — the guard polices runtime coupling, not
-        # prose, so an HA name discussed in a comment is not a violation.
+        # Comment lines are skipped: an HA name mentioned in a comment is not a selector.
         if line.lstrip().startswith(("//", "*", "/*")):
             continue
         for _, literal in STRING_LITERAL.findall(line):

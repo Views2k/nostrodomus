@@ -1,30 +1,26 @@
-// Companion picker visual-fix module.
+// Translucent, blurred entity pickers, popovers and popups.
 //
-// The entity-picker/popover/popup transparency-blur fix. The traversal must not use a
-// `querySelectorAll("*")` document walk (not allowed by the no-wildcard rule), so it is
-// a bounded, depth-capped, registry-driven walk: it descends ONLY into known host types
-// (the editor hosts + the picker overlay hosts), capped at maxDepth, over explicit roots
-// (document + home shadow + active dialog/top-layer). The collection grouping uses exact
-// matches() checks.
+// The walk starts at the document and the home-assistant shadow root and enters only known
+// hosts (the editor hosts and the picker's own overlay hosts), at most maxDepth deep, never
+// every element. Each element found is sorted into its group with matches().
 //
-// The injected per-group stylesheets are byte-identical to the frozen picker-safe source
-// (the @gen blocks are generated from it; the byte-identity test asserts this) under the
-// SAME element id. Lands DORMANT (companionLayerActive); apply is gated by the typing-quiet
-// window (defer during typing) and emits one performance mark pair (measured). No-op until
-// the shipped default is flipped active.
+// The stylesheets between the @gen markers are byte for byte the ones of the standalone picker
+// script (reference/companions/nostrodomus-picker-safe.js; tests/companion/picker_style_runtime.test.mjs
+// compares them), injected under the same element id. The module ships switched off
+// (PICKER_SHIPPED_ACTIVE); when on, it waits for a pause in typing and records a performance mark
+// pair per apply.
 
 import { companionLayerActive } from './coordinatorRuntime.js';
 import { OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR } from '../editor/overlayRoot.js';
 import { PICKER_FIX_SELECTOR, HOME_ASSISTANT } from '../editor/haSelectors.js';
 
 export const PICKER_STYLE_ID = 'nostrodomus-picker-only-final-v2';
-// Shipped default: dormant. Flip to true to ship the picker fix active.
+// Off by default. The override key (coordinatorRuntime) can switch it on.
 const PICKER_SHIPPED_ACTIVE = false;
 const DEFAULT_MAX_DEPTH = 12;
 
-// Host types the bounded walk descends INTO: the editor/dialog hosts (registry) plus
-// the picker overlay hosts (so nested items/ripple/search inside the picker's shadow
-// are reachable without a `*` descent).
+// The hosts the walk enters: the editor and dialog hosts, and the picker's overlay hosts, which
+// hold the items, ripples and search field in their shadow roots.
 const PICKER_SCAN_HOST_SELECTOR = [
   OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR,
   'ha-picker-combo-box', 'wa-popover', 'wa-popup', 'ha-input-search', 'wa-input',
@@ -266,8 +262,7 @@ export function createPickerStyleRuntime(deps = {}) {
     return companionLayerActive({ globalRef, storage, shippedDefault: PICKER_SHIPPED_ACTIVE });
   }
 
-  // Bounded, depth-capped, registry-driven collection of picker-fix targets. The add()
-  // grouping is the matches() logic; the walk is bounded (the no-wildcard law).
+  // The picker elements under `roots`, by group.
   function collectPickerFixTargets(roots) {
     const groups = { pickers: [], popovers: [], popups: [], searches: [], searchInputs: [], items: [], ripples: [] };
     const seen = new WeakSet();
@@ -304,7 +299,8 @@ export function createPickerStyleRuntime(deps = {}) {
     return groups;
   }
 
-  // first-injector-wins: skip a shadow root whose id an external picker-safe owns.
+  // A shadow root that already has the sheet (from an earlier apply or the standalone picker
+  // script) is left as it is.
   function injectOwned(root, css) {
     if (!root?.querySelector || !documentRef?.createElement) return;
     if (root.querySelector(`#${PICKER_STYLE_ID}`)) return;
@@ -314,8 +310,7 @@ export function createPickerStyleRuntime(deps = {}) {
     root.appendChild(style);
   }
 
-  // Explicit roots for the bounded walk: document + the home-assistant shadow root +
-  // any open top-layer dialogs (where pickers/popovers mount).
+  // Where the walk starts: the document and the home-assistant shadow root.
   function scanRoots() {
     const out = [];
     if (documentRef) out.push(documentRef);
@@ -328,7 +323,7 @@ export function createPickerStyleRuntime(deps = {}) {
 
   function apply(rootsOverride = null) {
     if (!active()) return false;
-    // Quiet-window deferral: pause picker work during typing.
+    // Wait for a pause in typing.
     if (deferDuringTyping('picker-fix', () => apply(rootsOverride))) return false;
 
     recordMark('picker-fix-start');

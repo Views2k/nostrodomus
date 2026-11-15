@@ -44,7 +44,7 @@ test('snippet validator accepts the catalog used by the provider', () => {
   assert.match(result.stdout, /SNIPPET VALIDATION OK \(91 snippets\)/);
 });
 
-test('snippet rows preserve provider row contract metadata', () => {
+test('a snippet row carries the provider row fields and the snippet metadata', () => {
   const row = snippetRow(NOSTRODOMUS_SNIPPET_CATALOG.find(item => item.id === 'snip.sequence.service'));
   assert.equal(row.id, 'snip.sequence.service');
   assert.equal(row.lang, 'yaml');

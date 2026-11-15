@@ -15,9 +15,9 @@ import {
 
 const LANE_IDS = ['yaml', 'jinja2', 'css', 'javascript', 'json', 'markdown-html'];
 
-test('language fixture corpus covers every Priority 10 lane with positive and guardrail examples', () => {
+test('language fixture corpus covers every language lane with positive and guardrail examples', () => {
   assert.equal(LANGUAGE_FIXTURE_CORPUS_VERSION, 1);
-  assert.equal(LANGUAGE_FIXTURE_CORPUS_STAGE, 'priority10-fixture-detector-contract');
+  assert.equal(LANGUAGE_FIXTURE_CORPUS_STAGE, 'fixture-detector-contract');
   assert.equal(LANGUAGE_FIXTURES.length, 18);
 
   for (const lane of LANE_IDS) {
@@ -51,7 +51,7 @@ test('fixtures carry exactly one cursor marker and stable lookup helpers', () =>
 test('fixture corpus status is read-only and explicit about unchanged runtime behavior', () => {
   const status = languageFixtureCorpusStatus();
   assert.equal(status.ok, true);
-  assert.equal(status.stage, 'priority10-fixture-detector-contract');
+  assert.equal(status.stage, 'fixture-detector-contract');
   assert.equal(status.fixtureCount, 18);
   assert.equal(status.byLane.yaml, 7);
   assert.equal(status.byLane.jinja2, 2);

@@ -5,17 +5,17 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / 'src/diagnostics/diagnosticsCore.js'
-LEGACY = ROOT / 'src/main.legacy.js'
+APP = ROOT / 'src/app.js'
 CONTEXT_RUNTIME = ROOT / 'src/diagnostics/contextDiagnosticsRuntime.js'
-TELEMETRY_RUNTIME = ROOT / 'src/diagnostics/telemetryRuntime.js'
+TELEMETRY_RUNTIME = ROOT / 'src/diagnostics/diagnosticsRuntime.js'
 ALLOWLIST = ROOT / 'docs/contracts/MODULE_WIRING_ALLOWLIST.json'
 REPORT = ROOT / 'reports/DIAGNOSTICS_CORE_MODULE_WIRING_STATIC_REPORT.txt'
 
 module = MODULE.read_text(encoding='utf-8', errors='replace')
-legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
+app = APP.read_text(encoding='utf-8', errors='replace')
 context_runtime = CONTEXT_RUNTIME.read_text(encoding='utf-8', errors='replace')
 telemetry_runtime = TELEMETRY_RUNTIME.read_text(encoding='utf-8', errors='replace')
-runtime_owner = legacy + '\n' + context_runtime + '\n' + telemetry_runtime
+runtime_owner = app + '\n' + context_runtime + '\n' + telemetry_runtime
 allowlist = json.loads(ALLOWLIST.read_text(encoding='utf-8'))
 allowed = allowlist.get('allowed_unwired_modules', {})
 errors = []
@@ -27,37 +27,34 @@ def require(ok, message):
     else:
         errors.append(message)
 
-require("from './diagnostics/diagnosticsCore.js'" in legacy, 'runtime imports diagnostics core module')
+require("from './diagnostics/diagnosticsCore.js'" in app, 'runtime imports diagnostics core module')
 for token in [
     'safeContextSummary',
     'diagnosticsReadoutBundle',
 ]:
-    require(token in legacy, f'runtime aliases active diagnostics core helper: {token}')
+    require(token in app, f'runtime uses diagnostics core helper: {token}')
 
-for removed in [
+for alias in [
     'diagnosticsReadoutString as diagnosticsReadoutStringFromDiagnosticsCore',
     'diagnosticsReadoutBool as diagnosticsReadoutBoolFromDiagnosticsCore',
     'diagnosticsReadoutSafeWarnings as diagnosticsReadoutSafeWarningsFromDiagnosticsCore',
     'diagnosticsReadoutSummary as diagnosticsReadoutSummaryFromDiagnosticsCore',
 ]:
-    require(removed not in legacy, f'dead diagnostics core runtime alias removed: {removed}')
+    require(alias not in app, f'app.js has no aliased diagnostics core import: {alias}')
 
-require('function safeContextSummary(' not in legacy, 'safeContextSummary pass-through wrapper removed from active runtime')
-require('safeContextSummary(state.context)' in runtime_owner, 'diagnostics readouts call safeContextSummary module alias directly for state context')
-require('const summary = safeContextSummary(ctx);' in runtime_owner, 'diagnostics summary helper calls safeContextSummary module alias directly for explicit context')
-require('function diagnosticsReadoutBundle(legacyContext)' not in legacy, 'diagnosticsReadoutBundle pass-through wrapper removed from active runtime')
-require('const diagnosticsReadout = diagnosticsReadoutBundle({ api: W.__nostrodomus?.contextDiagnostics, legacyContext: ctx });' in runtime_owner, 'diagnostics markup calls diagnostics core readout bundle alias directly')
-for removed in [
-]:
-    require(removed not in legacy, f'dead diagnostics core legacy alias pruned from active runtime: {removed}')
-for removed in [
+require('function safeContextSummary(' not in app, 'app.js has no safeContextSummary wrapper')
+require('safeContextSummary(state.context)' in runtime_owner, 'diagnostics readouts call safeContextSummary directly for state context')
+require('const summary = safeContextSummary(ctx);' in runtime_owner, 'diagnostics summary helper calls safeContextSummary directly for explicit context')
+require('function diagnosticsReadoutBundle(legacyContext)' not in app, 'app.js has no diagnosticsReadoutBundle wrapper')
+require('const diagnosticsReadout = diagnosticsReadoutBundle({ api: W.__nostrodomus?.contextDiagnostics, legacyContext: ctx });' in runtime_owner, 'diagnostics markup calls diagnosticsReadoutBundle directly')
+for wrapper_body in [
     'return diagnosticsReadoutStringFromDiagnosticsCore(value, limit);',
     'return diagnosticsReadoutBoolFromDiagnosticsCore(value);',
     'return diagnosticsReadoutSafeWarningsFromDiagnosticsCore(warnings);',
     'return diagnosticsReadoutSummaryFromDiagnosticsCore(W.__nostrodomus?.contextDiagnostics);',
 ]:
-    require(removed not in legacy, f'dead diagnostics core delegate body removed: {removed}')
-require('src/diagnostics/diagnosticsCore.js' not in allowed, 'diagnostics core module removed from unwired allowlist')
+    require(wrapper_body not in app, f'app.js has no diagnostics core wrapper body: {wrapper_body}')
+require('src/diagnostics/diagnosticsCore.js' not in allowed, 'diagnostics core module is not on the unwired allowlist')
 
 for token in [
     'export const DIAGNOSTICS_READOUT_MAX_TEXT = 240',

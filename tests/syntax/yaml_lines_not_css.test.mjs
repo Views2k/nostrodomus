@@ -7,10 +7,9 @@ import {
 } from '../../src/syntax/smartSyntaxTokenizers.js';
 import { createDarkPlusBridge } from '../../src/syntax/darkPlusBridge.js';
 
-// A `key:` at line start, a card name or a brace sent nearly every YAML line to the CSS
-// tokenizer: trailing comments, booleans and entity ids got CSS colors, a card name or a flow
-// mapping painted the key as a selector, and text in a block scalar was tokenized as CSS. The
-// document pass knows whether a line is YAML structure, block-scalar text or a CSS block.
+// The document pass knows whether a line is YAML structure, block-scalar text or a CSS block, and
+// that decides the tokenizer: a `key:` at line start, a card name or a brace does not make a
+// YAML line CSS.
 
 const bridge = createDarkPlusBridge({ DARKPLUS_SYNTAX_COLORS: {}, syntaxColorWithOpacity: (color) => color, api: {} });
 
@@ -42,6 +41,39 @@ test('plain YAML lines are tokenized as YAML', () => {
   assert.equal(kindOf(lines[2], 'true'), 'bool');
   assert.equal(kindOf(lines[3], 'tap_action'), 'key', 'a flow mapping does not turn the key into a selector');
   assert.equal(kindOf(lines[5], 'type'), 'key', 'a card name does not turn the key into a selector');
+});
+
+test('a YAML line with a template keeps its key, list dash and trailing comment', () => {
+  const doc = [
+    'value_template: "{{ states(\'sensor.x\') | float > 20 }}"  # threshold',
+    '  - name: Temp {{ x }}',
+    '  - "{{ y }}"',
+    '{% if true %}',
+  ];
+  const lines = tokensFor(doc);
+  const shape = (tokens) => tokens.map((token) => `${token.kind}:${token.text}`);
+  assert.deepEqual(shape(lines[0]).slice(0, 2), ['key:value_template', 'punct::']);
+  assert.deepEqual(shape(lines[0]).slice(-1), ['comment:# threshold']);
+  assert.deepEqual(shape(lines[1]).slice(0, 3), ['yamlList:- ', 'key:name', 'punct::']);
+  assert.deepEqual(shape(lines[1]).slice(-3), ['jinja:{{', 'filter:x', 'jinja:}}'], 'the value is a template');
+  assert.deepEqual(shape(lines[2]).slice(0, 2), ['yamlList:-', 'string:"{{ y }}"']);
+  assert.deepEqual(shape(lines[3]), ['jinja:{%', 'keyword:if', 'keyword:true', 'jinja:%}'], 'a line without a key is all template');
+});
+
+test('the class painter keeps the key of a YAML line with a template', async () => {
+  const { smartSyntaxTokenKind, smartSyntaxYamlLineInfo } = await import('../../src/syntax/smartSyntaxTokenizers.js');
+  const kindAt = (line, text, lineKind = 'fg') => {
+    const start = line.indexOf(text);
+    return smartSyntaxTokenKind(text, line, lineKind, start, start + text.length, smartSyntaxYamlLineInfo(line), bridge.darkPlusIsJinjaLine, bridge.darkPlusTokenKind);
+  };
+  const quoted = '  - value_template: "{{ x }}"';
+  assert.equal(kindAt(quoted, '-', 'yamlList'), 'yamlList');
+  assert.equal(kindAt(quoted, 'value_template', 'yamlList'), 'key');
+  assert.equal(kindAt(quoted, ':', 'yamlList'), 'punct');
+  assert.equal(kindAt(quoted, '"{{ x }}"', 'yamlList'), 'string');
+  const plain = 'name: Temp {{ x }}';
+  assert.equal(kindAt(plain, 'name'), 'key');
+  assert.equal(kindAt(plain, 'x'), 'jinja', 'the value is still a template');
 });
 
 test('text in a block scalar is text or a template, not CSS', () => {

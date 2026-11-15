@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const source = readFileSync('src/main.legacy.js', 'utf8');
+const source = readFileSync('src/app.js', 'utf8');
 const providerRuntime = readFileSync('src/providers/providerRuntime.js', 'utf8');
 const dist = readFileSync('dist/nostrodomus.js', 'utf8');
 

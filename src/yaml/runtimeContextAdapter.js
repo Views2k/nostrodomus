@@ -10,7 +10,7 @@ import {
   yamlBranchState,
   yamlCursorRole,
 } from './yamlScanner.js';
-import { directYamlKey, stripYamlComment, yamlCurrentKey } from './legacyYamlKey.js';
+import { directYamlKey, stripYamlComment, yamlCurrentKey } from './plainYamlKey.js';
 import { getProviderSurfaceByCardType } from '../providers/hacsProviderCatalog.js';
 import { blockScalarContextAt, classifyJinjaCallArg } from './yamlCompletionContext.js';
 import { lineNumberAt, recentLinesBeforeCursor } from './recentLines.js';
@@ -21,7 +21,6 @@ const DEFAULT_SETTINGS = Object.freeze({
   suggestInComments: false,
 });
 
-
 const FALLBACK_ENTITY_DOMAINS = new Set([
   'alarm_control_panel', 'automation', 'binary_sensor', 'button', 'calendar', 'camera', 'climate',
   'cover', 'device_tracker', 'fan', 'humidifier', 'input_boolean', 'input_button', 'input_datetime',
@@ -31,8 +30,8 @@ const FALLBACK_ENTITY_DOMAINS = new Set([
 ]);
 
 // The entity domains of one data snapshot. The entities array belongs to the snapshot and is
-// replaced together with it, so its domain set is built once and dropped with the array. Before,
-// every keystroke in a value position walked all entity ids again (up to 10,000).
+// replaced together with it, so its domain set is built once (from up to 10,000 entity ids)
+// and dropped with the array.
 const domainSetByEntities = new WeakMap();
 
 function runtimeEntityDomainSet(runtimeData = null) {
@@ -101,12 +100,10 @@ export function lineInfo(doc, pos) {
   const beforeCursor = line.slice(0, safePos - lineStart);
   const afterCursor = line.slice(safePos - lineStart);
   const col = safePos - lineStart;
-  // Counted, not split: in a long text the split built one string per line before the
-  // cursor on every refresh.
+  // Counted, not split: splitting a long text builds one string per line before the cursor.
   const lineNumber = lineNumberAt(text, safePos);
   return { before, after, line, beforeCursor, afterCursor, lineStart, lineEnd, col, lineNumber };
 }
-
 
 export function completionWordTo(doc, pos, ctx = {}) {
   const text = String(doc || '');
@@ -153,7 +150,7 @@ function resolveCatalogCardContext(doc, pos, yamlPath = []) {
     const match = /^\s*(?:-\s*)?type\s*:\s*([^#\s]+)/.exec(raw);
     if (match) {
       // The nearest type: line of the enclosing mapping decides. Walking on past a card type the
-      // catalog does not know handed that card the key list of an earlier card in the stack.
+      // catalog does not know would hand that card the key list of an earlier card in the stack.
       const cardType = String(match[1] || '').replace(/^['"]|['"]$/g, '').trim();
       const surface = getProviderSurfaceByCardType(cardType);
       if (surface) {
@@ -269,10 +266,9 @@ export function yamlValueKind(ctx) {
   if (!key && String(ctx?.yamlRole || '') === 'list-key' && /(^|\.)(entities)(\.|$)/.test(pathText)) return 'entity';
   if (!key) return '';
 
-  // Registry lane (flag-gated), mirroring yamlContextClassifier.yamlValueKind. This is the copy the
-  // live eager valueKind path (detectRuntimeContextImpl) actually calls, so the branch must exist HERE
-  // or area_id:/device_id:/floor_id:/label_id: keep valueKind '' and the registry value lane never fires
-  // (the 0.1.180 lane was dead until this). Only when registryLaneEnabled rode in (engineV2 + registryLane).
+  // Area, device, floor and label ids, when the registryLane setting is on (it needs engineV2).
+  // detectRuntimeContext computes valueKind with this copy, so the branch has to be here as well
+  // as in yamlContextClassifier.yamlValueKind.
   if (ctx?.registryLaneEnabled === true) {
     if (key === 'area_id' || key === 'area') return 'area';
     if (key === 'device_id') return 'device';
@@ -291,17 +287,17 @@ export function yamlValueKind(ctx) {
     if (yamlPathIncludes(ctx, ['conditions', 'condition'])) return 'condition-type';
     return typeKeyHoldsCardType(path) ? 'card-type' : '';
   }
-  // Modern `trigger:` sits under a plural `triggers:` list. Legacy `platform:` is the trigger-type
-  // key of the still-supported singular `trigger:` automation form (path token 'trigger'), so it also
-  // accepts the singular parent — otherwise legacy automations get no trigger-type completion.
+  // `trigger:` sits under a plural `triggers:` list. `platform:` is the trigger-type key of the
+  // older singular `trigger:` form, which Home Assistant still accepts, so it also takes the
+  // singular parent.
   if (key === 'trigger' && yamlPathIncludes(ctx, ['triggers'])) return 'trigger-type';
   if (key === 'platform' && yamlPathIncludes(ctx, ['triggers', 'trigger'])) return 'trigger-type';
   if (key === 'condition' && yamlPathIncludes(ctx, ['conditions', 'condition', 'choose', 'if', 'while', 'until', 'visibility'])) return 'condition-type';
   if (key === 'icon' || key.endsWith('_icon')) return 'icon';
   if (key === 'theme') return 'theme';
-  // `mode:` is the automation/script run-mode at config scope, but under a service `data:` block
-  // it is a service field (e.g. humidifier.set_mode's mode) whose real values were hard-filtered
-  // away by the automation-mode classification. Kept in sync with the classifier copy (parity test).
+  // `mode:` is the automation or script run mode at config scope, but under a service `data:`
+  // block it is a service field (humidifier.set_mode's mode) with values of its own. Kept in
+  // sync with the classifier copy (parity test).
   if (key === 'mode' && !yamlPathIncludes(ctx, ['data'])) return 'automation-mode';
   if (['enabled', 'show_state', 'show_name', 'show_icon', 'show_label', 'state_color', 'square', 'full_width'].includes(key)) return 'boolean';
 
@@ -358,6 +354,19 @@ export function dashboardActionBranchState(doc, pos) {
   let parentKey = '';
   let parentIndent = -1;
 
+  // Only a parent the cursor is inside counts: every line between the key and the cursor that is
+  // not blank or a comment is indented deeper than it. A line at or left of its indent closed its
+  // block (a sibling card or a new list item), and an earlier card's tap_action would otherwise
+  // replace the card's keys with that action's keys and service.
+  const enclosesCursor = (keyIndex, keyIndent) => {
+    for (let j = keyIndex + 1; j < lines.length - 1; j += 1) {
+      const trimmed = lines[j].trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      if (leadingWhitespace(lines[j]).length <= keyIndent) return false;
+    }
+    return true;
+  };
+
   if (currentKeyInfo && ACTION_PARENT_KEYS.has(currentKeyInfo.key)) {
     parentIndex = lines.length - 1;
     parentKey = currentKeyInfo.key;
@@ -367,32 +376,23 @@ export function dashboardActionBranchState(doc, pos) {
       const info = directYamlKey(lines[i]);
       if (!info) continue;
       if (info.indent >= currentIndent && currentIndent > 0) continue;
-      if (ACTION_PARENT_KEYS.has(info.key)) {
+      if (ACTION_PARENT_KEYS.has(info.key) && enclosesCursor(i, info.indent)) {
         parentIndex = i;
         parentKey = info.key;
         parentIndent = info.indent;
         break;
       }
-      if (info.indent < currentIndent && info.indent <= parentIndent) break;
     }
   }
 
+  // The loop above skips keys at or right of the cursor column. When none of the keys left of
+  // it is a parent, such a key is taken if its block is still open (the cursor line may not be
+  // indented yet).
   if (parentIndex < 0) {
     for (let i = lines.length - 2; i >= 0; i -= 1) {
       const info = directYamlKey(lines[i]);
       if (!info) continue;
-      if (!ACTION_PARENT_KEYS.has(info.key)) continue;
-      // Only adopt a parent the cursor actually sits inside. Every line between this key and
-      // the cursor must be indented deeper than it; a dedent to <= its indent means its block
-      // already closed (a sibling card / new list item), so it is NOT an ancestor. Without
-      // this the fallback reached across into an earlier card's tap_action, replacing the whole
-      // card-key vocabulary with just that action's `confirmation:`.
-      let isAncestor = true;
-      for (let j = i + 1; j < lines.length - 1; j += 1) {
-        if (!lines[j].trim()) continue;
-        if (leadingWhitespace(lines[j]).length <= info.indent) { isAncestor = false; break; }
-      }
-      if (!isAncestor) continue;
+      if (!ACTION_PARENT_KEYS.has(info.key) || !enclosesCursor(i, info.indent)) continue;
       parentIndex = i;
       parentKey = info.key;
       parentIndent = info.indent;
@@ -401,12 +401,10 @@ export function dashboardActionBranchState(doc, pos) {
   }
 
   if (parentIndex < 0) {
-    // Automation/script fallback: yamlBranchState carries no `kind`, so a consumer
-    // dispatching on branchState.kind was dead in this lane. Emit a kind consistent
-    // with the dashboard producer (target-block inside a target: block, else
-    // action-block) while preserving every field serviceIdFromContext relies on. The
-    // dashboard-only `missingKeys` array stays absent here, so the action-block
-    // consumer branch (which requires it) still correctly skips this lane.
+    // Automations and scripts: yamlBranchState has no `kind`, so one is added the way the
+    // dashboard branch sets it (target-block inside a target: block, else action-block). The
+    // fields serviceIdFromContext reads are kept. The dashboard-only `missingKeys` stays absent,
+    // so the dashboard action-block code, which needs it, does not run for these.
     const fallback = yamlBranchState(text, safePos);
     if (!fallback) return null;
     const fallbackPath = currentYamlPath(text, safePos).join('.').toLowerCase();
@@ -414,10 +412,8 @@ export function dashboardActionBranchState(doc, pos) {
     return { ...fallback, kind: fallbackInTarget ? 'target-block' : 'action-block' };
   }
 
-  // A dash-prefixed action parent (`  - tap_action:`) puts its key 2+ columns past the line
-  // indent, so its children align to the KEY column, not the line indent. Measuring from the
-  // line indent (`parentIndent + 2`) missed the real children of a dash parent — the action
-  // value never registered, so already-typed keys were re-offered and the wrong branch shown.
+  // A dash-prefixed action parent (`  - tap_action:`) puts its key two or more columns past the
+  // line indent, and its children align to the key column, not to the line indent.
   const parentDash = (lines[parentIndex] || '').match(/^\s*(-\s+)/);
   const childIndent = parentIndent + (parentDash ? parentDash[1].length : 0) + 2;
   const siblings = {};
@@ -485,14 +481,13 @@ export function detectRuntimeContext(doc, pos, options = {}) {
   const settings = normalizedSettings(options.settings);
   const runtimeData = options.runtimeData || null;
   const triggerKind = options.triggerKind || 'typing';
-  // surface is plain data resolved at view-bind (the adapter never reads the DOM). Empty when
-  // engineV2 is off, so none of the additive fields/bias below fire.
+  // surface is plain data resolved when the view is bound (the adapter never reads the DOM). It
+  // is empty when engineV2 is off, and then none of the surface fields and adjustments below apply.
   const surface = typeof options.surface === 'string' ? options.surface : '';
   const jinjaLaneOption = options.jinjaLane === true;
-  // The registry value lane (area_id:/device_id:/floor_id:/label_id:) is decided by the pure classifier
-  // (yamlValueKind) during the EAGER valueKind computation below, so its gate must be threaded in here
-  // like jinjaLane — assigning it to the resolved descriptor afterwards is too late (valueKind is already
-  // cached). Off → the classifier's registry branch never fires and these keys keep their legacy kind.
+  // The registryLane setting changes valueKind for area_id:, device_id:, floor_id: and
+  // label_id:, and valueKind is computed below, so the setting comes in as an option like
+  // jinjaLane. When it is off these keys keep the kind they have without it.
   const registryLaneOption = options.registryLane === true;
   const info = lineInfo(text, safePos);
   const recent = text.slice(Math.max(0, safePos - 1600), safePos);
@@ -507,9 +502,8 @@ export function detectRuntimeContext(doc, pos, options = {}) {
     scope = 'button-card-js';
     confidence = 0.95;
   } else if (recent.lastIndexOf('{{') > recent.lastIndexOf('}}') || recent.lastIndexOf('{%') > recent.lastIndexOf('%}')) {
-    // Inside an OPEN jinja delimiter = the last {{ / {% comes after the last }} / %}. The old
-    // [^}]* / [^%]* tests treated a single interior } (a dict literal like {'on':'x'}) or % (a
-    // modulo) as the close, flipping the lane back to YAML mid-template and killing completion.
+    // Inside an open template: the last {{ or {% comes after the last }} or %}. A single } (a
+    // dict literal like {'on':'x'}) or % (a modulo) inside the template does not close it.
     lang = 'jinja';
     scope = 'jinja-template';
     confidence = 0.95;
@@ -531,12 +525,10 @@ export function detectRuntimeContext(doc, pos, options = {}) {
     confidence = 0.65;
   }
 
-  // Surface-aware Jinja bias: Dev Tools Template (and template sub-fields) are all Jinja with no
-  // surrounding {{ }} wrapper, so a bare `states('…')` line is misread as YAML. When the jinjaLane
-  // flag is on and the surface is template-shaped and a real template-call shape sits at the cursor,
-  // treat it as Jinja. Widen-only (never narrows); explicit {{ }} already set jinja above, so this
-  // guard's `lang === 'yaml'` skips it. Gated by both flags, so engineV2 alone is a no-op for
-  // candidate content.
+  // The Developer tools template editor and template fields hold Jinja without a {{ }} around
+  // it, so a bare `states('…')` reads as YAML. With the jinjaLane setting on, on such a surface,
+  // a template call at the cursor makes the text Jinja. This only turns YAML into Jinja; text
+  // inside {{ }} is Jinja already.
   if (lang === 'yaml' && jinjaLaneOption && (surface === 'devtools-template' || surface === 'template-field')) {
     const ja = classifyJinjaCallArg(recent);
     if (ja.fn) {
@@ -548,14 +540,13 @@ export function detectRuntimeContext(doc, pos, options = {}) {
 
   const prefixMatch = info.beforeCursor.match(/[A-Za-z0-9_:\-.$#{}%/]+$/);
   let prefix = prefixMatch ? prefixMatch[0] : '';
-  // A bare list dash is structure, not typed text. With `-` as the prefix an accepted row
-  // replaced the dash itself (`  -|` plus a trigger snippet gave `   trigger: state`).
+  // A bare list dash is structure, not typed text; as the prefix it would be replaced by the
+  // accepted row.
   if (lang === 'yaml' && /^\s*-$/.test(info.beforeCursor)) prefix = '';
   // In a template and in JavaScript the braces, `%` and `$` in front of a word are syntax
-  // (`{{st`, `{%if`, `${ent`), not typed text. With them in the prefix `{{st` did not match the
-  // rows that start with "st", and an accepted row replaced the `{{` as well. A prefix that ends
-  // in such a character (`{{`, `{%`) is left alone: the rows that bring their own delimiter
-  // match it and replace it.
+  // (`{{st`, `{%if`, `${ent`), not typed text: `{{st` matches the rows that start with "st", and
+  // accepting one keeps the `{{`. A prefix that ends in such a character (`{{`, `{%`) is left
+  // alone: the rows that bring their own delimiter match it and replace it.
   if ((lang === 'jinja' || lang === 'js') && prefix) {
     let cut = Math.max(prefix.lastIndexOf('{'), prefix.lastIndexOf('}'), prefix.lastIndexOf('%'), prefix.lastIndexOf('$'));
     // `{{-` and `{%-`: the dash is the template's trim marker.
@@ -592,11 +583,9 @@ export function detectRuntimeContext(doc, pos, options = {}) {
     const valuePrefix = yamlValueLinePrefix(info);
     if (yamlValuePrefixLooksLikeEntityId(valuePrefix, runtimeData)) valueKind = 'entity';
   }
-  // A typed sequence scalar (`- sensor.hu|`) carries no colon, so the line-role primitive
-  // reads it as 'key' and the value lanes above never fire -- rows appeared at the bare
-  // dash and vanished at the first keystroke. When the item sits under an entities list
-  // (the same lane the bare dash takes) or the typed token is entity-shaped against the
-  // live domains, it is a list VALUE: give it the list-key role and the entity kind.
+  // A list item being typed (`- sensor.hu|`) has no colon, so yamlCursorRole reads it as a key
+  // and no value kind is found above. Under an entities list, or when the typed text looks like
+  // an entity id of a known domain, it is a list value: the list-key role and the entity kind.
   if (lang === 'yaml' && yamlRole === 'key' && !stripYamlComment(info.line).includes(':') && /^\s*-\s+\S/.test(info.beforeCursor)) {
     const itemToken = info.beforeCursor.replace(/^\s*-\s+/, '');
     if (yamlValueKind({ yamlKey: '', yamlPath, yamlRole: 'list-key' }) === 'entity'
@@ -607,7 +596,7 @@ export function detectRuntimeContext(doc, pos, options = {}) {
   }
 
   const scalarValueContext = lang === 'yaml' && yamlRole === 'value' && !!yamlKey && isScalarValueKind(valueKind || yamlScalarValueKind({ yamlKey, yamlPath, yamlRole }));
-  // A key with a value lane of its own (icon:, name:, label:, state:) takes its value on the same
+  // A key with a value kind of its own (icon:, name:, label:, state:) takes its value on the same
   // line; the block shape is only for keys that have no value kind.
   const blockValueKind = lang === 'yaml' && yamlRole === 'value' && afterKeyColon && !valueKind ? yamlBlockValueKeyKind({ yamlKey }) : '';
   const pathText = lang === 'yaml' ? yamlPath.join('.').toLowerCase() : '';
@@ -636,7 +625,7 @@ export function detectRuntimeContext(doc, pos, options = {}) {
   }
 
   // A list item that is a value (`- light.ki|tchen` under entities:) ends where a value ends.
-  // The key pattern stops at the dot and left the old tail behind on accept.
+  // The key pattern stops at the dot and would leave the old tail behind on accept.
   wordTo = completionWordTo(text, safePos, { lang, yamlRole: yamlRole === 'list-key' && valueKind && !yamlKey ? 'value' : yamlRole });
 
   let shouldSuggest = false;
@@ -651,11 +640,9 @@ export function detectRuntimeContext(doc, pos, options = {}) {
 
     if (keyContext) {
       const currentKeyLooksComplete = !!yamlKey && /:\s*/.test(info.line) && !prefix;
-      // An explicit trigger (Ctrl+Space) must always offer suggestions, so check it first: the
-      // existing-key-context guard below inspects the whole line (text after the caret included),
-      // so a caret before/at a key on a line that already has `key: value` (empty prefix + a
-      // trailing colon) would otherwise look "complete" and swallow a manual invoke mid-line.
-      // Typing (explicit === false) falls through to the same guard in the same order, unchanged.
+      // An explicit trigger (Ctrl+Space) always offers suggestions, so it comes first: the
+      // existing-key-context guard below reads the whole line, text after the caret included,
+      // and a caret at a key on a `key: value` line would otherwise look complete.
       if (explicit) shouldSuggest = true;
       else if (currentKeyLooksComplete && !['entities', 'triggers', 'conditions', 'actions', 'sequence', 'tap_action', 'hold_action', 'double_tap_action', 'card_mod', 'styles'].includes(String(yamlKey || '').toLowerCase())) {
         shouldSuggest = false;
@@ -675,9 +662,8 @@ export function detectRuntimeContext(doc, pos, options = {}) {
         idleReason = '...';
       }
     } else if (yamlRole === 'value' && explicit) {
-      // A kindless value (unknown key, no entity shape yet -- e.g. `humidity: sens`) stays
-      // silent while typing, but an explicit Ctrl+Space is an unconditional user request:
-      // every other branch honors it, and the word-fallback/static lanes can still serve.
+      // A value without a kind (an unknown key, no entity shape yet: `humidity: sens`) stays
+      // quiet while typing, but Ctrl+Space always asks; the word and static rows can answer.
       shouldSuggest = true;
     } else {
       shouldSuggest = false;
@@ -734,8 +720,8 @@ export function detectRuntimeContext(doc, pos, options = {}) {
     suppressPopup,
     shouldSuggest,
     idleReason,
-    // Additive fields, present only when a surface is supplied (engineV2 on), so the engine-off
-    // descriptor is byte-identical. jinjaArg is the live-entity lane's cursor classifier.
+    // Present only when a surface is supplied (engineV2 on), so with engineV2 off the descriptor
+    // has no extra fields. jinjaArg tells the live-entity provider which argument the cursor is in.
     ...(surface ? { surface } : {}),
     ...(surface && lang === 'jinja' ? { jinjaArg: classifyJinjaCallArg(recent) } : {}),
     // CSS text only: the cursor is between the `{` and the `}` of a rule.
@@ -759,6 +745,7 @@ function insideOpenBrace(recent) {
   }
   return false;
 }
+
 export function detectRuntimeContextFallback(doc, pos, options = {}) {
   const triggerKind = options.triggerKind || 'typing';
   try {
@@ -817,4 +804,3 @@ export function detectRuntimeContextFallback(doc, pos, options = {}) {
     };
   }
 }
-

@@ -5,13 +5,13 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/completion/insertion.js"
-LEGACY = ROOT / "src/main.legacy.js"
-FACTORY = ROOT / "src/composition/mainLegacyCompletionRuntimeFactory.js"
+APP = ROOT / "src/app.js"
+FACTORY = ROOT / "src/composition/appCompletionRuntimeFactory.js"
 RUNTIME = ROOT / "src/completion/insertionRuntime.js"
 REPORT = ROOT / "reports/COMPLETION_INSERTION_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 factory = FACTORY.read_text(errors="replace")
 runtime = RUNTIME.read_text(errors="replace")
 
@@ -50,33 +50,33 @@ runtime_delegate_tokens = [
 
 for token in runtime_delegate_tokens:
     if token not in runtime:
-        errors.append(f"Insertion runtime lost insertion/snippet delegate token: {token}")
+        errors.append(f"Insertion runtime is missing insertion/snippet delegate token: {token}")
     else:
         notes.append(f"PASS runtime delegate token: {token}")
 
-for token in ["createMainLegacyCompletionRuntimeGroup", "insertItem,", "updateSnippetSessionAfterDispatch,"]:
-    if token not in legacy:
-        errors.append(f"Legacy lost completion group adapter token: {token}")
+for token in ["createAppCompletionRuntimeGroup", "insertItem,", "updateSnippetSessionAfterDispatch,"]:
+    if token not in app:
+        errors.append(f"app.js is missing completion group adapter token: {token}")
     else:
-        notes.append(f"PASS legacy completion group adapter token: {token}")
+        notes.append(f"PASS app.js completion group adapter token: {token}")
 
 for token in ["createCompletionInsertionRuntime", "createCompletionInsertionRuntimeDelegates", "insertItem } = createCompletionInsertionRuntimeDelegates"]:
     if token not in factory:
-        errors.append(f"Completion factory lost insertion runtime owner token: {token}")
+        errors.append(f"Completion factory is missing insertion runtime owner token: {token}")
     else:
         notes.append(f"PASS completion factory runtime owner token: {token}")
 
-stale_legacy_tokens = [
+local_copy_tokens = [
     "function prepareInsertText(rawInsert, ctx, item)",
     "function continuationForAcceptedItem(ctx, item)",
     "const ACTION_BRANCHES = Object.freeze",
 ]
 
-for token in stale_legacy_tokens:
-    if token in legacy:
-        errors.append(f"Stale insertion implementation remains in legacy runtime: {token}")
+for token in local_copy_tokens:
+    if token in app:
+        errors.append(f"app.js has its own copy of an insertion helper: {token}")
     else:
-        notes.append(f"PASS stale legacy insertion implementation absent: {token}")
+        notes.append(f"PASS app.js has no copy of: {token}")
 
 required_behavior_tokens = [
     "dispatch",

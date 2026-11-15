@@ -44,4 +44,4 @@ Remove the key (`localStorage.removeItem("nostrodomusDebug")`) to turn it off ag
 
 - `recordRuntimeError(scope, err, detail)` records an error in `state.runtimeErrors` and sets `state.lastError`. It writes to the console only when debug logging is on.
 - `recordRuntimeErrorOnce(scope, err, detail)` records the first occurrence of an error with the same scope, name and message. Use it on paths that can fail repeatedly, such as storage reads and editor discovery, so one failure does not fill the buffer. `clearRuntimeErrors()` also resets the once keys.
-- `python3 tools/triage_catches.py --write` writes `reports/CATCH_TRIAGE.md`, an inventory of the catch blocks in the sources, grouped into cleanup guards, paths with consequences, and items to review by hand.
+- `python3 tools/triage_catches.py --write` writes `reports/CATCH_TRIAGE.md`, a list of the catch blocks in `src/app.js`, grouped by keywords into cleanup guards, paths with consequences, and items to review by hand. The other modules under `src/` are not part of it.

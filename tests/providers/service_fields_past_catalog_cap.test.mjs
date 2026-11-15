@@ -72,7 +72,7 @@ test('a service past the cap gets its field rows in a data block', () => {
   assert.equal(rows.find(row => row.label === 'speed:').meta.documentation, 'How fast');
 });
 
-test('a service inside the cap is answered from the catalog as before', () => {
+test('a service inside the cap is answered from the catalog and adds nothing to the snapshot', () => {
   const { provider, snapshot } = setup();
   const rows = provider.provide(ctxAt('actions:\n  - action: domain_0003.run\n    data:\n      '));
   assert.deepEqual(labels(rows), ['option_3:']);

@@ -8,10 +8,9 @@ import { SECURITY_LIMITS } from '../../src/core/runtimeConstants.js';
 import { haRuntimeValueProvider, runtimeData } from '../../src/providers/haRuntimeProvider.js';
 import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 
-// A scored list is cached under a key built from the context. The Home Assistant rows in it come
-// from a data snapshot (entities, services, registries), and nothing in the key said which
-// snapshot. A list that was cached once kept being served after an entity was added: the cache
-// hit meant the providers were not called, so the snapshot was never even looked at again.
+// A scored list is cached under a key built from the context. Its Home Assistant rows come from a
+// data snapshot (entities, services, registries), so the key must name the snapshot: on a cache hit
+// the providers are not called, and a list cached before an entity was added would keep being served.
 
 function live(entityIds) {
   const hass = { states: Object.fromEntries(entityIds.map(id => [id, { attributes: {} }])), services: {} };
@@ -109,8 +108,8 @@ test('a snapshot source that throws or returns nothing leaves scoring as it was'
 });
 
 test('the live runtime hands the snapshot source to the scoring runtime', () => {
-  const main = readFileSync('src/main.legacy.js', 'utf8');
-  const factory = readFileSync('src/composition/mainLegacyCompletionRuntimeFactory.js', 'utf8');
+  const main = readFileSync('src/app.js', 'utf8');
+  const factory = readFileSync('src/composition/appCompletionRuntimeFactory.js', 'utf8');
   assert.match(main, /scoring: \{\s*ensureProviderSettings,\s*providerCandidates,\s*runtimeData,\s*\}/);
   assert.match(factory, /runtimeData: scoring\.runtimeData,/);
 });

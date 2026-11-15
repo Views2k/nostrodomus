@@ -6,11 +6,11 @@ import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 import { scoreItems } from '../../src/completion/scoring.js';
 import { makeHassFixture } from '../fixtures/hassFixture.mjs';
 
-// Split-brain fix: the context adapter classifies an entity-shaped VALUE under an
-// arbitrary key ('humidity: sensor.hum') as valueKind 'entity' via its domain-prefix
-// lane, but the provider re-derived the kind through the key-name-only classifier and
-// declined -- while the 'entity' marking suppressed the word fallback, so the popup
-// was deterministically empty at exactly that cursor ("No suggestions").
+// The context adapter classifies an entity-shaped value under an arbitrary key
+// ('humidity: sensor.hum') as valueKind 'entity' through its domain-prefix lane. The provider uses
+// that kind instead of deriving one from the key name alone: the 'entity' marking suppresses the
+// word fallback, so a provider that declined would leave the popup empty at that cursor
+// ("No suggestions").
 function fixtureProvider() {
   const hass = makeHassFixture();
   return haRuntimeValueProvider({

@@ -2,7 +2,7 @@
 // Locks: (a) a surface option lands on ctx.surface; (b) on a template surface with jinjaLane on, a
 // bare states('…') line (no {{ }} wrapper) is biased to lang='jinja' with an entity jinjaArg; (c) the
 // bias is gated — no jinjaLane, or a non-template surface, or a non-call line stays yaml; (d) the
-// OFF-path (no surface option) is byte-identical: no surface / jinjaArg fields, lang unchanged.
+// off-path (no surface option) is byte-identical: no surface / jinjaArg fields, lang unchanged.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -11,14 +11,14 @@ import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 
 const at = (doc, opts) => detectRuntimeContext(doc, doc.length, opts);
 
-test('OFF-path: no surface option → no surface/jinjaArg fields, a bare states() line stays yaml', () => {
+test('without a surface option there are no surface or jinjaArg fields and a bare states() line stays yaml', () => {
   const ctx = at("states('");
   assert.equal(ctx.lang, 'yaml', 'no bias without a surface');
   assert.equal(Object.prototype.hasOwnProperty.call(ctx, 'surface'), false, 'no surface field when off');
   assert.equal(Object.prototype.hasOwnProperty.call(ctx, 'jinjaArg'), false, 'no jinjaArg field when off');
 });
 
-test('OFF-path byte-identity: the descriptor is deep-equal with and without an empty surface', () => {
+test('the descriptor is deep-equal with and without an empty surface', () => {
   const plain = at('type: entities\nentity: ');
   const withEmpty = detectRuntimeContext('type: entities\nentity: ', 'type: entities\nentity: '.length, { surface: '' });
   assert.deepEqual(withEmpty, plain, 'an empty surface adds nothing');
@@ -40,7 +40,7 @@ test('jinja lane: template surface + jinjaLane biases a bare states() line to ji
   assert.equal(ctx.jinjaArg.fn, 'states');
 });
 
-test('jinja lane gating: template surface but jinjaLane OFF → stays yaml (engineV2-alone changes no content)', () => {
+test('a template surface with jinjaLane off stays yaml (engineV2 alone changes no content)', () => {
   const ctx = at("states('", { surface: 'devtools-template' });
   assert.equal(ctx.lang, 'yaml');
   assert.equal(ctx.surface, 'devtools-template', 'surface still threaded for cache isolation');

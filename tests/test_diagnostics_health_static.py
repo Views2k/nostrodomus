@@ -5,11 +5,11 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/diagnostics/diagnosticsHealth.js"
-LEGACY = ROOT / "src/main.legacy.js"
+APP = ROOT / "src/app.js"
 REPORT = ROOT / "reports/DIAGNOSTICS_HEALTH_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 
 errors = []
 notes = []
@@ -44,15 +44,15 @@ for token in required_behavior_tokens:
         notes.append(f"PASS behavior token: {token}")
 
 if "export function itemSummary" in module:
-    errors.append("diagnosticsHealth.js must not duplicate itemSummary; diagnosticsCore.js owns itemSummary")
+    errors.append("diagnosticsHealth.js must not duplicate itemSummary; diagnosticsRuntime.js owns itemSummary")
 
 for token in [
     "runtimeSummary",
     "providerSummary",
     "health",
 ]:
-    if token not in legacy:
-        errors.append(f"Legacy lost diagnostics health token: {token}")
+    if token not in app:
+        errors.append(f"app.js is missing diagnostics health token: {token}")
 
 for forbidden in [
     "showPopover",

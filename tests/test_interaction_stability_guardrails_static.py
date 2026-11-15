@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import json
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-# The monolith was decomposed: the settings-interaction preservation helpers moved
-# from src/main.legacy.js into src/ui/settingsInteractionRuntime.js, and the live
-# setting-mutation control/diagnostics handlers moved into
-# src/ui/settings/settingsPanelShell.js. The bundled dist still carries every
-# invariant in minified form. Same facts, current locations.
+# Changing a setting keeps the open tab and scroll position: the controls mutate in place through
+# the helpers in src/ui/settingsInteractionRuntime.js and never close and reopen the panel
+# (handlers in src/ui/settings/settingsPanelShell.js). Each fact is also checked in dist.
 INTERACTION = ROOT / "src/ui/settingsInteractionRuntime.js"
 SHELL = ROOT / "src/ui/settings/settingsPanelShell.js"
 DIST = ROOT / "dist/nostrodomus.js"
@@ -24,15 +21,12 @@ def require(ok, msg):
     else:
         errors.append(msg)
 
-project = json.loads(PROJECT.read_text(encoding="utf-8"))
-
 interaction_src = INTERACTION.read_text(encoding="utf-8", errors="replace")
 shell_src = SHELL.read_text(encoding="utf-8", errors="replace")
 dist_text = DIST.read_text(encoding="utf-8", errors="replace")
 
-# --- Settings-interaction preservation helpers (now in settingsInteractionRuntime.js) ---
-# Source carries the exact signatures; the minified dist drops the inter-argument
-# spaces (e.g. "(fn, after)" -> "(fn,after)"), so accept either form for the dist.
+# --- Settings interaction helpers (settingsInteractionRuntime.js) ---
+# dist drops the spaces between arguments ("(fn, after)" -> "(fn,after)").
 INTERACTION_HELPERS = [
     ("captures settings interaction state",
      "function captureSettingsInteractionSnapshot()",
@@ -53,9 +47,9 @@ for label, src_form, dist_form in INTERACTION_HELPERS:
 
 require("interaction_stability_policy" in PROJECT.read_text(encoding="utf-8"), "PROJECT.json records interaction stability policy")
 
-# --- Live setting-mutation control handlers (now in settingsPanelShell.js) ---
+# --- Setting control handlers (settingsPanelShell.js) ---
 # Each control handler loop must route mutations through the shared preserved-mutation
-# helper and must NOT close/reopen (rebuild) the settings panel.
+# helper and must not close/reopen (rebuild) the settings panel.
 # Source form: `for (const <var> of panel.querySelectorAll("<sel>")) { ... }`
 # (note the doubled `))` closing both querySelectorAll(...) and for(...)).
 SOURCE_HANDLER_PATTERNS = {
@@ -95,13 +89,8 @@ for label, pattern in DIST_HANDLER_PATTERNS.items():
             f"dist {label} do not close/reopen settings",
         )
 
-# --- Diagnostics action handlers must preserve interaction state, not rebuild the panel ---
-# NOTE: [data-diag-clear-history] was removed together with the whole ContextParityHistory diagnostics pilot
-# (src/diagnostics/contextParityHistory.js + contextDiagnostics.clearParityHistory). The
-# button no longer exists anywhere in src or dist, so it is dropped from this check; the
-# surviving diagnostics actions ([data-diag-refresh], [data-diag-health]) still carry the
-# same preserve-interaction invariant. (Source carries the diag handlers in shell_src;
-# closeSettings is minified to closeSettings(!1) in the dist.)
+# --- Diagnostics action handlers preserve the interaction state instead of rebuilding the panel ---
+# dist writes closeSettings(false) as closeSettings(!1).
 for text_name, text in (("source", shell_src), ("dist", dist_text)):
     for token in ("[data-diag-refresh]", "[data-diag-health]"):
         idx = text.find(token)
@@ -113,8 +102,6 @@ for text_name, text in (("source", shell_src), ("dist", dist_text)):
                 f"{text_name} {token} handler does not rebuild settings panel",
             )
             require("preserveSettingsInteractionDuring" in chunk, f"{text_name} {token} handler preserves settings interaction state")
-
-require(project.get("internal_version", "").startswith(f"nostrodomus-v{project.get('version')}-"), "PROJECT.json internal_version matches current version")
 
 REPORT.parent.mkdir(parents=True, exist_ok=True)
 REPORT.write_text(

@@ -28,7 +28,7 @@ test('in-app changelog summary stays compact and runtime-free', () => {
   assert.equal(source.includes('querySelector'), false);
 });
 
-test('changelog render helpers preserve legacy entries/bullets fallback behavior', () => {
+test('changelog render helpers fall back between entries and bullets', () => {
   assert.deepEqual(changelogEntries({ entries: ['a'], bullets: ['b'] }), ['a']);
   assert.deepEqual(changelogEntries({ bullets: ['b'] }), ['b']);
   assert.deepEqual(changelogEntries({}), []);

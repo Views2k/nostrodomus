@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 
 import { scoreItems } from '../../src/completion/scoring.js';
 
-// Regression: the incremental prefix-filter reuses the PREVIOUS result as its candidate
-// universe. When that result hit the maxItems cap, the row the longer prefix now matches
-// best may have been sliced off and could never reappear (popup blanks mid-typing). The
-// scorer must recompute from providers when the prior result was at/over the cap.
+// The incremental prefix filter reuses the previous result as its candidates. When that result hit
+// the maxItems cap, the best row for the longer prefix may have been cut off and would never come
+// back (the popup would go blank while typing), so the scorer recomputes from the providers when the
+// previous result was at or over the cap.
 function entityRows(n) {
   const rows = [];
   for (let i = 0; i < n; i += 1) {
@@ -30,7 +30,7 @@ test('narrowing past a truncated result recomputes and keeps the now-best match'
   assert.equal(incremental.some(r => r.label === 'switch.wall'), true, 'the now-best match reappears (recomputed, not lost)');
 });
 
-test('narrowing within a NON-truncated result still reuses incrementally (optimization intact)', () => {
+test('narrowing within a non-truncated result still reuses incrementally (optimization intact)', () => {
   const settings = { enabledLangs: { yaml: true }, maxItems: 40 };
   const cands = [
     { id: 'a', lang: 'yaml', type: 'entity', label: 'light.kitchen', insert: 'light.kitchen', source: 'ha-runtime-values', meta: {} },

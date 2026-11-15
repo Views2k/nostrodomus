@@ -5,10 +5,8 @@ import { cachePut, cacheGet, DEFAULT_SCORING_SETTINGS } from '../../src/completi
 import { scoreItems } from '../../src/completion/scoring.js';
 import { SECURITY_LIMITS } from '../../src/core/runtimeConstants.js';
 
-// Regression guard for a leak: filtering.cachePut used to be a
-// raw cache.set with no eviction, so state.completionCache — written once per keystroke via
-// scoreItems — grew without bound for the tab's lifetime. cachePut now FIFO-trims at
-// SECURITY_LIMITS.maxCacheEntries, matching the already-bounded cacheSet in staticLibraryProvider.
+// state.completionCache is written on every keystroke through scoreItems, so cachePut must evict:
+// it trims oldest-first at SECURITY_LIMITS.maxCacheEntries, like cacheSet in staticLibraryProvider.
 
 test('cachePut caps a Map at maxCacheEntries and evicts oldest-first (FIFO)', () => {
   const cache = new Map();
@@ -22,7 +20,7 @@ test('cachePut caps a Map at maxCacheEntries and evicts oldest-first (FIFO)', ()
   assert.ok(!cache.has(`k${firstKept - 1}`), 'entry just past the window evicted');
 });
 
-test('cachePut honours an explicit maxEntries override', () => {
+test('cachePut uses an explicit maxEntries override', () => {
   const cache = new Map();
   for (let i = 0; i < 50; i += 1) cachePut(cache, `k${i}`, i, 8);
   assert.equal(cache.size, 8, 'override cap respected');

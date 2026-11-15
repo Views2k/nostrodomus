@@ -39,7 +39,7 @@ test('the Settings storage row reports a failed save', () => {
   h.state.settingsSaveStats.lastWriteError = '';
   assert.equal(h.runtime.settingsStorageStatus(), 'writable; current');
 
-  // A store that cannot be written at all is still reported as before.
+  // A store that cannot be written at all is reported as unavailable.
   const blocked = createTelemetryHarness({ deps: { localStorage: { setItem() { throw new Error('denied'); }, removeItem() {} } } });
   assert.equal(blocked.runtime.settingsStorageStatus(), 'unavailable: denied');
 });

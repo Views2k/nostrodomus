@@ -26,7 +26,7 @@ Required fields:
 - `family`: one of the families listed below.
 - `contextKind`: the context in which the provider offers the snippet, one of the kinds listed below.
 - `triggers`: non-empty list of keys with the same character set as `id`. A trigger may appear only once in the whole catalog.
-- `label`: the text of the row in the popup.
+- `label`: the text of the row in the suggestion list.
 - `insert`: the inserted text.
 - `documentation`: short help text shown in the details of the row.
 

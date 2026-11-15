@@ -15,9 +15,8 @@ import {
 } from '../../src/companion/coordinatorRuntime.js';
 
 // The dormancy check runs on every pointerdown and focusin (the picker fix, which ships dormant),
-// on every observed mutation (the settle engine) and on every deferred refresh. Each call read
-// localStorage, twice for a module that can be forced active, and built a full coordinator
-// snapshot to look at the registered runtimes.
+// on every observed mutation (the settle engine) and on every deferred refresh, so it must not read
+// localStorage or build a full coordinator snapshot each time.
 
 function countingStorage(initial = null) {
   const store = { value: initial, reads: 0, getItem(key) { store.reads += 1; return key === COMPANION_FORCE_DORMANT_KEY ? store.value : null; } };
@@ -137,6 +136,6 @@ test('each storage object has its own cached value, and a failing read is not ca
 });
 
 test('main registers the storage listener that drops the cached override', () => {
-  const main = readFileSync(new URL('../../src/main.legacy.js', import.meta.url), 'utf8');
+  const main = readFileSync(new URL('../../src/app.js', import.meta.url), 'utf8');
   assert.match(main, /addPersistentListener\(W, "storage", onCompanionOverrideStorageEvent, false, "companion-override-storage"\);/);
 });

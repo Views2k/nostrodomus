@@ -1,4 +1,4 @@
-// `expectedKind` is a strict ALIAS of `valueKind` across the REAL context
+// `expectedKind` is a strict alias of `valueKind` across the real context
 // corpus. The framework introduces expectedKind as the future "richer expected type" channel;
 // today it must return the identical string for every context that already has a
 // valueKind, so no existing ranking/gating behavior shifts. If resolveExpectedKind

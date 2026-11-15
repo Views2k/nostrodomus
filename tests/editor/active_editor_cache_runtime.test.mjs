@@ -63,9 +63,9 @@ test('active editor cache runtime remembers active codebox editor and schedules 
 });
 
 // The companion layer (scrollbar/enlarge) must
-// be driven from the editor-cache convergence — the point EVERY discovery path funnels
+// be driven from the editor-cache convergence — the point every discovery path funnels
 // through — not only the editor sentinel. A
-// real button-card editor is discovered via initialSyntaxPaintGate (a NON-sentinel
+// real button-card editor is discovered via initialSyntaxPaintGate (a non-sentinel
 // path), so the sentinel never fires for it.
 test('active editor cache runtime drives the companion layer on the convergence path (non-sentinel discovery)', () => {
   const companionEditors = [];
@@ -100,7 +100,7 @@ test('active editor cache runtime drives the companion layer on the convergence 
   assert.equal(companionEditors[0], editor, 'companion driven with the remembered editor');
 });
 
-test('active editor cache runtime companion drive is fail-dark and skips non-editors', () => {
+test('a throwing companion hook does not break the cache write, and non-editors are skipped', () => {
   let companionCalls = 0;
   const state = {
     activeEditorCache: {
@@ -127,14 +127,14 @@ test('active editor cache runtime companion drive is fail-dark and skips non-edi
     querySelector: () => ({}),
     getBoundingClientRect: () => ({ left: 0, top: 0, width: 220, height: 80 }),
   };
-  // A throwing companion hook must NOT break the cache write (fail-dark): the editor is
-  // still cached and the cache key still returned.
-  const key = runtime.rememberActiveCodeboxEditor(editor, 'unit-faildark');
+  // A throwing companion hook must not break the cache write: the editor is cached and the
+  // cache key returned.
+  const key = runtime.rememberActiveCodeboxEditor(editor, 'unit-companion-throws');
   assert.equal(state.activeEditorCache.editor, editor);
   assert.match(key, /^editor-/);
   assert.equal(companionCalls, 1);
 
-  // A non-editor takes the early 'no-editor' return BEFORE the companion drive.
+  // A non-editor takes the early 'no-editor' return before the companion drive.
   companionCalls = 0;
   assert.equal(runtime.rememberActiveCodeboxEditor(null, 'unit-noeditor'), 'no-editor');
   assert.equal(companionCalls, 0);
@@ -177,12 +177,12 @@ test('active editor cache runtime owns no-editor backoff guard', () => {
   }
 });
 
-// The persistence engine re-applies on open to editors a
-// click never reached, widening discovery's blast radius. A CodeMirror nested in a visual-editor
-// form field (ha-form / ha-selector — markdown template selector, condition/action editors, any
-// card-config field) is NOT the dialog's main codebox; treating it as one force-sizes it to
-// calc(94vh - …) and overflows the card. This pins the GENERAL guard (any form ancestor, not a
-// card-type pattern) — it must hold for card types not yet opened.
+// The persistence engine re-applies on open to editors a click never reached, so discovery sees
+// more editors. A CodeMirror nested in a visual-editor form field (ha-form / ha-selector: the
+// markdown template selector, condition and action editors, any card-config field) is not the
+// dialog's main codebox; treated as one, it is sized to calc(94vh - …) and overflows the card. The
+// guard is general (any form ancestor, not a card-type pattern), so it holds for card types the
+// tests do not open.
 test('visibleStyleEditorCandidate rejects any CodeMirror nested in ha-form/ha-selector, accepts the main editor', () => {
   const runtime = createActiveEditorCacheRuntime({
     state: {},
@@ -199,17 +199,17 @@ test('visibleStyleEditorCandidate rejects any CodeMirror nested in ha-form/ha-se
   // Nested in ha-form -> rejected.
   const formAncestor = { matches: (sel) => /ha-form|ha-selector/.test(sel), getRootNode: () => ({}), parentElement: null };
   const formEditor = { ...base(), matches: () => false, getRootNode: () => ({}), parentElement: formAncestor };
-  assert.equal(runtime.visibleStyleEditorCandidate(formEditor), false, 'ha-form-nested CM is NOT a codebox candidate');
+  assert.equal(runtime.visibleStyleEditorCandidate(formEditor), false, 'ha-form-nested CM is not a codebox candidate');
 
   // Nested in ha-selector (e.g. ha-selector-template) -> rejected (general, not markdown-specific).
   const selectorAncestor = { matches: (sel) => sel.includes('ha-selector'), getRootNode: () => ({}), parentElement: null };
   const selectorEditor = { ...base(), matches: () => false, getRootNode: () => ({}), parentElement: selectorAncestor };
-  assert.equal(runtime.visibleStyleEditorCandidate(selectorEditor), false, 'ha-selector-nested CM is NOT a codebox candidate');
+  assert.equal(runtime.visibleStyleEditorCandidate(selectorEditor), false, 'ha-selector-nested CM is not a codebox candidate');
 });
 
-test('suppressNativeAutocompleteAcrossSurface turns native off on EVERY codebox host on the surface', () => {
-  // HA's native entity dropdown stayed visible in the other codeboxes on a screen, since
-  // suppression only ran for the single active editor. The surface sweep turns it off on all of them.
+test('suppressNativeAutocompleteAcrossSurface turns native off on every codebox host on the surface', () => {
+  // A screen can show several codeboxes, and HA's native entity dropdown must be off in all of
+  // them, not only in the active editor, so the surface sweep turns it off on every host.
   const mkHost = () => ({ localName: 'ha-code-editor', dataset: {}, autocompleteEntities: true, autocompleteIcons: true });
   const hosts = [mkHost(), mkHost(), mkHost()];
   const state = {};
@@ -247,7 +247,7 @@ test('surface sweep respects the replaceNativeAutocomplete setting (off => no su
   assert.equal(host.autocompleteEntities, true, 'native left intact when the setting is off');
 });
 
-test('surface sweep fail-darks on a hostile host enumerator and a throwing host', () => {
+test('the surface sweep survives a hostile host enumerator and a throwing host', () => {
   // A throwing enumerator degrades to zero, never throws.
   const throwingRuntime = createActiveEditorCacheRuntime({
     state: {},
@@ -299,8 +299,8 @@ test('the remembered editor stays a candidate when it becomes narrower than the 
   }
 });
 
-// On the visual tab the open dialog never mounts a code editor. The backoff was held off for as
-// long as the dialog stayed open, so every style pass ran the full discovery walk.
+// On the visual tab the open dialog never mounts a code editor. A dialog that held the backoff off
+// for as long as it is open would make every style pass run the full discovery walk.
 test('an open dialog holds the no-editor backoff off only for its opening grace period', () => {
   const realNow = Date.now;
   let clock = 1_000_000;

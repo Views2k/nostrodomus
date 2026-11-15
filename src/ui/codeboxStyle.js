@@ -1,12 +1,9 @@
-// Nostrodomus CodeMirror codebox style helper seams.
+// The codebox colors and root stylesheet, computed from the style settings, and the rules that
+// decide from a reason string how much of a style pass runs. Pure functions: no DOM, storage,
+// events, timers, observers, runtime state or Home Assistant reads.
 
 import { hslaFromHue, hslToRgb } from '../core/format.js';
 import { clampNumber } from '../core/string.js';
-
-//
-// Keep these helpers pure: no DOM access, browser storage, events, timers,
-// observers, runtime state, styling writes, or Home Assistant runtime reads.
-
 
 export function codeboxStyleTokensFromSettings(settings = {}, options = {}) {
   const source = settings || {};
@@ -55,9 +52,9 @@ export function codeboxStyleTokensFromSettings(settings = {}, options = {}) {
   return { scrollbarThumb, scrollbarTrack, frameBorder, frameGlow, frameGlowSoft, frameGlowInner, frameGlowInnerSoft, frameGlowOuter, frameGlowOuterSoft, editorSurface, thumbBorder };
 }
 
-export const CODEBOX_DEFAULT_TEXT_COLOR = "#d4d4d4";
-export const CODEBOX_DEFAULT_GUTTER_COLOR = "rgba(201, 209, 217, 0.52)";
-export const CODEBOX_DEFAULT_ACTIVE_LINE_WASH = "rgba(255, 255, 255, 0.045)";
+const CODEBOX_DEFAULT_TEXT_COLOR = "#d4d4d4";
+const CODEBOX_DEFAULT_GUTTER_COLOR = "rgba(201, 209, 217, 0.52)";
+const CODEBOX_DEFAULT_ACTIVE_LINE_WASH = "rgba(255, 255, 255, 0.045)";
 // A surface drawn over a page of the opposite brightness is drawn at least this opaque. A more
 // transparent one takes the brightness of the page behind it, and the text is lost again.
 const CODEBOX_OPPOSITE_SURFACE_MIN_OPACITY = 0.92;
@@ -84,12 +81,11 @@ export function cssColorIsDark(color) {
 //   - text, line numbers and caret follow the preset's own text color when that color is dark;
 //   - the surface takes the brightness the text needs: light under dark text, dark under light text;
 //   - over a page of the opposite brightness the surface is drawn nearly opaque.
-// With a dark theme and a light-text preset every value is the one the codebox always had. A
-// surface the user switched off stays off where the text can be read without it (dark text on a
-// light theme); where it cannot (light text on a light theme, dark text on a dark theme) the
-// surface is drawn anyway, because nothing else can make the code readable. The Result pane of
-// the template tool keeps the plain surface (resultPaneSurface), because its text is the
-// theme's own.
+// With a dark theme and a light-text preset every value is the default one. A surface the user
+// switched off stays off where the text can be read without it (dark text on a light theme);
+// where it cannot (light text on a light theme, dark text on a dark theme) the surface is drawn
+// anyway, because nothing else can make the code readable. The Result pane of the template tool
+// keeps the plain surface (resultPaneSurface), because its text is the theme's own.
 /**
  * @param {Record<string, any>} [settings]
  * @param {Record<string, any>} [tokens]
@@ -127,22 +123,20 @@ export function codeboxReadableStyleTokens(settings = {}, tokens = {}, options =
   return out;
 }
 
-// Shared Nostrodomus UI accent: the settings panel and the suggestion/completion popup
-// match the codebox color, so derive their blue from the same border hue and
-// saturation the codebox frame uses. Returns `r, g, b` triplet strings for the
-// `--nostrodomus-brand-rgb` (lighter) and `--nostrodomus-accent-rgb` (deeper) tokens that
-// those surfaces consume via `rgba(var(--token), alpha)`. Runtime sets these inline on the
-// settings root / popup box so nothing in the byte-frozen settings stylesheet changes.
-// Pure: defaults mirror the codebox border defaults (hue 198, saturation 0.92).
+// The accent of the settings panel and the suggestion popup, from the hue and saturation of the
+// codebox frame, so both match the codebox. Returns `r, g, b` strings for
+// `--nostrodomus-brand-rgb` (lighter), `--nostrodomus-accent-rgb` (deeper) and
+// `--nostrodomus-scrollbar-rgb`, which those surfaces use as `rgba(var(--token), alpha)`. The
+// runtime sets them inline on the panel and popup roots; the frozen settings stylesheet only
+// reads them. The defaults are those of the codebox border (hue 198, saturation 0.92).
 export function uiAccentVarsFromSettings(settings = {}) {
   const source = settings || {};
   const hue = clampNumber(source.codeboxBorderHue, 0, 360, 198);
   const saturation = Math.min(1, clampNumber(source.codeboxBorderSaturation, 0, 2.5, 0.92));
   const brand = hslToRgb(hue, saturation, 0.72);
   const accent = hslToRgb(hue, saturation, 0.65);
-  // Scrollbar tracks the codebox scrollbar color (its own hue), not the border, so the
-  // settings/popup scrollbars match the codebox scrollbar while borders match the border.
-  // Lightness 0.62 mirrors the codebox scrollbar-thumb (hslaFromHue(scrollbarHue, ..., 62)).
+  // The scrollbar color follows the codebox scrollbar (its own hue), not the border. Lightness
+  // 0.62 is that of the codebox scrollbar thumb.
   const scrollbarHue = clampNumber(source.scrollbarHue, 0, 360, 195);
   const scrollbarSat = Math.min(1, clampNumber(source.scrollbarSaturation, 0, 2.5, 1.05));
   const scrollbar = hslToRgb(scrollbarHue, scrollbarSat, 0.62);
@@ -170,22 +164,14 @@ export function codeboxStyleTokenMap(tokens) {
   };
 }
 
-// important-override registry — codebox host frame/surface/unclip block.
-// external rules overridden: HA ha-code-editor / dialog component styles (overflow,
-//   contain, clip-path clipping of the editor surface); the frozen v17 companion's
-//   reapply passes (it writes overflow, display, background, border-radius, box-shadow,
-//   visibility, opacity on the same surfaces); HA theme / card-mod rules that can reach
-//   the editor tree (incl. universal transition rules); CodeMirror's own injected
-//   theme stylesheet for the syntax fg/reveal section.
-// owner: codebox host style registry (STYLE_OWNERSHIP_CONTRACT — ::before owns the
-//   border/glow, ::after owns the frosted surface; host-owned styling only).
-// reason: the frame/glow/surface and unclip must out-rank component clipping and
-//   survive companion reapply, or the styling flaps as the component rewrites it.
-// removal condition: a companion/runtime style-ownership consolidation proven with
-//   screenshot + console evidence per VISUAL_LAYER_BASELINE_CONTRACT.
-// verification: browser smoke items 8–9; test_codebox_style_property_ownership_static.
-export function codeboxStyleBuildRootCss({ scrollbarThumb, scrollbarTrack, frameBorder, frameGlow, frameGlowSoft, frameGlowInner, frameGlowInnerSoft, frameGlowOuter, frameGlowOuterSoft, editorSurface, size, syntaxFilter, thumbBorder, syntaxFg = "#d4d4d4", activeLineBackground = "rgba(255, 255, 255, 0.045)", gutterColor = CODEBOX_DEFAULT_GUTTER_COLOR, caretColor = "", resultPaneSurface = editorSurface }) {
-    return `
+// The codebox root stylesheet: the frame and glow on the ha-code-editor host's ::before, the
+// frosted surface on its ::after, the release of clipping ancestors, and the text, gutter and
+// scrollbar colors (docs/contracts/STYLE_OWNERSHIP_CONTRACT.md). The rules use `!important`:
+// they have to win over Home Assistant's component styles, which clip the editor surface, over
+// theme and card-mod rules that reach into the editor, and over CodeMirror's own theme sheet,
+// or the styling flickers each time one of them is applied again.
+export function codeboxStyleBuildRootCss({ scrollbarThumb, scrollbarTrack, frameBorder, frameGlow, frameGlowSoft, frameGlowInner, frameGlowInnerSoft, frameGlowOuter, frameGlowOuterSoft, editorSurface, size, syntaxFilter, thumbBorder, syntaxFg = CODEBOX_DEFAULT_TEXT_COLOR, activeLineBackground = CODEBOX_DEFAULT_ACTIVE_LINE_WASH, gutterColor = CODEBOX_DEFAULT_GUTTER_COLOR, caretColor = "", resultPaneSurface = editorSurface }) {
+  return `
       ha-code-editor[data-nostrodomus-codebox-frame-host="1"],
       :host([data-nostrodomus-codebox-frame-host="1"]),
       [data-nostrodomus-codebox-style="1"] {
@@ -253,16 +239,13 @@ export function codeboxStyleBuildRootCss({ scrollbarThumb, scrollbarTrack, frame
         visibility: hidden !important;
         opacity: 0 !important;
       }
-      /* Template tool result pane: the whole pane (ha-card.render-pane) mirrors
-         the codebox frame — same border + glow + a UNIFORM frosted surface across the full pane — instead
-         of an earlier partial blur on the inner pre.rendered (which only frosted the rendered-output
-         strip, leaving a split-blur). The --nostrodomus-codebox-* vars are (re)defined on the pane
-         from the same tokens the codebox uses, so changing codebox colors keeps the Result pane in sync;
-         the frame reads them via var() so a theme can still override them (the plugin
-         owns THIS pane's surface using codebox vars, overriding the theme's generic glass card for this
-         pane only — the theme's --ha-card-* are not touched). ha-card.render-pane exists only on
-         developer-tools/template, so the rule is inert on every other surface. This rides the codebox
-         root style Nostrodomus already injects into developer-tools-template's shadow root. */
+      /* The Result pane of the template tool (ha-card.render-pane) gets the codebox frame: the
+         same border and glow, and one frosted surface across the whole pane. The
+         --nostrodomus-codebox-* variables are defined on the pane from the codebox colors, so it
+         follows them, and the rules read them through var(), so a theme can still set them. The
+         theme's --ha-card-* variables are not changed. ha-card.render-pane exists only in
+         Developer Tools > Template, where this stylesheet is in the shadow root of
+         developer-tools-template. */
       ha-card.render-pane {
         --nostrodomus-codebox-frame-border: ${frameBorder};
         --nostrodomus-codebox-frame-glow-inner: ${frameGlowInner};
@@ -322,26 +305,18 @@ export function codeboxStyleBuildRootCss({ scrollbarThumb, scrollbarTrack, frame
       .cm-editor[data-nostrodomus-codebox-style="1"] .cm-cursor {
         border-left-color: ${caretColor} !important;
       }` : ""}
-      /* Active-line / current-row indicator. Two parts paint it: (1) the background WASH on
-         .cm-activeLine/.cm-activeLineGutter, and (2) the focus-triggered BORDERS HA applies to the
-         CodeMirror internals — .cm-content border-top + .cm-gutters(.cm-gutters-before) border-right,
-         which go light-grey at rest and bright blue (rgb(0,154,199)) on focus = the L-shaped "90° line"
-         Both are driven by ${activeLineBackground}: "transparent" hides the whole
-         indicator (style.hideActiveLineHighlight, default ON), else the faint wash + HA's native borders.
-         This rule wins the cascade via the attribute selector + !important; no competing rule elsewhere. */
+      /* The current-line indicator has two parts: the background of .cm-activeLine and
+         .cm-activeLineGutter, and the borders Home Assistant gives .cm-content (top) and
+         .cm-gutters (right), light gray at rest and blue (rgb(0, 154, 199)) on focus, an L shape.
+         With style.hideActiveLineHighlight on (the default) the background is transparent and the
+         block below hides the borders too; with it off the faint background and Home Assistant's
+         borders show. */
       .cm-editor[data-nostrodomus-codebox-style="1"] .cm-activeLine,
       .cm-editor[data-nostrodomus-codebox-style="1"] .cm-activeLineGutter {
         background: ${activeLineBackground} !important;
       }${activeLineBackground === "transparent" ? `
-      /* Why this block uses !important:
-           owner: active-line indicator (style.hideActiveLineHighlight, default ON / hidden).
-           external rule overridden: HA's focus-state border on .cm-content (border-top) + .cm-gutters
-             (border-right) — light-grey at rest, rgb(0,154,199) blue on focus (the visible "90° line").
-           reason: hiding the current-row indicator must remove the line that actually paints it (the
-             borders), not only the background wash; border-COLOR transparent (not width:0) preserves
-             CodeMirror's gutter/content layout. Scoped to the styled codebox; never dashboard-wide.
-           removal: when the toggle is OFF (activeLineBackground != transparent) this block is not emitted.
-           verify: hide ON -> no L-line on click in card + panel; OFF -> HA's native border returns. */
+      /* Only while the current line is hidden. The border color is made transparent rather than
+         the width 0, so CodeMirror's layout of gutter and content does not change. */
       .cm-editor[data-nostrodomus-codebox-style="1"] .cm-content {
         border-top-color: transparent !important;
       }
@@ -433,7 +408,6 @@ export function codeboxStyleBuildRootCss({ scrollbarThumb, scrollbarTrack, frame
     `;
 }
 
-
 export function codeboxStyleSignature({ settings, tokens, size, syntaxFilter, thumbBorder, frameEnabled, syntax }) {
   return JSON.stringify({
     size: size?.value || size || "",
@@ -482,7 +456,6 @@ export function codeboxStyleReasonRequiresSyntaxPaint(reason = "", options = {})
     text.includes("syntax") ||
     text.includes("content");
 }
-
 
 export function codeboxStyleSettleReasonCoalesceDecision(options = {}) {
   const cleanReason = String(options?.reason || "style-settle");
@@ -537,4 +510,3 @@ export function codeboxStyleSourceClassSteadyStateSkipDecision(options = {}) {
   }
   return { skip: true, reason: "source-class-steady-state" };
 }
-

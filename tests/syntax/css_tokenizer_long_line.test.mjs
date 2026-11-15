@@ -49,8 +49,8 @@ for (const [label, unit] of Object.entries(LONG_LINES)) {
       const characters = charactersCopiedBy(() => { tokens = smartSyntaxTokenizeCssLine(line, lineKind); });
       assert.ok(tokens.length > LENGTH / 20, 'the whole line is tokenized');
       assert.equal(tokens[tokens.length - 1].end, line.trimEnd().length);
-      // The old tokenizer copied the rest of the line for every token: more than a hundred
-      // million characters for these lines. The limit is twice the length of the line.
+      // A tokenizer that copies the rest of the line for every token would copy more than a
+      // hundred million characters for these lines. The limit is twice the length of the line.
       assert.ok(characters <= 2 * line.length, `${label} (${lineKind}) copied ${characters} characters of a ${line.length} character line`);
     }
   });

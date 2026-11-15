@@ -177,12 +177,10 @@ export async function runPublicRuntimeContract({ distPath = 'dist/nostrodomus.js
     console.debug = capture('debug');
     await import(url);
     await new Promise(resolve => setTimeout(resolve, 0));
-    // The completion library loads lazily on first editor use. This
-    // runner verifies the COMPLETE public surface (library + index + providers),
-    // so trigger the load explicitly via the public open() — it awaits
-    // loadLibrary() then bails gracefully with no view, adding no console output
-    // (the "exactly one ready banner" check still holds).
-    try { await globalThis.__nostrodomus?.open?.(); } catch { /* no-view open is a no-op load trigger */ }
+    // The completion library loads on first editor use. Without an editor view, open() loads the
+    // library and returns without writing to the console, so the library, the index and the
+    // providers can be checked here.
+    try { await globalThis.__nostrodomus?.open?.(); } catch { /* a failed load shows up as empty library counts below */ }
     await new Promise(resolve => setTimeout(resolve, 0));
   } finally {
     console.log = originalConsole.log;

@@ -55,7 +55,7 @@ test('completion insertion runtime owns accepted row callback wiring', () => {
   assert.equal(state.suppressUntil, 1260);
 });
 
-test('completion insertion runtime preserves snippet-session error boundary', () => {
+test('a snippet placeholder move that throws ends the snippet session and records the error', () => {
   const state = {
     snippetSession: { view: { dispatch() { throw new Error('dispatch failed'); } }, from: 0, index: 0, placeholders: [{ start: 0, end: 4 }], allPlaceholders: [] },
   };

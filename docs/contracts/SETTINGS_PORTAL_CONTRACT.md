@@ -12,7 +12,7 @@ The settings panel is drawn by Nostrodomus, but it has to live inside whatever H
 4. the `home-assistant` root,
 5. `document.body`.
 
-The host covers the viewport and lets pointer events through; the panel inside it receives them. The settings panel does not share the overlay host of the completion popup.
+The host covers the viewport and lets pointer events through; the panel inside it receives them. The settings panel does not share the overlay host of the suggestion list.
 
 When the host is not inside a top-layer dialog, the panel is shown with the Popover API (`popover="manual"`), so it is still drawn above the page.
 

@@ -1,7 +1,6 @@
-// Nostrodomus style-root registry runtime.
-// Owns bounded Document/ShadowRoot style-root scan scheduling and observer cleanup.
-// Keep this module DOM-scoped and dependency-injected; codebox styling and editor
-// discovery remain owned by their dedicated modules.
+// The scan of the style roots (the document and the shadow roots of the active editor and its
+// dialog): when it runs, and the pruning of the observers of roots that left the page. Styling
+// and editor discovery are injected.
 
 function call(fn, ...args) {
   return typeof fn === 'function' ? fn(...args) : undefined;
@@ -11,7 +10,7 @@ function nowMs(performanceRef) {
   try {
     if (performanceRef && typeof performanceRef.now === 'function') return performanceRef.now();
   } catch {
-    // Timing fallback must never become host-facing failure.
+    // A performance object that throws: Date.now() below.
   }
   return Date.now();
 }
@@ -139,9 +138,9 @@ export function createStyleRootRuntime(options = {}) {
   }
 
   function runScheduledStyleRootScan(reason = 'style-root-scan') {
-    // Root scans should not invalidate the active editor cache. The cached
-    // editor is still validated by visibility/connectivity on every read, and
-    // clearing it here creates discovery loops while the editor is open.
+    // A root scan leaves the active editor cache alone: the cached editor is checked for
+    // visibility and connection on every read, and clearing it here would start an editor search
+    // on every scan while the editor is open.
     state.styleRootRaf = requestAnimationFrameRef(() => {
       state.styleRootRaf = 0;
       const pendingReason = state.styleRootScanPendingReason || reason;
@@ -167,9 +166,8 @@ export function createStyleRootRuntime(options = {}) {
   }
 
   function installRootStyleRegistry() {
-    // Do not scan/inject into every dashboard shadow root on startup. The root
-    // style registry is activated only when an editor is present or an editor
-    // lifecycle event marks roots dirty.
+    // Nothing is injected into the dashboard's shadow roots at startup; the scan runs only once
+    // an editor is present or an editor event marks the roots as changed.
     call(options.removeCodeboxRootStylesFromAllRoots, 'install-dashboard-containment');
     scheduleStyleRootScan('install-root-style-registry-editor-only');
     call(options.scheduleEditorPresenceProbe, 'install-root-style-registry-editor-only');

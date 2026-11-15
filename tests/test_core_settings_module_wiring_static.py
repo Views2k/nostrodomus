@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import json
-import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / 'src/core/settings.js'
-LEGACY = ROOT / 'src/main.legacy.js'
-ADAPTERS = ROOT / 'src/composition/mainLegacyAdapters.js'
+APP = ROOT / 'src/app.js'
+ADAPTERS = ROOT / 'src/composition/appAdapters.js'
 ALLOWLIST = ROOT / 'docs/contracts/MODULE_WIRING_ALLOWLIST.json'
 REPORT = ROOT / 'reports/CORE_SETTINGS_MODULE_WIRING_STATIC_REPORT.txt'
 
 module = MODULE.read_text(encoding='utf-8', errors='replace')
-legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
+app = APP.read_text(encoding='utf-8', errors='replace')
 adapters = ADAPTERS.read_text(encoding='utf-8', errors='replace')
 allowlist = json.loads(ALLOWLIST.read_text(encoding='utf-8'))
 allowed = allowlist.get('allowed_unwired_modules', {})
@@ -25,14 +24,14 @@ def require(ok, message):
     else:
         errors.append(message)
 
-require("from './core/settings.js'" in legacy, 'runtime imports core settings module')
-require('DEFAULT_SETTINGS' in legacy, 'runtime aliases module DEFAULT_SETTINGS')
-require("import { DEFAULT_SETTINGS } from './core/settings.js';" in legacy, 'runtime default settings come from module')
-require('settingsRuntime.cloneDefaultSettings()' in adapters and 'coreSettings.cloneDefaultSettings' in legacy, 'runtime clone path delegates through settings runtime/module helper')
-require('settingsRuntime.deepMerge(base, patch)' in adapters and 'coreSettings.deepMerge' in legacy, 'runtime deepMerge path delegates through settings runtime/module helper')
-require('const DEFAULT_SETTINGS = {\n' not in legacy, 'legacy duplicate DEFAULT_SETTINGS object removed')
-require('structuredClone(DEFAULT_SETTINGS)' not in legacy, 'legacy direct settings clone calls replaced with module clone helper')
-require('src/core/settings.js' not in allowed, 'core settings module removed from unwired allowlist')
+require("from './core/settings.js'" in app, 'runtime imports core settings module')
+require('DEFAULT_SETTINGS' in app, 'runtime uses module DEFAULT_SETTINGS')
+require("import { DEFAULT_SETTINGS } from './core/settings.js';" in app, 'runtime default settings come from module')
+require('settingsRuntime.cloneDefaultSettings()' in adapters and 'coreSettings.cloneDefaultSettings' in app, 'runtime clone path delegates through settings runtime/module helper')
+require('settingsRuntime.deepMerge(base, patch)' in adapters and 'coreSettings.deepMerge' in app, 'runtime deepMerge path delegates through settings runtime/module helper')
+require('const DEFAULT_SETTINGS = {\n' not in app, 'app.js has no copy of DEFAULT_SETTINGS')
+require('structuredClone(DEFAULT_SETTINGS)' not in app, 'app.js clones settings only through the module helper')
+require('src/core/settings.js' not in allowed, 'core settings module is not on the unwired allowlist')
 
 for token in [
     'export const DEFAULT_SETTINGS',

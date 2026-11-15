@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 
 import {
   SELECTOR_SEAM_CATEGORIES,
-  selectorMatchesDeep,
+  selectorsMatchDeep,
   evaluateSelectorSeams,
   createSelectorSeamProbe,
 } from '../../src/editor/selectorSeamProbe.js';
 
-// A tiny DOM stub: a node matches a selector if its `matchSet` contains it;
-// querySelector returns a marker when the selector is in `present`.
+// A small DOM stub: querySelector returns a marker when the selector is in `present`, and
+// querySelectorAll("*") returns `children`, whose shadowRoot the walk enters.
 function makeRoot(present = new Set(), children = []) {
   return {
     querySelector: (sel) => (present.has(sel) ? { sel } : null),
@@ -17,28 +17,27 @@ function makeRoot(present = new Set(), children = []) {
   };
 }
 
-test('selectorMatchesDeep finds a selector across nested open shadow roots', () => {
+test('selectorsMatchDeep finds selectors across nested open shadow roots', () => {
   const deepHost = { shadowRoot: makeRoot(new Set(['ha-code-editor'])) };
   const midHost = { shadowRoot: makeRoot(new Set(), [deepHost]) };
   const root = makeRoot(new Set(), [midHost]);
-  assert.equal(selectorMatchesDeep(root, 'ha-code-editor'), true);
-  assert.equal(selectorMatchesDeep(root, 'wa-dialog'), false);
-  assert.equal(selectorMatchesDeep(null, 'ha-code-editor'), false);
+  assert.deepEqual([...selectorsMatchDeep(root, ['ha-code-editor', 'wa-dialog'])], ['ha-code-editor']);
+  assert.equal(selectorsMatchDeep(null, ['ha-code-editor']).size, 0);
 });
 
-test('selectorMatchesDeep is depth-bounded and never throws on hostile roots', () => {
+test('selectorsMatchDeep is depth-bounded and never throws on roots that cannot be queried', () => {
   const hostile = {
     querySelector: () => { throw new Error('closed'); },
     querySelectorAll: () => { throw new Error('closed'); },
   };
-  assert.equal(selectorMatchesDeep(hostile, 'ha-code-editor'), false);
-  // depth cap: a chain longer than maxDepth returns false rather than hanging.
+  assert.equal(selectorsMatchDeep(hostile, ['ha-code-editor']).size, 0);
+  // A chain deeper than maxDepth is not followed to its end.
   let node = makeRoot(new Set(['ha-code-editor']));
   for (let i = 0; i < 30; i += 1) node = makeRoot(new Set(), [{ shadowRoot: node }]);
-  assert.equal(selectorMatchesDeep(node, 'ha-code-editor', 5), false);
+  assert.equal(selectorsMatchDeep(node, ['ha-code-editor'], 5).size, 0);
 });
 
-test('evaluateSelectorSeams reports full coverage when all critical seams match', () => {
+test('evaluateSelectorSeams reports full coverage when all critical selectors match', () => {
   const allSelectors = new Set(SELECTOR_SEAM_CATEGORIES.map((c) => c.selector));
   const result = evaluateSelectorSeams({ document: makeRoot(allSelectors) });
   assert.equal(result.coverage, 100);
@@ -47,8 +46,8 @@ test('evaluateSelectorSeams reports full coverage when all critical seams match'
   for (const c of SELECTOR_SEAM_CATEGORIES) assert.equal(result.categories[c.name], true);
 });
 
-test('evaluateSelectorSeams flags missing critical seams and lowers coverage', () => {
-  // Present everything EXCEPT the code-editor and cm-content critical seams.
+test('evaluateSelectorSeams flags missing critical selectors and lowers coverage', () => {
+  // Everything is present except the code-editor and cm-content selectors, both critical.
   const present = new Set(SELECTOR_SEAM_CATEGORIES.map((c) => c.selector));
   const codeEditor = SELECTOR_SEAM_CATEGORIES.find((c) => c.name === 'code-editor');
   const cmContent = SELECTOR_SEAM_CATEGORIES.find((c) => c.name === 'cm-content');
@@ -61,7 +60,7 @@ test('evaluateSelectorSeams flags missing critical seams and lowers coverage', (
   assert.equal(result.criticalFound, result.criticalTotal - 2);
 });
 
-test('createSelectorSeamProbe writes status to state and is fail-dark', () => {
+test('createSelectorSeamProbe writes its status to state and never throws', () => {
   const state = {
     selectorSeamStatus: { probeCount: 0, lastProbeAt: 0, lastProbeReason: '', coverage: 100, missingCritical: [], categories: {} },
   };
@@ -81,15 +80,10 @@ test('createSelectorSeamProbe writes status to state and is fail-dark', () => {
   assert.equal(state.selectorSeamStatus.lastProbeReason, 'editor-open-test');
   assert.equal(perfEvents, 1);
 
-  // A throwing document leaves the prior status untouched and records nothing fatal.
-  let recorded = null;
+  // A document whose queries throw matches nothing: the probe does not throw and still records
+  // a result.
   const hostileDoc = { querySelector: () => { throw new Error('boom'); }, querySelectorAll: () => { throw new Error('boom'); } };
-  const { probe: probe2 } = createSelectorSeamProbe({
-    state,
-    document: hostileDoc,
-    recordRuntimeErrorOnce: (scope) => { recorded = scope; },
-  });
-  // hostile doc → every seam simply misses (no throw escapes); status updates with low coverage.
+  const { probe: probe2 } = createSelectorSeamProbe({ state, document: hostileDoc });
   const r2 = probe2('hostile');
   assert.ok(r2 === null || r2.coverage <= 100);
   assert.equal(state.selectorSeamStatus.probeCount, 2);
@@ -97,12 +91,8 @@ test('createSelectorSeamProbe writes status to state and is fail-dark', () => {
   // Missing state.selectorSeamStatus → probe is a safe no-op.
   const { probe: probe3 } = createSelectorSeamProbe({ state: {}, document: makeRoot(allSelectors) });
   assert.equal(probe3('no-state'), null);
-  void recorded;
 });
 
-
-// The self-check ran from editor detection: five walks of the whole app, before the opened
-// editor's first paint and again on every new detection.
 test('evaluateSelectorSeams reads each root once for all selectors', () => {
   let starReads = 0;
   const counted = (present, children = []) => ({
@@ -139,4 +129,22 @@ test('probeLater defers the self-check and does not repeat a complete result wit
   assert.equal(probeLater('second editor'), false, 'a complete result is not repeated within the interval');
   clock += 30000;
   assert.equal(probeLater('much later'), true);
+});
+
+test('cancel stops a pending self-check', () => {
+  const state = { selectorSeamStatus: { probeCount: 0 } };
+  const timers = new Map();
+  let next = 0;
+  const { probeLater, cancel } = createSelectorSeamProbe({
+    state,
+    document: makeRoot(new Set()),
+    setTimeout: (fn) => { next += 1; timers.set(next, fn); return next; },
+    clearTimeout: (id) => { timers.delete(id); },
+  });
+  assert.equal(probeLater('open'), true);
+  assert.equal(timers.size, 1);
+  cancel();
+  assert.equal(timers.size, 0, 'the pending run is cleared');
+  assert.equal(state.selectorSeamStatus.probeCount, 0);
+  assert.equal(probeLater('reopen'), true, 'a later editor can schedule a new run');
 });

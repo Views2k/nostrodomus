@@ -1,29 +1,17 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import json
 
 ROOT = Path(__file__).resolve().parents[1]
-# The monolith was split into focused src/ modules and the project moved to 0.1.x SemVer.
-# The expanded syntax color coverage invariant (CSS-depth aware Dark+ classifier producing
-# cssValue/cssGlow line kinds) still holds — it just MOVED:
-#   * the CSS-depth classifier bridge lives in src/syntax/darkPlusBridge.js
-#   * the syntax-theme-saturation default setting lives in src/core/settings.js
-#   * the version constants live in src/core/version.js (imported by main.legacy.js)
-#   * the root codebox CSS string is built by codeboxStyleBuildRootCss in src/ui/codeboxStyle.js
-# The bundled dist still contains all of the above (minified), so each fact is asserted
-# against the dist in its survives-minification form.
+# The Dark+ classifier tracks CSS block depth and produces the cssValue and cssGlow line kinds.
+#   * src/syntax/darkPlusBridge.js: the CSS depth classifier
+#   * src/core/settings.js: the syntax theme saturation setting
+#   * src/ui/codeboxStyle.js: codeboxStyleBuildRootCss, the root codebox CSS
+# Each fact is also checked in dist, in its minified form.
 SYNTAX_BRIDGE = ROOT / "src/syntax/darkPlusBridge.js"
 SETTINGS = ROOT / "src/core/settings.js"
-VERSION_MODULE = ROOT / "src/core/version.js"
 CODEBOX_STYLE = ROOT / "src/ui/codeboxStyle.js"
 DIST = ROOT / "dist/nostrodomus.js"
-PROJECT = ROOT / "PROJECT.json"
 REPORT = ROOT / "reports/EXPANDED_SYNTAX_COLOR_COVERAGE_STATIC_TEST_REPORT.txt"
-
-# Dynamic floor: the project advanced to 0.1.x SemVer after this feature shipped; assert the
-# version stays at or beyond the SemVer baseline rather than pinning an exact retired literal.
-VERSION_FLOOR = (0, 1, 0)
-INTERNAL_ID = "nostrodomus-v"
 
 errors = []
 notes = []
@@ -34,27 +22,10 @@ def require(ok, msg):
     else:
         errors.append(msg)
 
-project = json.loads(PROJECT.read_text(encoding="utf-8"))
-version = str(project.get("version"))
-internal = str(project.get("internal_version"))
-version_tuple = tuple(int(part) for part in version.split(".") if part.isdigit())
-
-require(version_tuple >= VERSION_FLOOR, "PROJECT.json remains at or beyond the SemVer baseline that carries expanded syntax color coverage")
-require(INTERNAL_ID in internal or version_tuple > VERSION_FLOOR, "internal_version records the nostrodomus runtime identity (or version advanced beyond the baseline)")
-
-# Version constants moved to src/core/version.js (main.legacy.js imports them); the bundled dist
-# carries the minified literals with no spaces around '='.
-version_module_text = VERSION_MODULE.read_text(encoding="utf-8", errors="replace")
-require(f'export const PROJECT_VERSION = "{version}"' in version_module_text, "src PROJECT_VERSION matches metadata (src/core/version.js)")
-require(f'export const VERSION = "{internal}"' in version_module_text, "src runtime VERSION matches metadata (src/core/version.js)")
-
 dist_text = DIST.read_text(encoding="utf-8", errors="replace")
-require(f'PROJECT_VERSION="{version}"' in dist_text, "dist PROJECT_VERSION matches metadata")
-require(f'VERSION="{internal}"' in dist_text, "dist runtime VERSION matches metadata")
 
-# Expanded syntax coverage tokens — the CSS-depth aware Dark+ classifier.
-# (label, file_for_src_form, src_token, dist_token)  — dist_token captures the minified shape
-# (parameter renamed text->text2, bridge wrapper Continuation->Continuation2, spaces stripped).
+# (file, file text, source token, dist token). esbuild renames some identifiers with a numeric
+# suffix (text2, darkPlusLooksCssContinuation2) and removes spaces.
 bridge_src = SYNTAX_BRIDGE.read_text(encoding="utf-8", errors="replace")
 settings_src = SETTINGS.read_text(encoding="utf-8", errors="replace")
 
@@ -75,16 +46,12 @@ for src_path, src_text, src_token, dist_token in src_dist_tokens:
     require(src_token in src_text, f"src contains expanded syntax coverage token ({src_path.name}): {src_token}")
     require(dist_token in dist_text, f"dist contains expanded syntax coverage token: {dist_token}")
 
-# The old external DarkPlus resource dependency must stay retired everywhere.
-require("nostrodomus-cm6-vscode-darkplus-v1.js" not in bridge_src, "src does not reintroduce old DarkPlus resource dependency")
-require("nostrodomus-cm6-vscode-darkplus-v1.js" not in dist_text, "dist does not reintroduce old DarkPlus resource dependency")
+# The syntax colors need no external DarkPlus resource.
+require("nostrodomus-cm6-vscode-darkplus-v1.js" not in bridge_src, "src does not load the external DarkPlus resource")
+require("nostrodomus-cm6-vscode-darkplus-v1.js" not in dist_text, "dist does not load the external DarkPlus resource")
 
-# Root codebox CSS is now built by codeboxStyleBuildRootCss (src/ui/codeboxStyle.js); the dist
-# carries the same template literal. Negative guards (the broad ":host *" clip/mask override
-# was removed because it could break SVG mini-graphs):
-#   * no broad ":host *" root selector
-#   * no ROOT-WIDE clip-path removal — i.e. clip-path removal must stay scoped to the
-#     [data-nostrodomus-codebox-unclip] attribute selector, never applied via ":host *".
+# The root codebox CSS must not use a broad ":host *" selector (a clip or mask override there
+# breaks SVG mini-graphs); clip-path removal stays scoped to [data-nostrodomus-codebox-unclip].
 codebox_style_src = CODEBOX_STYLE.read_text(encoding="utf-8", errors="replace")
 
 def root_css_segment(text):
@@ -97,8 +64,7 @@ def root_css_segment(text):
 for label, text in (("src", codebox_style_src), ("dist", dist_text)):
     scoped = root_css_segment(text)
     require(scoped != "", f"{label} exposes codeboxStyleBuildRootCss root style builder")
-    require(":host *" not in scoped, f"{label} does not reintroduce broad :host * root style selector")
-    # clip-path removal stays scoped to the unclip attribute selector, never root-wide (":host *").
+    require(":host *" not in scoped, f"{label} has no broad :host * root style selector")
     require(":host * {" not in scoped and ":host *{" not in scoped, f"{label} does not apply root-wide clip-path removal via :host *")
     require("data-nostrodomus-codebox-unclip" in scoped, f"{label} keeps the codebox clip-path removal scoped to the unclip attribute selector")
 

@@ -1,9 +1,8 @@
-// Runtime owner for active editor cache and native fallback dedupe behavior.
-//
-// This module owns active editor cache keys, stable native-highlight fallback
-// decisions, bridge/editor discovery, and no-editor backoff state. Dependencies
-// are injected so it stays free of circular imports with the syntax/style
-// runtimes.
+// The active editor cache: cache keys for editors, the remembered style target, the decisions
+// that skip a repeated native-highlight install for an editor already handled, the codebox
+// candidates from the companion bridge, the no-editor backoff, and switching Home Assistant's
+// own autocomplete off and back on. Dependencies are injected, so it does not import the syntax
+// or style runtimes.
 
 import { insideCardOwnEditor } from './cardOwnEditor.js';
 
@@ -24,21 +23,15 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
     scheduleNativeHighlightForActiveEditor,
     editorUsesCodeMirrorSourceClassSyntax,
     replaceNativeAutocompleteEnabled = () => true,
-    // Surface-wide native-autocomplete suppression: returns EVERY ha-code-editor host on the active
-    // surface (not just the active editor), so HA's built-in entity/icon dropdown is turned off in
-    // every codebox, re-applied as new ones mount. No-op default keeps the runtime concern-neutral.
+    // Every ha-code-editor host on the active surface, not only the active editor, so Home
+    // Assistant's own entity and icon dropdown is off in every codebox, including ones that mount later.
     codeEditorHostsForNativeSuppression = () => [],
-    // The companion layer (scrollbar/enlarge) must ride every editor-discovery path, not
-    // just the editor sentinel. This is the convergence point all paths funnel through
-    // (sentinel, initialSyntaxPaintGate, codeboxStyle discovery, companionReady), so
-    // driving the companion here covers editors found by a non-sentinel path (which get
-    // styling but would otherwise miss the companion). Idempotent / first-injector-wins,
-    // so the overlap with the sentinel's own calls is a safe no-op.
-    // No-op default keeps the runtime concern-neutral.
+    // The companion layer (scrollbar and sizing). Every discovery path ends in
+    // rememberActiveCodeboxEditor (the sentinel, initialSyntaxPaintGate, the style pass,
+    // companionReady), so an editor found by any of them gets the layer. A second call for the
+    // same editor does nothing.
     applyCompanionEditorLayer = () => {},
   } = ctx;
-
-
 
   function haCodeEditorHostForEditor(editor) {
     if (!editor) return null;
@@ -107,18 +100,9 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
     return true;
   }
 
-  // Suppress HA's native autocomplete on every ha-code-editor host on the active surface, not just
-  // the one active editor. Without this, the native entity dropdown stays visible in the other
-  // codeboxes on a screen (panels with several editors, dialogs with nested ones), since the
-  // per-editor suppression only runs for the single active editor. This rides the same discovery
-  // convergence (rememberActiveCodeboxEditor), so it re-applies as new editors mount. Suppressed hosts
-  // are tracked in the shared set, so restoreNativeAutocomplete already cleans them up. Fail-dark and
-  // gated by the same setting; passing each host through suppressNativeAutocompleteForEditor reuses the
-  // remember/guard/diagnostic path (haCodeEditorHostForEditor returns a host passed directly).
-  // Drop hosts that have left the DOM (a closed editor dialog) from the suppression registries so a
-  // long session that opens and closes many editors doesn't accumulate detached ha-code-editor hosts
-  // (a leak: the Set/Map held them alive and grew unboundedly, since they were only cleared on a full
-  // restore/uninstall). A detached host needs no property restore — it is gone — so pruning is safe.
+  // Hosts that have left the DOM (a closed editor dialog) are dropped from the suppression
+  // registries, so a long session does not keep every closed ha-code-editor alive. A detached host
+  // needs nothing restored.
   function pruneDetachedSuppressedHosts() {
     const suppressed = state.nativeAutocompleteSuppressedHosts;
     if (!suppressed || typeof suppressed.forEach !== 'function') return 0;
@@ -133,6 +117,11 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
     return pruned;
   }
 
+  // Turns Home Assistant's own autocomplete off in every ha-code-editor on the active surface, not
+  // only in the active editor: panels with several editors and dialogs with nested ones would
+  // otherwise still show it in the others. Runs from rememberActiveCodeboxEditor, so editors that
+  // mount later are covered. The hosts go into the same set as the active editor's, so
+  // restoreNativeAutocomplete restores them too; a host that throws is skipped.
   function suppressNativeAutocompleteAcrossSurface(reason = 'surface-sweep') {
     if (!replaceNativeAutocompleteEnabled()) {
       restoreNativeAutocomplete('setting-disabled');
@@ -265,9 +254,8 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
     if (!editor?.querySelector || !state?.activeEditorCache) return "no-editor";
     const key = codeboxEditorCacheKey(editor);
     suppressNativeAutocompleteForEditor(editor, reason);
-    // Beyond the active editor, turn native autocomplete off on every other codebox on the surface
-    // too (fail-dark; idempotent — first-suppress-wins, repeat sweeps are cheap no-ops).
-    try { suppressNativeAutocompleteAcrossSurface(`${reason}:surface`); } catch { /* fail-dark: sweep never breaks the cache */ }
+    // The other codeboxes on the surface as well; a host already switched off is left as it is.
+    try { suppressNativeAutocompleteAcrossSurface(`${reason}:surface`); } catch { /* the sweep never breaks the cache */ }
     state.activeEditorCache.editor = editor;
     state.activeEditorCache.key = key;
     state.activeEditorCache.lastReason = reason;
@@ -291,10 +279,7 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
         else scheduleNativeHighlightForActiveEditor(editor, `active-editor-${reason}`);
       }
     } catch { /* mid-frame HA mutation */ }
-    // Drive the companion layer on the same convergence the styling rides, so it
-    // reaches editors discovered by any path (not only the sentinel). Fail-dark: the
-    // companion layer never breaks the active-editor cache. Idempotent downstream.
-    try { applyCompanionEditorLayer(editor); } catch { /* fail-dark: companion layer never breaks the cache */ }
+    try { applyCompanionEditorLayer(editor); } catch { /* the companion layer never breaks the cache */ }
     return key;
   }
 
@@ -310,14 +295,11 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
     return null;
   }
 
-  // A CodeMirror nested inside a visual-editor form field (ha-form / ha-selector, e.g. a
-  // markdown card's template selector, a condition/action editor, any card-config field that
-  // embeds an ha-code-editor) is not the dialog's main codebox. The persistence engine re-applies
-  // on open to editors a click never reached, so without this guard those sub-field editors get
-  // force-sized to calc(94vh - …) and overflow the card, covering the "Show code editor" toggle.
-  // General by construction: a composed-ancestor walk that rejects any form-nested editor, not a
-  // specific card type; the dialog's main code editor is never inside ha-form / ha-selector, so it
-  // is never rejected.
+  // A CodeMirror inside a visual-editor form field (ha-form or ha-selector: a markdown card's
+  // template field, a condition or action editor, any config field with an ha-code-editor) is not
+  // the dialog's codebox. Sized as one, it would get the full dialog height, overflow the card and
+  // cover the "Show code editor" button. The check walks the composed ancestors, so it holds for
+  // every card type; the dialog's own code editor is never inside ha-form or ha-selector.
   function editorInsideVisualFormField(editor) {
     let node = editor;
     let depth = 0;
@@ -338,8 +320,7 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
     const rect = editor.getBoundingClientRect?.();
     // The 200x80 minimum separates the codebox from small embedded editors at discovery. The
     // remembered editor passed it already; on a phone-width screen the plugin's own sizing then
-    // makes it narrower than 200px, and dropping it there re-ran discovery on every keystroke.
-    // It stays the active editor while it is still laid out.
+    // makes it narrower than 200px, so it only has to be laid out to stay the active editor.
     const remembered = editor === state?.activeEditorCache?.editor;
     const minWidth = remembered ? 40 : 200;
     const minHeight = remembered ? 20 : 80;
@@ -395,8 +376,8 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
     return usable ? editor : null;
   }
 
-  // Nothing cleared state.view when its editor went away, so the last EditorView (and the DOM it
-  // holds) stayed reachable and the two guards below never armed again.
+  // Lets go of a bound view whose editor has left the DOM: the EditorView would keep that DOM
+  // reachable, and the two backoff checks below never apply while a view is bound.
   function releaseDetachedEditorView() {
     const view = state.view || state.hookedView;
     if (!view || view.dom?.isConnected !== false) return false;
@@ -411,10 +392,9 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
   }
 
   // An open card dialog may still be mounting its code editor, so the no-editor backoff waits. On
-  // the visual tab there never is one: after DIALOG_NO_EDITOR_GRACE_MS without an editor the
-  // dialog no longer holds the backoff off, or every style pass kept running the full discovery
-  // walk for as long as the dialog stayed open. An editor that mounts later is reported by the
-  // sentinel, which resets all of this.
+  // the visual tab there never is one, so after DIALOG_NO_EDITOR_GRACE_MS without an editor the
+  // dialog no longer holds the backoff off and style passes stop running the full discovery walk.
+  // An editor that mounts later is reported by the sentinel, which resets all of this.
   const DIALOG_NO_EDITOR_GRACE_MS = 4000;
   function dialogMayStillMountEditor(cache, now) {
     const open = !!activeEditDialog() || editorLikelyOpeningWithoutMountedCodebox();
@@ -454,7 +434,6 @@ export function createActiveEditorCacheRuntime(ctx = {}) {
     recordPerformanceEvent("active-editor-no-editor-backoff-start", 0, reason);
     return true;
   }
-
 
   return {
     codeboxEditorCacheKey,

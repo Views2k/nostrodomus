@@ -26,7 +26,7 @@ Optional fields:
 - `label`: readable name for the provider list in Settings and for diagnostics.
 - `canHandle(ctx)`: fast gate. A provider without it is asked on every request.
 - `timeoutMs`: time budget for one `provide(ctx)` call. The default is 8 ms, the maximum is 120 ms. For local debugging the default can be changed with the `nostrodomusProviderTimeoutMs` key in `localStorage`.
-- `capabilities` and `priority`: descriptive. The registry does not read them. Providers are called in registration order, and the order of rows in the popup is decided by scoring (see `docs/SCORING_CONTRACT.md`).
+- `capabilities` and `priority`: descriptive. The registry does not read them. Providers are called in registration order, and the order of rows in the suggestion list is decided by scoring (see `docs/SCORING_CONTRACT.md`).
 
 `ctx` is the context descriptor described in `docs/CONTEXT_DESCRIPTOR.md`.
 
@@ -89,7 +89,7 @@ The `ha-runtime-values` provider reads its data from one snapshot built by `runt
 The snapshot holds:
 
 - Entity ids with friendly names, and service ids. Up to 10000 entity ids and 3000 service ids are indexed. A query returns at most 750 entity rows and 500 service rows after the typed prefix is applied.
-- Areas, devices, floors and labels with their names (at most 300, 750, 100 and 200). They are offered for `area_id:`, `device_id:`, `floor_id:` and `label_id:` when the registry lane is enabled.
+- Areas, devices, floors and labels with their names (at most 300, 750, 100 and 200). They are offered for `area_id:`, `device_id:`, `floor_id:` and `label_id:` when the experimental settings `completions.engineV2` and `completions.registryLane` are on.
 - Themes, and fixed lists of card types, icons, dashboard actions, trigger types, condition types and automation modes.
 - Custom cards (`cards` and `cardMeta`): the entries of the page's `window.customCards` registry, normalized to `custom:<type>`, validated, deduplicated, sorted and capped at `SECURITY_LIMITS.maxRuntimeCustomCards` (200). Names are cut to 80 characters and descriptions to 200. A card row carries the name as `meta.sourceDetail` and as an alias.
 - Service fields (`serviceFields`): per service id a list of `{ field, description, selectorKind, required, advanced, options }` from `hass.services[domain][service].fields`. `selectorKind` is the first key of the field's selector object, or empty. Sections of fields are flattened. The snapshot holds up to 40 fields per service for up to 400 services; a service beyond that is read when it is first asked for. Descriptions are cut to 160 characters.

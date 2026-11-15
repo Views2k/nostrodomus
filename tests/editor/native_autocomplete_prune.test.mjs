@@ -41,7 +41,7 @@ test('the surface sweep prunes detached ha-code-editor hosts from the suppressio
   assert.equal(state.nativeAutocompleteOriginals.size, 1);
 });
 
-test('the prune only removes hosts with isConnected === false (unknown/true are kept, fail-dark)', () => {
+test('the prune only removes hosts with isConnected === false (unknown and true are kept)', () => {
   const state = { nativeAutocompleteSuppressedHosts: new Set(), nativeAutocompleteOriginals: new Map() };
   const live = { isConnected: true, localName: 'ha-code-editor', dataset: {} };
   const unknown = { localName: 'ha-code-editor', dataset: {} }; // no isConnected -> not pruned

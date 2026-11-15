@@ -1,6 +1,5 @@
-// Companion settle runtime unit tests.
-// The settle engine owns the persistent TRIGGER (rAF-coalesced, typing-quiet-aware
-// scheduler + the 2800ms ladder); these pin that logic without a DOM.
+// Companion settle runtime: the settle engine owns the lifecycle trigger (a scheduler coalesced
+// per animation frame that respects the typing window, and the 2800ms ladder). No DOM needed.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -38,7 +37,7 @@ function harness({ active = true, quiet = false, handleMutation = true } = {}) {
   return { rt, flushRaf, fireTimers, reapplied, pendingTimers: () => timers.length };
 }
 
-test('DORMANT: scheduleLifecycle and armSettleWindow are strict no-ops (no re-apply, no timers)', () => {
+test('dormant: scheduleLifecycle and armSettleWindow do nothing (no re-apply, no timers)', () => {
   const h = harness({ active: false });
   h.rt.scheduleLifecycle('x');
   h.flushRaf();
@@ -47,7 +46,7 @@ test('DORMANT: scheduleLifecycle and armSettleWindow are strict no-ops (no re-ap
   assert.equal(h.pendingTimers(), 0, 'dormant -> no settle ladder armed');
 });
 
-test('ACTIVE: scheduleLifecycle is rAF-coalesced — many triggers, one re-apply per frame', () => {
+test('active: scheduleLifecycle coalesces per frame, many triggers give one re-apply', () => {
   const h = harness({ active: true });
   h.rt.scheduleLifecycle('a');
   h.rt.scheduleLifecycle('b');
@@ -57,27 +56,28 @@ test('ACTIVE: scheduleLifecycle is rAF-coalesced — many triggers, one re-apply
   assert.equal(h.reapplied.length, 1, 'coalesced to a single re-apply');
 });
 
-test('ACTIVE + typing-quiet: a mutation-origin schedule is DEFERRED; a non-mutation reason still applies', () => {
+test('active while typing: a schedule caused by a mutation is deferred, any other reason applies', () => {
   const h = harness({ active: true, quiet: true });
   h.rt.scheduleLifecycle('dialog-shadow-mutation');
   h.flushRaf();
   assert.equal(h.reapplied.length, 0, 'mutation re-apply suppressed while typing (no-spam guard)');
-  // A settle-ladder rung is NOT a mutation reason, so it re-applies even mid-typing
-  // (the editor still must be sized correctly while you type).
+  // A settle ladder rung is not a mutation reason, so it re-applies while the user types (the
+  // editor must stay correctly sized).
   h.rt.scheduleLifecycle('boot-settle-220ms');
   h.flushRaf();
   assert.equal(h.reapplied.length, 1, 'non-mutation reason re-applies through the quiet window');
 });
 
-test('ACTIVE + typing-quiet: a settle ladder armed by a MUTATION observer still fires', () => {
-  // The home MutationObserver arms armSettleWindow('home-mutation-settle'); its rung reasons carry
-  // 'mutation', which used to match the quiet-drop and killed the whole catch-up ladder mid-typing.
+test('active while typing: a settle ladder armed by a mutation observer still fires', () => {
+  // The home MutationObserver arms armSettleWindow('home-mutation-settle'); its rung reasons
+  // contain 'mutation', but they must not be dropped like a direct mutation trigger, or the whole
+  // ladder would be lost while the user types.
   const h = harness({ active: true, quiet: true });
   h.rt.armSettleWindow('home-mutation-settle');
   h.fireTimers();
   h.flushRaf();
   assert.ok(h.reapplied.length >= 1, 'the mutation-armed settle ladder still re-applies while typing');
-  // A DIRECT mutation trigger (not a ladder rung) is still coalesced during typing.
+  // A direct mutation trigger (not a ladder rung) is deferred while the user types.
   const d = harness({ active: true, quiet: true });
   d.rt.scheduleLifecycle('home-mutation');
   d.flushRaf();

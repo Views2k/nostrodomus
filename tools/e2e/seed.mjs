@@ -1,17 +1,13 @@
-// Seed the E2E instance (see tools/e2e/README.md):
-// 1. copy the repo's current dist into the bind mount at config/www/,
-// 2. register it as a storage-mode Lovelace module resource with the
-//    STALE-RESOURCE GUARD stamp `?v=<internal_version>-<nonce>`,
-// 3. verify the instance actually serves the bytes we just wrote,
-// 4. create two input_boolean demo helpers (list-first idempotent),
-// 5. create the OWNED storage-mode dashboard (url_path 'e2e-test',
-//    list-first idempotent) and save the seeded config to it — never the
-//    legacy default-Lovelace slot, which HA 2026.6 removed (docs/COMPAT.md),
-// 6. write .ha-state/resource-stamp.json (incl. dashboardPath) for the
-//    spec-side guard.
+// Seed the e2e instance (see tools/e2e/README.md):
+// 1. copy dist/nostrodomus.js to config/www/ and check that the instance serves the same bytes,
+// 2. register it as a dashboard resource with the URL `?v=<internal_version>-<nonce>`,
+// 3. create the helpers and areas the specs use,
+// 4. create the dashboard e2e-test and save its configuration,
+// 5. save a long script and a long automation,
+// 6. write resource-stamp.json for the stale-resource guard of the specs.
 //
-// Idempotent by construction: re-running refreshes the file, the stamp, and
-// the dashboard, and leaves existing helpers alone.
+// It can run repeatedly: it creates what is missing and overwrites the resource entry, the
+// dashboard configuration, the script, the automation and the stamp.
 
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash, randomBytes } from 'node:crypto';
@@ -41,7 +37,7 @@ const DEMO_HELPERS = [
   { name: 'e2e demo two', entityId: 'input_boolean.e2e_demo_two' },
 ];
 
-// 1. Copy dist into the bind mount.
+// 1. Copy the bundle into the bind mount.
 const distPath = join(repoRoot, 'dist', 'nostrodomus.js');
 if (!existsSync(distPath)) fail('dist/nostrodomus.js missing — build first (python3 tools/build.py).');
 const distBytes = readFileSync(distPath);
@@ -49,14 +45,14 @@ const distSha256 = createHash('sha256').update(distBytes).digest('hex');
 mkdirSync(paths.www, { recursive: true });
 copyFileSync(distPath, join(paths.www, 'nostrodomus.js'));
 
-// 2. Stale-resource guard stamp: internal version + fresh nonce per seed run.
+// The resource URL carries the internal version and a nonce that is new on every run.
 const project = JSON.parse(readFileSync(join(repoRoot, 'PROJECT.json'), 'utf8'));
 const internalVersion = project.internal_version;
 const nonce = randomBytes(8).toString('hex');
 const url = `${RESOURCE_PATH}?v=${internalVersion}-${nonce}`;
 
-// 3. Verify the instance serves exactly the bytes we wrote (closes the
-// "registered path maps to the seeded file" leg of the guard).
+// The instance must serve exactly the bytes just copied, so that the registered URL is known to
+// load this bundle.
 const served = await fetch(`${BASE_URL}${url}`, { signal: AbortSignal.timeout(20000) });
 if (!served.ok) {
   fail(`STALE RESOURCE: GET ${url} returned ${served.status} — /local/ is not serving the seeded file (was config/www present at first HA boot?).`);
@@ -66,7 +62,7 @@ if (servedSha256 !== distSha256) {
   fail(`STALE RESOURCE: served bytes (${servedSha256.slice(0, 12)}…) != dist (${distSha256.slice(0, 12)}…) — the instance is serving a different file than seed wrote.`);
 }
 
-// 4. Register/refresh the Lovelace resource, helpers, and dashboard over WS.
+// 2. Register the resource, or update the existing entry and remove duplicates.
 const ws = new HaWebSocket();
 await ws.connect(readToken());
 
@@ -84,6 +80,7 @@ if (existing.length > 0) {
   log(`resource created → ${url}`);
 }
 
+// 3. Helpers and areas.
 const helpers = await ws.call({ type: 'input_boolean/list' });
 for (const helper of DEMO_HELPERS) {
   const slug = helper.entityId.split('.')[1];
@@ -95,10 +92,9 @@ for (const helper of DEMO_HELPERS) {
   }
 }
 
-// 4b. Bulk entities to exceed the maxRuntimeEntities=750 per-query cap, so the prefix-first sourcing
-// fix (0.1.179) is testable: a late-alphabet id (input_boolean.zzz_marker) is reachable ONLY if the
-// query prefix-filters BEFORE the 750 cap — a flat alphabetical top-750 would drop it behind the 800
-// bulk_filler_* ids. Idempotent (the first reseed creates them, ~10-20s; later runs skip existing).
+// More input_booleans than the 750 entity rows a query returns (SECURITY_LIMITS.maxRuntimeEntities).
+// input_boolean.zzz_marker sorts after the 800 bulk_filler_* ids, so a spec finds it only when the
+// typed prefix is applied before the cap. The first run creates them in 10 to 20 seconds.
 const BULK_COUNT = 800;
 const existingBooleans = new Set((await ws.call({ type: 'input_boolean/list' }) || []).map((h) => h.id));
 let bulkCreated = 0;
@@ -111,9 +107,8 @@ for (let i = 0; i < BULK_COUNT; i++) {
 if (!existingBooleans.has('zzz_marker')) { await ws.call({ type: 'input_boolean/create', name: 'zzz marker' }); bulkCreated += 1; }
 log(`bulk entities: ${bulkCreated} created (>${BULK_COUNT} input_booleans total, exceeding the 750 cap; late-alphabet marker input_boolean.zzz_marker present)`);
 
-// 4c. Areas for the registry value lane (area_id: completion, 0.1.180). Idempotent (list-first).
-// Devices are integration-owned and NOT createable over WS, so device_id: is covered fail-dark
-// (empty rows, no error) rather than by name; area_id: is covered by real seeded area names.
+// Areas for the area_id: completion. Devices belong to integrations and cannot be created over
+// the WebSocket API, so the device_id: spec checks for an empty list without an error.
 const DEMO_AREAS = ['E2E Living Room', 'E2E Kitchen'];
 const existingAreas = new Set((await ws.call({ type: 'config/area_registry/list' }) || []).map((a) => a.name));
 for (const name of DEMO_AREAS) {
@@ -122,12 +117,9 @@ for (const name of DEMO_AREAS) {
   log(`area created: ${name}`);
 }
 
-// 5. Owned dashboard. HA 2026.6 removed the legacy default-Lovelace slot:
-// `lovelace/config/save` without a target saves into a dashboard that no
-// longer exists, `/lovelace/*` is not routed, and `/home` plus the other
-// built-ins do not load custom Lovelace resources (docs/COMPAT.md). The
-// harness therefore owns its dashboard outright and never depends on HA's
-// default.
+// 4. The harness's own dashboard. Since Home Assistant 2026.6, `lovelace/config/save` without a
+// url_path saves to a dashboard that is not shown, `/lovelace/*` is not routed, and `/home` and the
+// other built-in dashboards do not load custom resources (docs/COMPAT.md).
 const dashboards = await ws.call({ type: 'lovelace/dashboards/list' });
 const dashboard = (dashboards || []).find((d) => d.url_path === DASHBOARD_URL_PATH);
 if (dashboard) {
@@ -160,16 +152,15 @@ await ws.call({
             title: 'E2E Demo Entities',
             entities: DEMO_HELPERS.map((h) => h.entityId),
           },
-          // Multi-line content so the markdown VISUAL editor's template field (a CodeMirror
-          // inside ha-selector-template / ha-form) renders tall enough (>=80px) to clear the
-          // codebox size gate — the companion-form-field-guard spec then asserts it is STILL
-          // not treated as the codebox (a form-field editor is not the dialog's main editor).
+          // Several lines, so that the template field of the markdown visual editor (a CodeMirror
+          // inside ha-selector-template / ha-form) is at least 80 px tall, the minimum height of a
+          // codebox. The companion-form-field-guard spec checks that it is still not treated as
+          // the dialog's code editor.
           { type: 'markdown', content: '## Nostrodomus E2E\n\nSeeded dashboard for the e2e harness.\n\n- line one\n- line two\n- line three\n- line four\n- line five\n- line six\n- line seven\n- line eight' },
           { type: 'button', entity: DEMO_HELPERS[0].entityId, name: 'E2E Button' },
         ],
       },
-      // A Sections-layout view so the section-card preview-fill fix (0.1.138/9) is testable: editing a
-      // card inside a grid section is the surface where the preview collapsed to near-zero width.
+      // A sections view, for the specs that edit a card inside a grid section.
       {
         title: 'Sections',
         path: 'sections',
@@ -189,11 +180,9 @@ await ws.call({
 log(`dashboard config saved (/${DASHBOARD_URL_PATH}/home, overwrite-idempotent)`);
 ws.close();
 
-// 5b. Seed a long script + automation so the PANEL editors have real, scroll-forcing content
-// (a surface the card-dialog-only specs do not reach). Created over the REST config API (default_config
-// provides the script/automation integrations). The long step list forces the CodeMirror scroller
-// to overflow, so the bottom-corner-clearance / scroll assertions have teeth. Idempotent: POST to
-// the same id overwrites.
+// 5. A long script and a long automation for the specs of the editors outside the card dialog.
+// The 40 steps make the CodeMirror content overflow, so the scroll checks have something to
+// scroll. Saving to the same id overwrites the earlier version.
 const restToken = readToken();
 const SCRIPT_OBJECT_ID = 'e2e_long_script';
 const AUTOMATION_ID = 'e2e_long_automation';
@@ -220,7 +209,7 @@ const automationRes = await httpJson('POST', `/api/config/automation/config/${AU
 if (!automationRes.ok) fail(`automation seed failed (${automationRes.status}) for ${AUTOMATION_ID}: ${String(automationRes.text || '').slice(0, 200)}`);
 log(`automation seeded: /config/automation/edit/${AUTOMATION_ID} (${longSteps.length} actions)`);
 
-// 6. Write the stamp the spec-side guard asserts against.
+// 6. The stamp that the stale-resource guard of the specs checks.
 writeFileSync(
   paths.resourceStamp,
   JSON.stringify(

@@ -40,7 +40,7 @@ for forbidden in ["window", "localStorage", "sessionStorage", "querySelector", "
         errors.append(f"context module must stay pure; found {forbidden}")
 for forbidden_word in ["document", "state"]:
     if re.search(rf"\b{forbidden_word}\b", text):
-        errors.append(f"context module must not reference monolith/browser token: {forbidden_word}")
+        errors.append(f"context module must not reference runtime or browser token: {forbidden_word}")
 
 for token in ["Context Descriptor Contract", "Current descriptor version: `1`", "describeYamlCompletionContext", "Fixture policy"]:
     if token not in doc:
@@ -52,7 +52,7 @@ for token in ["describeYamlCompletionContext matches known context fixtures", "f
 
 fixture_files = sorted(FIXTURES.glob("*.json")) if FIXTURES.exists() else []
 if len(fixture_files) < 25:
-    errors.append("context fixture corpus must include at least 25 fixtures after Priority 5 value-kind parity expansion")
+    errors.append("context fixture corpus must include at least 25 fixtures")
 
 if errors:
     print("CONTEXT DESCRIPTOR STATIC TEST FAILED")

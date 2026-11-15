@@ -35,10 +35,10 @@ test('settings runtime loads first valid configured storage key and records sour
   assert.equal(storage.has('old-key'), false);
 });
 
-test('loadSettings returns a fully MUTABLE tree when stored settings omit a frozen nested block', () => {
-  // Regression: merging a stored payload onto the FROZEN DEFAULT_SETTINGS leaked the frozen nested
-  // blocks by reference for any block the payload omitted (an upgrading user), so the first nested
-  // toggle threw "Cannot assign to read only property". loadSettings now merges onto a mutable clone.
+test('loadSettings returns a fully mutable tree when stored settings omit a frozen nested block', () => {
+  // Merging a stored payload onto the frozen DEFAULT_SETTINGS would share the frozen nested blocks
+  // the payload omits (an upgrading user), and the first nested toggle would throw "Cannot assign
+  // to read only property". loadSettings merges onto a mutable clone.
   const defaultSettings = Object.freeze({
     maxItems: 40,
     completions: Object.freeze({ engineV2: false }),
@@ -136,6 +136,40 @@ test('settings runtime reset restyles the editor with the defaults', () => {
   assert.equal(restyles.length, 1);
 });
 
+// A reset can turn "Hide editor warnings" off and "Glass editor dialog" on. Both sheets belong to
+// the companion layer, which the style reapply does not run.
+test('settings runtime reset re-applies the companion layer with the defaults', () => {
+  const editor = { id: 'active-editor' };
+  const defaults = () => ({ style: { hideEditorWarnings: false, glassDialog: true } });
+  const state = { settings: { style: { hideEditorWarnings: true, glassDialog: false } }, activeEditorCache: { editor } };
+  const applied = [];
+  const runtime = createSettingsRuntime({
+    storage: { removeItem: () => {} },
+    settingsWriteKey: 'current-key',
+    cloneDefaultSettingsImpl: defaults,
+    getState: () => state,
+    applyCompanionEditorLayer: (target) => { applied.push({ target, style: { ...state.settings.style } }); },
+  });
+
+  runtime.resetSettings();
+  assert.equal(applied.length, 1, 'the companion layer is applied once');
+  assert.equal(applied[0].target, editor, 'on the active editor');
+  assert.deepEqual(applied[0].style, { hideEditorWarnings: false, glassDialog: true }, 'with the default settings');
+
+  // A companion layer that throws is recorded and does not stop the reset.
+  const errors = [];
+  const failing = createSettingsRuntime({
+    storage: { removeItem: () => {} },
+    cloneDefaultSettingsImpl: defaults,
+    getState: () => state,
+    applyCompanionEditorLayer: () => { throw new Error('no editor'); },
+    recordRuntimeErrorOnce: (scope, err, detail) => errors.push([scope, err.message, detail]),
+  });
+  state.settings = { style: { hideEditorWarnings: true, glassDialog: false } };
+  assert.deepEqual(failing.resetSettings(), defaults());
+  assert.deepEqual(errors, [['settings:reset-companion-layer', 'no editor', { phase: 'resetSettings' }]]);
+});
+
 function migrationRuntime(storage, extra = {}) {
   return createSettingsRuntime({
     storage: {
@@ -197,7 +231,7 @@ test('migration: storage delete throwing keeps the write key intact (no data los
   assert.equal(storage.has('legacy-a'), true);
 });
 
-// schemaVersion / migrateSettings ledger.
+// schemaVersion and migrateSettings.
 
 test('migrateSettings stamps the current schemaVersion on a versionless payload, idempotently', () => {
   const first = migrateSettings({ mode: 'snippets' }, 1);
@@ -228,9 +262,9 @@ test('loadSettings stamps schemaVersion into the stored payload on load (no sche
 });
 
 test('migrateSettings v2 drops a stale stored hideActiveLineHighlight so the new (hidden) default applies', () => {
-  // v0.1.150 persisted style.hideActiveLineHighlight=false (old default); v0.1.151 wants the new
-  // default (true/hidden). The v2 step removes the stale key (preserving other style settings) so
-  // deepMerge(defaults, stored) yields the new default; a deliberate toggle re-persists afterward.
+  // Schema 1 stored style.hideActiveLineHighlight=false, the default at that time; the default is
+  // now true (hidden). The v2 step removes the stored key and keeps the other style settings, so
+  // deepMerge(defaults, stored) gives the current default; a later toggle stores it again.
   const r = migrateSettings({ schemaVersion: 1, style: { hideActiveLineHighlight: false, codeTextSize: 'large' } }, 2);
   assert.equal(r.changed, true);
   assert.equal(Object.prototype.hasOwnProperty.call(r.payload.style, 'hideActiveLineHighlight'), false, 'stale active-line key removed');

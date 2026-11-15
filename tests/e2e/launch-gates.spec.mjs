@@ -2,20 +2,20 @@
 // and Enter, including the empty-scalar sibling), the target lane, the embedded-vs-main enlarge
 // scope, and the warning badge. Each gate is keyboard-driven Playwright.
 //
-// METHOD (realistic-position testing): every completion gate drives the REAL CodeMirror
-// with real keys — keyboard.type + keyboard.press('Enter'), ACCEPTING CM6's own auto-indent at
+// Method (realistic-position testing): every completion gate drives the real CodeMirror
+// with real keys — keyboard.type + keyboard.press('Enter'), accepting CM6's own auto-indent at
 // the tested opener->newline. It never uses setValue and never pre-types the indent of the line
-// where the popup is tested. CM6's editor here auto-indents to the PREVIOUS line's own column
+// where the popup is tested. CM6's editor here auto-indents to the previous line's own column
 // (it copies the leading whitespace, it does not deepen) — which is the position these gates test.
-// SETUP lines are typed at their absolute indent, with the copied auto-indent neutralized
-// (Shift+Home + overwrite), so the parent structure is deterministic; only the TESTED position is
+// Setup lines are typed at their absolute indent, with the copied auto-indent neutralized
+// (Shift+Home + overwrite), so the parent structure is deterministic; only the tested position is
 // left as the raw auto-indent CM6 produces.
 //
-// CRASH-SAFETY: a card edit dialog live-renders its preview on
+// Keeping the preview from crashing: a card edit dialog live-renders its preview on
 // every edit and throws inside HA's own frontend when config.type is undefined/null. So the
-// completion gates NEVER clear the editor to a typeless state — they APPEND a root-level block to
+// completion gates never clear the editor to a typeless state — they append a root-level block to
 // the seeded card's valid `type: entities` config (type stays defined throughout, no HA crash),
-// and G5 replaces only the type VALUE (keeping `type: ` so it is never undefined). The completion
+// and G5 replaces only the type value (keeping `type: ` so it is never undefined). The completion
 // engine is text-driven, so an appended `tap_action:` block resolves the dashboard service-data /
 // target lanes regardless of the card it rides on (serviceIdFromContext reads
 // perform_action -> light.turn_on -> brightness_pct).
@@ -40,7 +40,7 @@ import {
   NOSTRODOMUS_SETTINGS_PANEL,
 } from './selectors.mjs';
 
-// Badge style ids — MIRROR the exported constants in src/companion/scrollbarStyleRuntime.js
+// Badge style ids — mirror the exported constants in src/companion/companionStyleRuntime.js
 // (WARNING_BADGE_HOST_STYLE_ID / WARNING_BADGE_SHADOW_STYLE_ID). Hard-coded here (as the sibling
 // companion-warning-toggle spec does with its ids) so the browser-side spec never imports src.
 const WARNING_BADGE_HOST_STYLE_ID = 'nostrodomus-editor-warning-badge-host';
@@ -53,10 +53,10 @@ const HIDE_WARNINGS_TOGGLE = 'input[data-style-toggle="style.hideEditorWarnings"
 // ---------------------------------------------------------------------------
 
 /**
- * APPEND a fresh block of lines below the editor's existing (valid) config. The cursor starts at
+ * Append a fresh block of lines below the editor's existing (valid) config. The cursor starts at
  * end of document. For each line a real Enter is pressed, CM6's copied auto-indent is selected
  * (Shift+Home) and overwritten by the line's literal text, so the appended structure is
- * deterministic. The LAST entry is the opener (e.g. `  data:`); the caller then presses Enter to
+ * deterministic. The last entry is the opener (e.g. `  data:`); the caller then presses Enter to
  * reach the tested auto-indent position. The existing `type: entities` config is left intact so
  * the live preview never sees an undefined type (no HA-frontend crash).
  */
@@ -86,9 +86,9 @@ function rowLabels(texts) {
 }
 
 /**
- * Assert the popup's KEY labels contain every `must` substring and that none of the `mustNot`
- * KEYS hijack the lane. A hijack means a completion KEY whose label is exactly `<key>:` — never a
- * snippet whose DESCRIPTION merely contains the word ("action: choose by
+ * Assert the popup's key labels contain every `must` substring and that none of the `mustNot`
+ * keys hijack the lane. A hijack means a completion key whose label is exactly `<key>:` — never a
+ * snippet whose description merely contains the word ("action: choose by
  * trigger id" is a snippet description, not the `choose:` key).
  */
 function expectRows(texts, { must = [], mustNot = [] }, label) {
@@ -111,7 +111,7 @@ test('G1 (auto-indent): after data:+Enter, typing bri suggests brightness_pct, n
   // Append a dashboard action block resolving light.turn_on; `data:` is a child of tap_action at
   // column 2. Typed at absolute indent; the tested position is the next (auto-indented) line.
   await appendBlock(page, ['tap_action:', '  action: perform-action', '  perform_action: light.turn_on', '  data:']);
-  await page.keyboard.press('Enter'); // ACCEPT CM6's auto-indent — lands at data:'s own column (the auto-indent hole)
+  await page.keyboard.press('Enter'); // accept CM6's auto-indent — lands at data:'s own column (the auto-indent hole)
   await expectDialogAlive(page, 'after appending the data: block and pressing Enter');
   await typeInYaml(page, 'bri');
   await page.keyboard.press('Control+Space');
@@ -122,17 +122,17 @@ test('G1 (auto-indent): after data:+Enter, typing bri suggests brightness_pct, n
 });
 
 // ---------------------------------------------------------------------------
-// G2 — scalar pop: an EMPTY scalar sibling (transition:) must not kill the data lane.
+// G2 — scalar pop: an empty scalar sibling (transition:) must not kill the data lane.
 // ---------------------------------------------------------------------------
 test('G2 (scalar-pop): an empty transition: sibling still leaves service fields for bri', async ({ page }) => {
   const stamp = await openDashboard(page);
   await openSeededCardCodeEditor(page, stamp);
 
   // …/data:/transition: — transition left empty (col 4). Pressing Enter lands at transition:'s own
-  // column; the user is adding a SIBLING field, not descending into a scalar. The context pops
+  // column; the user is adding a sibling field, not descending into a scalar. The context pops
   // the empty scalar (only block containers descend), so the data field lane must still serve.
   await appendBlock(page, ['tap_action:', '  action: perform-action', '  perform_action: light.turn_on', '  data:', '    transition:']);
-  await page.keyboard.press('Enter'); // ACCEPT the auto-indent at the empty-scalar sibling position
+  await page.keyboard.press('Enter'); // accept the auto-indent at the empty-scalar sibling position
   await expectDialogAlive(page, 'after the empty transition: sibling + Enter');
   await typeInYaml(page, 'bri');
   await page.keyboard.press('Control+Space');
@@ -154,7 +154,7 @@ test('G3 (target lane): target:+Enter+Ctrl+Space suggests entity_id/device_id/ar
   await openSeededCardCodeEditor(page, stamp);
 
   await appendBlock(page, ['tap_action:', '  action: perform-action', '  target:']);
-  await page.keyboard.press('Enter'); // ACCEPT the auto-indent at target:'s own column
+  await page.keyboard.press('Enter'); // accept the auto-indent at target:'s own column
   await expectDialogAlive(page, 'after appending the target: block and pressing Enter');
   await page.keyboard.press('Control+Space'); // no prefix — open on the blank target child line
 
@@ -164,8 +164,8 @@ test('G3 (target lane): target:+Enter+Ctrl+Space suggests entity_id/device_id/ar
 });
 
 // ---------------------------------------------------------------------------
-// G6 — dedupe (0.1.262) + ranking order (0.1.261 focused lane), in the data: block.
-// The blank data: line, Ctrl+Space with NO prefix, shows the full service-field set — the place a
+// G6: duplicate removal and ranking order (the focused service-field lane) in the data: block.
+// The blank data: line, Ctrl+Space with no prefix, shows the full service-field set — the place a
 // duplicate row or a mis-ranked lane would show. (The scoring layer dedups/ranks on top of the raw
 // provider pool, so this is only observable through the real popup, not offline.)
 // ---------------------------------------------------------------------------
@@ -174,9 +174,9 @@ test('G6 (dedupe + ranking): service-data popup has no duplicate field rows and 
   await openSeededCardCodeEditor(page, stamp);
 
   await appendBlock(page, ['tap_action:', '  action: perform-action', '  perform_action: light.turn_on', '  data:']);
-  await page.keyboard.press('Enter'); // ACCEPT the auto-indent — cursor inside the data: block (the auto-indent column)
+  await page.keyboard.press('Enter'); // accept the auto-indent — cursor inside the data: block (the auto-indent column)
   await expectDialogAlive(page, 'after appending the data: block');
-  await page.keyboard.press('Control+Space'); // NO prefix — the full light.turn_on service-field set
+  await page.keyboard.press('Control+Space'); // no prefix — the full light.turn_on service-field set
 
   await expectPopupWithSuggestions(page, `G6: data: block Ctrl+Space produced no popup. doc:\n${await docText(page)}`);
   const labels = rowLabels(await popupRowTexts(page));
@@ -191,8 +191,8 @@ test('G6 (dedupe + ranking): service-data popup has no duplicate field rows and 
   const svcIdx = labels.findIndex((l) => l === 'brightness_pct:' || l === 'transition:');
   expect(svcIdx, `G6: no light.turn_on service field offered in the data: block: ${JSON.stringify(labels)}`).toBeGreaterThanOrEqual(0);
 
-  // …and (0.1.261 focused lane) it ranks above any generic card key that appears (the lane owns
-  // its block; a card key outranking a service field here is the ranking regression 0.1.261 fixed).
+  // …and it ranks above any generic card key that appears: the focused lane owns its block, so no
+  // card key may outrank a service field here.
   const cardIdx = labels.findIndex((l) => ['type:', 'entity:', 'entities:', 'icon:', 'card_mod:'].includes(l));
   if (cardIdx >= 0) {
     expect(svcIdx, `G6: service field (idx ${svcIdx}) must rank above the generic card key at idx ${cardIdx}: ${JSON.stringify(labels)}`).toBeLessThan(cardIdx);
@@ -200,9 +200,9 @@ test('G6 (dedupe + ranking): service-data popup has no duplicate field rows and 
 });
 
 // ---------------------------------------------------------------------------
-// G7 — automation lane (0.1.260): the automation-shaped `actions: - action: … / data:` path resolves
-// service fields at the CM auto-indent column, driven crash-safely in the CARD dialog. G1 covers the
-// DASHBOARD tap_action path; this covers the AUTOMATION action-block path (branchState kind='action-block').
+// G7: automation lane. The automation-shaped `actions: - action: … / data:` path resolves
+// service fields at the CM auto-indent column, driven crash-safely in the card dialog. G1 covers the
+// dashboard tap_action path; this covers the automation action-block path (branchState kind='action-block').
 // The completion is text/path-driven, so this exercises the same code the standalone
 // automation panel would — which can't be typed into directly (HA's _yamlChanged crashes on partial YAML).
 // ---------------------------------------------------------------------------
@@ -213,7 +213,7 @@ test('G7 (automation lane): actions: -> action -> data:+Enter+bri suggests brigh
   // Append an automation action block. `actions:` is an unknown key to the entities card (ignored; type
   // stays defined, no preview crash), but the text-driven engine resolves the automation action-step lane.
   await appendBlock(page, ['actions:', '  - action: light.turn_on', '    data:']);
-  await page.keyboard.press('Enter'); // ACCEPT CM6's auto-indent at data:'s own column (the auto-indent position)
+  await page.keyboard.press('Enter'); // accept CM6's auto-indent at data:'s own column (the auto-indent position)
   await expectDialogAlive(page, 'after appending the automation action data block');
   await typeInYaml(page, 'bri');
   await page.keyboard.press('Control+Space');
@@ -235,8 +235,8 @@ test('G4 (enlarge scope): the embedded template editor stays small, the main cod
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* ignore */ }
   });
 
-  // Markdown card, VISUAL editor: its content template field is a ha-code-editor nested in
-  // ha-selector-template / ha-form — the "embedded" case. It must NOT get the dialog-scale height.
+  // Markdown card, visual editor: its content template field is a ha-code-editor nested in
+  // ha-selector-template / ha-form — the "embedded" case. It must not get the dialog-scale height.
   const { dialog } = await openSeededCardCodeEditor(page, stamp, {
     cardSelector: HUI_MARKDOWN_CARD,
     cardText: 'Nostrodomus E2E',
@@ -249,8 +249,8 @@ test('G4 (enlarge scope): the embedded template editor stays small, the main cod
   await page.waitForTimeout(3000);
   const embeddedHeight = await embeddedEditor.evaluate((el) => Math.round(el.getBoundingClientRect().height));
 
-  // Switch to the code editor: the dialog's MAIN codebox (ha-yaml-editor / not form-nested), which
-  // IS enlarged to dialog scale.
+  // Switch to the code editor: the dialog's main codebox (ha-yaml-editor / not form-nested), which
+  // is enlarged to dialog scale.
   await dialog.getByRole('button', { name: /code editor/i }).first().click();
   const mainEditor = dialog.locator(HA_CODE_EDITOR).first();
   await dialog.locator(`${HA_CODE_EDITOR} ${CM_CONTENT}`).first().waitFor({ state: 'visible', timeout: 15000 });
@@ -276,7 +276,7 @@ test('G4 (enlarge scope): the embedded template editor stays small, the main cod
 // ---------------------------------------------------------------------------
 
 // Deep-search a dialog's composed shadow tree for a style node by id (the badge sheets live in a
-// NESTED editor shadow root). Mirrors the sibling companion-warning-toggle spec's walker.
+// nested editor shadow root). Mirrors the sibling companion-warning-toggle spec's walker.
 function countStyleNodeById(dialogHandle, id) {
   return dialogHandle.evaluate((dialog, styleId) => {
     let found = 0;
@@ -353,8 +353,8 @@ test('G5 (badge): a dialog with a real ha-alert receives the badge host/shadow s
   const { dialog } = await openSeededCardCodeEditor(page, stamp);
 
   // Turn the card into an unknown custom card — HA renders the real "Visual editor is not supported"
-  // ha-alert and forces the YAML editor, WITHOUT crashing (a defined
-  // custom: type is safe; live-data.spec proves it). Replace only the type VALUE so `type: ` is
+  // ha-alert and forces the YAML editor, without crashing (a defined
+  // custom: type is safe; live-data.spec proves it). Replace only the type value so `type: ` is
   // never undefined mid-edit: cursor to end of line 1 (`type: entities`), select the value word,
   // overwrite it. HA emits `type` first, so line 1 is the type line.
   await page.keyboard.press('ControlOrMeta+Home');
@@ -372,9 +372,9 @@ test('G5 (badge): a dialog with a real ha-alert receives the badge host/shadow s
     })
     .toBeGreaterThan(0);
 
-  // Deterministically reconcile the warning surface: flipping Hide-warnings ON then OFF drives the
-  // real applyEditorWarningHide(activeEditorWarningSurface()) both ways. Landing OFF
-  // with the companion active + an alert present injects the BADGE (the same reconcile the
+  // Deterministically reconcile the warning surface: flipping Hide-warnings on then off drives the
+  // real applyEditorWarningHide(activeEditorWarningSurface()) both ways. Landing off
+  // with the companion active + an alert present injects the badge (the same reconcile the
   // warning-toggle spec drives).
   const panel = await openSettings(page);
   await setHideWarnings(panel, true);

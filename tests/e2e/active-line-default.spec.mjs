@@ -1,7 +1,7 @@
-// active-line-default.spec — 0.1.151/2/3: CodeMirror's active-line (current-row) highlight — the blue
-// focus wash / "90-degree line" — is hidden BY DEFAULT (style.hideActiveLineHighlight defaults true, and
-// v2 migration drops an old stored false). Assert the .cm-activeLine background renders transparent out of
-// the box. Requires the companion codebox style (localStorage active).
+// active-line-default.spec: CodeMirror's active-line (current-row) highlight, the blue focus wash
+// and "90-degree line", is hidden by default (style.hideActiveLineHighlight defaults to true, and the
+// v2 settings migration drops an older stored false). Asserts that the .cm-activeLine background is
+// transparent out of the box. Requires the companion codebox style (localStorage active).
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';

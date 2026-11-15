@@ -1,9 +1,9 @@
 // Nostrodomus cross-runtime coordination surface.
 //
-// This browser-local coordinator lets the main completion runtime, the v17 editor
-// companion, and picker-safe companion share quiet-window state without importing
-// each other or starting another observer/polling loop. Keep this module pure
-// apart from writes to the supplied global object.
+// Lets the main runtime and the companion scripts (the editor and picker companions in
+// reference/companions, when they are installed on their own) share quiet windows through
+// window.__nostrodomusRuntimeCoordinatorV1, without importing each other and without another
+// observer or polling loop. Pure apart from writes to the given global object.
 
 export const RUNTIME_COORDINATOR_VERSION = "nostrodomus-runtime-coordinator-v1";
 

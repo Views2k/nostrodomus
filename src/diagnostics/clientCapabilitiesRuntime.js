@@ -40,11 +40,9 @@ export function createClientCapabilitiesRuntime(options = {}) {
     let name = brandText || "unknown";
     let version = "";
     if (!brandText) {
-      // Match the most SPECIFIC token first, not the leftmost in the string. Edge/Opera are
-      // Chromium-based and their UA contains "Chrome/…" BEFORE "Edg/…"/"OPR/…", so a single
-      // alternation regex matched Chrome by position and misreported both as Chrome. Safari's real
-      // version comes from the "Version/…" token (its "Safari/…" is the WebKit build), so Version is
-      // checked before the bare Safari fallback; Chrome is checked after Edg/OPR for the same reason.
+      // The most specific token wins, not the first in the string: the user agent of Edge and Opera
+      // also holds "Chrome/…" before "Edg/…" or "OPR/…". Safari's version is in "Version/…"; its
+      // "Safari/…" token is the WebKit build.
       for (const [token, label] of BROWSER_UA_MATCHERS) {
         const match = ua.match(token);
         if (match) { name = label; version = match[1] || ""; break; }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { hexToRgb, hslaFromHue, hslToRgb, rgbToHsl, syntaxColorWithOpacity, syntaxColorWithSaturation, syntaxHsl, syntaxHue } from '../../src/core/format.js';
 
-test('hslaFromHue preserves legacy bounds, rounding, and opacity formatting', () => {
+test('hslaFromHue bounds, rounds and formats the opacity', () => {
   assert.equal(hslaFromHue(195, 1, 64, 1), 'hsla(195, 100%, 64%, 1.000)');
   assert.equal(hslaFromHue(194.6, 0.456, 63.5, 0.3333), 'hsla(195, 46%, 64%, 0.333)');
   assert.equal(hslaFromHue(-12, -1, -10, -1), 'hsla(0, 0%, 0%, 0.000)');
@@ -11,7 +11,7 @@ test('hslaFromHue preserves legacy bounds, rounding, and opacity formatting', ()
   assert.equal(hslaFromHue('bad', 'bad', 'bad', 'bad'), 'hsla(195, 100%, 64%, 1.000)');
 });
 
-test('hexToRgb preserves legacy short, long, and invalid color parsing', () => {
+test('hexToRgb parses short, long and invalid colors', () => {
   assert.deepEqual(hexToRgb('#abc'), [170, 187, 204]);
   assert.deepEqual(hexToRgb('abc'), [170, 187, 204]);
   assert.deepEqual(hexToRgb('#A1B2C3'), [161, 178, 195]);
@@ -23,7 +23,7 @@ test('hexToRgb preserves legacy short, long, and invalid color parsing', () => {
 });
 
 
-test('syntaxHue preserves legacy hue wrap, rounding, and fallback behavior', () => {
+test('syntaxHue wraps, rounds and falls back', () => {
   assert.equal(syntaxHue(210), 210);
   assert.equal(syntaxHue(359.6), 0);
   assert.equal(syntaxHue(-1), 359);
@@ -34,7 +34,7 @@ test('syntaxHue preserves legacy hue wrap, rounding, and fallback behavior', () 
 });
 
 
-test('rgbToHsl preserves legacy RGB conversion behavior', () => {
+test('rgbToHsl converts RGB to HSL', () => {
   assert.deepEqual(rgbToHsl(255, 0, 0), [0, 1, 0.5]);
   assert.deepEqual(rgbToHsl(0, 255, 0), [120, 1, 0.5]);
   assert.deepEqual(rgbToHsl(0, 0, 255), [240, 1, 0.5]);
@@ -51,7 +51,7 @@ test('hslToRgb inverts the primaries, grays, hue-wrap, and clamps', () => {
   assert.deepEqual(hslToRgb('bad', 5, 5), [255, 255, 255]); // NaN hue -> 0; s/l clamp to 1
 });
 
-test('syntaxColorWithSaturation preserves legacy HSL, hex, fallback, and no-op behavior', () => {
+test('syntaxColorWithSaturation handles HSL, hex, the fallback and the no-op case', () => {
   assert.equal(syntaxColorWithSaturation('#336699', 1), '#336699');
   assert.equal(syntaxColorWithSaturation('  #336699  ', 1), '  #336699  ');
   assert.equal(syntaxColorWithSaturation('#336699', 2), 'hsl(210 93% 40%)');
@@ -60,7 +60,7 @@ test('syntaxColorWithSaturation preserves legacy HSL, hex, fallback, and no-op b
 });
 
 
-test('syntaxHsl preserves legacy syntax theme HSL formatting behavior', () => {
+test('syntaxHsl formats syntax theme HSL colors', () => {
   assert.equal(syntaxHsl({ baseHue: 210, saturation: 0.9, lightness: 64, saturationMultiplier: 1 }, 44, 3, 0.02), 'hsl(254 92% 67%)');
   assert.equal(syntaxHsl({ baseHue: 359.6, saturation: 2, lightness: 100, saturationMultiplier: 2 }, 3, 10, 0.4), 'hsl(3 185% 84%)');
   assert.equal(syntaxHsl({ baseHue: -5, saturation: -1, lightness: 0, saturationMultiplier: 0 }, 0, -50, -1), 'hsl(355 20% 24%)');
@@ -68,7 +68,7 @@ test('syntaxHsl preserves legacy syntax theme HSL formatting behavior', () => {
 });
 
 
-test('syntaxColorWithOpacity preserves legacy opacity formatting and fallback behavior', () => {
+test('syntaxColorWithOpacity formats the opacity and falls back', () => {
   assert.equal(syntaxColorWithOpacity('#abc', 0.5), 'rgba(170, 187, 204, 0.500)');
   assert.equal(syntaxColorWithOpacity('#336699', 0.5), 'rgba(51, 102, 153, 0.500)');
   assert.equal(syntaxColorWithOpacity('hsl(210 50% 40%)', 0.5), 'hsl(210 50% 40% / 0.500)');

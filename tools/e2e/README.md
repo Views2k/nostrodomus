@@ -38,7 +38,7 @@ npx playwright test --config tests/e2e/playwright.config.mjs tests/e2e/ha-boots.
 
 Playwright writes traces, screenshots, videos and an HTML report to `tests/e2e/.playwright/`.
 
-The CI workflow defines an `e2e` job that is switched off by default, because it needs a runner with Docker.
+The browser tests are not part of CI. They need Docker, a Playwright browser and the time for Home Assistant to start.
 
 ## The test instance
 
@@ -103,7 +103,7 @@ The harness owns its dashboard and never uses Home Assistant's default one. Sinc
 
 ## How the specs run
 
-`tests/e2e/playwright.config.mjs`: Chromium only, one worker, no retries, 60 seconds per test, `test.only` forbidden. A test that fails once fails the run; stability comes from waiting for explicit signals of the page, not from repetition. Every run records video; traces and screenshots are kept for failures.
+`tests/e2e/playwright.config.mjs`: Chromium, one worker, no retries, 60 seconds per test, `test.only` forbidden. A test that fails once fails the run; stability comes from waiting for explicit signals of the page, not from repetition. Every run records video; traces and screenshots are kept for failures. `tests/e2e/playwright.firefox.config.mjs` runs the same specs with the same settings in Firefox.
 
 Service workers are blocked. In a fresh browser profile Home Assistant's service worker installs on the first visit and reloads the page a few seconds later, which closes an open edit dialog in the middle of a test. Blocking it also removes one way of serving an old file.
 
@@ -132,7 +132,7 @@ The console of every test is collected for its whole duration by `tests/e2e/cons
 - A `console.error` fails the test.
 - A `console.warn` fails the test only if its text contains a Nostrodomus marker. Warnings from Home Assistant and from other cards are recorded and not judged.
 
-Exceptions are listed in `tests/e2e/console-allowlist.mjs`. An entry matches an exact string or an anchored regular expression and has an `owner` and a `reason` field. A page error can be excused only by an entry with `appliesTo: 'pageerror'` and a `source` pattern that matches the stack, so a message alone can never hide an exception from Nostrodomus code. The one standing entry is an error inside Home Assistant's own bundle that is a side effect of blocking service workers.
+Exceptions are listed in `tests/e2e/console-allowlist.mjs`. An entry matches an exact string or an anchored regular expression and has an `owner` and a `reason` field. A page error can be excused only by an entry with `appliesTo: 'pageerror'` and a `source` pattern that matches the stack, so a message alone can never hide an exception from Nostrodomus code. The entries cover an error inside Home Assistant's own bundle that is a side effect of blocking service workers, in the wording of Chromium and of Firefox, Firefox's second report of it, and the missing WebGL of headless Firefox.
 
 ## Another Home Assistant version
 
@@ -159,7 +159,7 @@ npx playwright test --config tests/e2e/playwright.config.mjs
 npm run e2e:down
 ```
 
-`.gitignore` lists `.ha-state/` and `.ha-state-beta/`. A state directory with another name contains tokens too and must not be committed.
+`.gitignore` covers every state directory (`tools/e2e/.ha-state*/`). They contain tokens and must not be committed.
 
 ## Files
 
@@ -171,11 +171,12 @@ npm run e2e:down
 | `tools/e2e/bootstrap.mjs` | Onboarding and tokens |
 | `tools/e2e/seed.mjs` | Bundle copy, resource, helpers, dashboard, script, automation, stamp |
 | `tests/e2e/playwright.config.mjs` | Runner configuration |
+| `tests/e2e/playwright.firefox.config.mjs` | The same configuration for Firefox |
 | `tests/e2e/session.mjs` | Sign-in, navigation log, console capture, stale-resource guard |
 | `tests/e2e/console-capture.mjs` | Console collection and the failure policy |
 | `tests/e2e/console-allowlist.mjs` | Justified console exceptions |
 | `tests/e2e/selectors.mjs` | Named selectors for the specs |
-| `tests/e2e/editor-helpers.mjs` | Shared steps: edit mode, card dialog, code editor, suggestion popup |
+| `tests/e2e/editor-helpers.mjs` | Shared steps: edit mode, card dialog, code editor, suggestion list |
 | `tests/e2e/*.spec.mjs` | The specs, one file per area |
 
 Nothing under `src/` imports from `tools/e2e/` or `tests/e2e/`.

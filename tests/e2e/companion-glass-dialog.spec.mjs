@@ -120,7 +120,6 @@ test('glass editor dialog: translucent blurred surface and transparent preview b
     .toBeLessThan(1);
 
   const on = await page.evaluate(measureGlass, GLASS_DIALOG_STYLE_ID);
-  console.log('[glass-dialog-diag on]', JSON.stringify(on));
   await testInfo.attach('glass-dialog-on.json', { body: JSON.stringify(on, null, 2), contentType: 'application/json' });
   expect(on.found, 'dialog surface or preview pane not found').toBe(true);
   expect(on.surfaceAlpha, `surface background ${on.surfaceBackground} is opaque`).toBeLessThan(1);
@@ -141,7 +140,6 @@ test('glass editor dialog: translucent blurred surface and transparent preview b
     .toBe(false);
 
   const off = await page.evaluate(measureGlass, GLASS_DIALOG_STYLE_ID);
-  console.log('[glass-dialog-diag off]', JSON.stringify(off));
   await testInfo.attach('glass-dialog-off.json', { body: JSON.stringify(off, null, 2), contentType: 'application/json' });
   expect(off.found, 'dialog surface or preview pane not found').toBe(true);
   expect(off.surfaceAlpha, `surface background ${off.surfaceBackground} is still translucent`).toBe(1);

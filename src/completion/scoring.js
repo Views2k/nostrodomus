@@ -19,15 +19,12 @@ import {
   normalizeCompletionItem,
   normalizeScoringSettings,
 } from './filtering.js';
-// Optimal-alignment fuzzy score used as a high within-tier sort key when the flag is on
-// (default off → not computed, sort term is 0 → byte-identical ordering).
+// Optimal-alignment fuzzy score, a sort key within a match tier when the dpRanking flag is on.
 import { dpFuzzyScore } from './dpFuzzyScore.js';
 import { completionSettings, DEFAULT_COMPLETION_SETTINGS } from '../core/completionSettings.js';
 import { cssRuleCanStartAt, templateBlockOpening } from '../yaml/yamlCompletionContext.js';
 
 export { DEFAULT_SCORING_SETTINGS };
-
-
 
 const MATCH_TIER = Object.freeze({
   none: 99,
@@ -39,13 +36,12 @@ const MATCH_TIER = Object.freeze({
   substring: 3,
 });
 const DEFAULT_RECENT_ACCEPT_LIMIT = 50;
-// Frecency boost ceiling, identical to the legacy recency cap (12), so the boost's numeric range is
-// unchanged (1..12); the frecency flag only changes its distribution within that band (recency-only 4/8
-// when off → recency+log-frequency when on). recentBoost is both a sort key and added into score, so
-// keeping the same ceiling means frecency can never perturb score tiebreaks beyond the proven range.
+// The recent-accept boost is 4 or 8 without the frecency flag; with it, a frequency term is added
+// up to this cap. recentBoost is a sort key and is also added to the score, so the cap bounds how
+// far it moves a row.
 const FRECENCY_BOOST_CAP = 12;
-// Exported so the host runtime can hydrate/persist this one shared store: both ranking
-// (scoreItems opts.recentAccepts || DEFAULT) and the accept recorder converge on it.
+// The one store that ranking (scoreItems falls back to it) and the accept recorder share. The
+// host runtime loads and saves it.
 export const DEFAULT_RECENT_ACCEPT_STORE = createRecentAcceptBoostStore(DEFAULT_RECENT_ACCEPT_LIMIT);
 
 function cleanQuery(value = '') {
@@ -92,7 +88,6 @@ export function wordBoundarySubsequence(label = '', query = '') {
   return false;
 }
 
-
 function orderedSubsequenceMatch(label = '', query = '') {
   const text = String(label || '');
   const needle = alnumLower(query);
@@ -133,9 +128,9 @@ export function completionMatchRank(item, rawPrefix = '', settings = {}) {
   const strings = uniqueSearchStrings(item);
   if (!strings.length) return { matched: false, tier: MATCH_TIER.none, reason: 'no-search-strings' };
 
-  // What the row shows and inserts ranks above its aliases: a category word such as "entity" or
-  // "boolean" in the aliases made every row of that kind an exact-prefix match for the first few
-  // typed characters, level with the rows whose own text starts with them.
+  // What the row shows and inserts ranks above its aliases. A category word such as "entity" or
+  // "boolean" in the aliases would otherwise make every row of that kind an exact-prefix match for
+  // the first few typed characters, level with the rows whose own text starts with them.
   const own = [item?.label, item?.insert].map(value => String(value || '')).filter(Boolean);
   const queryLower = query.toLowerCase();
   if (own.some(value => value.startsWith(query))) return { matched: true, tier: MATCH_TIER.exactPrefix, reason: 'exact-prefix' };
@@ -159,9 +154,9 @@ export function completionMatchRank(item, rawPrefix = '', settings = {}) {
   return { matched: false, tier: MATCH_TIER.none, reason: 'no-match' };
 }
 
-// A service-data field-key lane: the cursor names a key directly under data:/service_data:.
-// There the ha-runtime provider's service-field rows are THE context rows for this exact ctx
-// (mirrors the provider-side isServiceDataFieldContext gate using only ctx fields).
+// The cursor is at a key directly under data: or service_data:, where the Home Assistant
+// provider's service-field rows are the rows that fit. The same test as the provider's
+// isServiceDataFieldContext, from ctx fields only.
 export function isServiceDataFieldKeyContext(ctx) {
   if (!ctx || ctx.lang !== 'yaml' || ctx.valueKind) return false;
   const role = String(ctx.yamlRole || '');
@@ -175,9 +170,9 @@ export function providerPriorityRank(item, ctx = {}) {
   const source = item?.source || '';
   const type = String(item?.type || '').toLowerCase();
   if (ctx?.valueKind && source === HA_VALUE_PROVIDER_ID) return 0;
-  // Focused-lane ownership: when the ctx is a lane one provider exists to serve AND that
-  // provider produced rows (ctx.focusedLaneOwner set by scoreItems), its rows lead the lane;
-  // the generic yaml-wide lovelace rank-0 privilege does not apply inside the lane.
+  // A position that one provider exists to serve, when that provider produced rows
+  // (ctx.focusedLaneOwner, set by scoreItems): its rows lead, ahead of the context rows that
+  // lead everywhere else in YAML.
   if (ctx?.focusedLaneOwner) {
     if (source === ctx.focusedLaneOwner) return 0;
     if (source === LOVELACE_CONTEXT_PROVIDER_ID) return 1;
@@ -207,8 +202,9 @@ export function recentAcceptKey(item) {
 
 export function createRecentAcceptBoostStore(limit = DEFAULT_RECENT_ACCEPT_LIMIT) {
   const max = Math.max(1, Math.min(200, Number(limit) || DEFAULT_RECENT_ACCEPT_LIMIT));
-  // key -> { count, stamp }: count = total accepts (frequency), stamp = the monotonic accept counter at
-  // the last accept (recency, not wall-clock, for determinism). Map insertion order drives LRU eviction.
+  // key -> { count, stamp }: count is the number of accepts, stamp the accept counter at the last
+  // one (a counter rather than a clock, so the order is deterministic). The Map's insertion order
+  // is the eviction order.
   const hits = new Map();
   let stamp = 0;
   return {
@@ -223,8 +219,8 @@ export function createRecentAcceptBoostStore(limit = DEFAULT_RECENT_ACCEPT_LIMIT
       while (hits.size > max) hits.delete(hits.keys().next().value);
       return stamp;
     },
-    // Off (no opts / opts.frecency !== true): byte-identical to the legacy recency-only boost (4 or 8).
-    // On (opts.frecency === true): add a log-scaled frequency term so the most-accepted items lead.
+    // Without opts.frecency the boost is 4, or 8 for a recent accept. With it, a log-scaled
+    // frequency term is added so the most-accepted rows lead.
     boostFor(item, opts) {
       const rec = hits.get(recentAcceptKey(item));
       if (!rec) return 0;
@@ -233,7 +229,7 @@ export function createRecentAcceptBoostStore(limit = DEFAULT_RECENT_ACCEPT_LIMIT
       const freq = Math.min(4, Math.round(Math.log2((rec.count || 0) + 1))); // 1→1, 3→2, 7→3, 15+→4
       return Math.max(1, Math.min(FRECENCY_BOOST_CAP, 4 + recent + freq));
     },
-    // Pure serialize/restore for the host runtime's persistence layer (this module never touches storage).
+    // Plain data for the host runtime to save and load; this module does no storage itself.
     snapshot() {
       return { v: 1, entries: Array.from(hits, ([key, r]) => ({ key, count: r.count, stamp: r.stamp })) };
     },
@@ -243,9 +239,8 @@ export function createRecentAcceptBoostStore(limit = DEFAULT_RECENT_ACCEPT_LIMIT
       let maxStamp = 0;
       for (const e of entries) {
         const k = typeof e?.key === 'string' ? e.key.slice(0, 240) : '';
-        // Validate the RAW count before clamping: Math.max(1, ...) made the `!c` guard
-        // below dead, so entries with a missing/0/NaN count were admitted as count 1
-        // instead of skipped. Reject them on the raw value first.
+        // Entries with a missing, zero or non-numeric count are skipped; the check is on the value
+        // before clamping, which turns it into 1.
         const rawCount = Math.floor(Number(e?.count) || 0);
         const c = Math.max(1, Math.min(1e6, rawCount));
         const s = Math.max(0, Math.min(1e9, Math.floor(Number(e?.stamp) || 0)));
@@ -254,7 +249,7 @@ export function createRecentAcceptBoostStore(limit = DEFAULT_RECENT_ACCEPT_LIMIT
         if (s > maxStamp) maxStamp = s;
       }
       while (hits.size > max) hits.delete(hits.keys().next().value);
-      stamp = Math.max(stamp, maxStamp); // never let post-reload recency math underflow
+      stamp = Math.max(stamp, maxStamp); // loaded stamps are never ahead of the counter
       return hits.size;
     },
     stamp() { return stamp; },
@@ -281,9 +276,9 @@ export function sameCompletionContextForIncrementalFilter(previousCtx = {}, ctx 
   return keys.every(key => String(previousCtx[key] || '') === String(ctx[key] || ''));
 }
 
-// allowType and modeRank read one field of the settings. scoreItems calls them once per
-// candidate with settings it already normalized, so it passes the mode; normalizing the whole
-// settings object again for each of several hundred candidates was most of their cost.
+// allowType and modeRank read one field of the settings. scoreItems has normalized the settings
+// already and calls the ForMode variants with the mode, instead of normalizing again for each of
+// several hundred candidates.
 export function allowType(item, settings = {}) {
   return allowTypeForMode(item, normalizeScoringSettings(settings).mode);
 }
@@ -372,7 +367,7 @@ export function hasFocusedContextProviderItems(ctx, candidates) {
   const scope = String(ctx.scope || '');
   const path = Array.isArray(ctx.yamlPath) ? ctx.yamlPath.join('.') : '';
   const focused = [
-    'tap_action', 'hold_action', 'double_tap_action', 'target', 'data', 'styles', 'browser_mod', 'card_mod', 'custom_fields', ['st', 'ate'].join(''), 'triggers', 'trigger', 'conditions', 'condition', 'actions', 'sequence', 'then', 'else', 'choose', 'repeat',
+    'tap_action', 'hold_action', 'double_tap_action', 'target', 'data', 'styles', 'browser_mod', 'card_mod', 'custom_fields', 'state', 'triggers', 'trigger', 'conditions', 'condition', 'actions', 'sequence', 'then', 'else', 'choose', 'repeat',
   ];
 
   return focused.some(key => scope.includes(key) || path.includes(key));
@@ -393,7 +388,7 @@ export function itemMatchesYamlValueKind(item, ctx = {}) {
     // The dashboard action value snippets (`perform-action` plus its sibling keys) complete the
     // value and add lines below it. The insertion step lines those up only while the value is
     // still empty (the cursor right after `action:`), so they pass here and not once a prefix
-    // is typed. Before, this filter dropped them everywhere.
+    // is typed.
     return type === 'snippet' && item?.meta?.contextKind === 'lovelace-action-value' && ctx?.afterKeyColon === true;
   }
   if (kind === 'theme') return type === 'theme';
@@ -403,8 +398,8 @@ export function itemMatchesYamlValueKind(item, ctx = {}) {
   if (kind === 'boolean') return type === 'boolean';
   if (kind === 'script-action') return type === 'script-action';
   if (['number', 'duration', 'string', 'scalar'].includes(kind)) return type === kind;
-  // Registry value lanes: area_id:/device_id:/floor_id:/label_id: complete only their own registry
-  // rows (each carries item.type === the kind), so snippets/keys/other rows don't leak into the popup.
+  // area_id:, device_id:, floor_id: and label_id: take only their own registry rows (each row's
+  // type is the kind), not snippets, keys or other rows.
   if (['area', 'device', 'floor', 'label'].includes(kind)) return type === kind;
 
   return source !== STATIC_PROVIDER_ID;
@@ -485,10 +480,10 @@ export function shouldSuppressStaticForFocusedContext(ctx, candidates) {
 
 // The first `cap` rows of a ranked list, one row per inserted text. Several providers offer the
 // same key (the context provider, the catalog and the static library) or the same card type
-// (Home Assistant and the catalog), and the list showed each of them. Two rows are the same
-// suggestion only when they are of the same kind and insert the same text; rows that share a
-// label and insert different text both stay. The first row in rank order is kept, which among
-// equally good matches is the row of the higher-priority provider.
+// (Home Assistant and the catalog). Two rows are the same suggestion only when they are of the
+// same kind and insert the same text; rows that share a label and insert different text both
+// stay. The first row in rank order is kept, which among equally good matches is the row of the
+// higher-priority provider.
 //
 // The kept row takes over the label and aliases of a dropped one. A later, longer prefix narrows
 // this list instead of asking the providers again, and it has to find the text through the words
@@ -527,18 +522,14 @@ export function scoreItems(ctx, candidatesOrOptions = [], options = {}) {
     ? { ...options, candidates: candidatesOrOptions }
     : { ...(candidatesOrOptions || {}) });
   const settings = normalizeScoringSettings(opts.settings || {});
-  // Read straight from the raw settings (completionSettings does its own fail-dark merge) so it
-  // survives normalizeScoringSettings, which keeps only the legacy scoring fields.
+  // The completion flags, with defaults for missing or invalid values.
   const completion = completionSettings(opts.settings || {});
   const dpRankingOn = completion.dpRanking === true;
-  // When on, the recency boost gains a log-scaled frequency term (most-accepted items lead).
-  // Off → boostFor returns the byte-identical legacy 4/8 recency (the undefined opts arg below).
   const frecencyOn = completion.frecency === true;
-  // A stable token of every completion lane-gate flag that is on. The candidate set a provider
-  // yields for a fixed ctx depends on these (engineV2/registryLane/schemaValues/surfaceScope/
-  // jinjaLane/lazyResolve), so the cache key must carry them or a flag toggle can serve rows scored
-  // under the old config. The settings-save clear is debounced, so the key can't lean on it. All-off
-  // yields '' — byte-identical to the previous dp/frecency-only token.
+  // The flags that are on, for the cache key. The rows a provider gives for a context depend on
+  // them (engineV2, registryLane, schemaValues, surfaceScope, jinjaLane, lazyResolve), and the
+  // cache clear after a settings save is debounced, so without them a list scored under the old
+  // flags could be served.
   const completionFlagToken = Object.keys(DEFAULT_COMPLETION_SETTINGS)
     .filter((flag) => completion[flag] === true)
     .join(',');
@@ -554,26 +545,23 @@ export function scoreItems(ctx, candidatesOrOptions = [], options = {}) {
     .join(',');
   const recentStore = opts.recentAccepts || DEFAULT_RECENT_ACCEPT_STORE;
   const recentStamp = recentStore && typeof recentStore.stamp === 'function' ? recentStore.stamp() : 0;
-  // The incremental filter narrows the PREVIOUS result set instead of re-running providers.
-  // That is only sound when the previous result held every match — a result that hit the
-  // maxItems cap may have sliced off the row that the longer prefix now matches best, and it
-  // could never reappear (the popup blanks mid-typing and the empty result caches forward).
-  // If the prior result was at/over the cap, recompute from providers instead of reusing it.
+  // The incremental filter narrows the previous list instead of asking the providers again. That
+  // only works when the previous list held every match: a list cut at maxItems may have lost the
+  // row that the longer prefix matches best. A list at the cap is computed again from the
+  // providers.
   const maxItemsCap = Number(settings.maxItems) || DEFAULT_SCORING_SETTINGS.maxItems;
   const incrementalSource = !Array.isArray(opts.candidates)
     && Array.isArray(opts.previousItems)
-    // An empty previous result is never "every match": it can be empty because of minChars,
-    // a suppressed popup, or a compute that failed. Narrowing it can only stay empty.
+    // An empty previous list can be empty because of minChars, a suppressed list or a failed
+    // compute, and narrowing it can only stay empty.
     && opts.previousItems.length > 0
     && opts.previousItems.length < maxItemsCap
     && sameCompletionContextForIncrementalFilter(opts.previousContext, ctx);
-  // The provider rows depend on the resolved service/action, which lives in ctx.branchState
-  // (parent for automation `- action:` steps, a sibling for dashboard action blocks) — none of
-  // it was in the key, so a second `data:` block under a DIFFERENT service was served the first
-  // service's cached fields (wrong, and visit-order dependent). A compact signature over the
-  // branch fields that drive service resolution + sibling filtering distinguishes those slots.
-  // isTriggerChar gates the empty-prefix passive branch below, so it belongs in the key too.
-  // Over-capturing here only ever causes a safe recompute (a miss), never a wrong hit.
+  // The provider rows depend on the service or action in ctx.branchState (the parent of an
+  // automation `- action:` step, a sibling in a dashboard action block): two data: blocks under
+  // different services need different fields. The key carries the branch fields that decide the
+  // service and the sibling filtering; an extra field only costs a cache miss. isTriggerChar
+  // decides the empty-prefix case below, so it is in the key too.
   const bs = ctx.branchState;
   const branchToken = bs && typeof bs === 'object'
     ? [bs.parentKey || '', bs.parentValue || '', bs.action || '', bs.actionValue || '',
@@ -642,8 +630,7 @@ export function scoreItems(ctx, candidatesOrOptions = [], options = {}) {
     candidates = candidates.filter(item => item?.source !== STATIC_PROVIDER_ID);
   }
 
-  // Focused-lane owner resolution: only when the owner provider actually produced rows for
-  // this exact ctx do its rows take the lane lead (otherwise ranking is unchanged).
+  // The provider that serves this position leads only when it produced rows here.
   const focusedLaneOwner = isServiceDataFieldKeyContext(ctx)
     && candidates.some(item => item?.source === HA_VALUE_PROVIDER_ID)
     ? HA_VALUE_PROVIDER_ID
@@ -670,12 +657,9 @@ export function scoreItems(ctx, candidatesOrOptions = [], options = {}) {
       const match = matchRankOf(item);
 
       if (!prefix) {
-        // An empty-prefix position right after a key's colon (afterKeyColon) is an intentful
-        // value position — the context adapter already set shouldSuggest there via the
-        // colon-space trigger. Suppressing it made the popup that ':' opened flicker shut the
-        // moment the user typed the trailing space (and reopen on the first value char). Treat
-        // afterKeyColon like a trigger so the value list stays up; ':' already showed it, so
-        // this adds no new noise, only removes the flicker.
+        // Right after a key's colon the context adapter asks for the value list (the colon-space
+        // trigger). It counts like a trigger character here, so the list that ':' opened stays
+        // open when the space after the colon is typed.
         if (!explicit && !ctx.isTriggerChar && !ctx.afterKeyColon) return null;
         score = item.type === 'snippet' ? 5 : 18;
       } else if (!match.matched) {
@@ -704,10 +688,10 @@ export function scoreItems(ctx, candidatesOrOptions = [], options = {}) {
         // provider) ranks one step behind the block's nested keys, unless it is typed in full.
         catalogRank: catalogPriorityRank(item) - (item.meta?.ownKeyInBlock === true && item.labelLower !== `${prefix.toLowerCase()}:` ? 1 : 0),
         recentBoost,
-        // Required service fields lead within the field lane (required-first ordering, default-on).
+        // Required service fields rank above optional ones.
         requiredRank: item?.meta?.required === true ? 1 : 0,
-        // Optimal-alignment fuzzy quality — only computed when dpRanking is on (else 0, so the
-        // sort term below is inert and ordering is byte-identical). Best score across label+aliases.
+        // The best optimal-alignment score over the label and aliases; computed only with the
+        // dpRanking flag on.
         dpFuzzy: dpRankingOn && prefix && match.matched
           ? uniqueSearchStrings(item).reduce((best, s) => Math.max(best, dpFuzzyScore(s, prefix)), 0)
           : 0,
@@ -718,10 +702,9 @@ export function scoreItems(ctx, candidatesOrOptions = [], options = {}) {
     .sort((a, b) => (
       a.matchTier - b.matchTier ||
       a.providerRank - b.providerRank ||
-      // Required service fields float above optional ones within the field lane.
       (b.requiredRank || 0) - (a.requiredRank || 0) ||
-      // dpRanking: within a tier (and after provider relevance), the better optimal-alignment
-      // fuzzy match leads, so `lk`→light.kitchen ranks first. Off → both dpFuzzy are 0 → inert.
+      // With dpRanking on, the better optimal-alignment match leads within a tier and provider
+      // rank, so `lk` puts light.kitchen first.
       (dpRankingOn ? (b.dpFuzzy || 0) - (a.dpFuzzy || 0) : 0) ||
       b.catalogRank - a.catalogRank ||
       b.recentBoost - a.recentBoost ||
@@ -747,33 +730,3 @@ export function scoreItems(ctx, candidatesOrOptions = [], options = {}) {
 export function camelMatch(label, query) {
   return filtering.camelMatch(label, query);
 }
-
-export function compute(triggerKind = 'typing', deps = {}) {
-  const readText = typeof deps.readText === 'function' ? deps.readText : () => '';
-  const readCursor = typeof deps.readCursor === 'function' ? deps.readCursor : () => 0;
-  const detectContext = typeof deps.detectContext === 'function' ? deps.detectContext : () => ({ shouldSuggest: false, lang: 'yaml', triggerKind });
-  const ctx = detectContext(readText(), readCursor(), triggerKind);
-  const items = scoreItems(ctx, deps);
-  if (typeof deps.onComputed === 'function') deps.onComputed(ctx, items);
-  return { ctx, items };
-}
-
-export function refresh(triggerKind = 'typing', deps = {}) {
-  if (typeof deps.isAllowed === 'function' && !deps.isAllowed()) {
-    if (typeof deps.close === 'function') deps.close();
-    return { ctx: null, items: [] };
-  }
-  const result = compute(triggerKind, deps);
-  if (typeof deps.render === 'function') deps.render(result.ctx, result.items);
-  return result;
-}
-
-export function requestLiveUpdate(triggerKind = 'typing', deps = {}) {
-  const run = () => refresh(triggerKind, deps);
-  if (typeof deps.schedule === 'function') return deps.schedule(run);
-  return run();
-}
-
-// Scalar value-kind classification (scalarValueContext, isScalarValueKind) and the line
-// scanning it relies on (currentLine, lineNumber) live in the yaml scanner and the HA runtime
-// provider; this module consumes them through ctx.

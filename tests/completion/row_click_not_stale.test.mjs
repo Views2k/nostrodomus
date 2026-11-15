@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 
 import { createCompletionRuntime } from '../../src/completion/completionRuntime.js';
 
-// After fast typing the live update is deferred, so the list and its context
-// describe an older document. Enter and Tab bring the list up to date before they accept; a
-// click on a row inserted with the old context and replaced the old range.
+// After fast typing the live update is deferred, so the list and its context describe an older
+// document. Enter and Tab bring the list up to date before they accept, and a click on a row must
+// do the same instead of replacing the range of the older document.
 function harness() {
   let pos = 2;
   let labels = ['name', 'navigation_path'];

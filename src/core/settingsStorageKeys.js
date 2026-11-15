@@ -1,12 +1,9 @@
-// The stored settings payload carries a schemaVersion so future
-// builds migrate it through an ordered, version-gated ledger
-// (settingsRuntime.migrateSettings). Step 1 of that ledger is the legacy-key
-// fold below (a storage-level migration). schemaVersion is storage metadata —
-// stamped into the stored payload, stripped from the in-memory settings.
+// The schemaVersion stamped into the stored settings payload; settingsRuntime.migrateSettings
+// brings an older payload up to it. It is storage metadata and not part of the settings in memory.
 export const SETTINGS_SCHEMA_VERSION = 2;
 
-// Storage keys written by pre-0.1.x builds. They are no longer read as fallbacks:
-// settingsRuntime merges any surviving payloads into SETTINGS_WRITE_KEY once at load
-// (write-key values win on conflict) and then deletes them from storage.
+// Storage keys that earlier builds kept settings under; the list is empty at present. They are not
+// read as fallbacks: settingsRuntime folds a payload found under one into SETTINGS_WRITE_KEY at load
+// (values under the write key win) and then deletes the key (migration step 1).
 export const SETTINGS_MIGRATION_LEGACY_KEYS = Object.freeze([
 ]);

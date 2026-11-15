@@ -1,6 +1,6 @@
-// snippet-insertion.spec — the 0.1.254/256 fix: accepting a SNIPPET row expands its tabstops/defaults
-// (no literal "${...}" left in the document), rather than pasting the raw placeholder text.
-// (The sibling case — a NON-snippet value containing $N inserting verbatim, e.g. mqtt/$0/state
+// snippet-insertion.spec: accepting a snippet row expands its tabstops and defaults (no literal
+// "${...}" is left in the document) instead of pasting the raw placeholder text.
+// (The sibling case — a non-snippet value containing $N inserting verbatim, e.g. mqtt/$0/state
 // — needs a value row that carries a literal $ and is not covered here.)
 //
 // Uses the data: block with a fuzzy prefix, a context that offers snippet rows (as in launch-gates G1).
@@ -22,8 +22,7 @@ test('snippet insertion: accepting a snippet expands it, leaving no literal ${..
   const stamp = await openDashboard(page);
   const { yaml } = await openSeededCardCodeEditor(page, stamp);
 
-  // A resolved service data: block; a fuzzy prefix surfaces snippet rows alongside the service fields
-  // (confirmed by the real G1 run: "action: service call", "…-card skeleton" Snippet rows appear here).
+  // In a resolved service data: block a fuzzy prefix brings snippet rows next to the service fields.
   await page.keyboard.press('Enter');
   await page.keyboard.press('Shift+Home');
   await typeInYaml(page, 'tap_action:');

@@ -1,35 +1,33 @@
-// Completion feature flags.
+// The settings.completions block: the experimental completion options of the settings panel,
+// all off by default. With every option off, completion works as without this block.
 //
-// A default-OFF flag namespace that lives outside settings.style (the frozen stylesheet
-// contract), so flipping a flag never touches the pinned settings CSS bytes. Every flag
-// ships false, so the existing completion path is byte-identical until a flag is turned on.
-//
-// Pure: no DOM, window, storage, timers, or runtime state. It only reads the plain
-// settings object handed in (typically state.settings) and fails dark to the defaults on
-// missing/partial/hostile input — never throws.
+// Pure: no DOM, window, storage, timers or runtime state. It reads only the settings object it is
+// given (usually state.settings), falls back to the defaults for anything missing or of the wrong
+// type, and never throws.
 
 export const DEFAULT_COMPLETION_SETTINGS = Object.freeze({
-  // Master switch for the surface-aware resolver superset. When off, resolveContext
-  // returns the legacy descriptor unchanged.
+  // The surface-aware context resolver (Developer Tools, automations, scripts, dashboards). When
+  // off, resolveContext returns the context it was given unchanged. The options marked "needs
+  // engineV2" do nothing without it.
   engineV2: false,
-  // Lazily fill detail/documentation for the highlighted item only.
+  // Detail and documentation filled in for the highlighted row only, when it is highlighted.
   lazyResolve: false,
-  // The Jinja/template completion lane (entity args inside states('…'), filters).
+  // Template completion: entity ids inside states('…') and similar calls, and filters. Needs engineV2.
   jinjaLane: false,
-  // The registry value lane: area_id:/device_id:/floor_id:/label_id: complete real
-  // area/device/floor/label ids (sourced fail-dark into the same runtime snapshot). Requires engineV2.
+  // Real area, device, floor and label ids at area_id:, device_id:, floor_id: and label_id:, from
+  // the same Home Assistant data snapshot as the entities. Needs engineV2.
   registryLane: false,
-  // The deeper-schema value picker: a service-data field's enumerated values (select options,
-  // boolean) complete at the value position (e.g. `effect: |`). Requires engineV2.
+  // A service field's allowed values (select options, booleans) at its value position, as in
+  // `effect: |`. Needs engineV2.
   schemaValues: false,
-  // Surface-scope the providers so lovelace rows do not leak into automations/scripts and
-  // automation rows do not leak into dashboards/cards (fail-open on an unrecognized surface). Requires engineV2.
+  // Keeps dashboard rows out of automations and scripts and automation rows out of dashboards and
+  // cards. An editor whose surface is not recognized gets every row. Needs engineV2.
   surfaceScope: false,
-  // DP fuzzy contiguity scoring in place of the coarse subsequence score.
+  // Fuzzy ranking that favors contiguous matches, in place of the plain subsequence score.
   dpRanking: false,
-  // Persisted frequency+recency (frecency) accept boost.
+  // A ranking boost for rows accepted often and recently, kept across reloads.
   frecency: false,
-  // Passive floating argument-hint tip for service-data / Jinja calls.
+  // An argument hint for the service call or template function at the cursor.
   signatureHelp: false,
 });
 
@@ -50,7 +48,7 @@ export function completionSettings(settings) {
 }
 
 /**
- * The master gate the live completion path checks before using the resolver superset.
+ * Whether the surface-aware context resolver is on.
  * @param {{completions?: Record<string, unknown>}|null|undefined} settings
  * @returns {boolean}
  */

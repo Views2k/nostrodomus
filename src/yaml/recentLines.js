@@ -2,8 +2,8 @@
 //
 // One completion refresh asks for the same window from currentYamlPath (two or three times),
 // blockScalarContextAt, dashboardActionBranchState, yamlBranchState and the catalog card lookup.
-// Each of them used to slice up to 24,000 characters and split them into lines on its own. The
-// window of the last request is kept, so a refresh splits once.
+// The window covers up to 24,000 characters, so the one of the last request is kept and a
+// refresh splits the text once instead of once per caller.
 //
 // Pure: no DOM, editor, storage, network or timers. The returned array is frozen and shared;
 // callers read it and never change it.
@@ -14,7 +14,7 @@ let lastText = null;
 let lastPos = -1;
 let lastLines = null;
 
-export function clampCursorPosition(sourceText, cursorPosition) {
+function clampCursorPosition(sourceText, cursorPosition) {
   const size = String(sourceText || '').length;
   const numeric = Number(cursorPosition);
   if (!Number.isFinite(numeric)) return size;

@@ -56,7 +56,7 @@ function installDomGlobals({ dialogVisible = true } = {}) {
   return { content, dialog, homeShadow };
 }
 
-test('active editor visible helper preserves runtime visibility thresholds', () => {
+test('active editor visible helper rejects a narrow box, a hidden element and null', () => {
   installDomGlobals();
   const el = {
     nodeType: 1,
@@ -89,7 +89,7 @@ test('active editor composedContains walks through shadow hosts and parents', ()
   assert.equal(composedContains({}, child), false);
 });
 
-test('active editor dialog and scoped event helpers preserve HA editor scoping', () => {
+test('active editor dialog and scoped event helpers find the HA edit dialog and accept an editor event inside it', () => {
   const { dialog } = installDomGlobals();
   assert.equal(homeRoot(), global.document.querySelector('home-assistant').shadowRoot);
   assert.equal(activeEditDialog(), dialog);
@@ -113,7 +113,7 @@ test('dialog surface acceptance covers legacy .content and the 2026.6 ha-dialog 
   );
 
   // 2026.6 shape: no .content; ha-dialog in the dialog shadow, div.body in
-  // ha-dialog's shadow (the factory-default completion-silence regression).
+  // ha-dialog's shadow. Without it activeEditDialog finds no 2026.6 card dialog.
   const haDialog2026 = {
     ...hiddenBox,
     shadowRoot: { querySelector: (s) => (s === 'div.body' ? visibleBox : null) },
@@ -192,9 +192,8 @@ test('dialog candidates cover document, legacy root, and depth-1 child shadow mo
   // All three mounts found, deduped, document-level first (cheapest probe).
   assert.deepEqual(editCardDialogCandidates(), [docDialog, legacyDialog, depth1Dialog]);
 
-  // The 2026.6 regression case: dialog ONLY one shadow level below the
-  // legacy root — activeEditDialog still finds it when its surface is
-  // visible.
+  // A dialog only one shadow level below the legacy root, as in Home Assistant 2026.6:
+  // activeEditDialog finds it when its surface is visible.
   const visibleBody = { nodeType: 1, getBoundingClientRect: () => ({ width: 320, height: 240 }) };
   const movedDialog = {
     shadowRoot: {
@@ -271,7 +270,7 @@ test('2026.6 binding: dialog editor view binds via DOM when the composedPath is 
   assert.equal(dialogCodeEditorElement(dialog), haCodeEditor);
   assert.equal(dialogCodeEditorView(), view);
 
-  // …isScopedEditorEvent treats a RETARGETED path (no editor-surface nodes,
+  // …isScopedEditorEvent treats a retargeted path (no editor-surface nodes,
   // only the dialog) as scoped because the dialog hosts an editor…
   const retargetedEvent = { composedPath: () => [waDialog, dialog], target: waDialog };
   assert.equal(isScopedEditorEvent(retargetedEvent), true);
@@ -296,7 +295,7 @@ test('active editor view-shape helper accepts only CodeMirror-like views', () =>
   assert.equal(looksLikeView(null), false);
 });
 
-test('active editor diagnostics readout helpers preserve bounded redaction and shape checks', () => {
+test('active editor diagnostics readout helpers truncate strings, reject a too small box and recognize a view by its state and dom', () => {
   installDomGlobals();
   assert.equal(activeEditorReadoutString('abcdef', 4), 'abcd…');
   assert.equal(activeEditorReadoutString(null, 4), '');
@@ -336,7 +335,7 @@ test('active editor line position helper keeps cursor previews bounded', () => {
 });
 
 
-test('active editor readout traversal settings helpers preserve perf mode and counters', () => {
+test('active editor readout traversal settings helpers read the perf mode and count the traversals by mode', () => {
   const legacyStorage = { getItem: (key) => key === 'nostrodomusPerf' ? 'legacy' : null };
   const defaultStorage = { getItem: () => 'on' };
 
@@ -414,7 +413,7 @@ test('active editor diagnostics discovery helpers stay bounded and read-only', (
   assert.deepEqual(found.activePath, ['HA-CODE-EDIT…', 'TEXTAREA']);
 });
 
-test('active editor diagnostics redaction helper preserves bounded snapshot shape', () => {
+test('active editor diagnostics redaction helper truncates the snapshot strings and adds the cursor', () => {
   const redacted = activeEditorReadoutRedactSnapshot({
     ok: true,
     stage: 'stage-name-that-is-way-too-long',
@@ -453,7 +452,7 @@ test('active editor diagnostics redaction helper preserves bounded snapshot shap
 
 
 
-test('active editor context snapshot readout helper preserves runtime payload shape', () => {
+test('active editor context snapshot readout helper reports the editor, the cursor and the snapshot of the active view', () => {
   installDomGlobals();
   const view = {
     state: { doc: { toString: () => 'type: custom:button-card' }, selection: { main: { head: 4 } } },

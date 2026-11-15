@@ -1,16 +1,16 @@
 // The card dialog in a window narrower than 1000px, where Home Assistant stacks the preview under
 // the editor.
 //
-// Measured on Home Assistant 2026.11 at 900x800 before this: the dialog body was forced to
-// overflow visible, grew to the height of both panes (1254px in a 752px dialog) and pushed the
-// row with Save and Cancel below the window; the codebox was fitted down to that row and covered
-// the top of the preview; nothing in the dialog could scroll.
+// Measured on Home Assistant 2026.11 at 900x800: with the dialog body forced to overflow visible,
+// the body grows to the height of both panes (1254px in a 752px dialog) and pushes the row with
+// Save and Cancel below the window; a codebox fitted down to that row covers the top of the
+// preview, and nothing in the dialog can scroll.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createCodeboxEnlargeRuntime, FIT_FOOTER_GAP_PX } from '../../src/companion/codeboxEnlargeRuntime.js';
-import { CONTENT_FIT_CSS, STACKED_PANES_CSS, WA_DIALOG_CSS } from '../../src/companion/scrollbarStyleRuntime.js';
+import { CONTENT_FIT_CSS, STACKED_PANES_CSS, WA_DIALOG_CSS } from '../../src/companion/companionStyleRuntime.js';
 import { createCodeboxUnclip } from '../../src/ui/codebox/codeboxUnclip.js';
 import { CARD_DIALOG_STACKED_MEDIA } from '../../src/editor/haSelectors.js';
 
@@ -25,7 +25,7 @@ test('the dialog body is stopped from scrolling only in the side-by-side layout'
 });
 
 // Measured on Home Assistant 2026.6 and 2026.11 at 1280x600: the dialog starts 40px below the top
-// of the window and was 94vh high, so it ended 4px below the window, inside the Save row.
+// of the window, so at 94vh high it ends 4px below the window, inside the Save row.
 test('the dialog height is capped at the window height minus its top margin', () => {
   const css = WA_DIALOG_CSS.replace(/\/\*[\s\S]*?\*\//g, '');
   const cap = 'min(94vh, calc(100vh - var(--dialog-surface-margin-top, 40px)))';
@@ -94,7 +94,7 @@ function unclipHarness({ stacked }) {
 
 const overflowOf = (n) => n.style.getPropertyValue('overflow');
 
-test('side by side: the dialog body and surface are unclipped as before', () => {
+test('side by side: the dialog body and surface are unclipped', () => {
   const h = unclipHarness({ stacked: false });
   assert.equal(h.unclip.applyCodeboxSlotDialogBodyUnclip(h.editor, 'test'), true);
   assert.equal(overflowOf(h.surface), 'visible');
@@ -179,7 +179,7 @@ function fitRuntime(stacked) {
 }
 
 test('stacked: the codebox ends inside its own pane, above the preview', () => {
-  // Live 2026.11 at 900x800: editor pane 116..670, preview from 670, footer pushed to 792.
+  // Measured on 2026.11 at 900x800: editor pane 116..670, preview from 670, footer pushed to 792.
   const { writes, editor } = buildStackedDialog({ editorTop: 116, paneBottom: 670, footerTop: 792 });
   const out = fitRuntime(true).applyForEditor(editor);
   assert.equal(out.measured, true);
@@ -198,7 +198,7 @@ test('stacked: scrolling the dialog body does not change the fitted height', () 
   assert.equal(writes.length, afterFirst, 'no new height after a scroll');
 });
 
-test('side by side: the same dialog is still fitted to the footer', () => {
+test('side by side: the same dialog is fitted to the footer', () => {
   const { writes, editor } = buildStackedDialog({ editorTop: 116, paneBottom: 670, footerTop: 708 });
   fitRuntime(false).applyForEditor(editor);
   assert.equal(heightOf(writes, 'wrapper'), `${708 - FIT_FOOTER_GAP_PX - 116}px`);

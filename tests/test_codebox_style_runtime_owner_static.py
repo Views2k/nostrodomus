@@ -3,12 +3,11 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-LEGACY = (ROOT / 'src' / 'main.legacy.js').read_text(encoding='utf-8', errors='replace')
+APP = (ROOT / 'src' / 'app.js').read_text(encoding='utf-8', errors='replace')
 BRIDGE = (ROOT / 'src' / 'composition' / 'runtimeDelegateBridge.js').read_text(encoding='utf-8', errors='replace')
 MODULE_PATH = ROOT / 'src' / 'ui' / 'codeboxStyleRuntime.js'
 CODEBOX_MODULES_DIR = ROOT / 'src' / 'ui' / 'codebox'
-# The codebox style runtime is a composer over src/ui/codebox/ modules;
-# the owned codebox body spans the composer plus its modules.
+# The codebox style runtime composes the modules in src/ui/codebox/; the checks read all of them.
 MODULE = MODULE_PATH.read_text(encoding='utf-8', errors='replace') if MODULE_PATH.exists() else ''
 if CODEBOX_MODULES_DIR.exists():
     for _module_path in sorted(CODEBOX_MODULES_DIR.glob('*.js')):
@@ -26,8 +25,8 @@ def require(ok, message):
 
 require(MODULE_PATH.exists(), 'codebox style runtime owner module exists')
 require('export function createCodeboxStyleRuntime(ctx = {})' in MODULE, 'codebox style runtime exports factory')
-require("import { createCodeboxStyleRuntime } from './ui/codeboxStyleRuntime.js';" in LEGACY, 'legacy imports codebox style runtime owner')
-require('codeboxStyleRuntime = createCodeboxStyleRuntime({' in LEGACY, 'legacy creates injected codebox style runtime')
+require("import { createCodeboxStyleRuntime } from './ui/codeboxStyleRuntime.js';" in APP, 'legacy imports codebox style runtime owner')
+require('codeboxStyleRuntime = createCodeboxStyleRuntime({' in APP, 'legacy creates injected codebox style runtime')
 
 for token in [
     'function applyCodeboxStyleSettings(reason = "style") {',
@@ -39,7 +38,7 @@ for token in [
     'function allowCodeboxFrameOverflow(editor) {',
     'function attachStyleRootObserver(root) {',
 ]:
-    require(token in MODULE, f'codebox runtime owns moved body: {token}')
+    require(token in MODULE, f'codebox runtime owns body: {token}')
 
 for token in [
     '"applyCodeboxStyleSettings"',
@@ -57,14 +56,14 @@ for token in [
     'recordPerformanceEvent("codebox-preflight-prime", 0,',
     'scheduleStyleRootScan("shadow-root-editor-discovered");',
 ]:
-    require(token in MODULE, f'codebox runtime preserves behavior token: {token}')
+    require(token in MODULE, f'codebox runtime contains: {token}')
 
 for forbidden in [
     'function applyCodeboxStyleSettings(reason = "style") {\n    return measurePerformanceEvent("codebox-style-apply", reason, () => {',
     'function activeCodeboxStyleEditor() {\n    const cached = state.activeEditorCache?.editor || null;',
     'function attachStyleRootObserver(root) {\n    if (!isStyleRoot(root) || typeof MutationObserver !== "function") return false;',
 ]:
-    require(forbidden not in LEGACY, f'legacy no longer owns codebox body: {forbidden[:72]}')
+    require(forbidden not in APP, f'app.js does not own codebox body: {forbidden[:72]}')
 
 REPORT.parent.mkdir(parents=True, exist_ok=True)
 REPORT.write_text(

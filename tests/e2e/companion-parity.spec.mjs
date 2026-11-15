@@ -1,26 +1,22 @@
 // companion-parity: the companion layer on a real editor (scrollbar stylesheet, variable
 // cascade, enlarge heights, no flash, diagnostics).
 //
-// The spec FORCE-ACTIVATES the absorbed companion layer on the test instance via the
-// localStorage escape hatch (nostrodomusCompanion="active"), injected
-// before any document runs, so a plain `npm run e2e` exercises the ACTIVE layer with
-// no manual flip and no rebuild. PRECONDITION: NO external legacy
-// nostrodomus_editor_v17_2 / nostrodomus-picker-safe resources are loaded (the e2e seed
-// registers only nostrodomus.js, so this holds on the harness).
+// The spec turns the built-in companion layer on through the localStorage switch
+// (nostrodomusCompanion="active"), set before any document runs, so a plain `npm run e2e` tests
+// the active layer. Precondition: the external nostrodomus_editor_v17_2 / nostrodomus-picker-safe
+// resources are not loaded (the e2e seed registers only nostrodomus.js).
 //
-// PARITY MODEL. v17's scrollbar CSS sets
+// v17's scrollbar CSS sets
 //   scrollbar-color: var(--nostrodomus-codebox-scrollbar-thumb, <fallback>) var(--…-track, <fallback>)
-// and the absorbed module reproduces it BYTE-IDENTICALLY (proven by the frozen
-// scrollbar_css_byte_identity unit baseline — that is the CSS-string parity proof, and
-// it is never relaxed). The <fallback> literal is DEAD in the integrated product: the
-// main extension (src/ui/codeboxStyle.js) always defines --nostrodomus-codebox-scrollbar-thumb
-// from the user's scrollbar settings, and a Nostrodomus theme may override it
-// (the var names are kept so it can). So this spec does not assert the fallback literal.
-// It asserts:
-//   (1) the companion's OWN stylesheet node is present in the CodeMirror shadow root
+// and the built-in module produces it byte for byte (checked by the frozen
+// scrollbar_css_byte_identity unit test). The <fallback> literal never applies in the product:
+// src/ui/codeboxStyle.js always defines --nostrodomus-codebox-scrollbar-thumb from the user's
+// scrollbar settings, and a Nostrodomus theme may override it (the variable names are kept for
+// that). So this spec does not assert the fallback literal. It asserts:
+//   (1) the companion's own stylesheet node is present in the CodeMirror shadow root
 //       (that id is the companion's alone — proves the layer is active and injecting
 //        into the root where its .cm-* rules actually take effect),
-//   (2) the scroller's computed scrollbar-color thumb RESOLVES TO the cascaded
+//   (2) the scroller's computed scrollbar-color thumb resolves to the cascaded
 //       --nostrodomus-codebox-scrollbar-thumb (proves the var deference works end-to-end,
 //        rather than hardcoding a color) — both sides resolved through the browser so
 //        an hsla() var and an rgba() scrollbar-color compare cleanly,
@@ -30,7 +26,7 @@ import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';
 import { CM_SCROLLER, HA_CODE_EDITOR } from './selectors.mjs';
 
-// The companion codebox stylesheet id (src/companion/scrollbarStyleRuntime.js
+// The companion codebox stylesheet id (src/companion/companionStyleRuntime.js
 // CODEBOX_STYLE_ID; also a frozen coexistence id in
 // coordinatorRuntime.EXTERNAL_COMPANION_STYLE_IDS — it does not drift).
 const COMPANION_CODEBOX_STYLE_ID = 'nostrodomus-editor-v17-2-learned-style';
@@ -60,7 +56,7 @@ function normalizeCalc(value) {
 }
 
 // Enlarge inline-height value sets (src/companion/codeboxEnlargeRuntime.js):
-// [SIMPLE (no option-tab row → taller), tabbed]. The seeded editor may be either. Compared via
+// [simple (no option-tab row → taller), tabbed]. The seeded editor may be either. Compared via
 // normalizeCalc() so Blink's calc() reserialization (operand reorder / sign flip)
 // does not cause a false miss.
 const ENLARGE_WRAPPER_HEIGHTS = ['calc(94vh - 150px)', 'calc(94vh - 340px)'];
@@ -72,18 +68,17 @@ const isEnlargeHeight = (value, formulas) => /^\d+px$/.test(String(value || '').
   || formulas.map(normalizeCalc).includes(normalizeCalc(value));
 
 test('companion-parity: layer active — scrollbar stylesheet + var cascade, codebox-enlarge inline heights, no flash, stable, diagnostics=internal', async ({ page }, testInfo) => {
-  // Force the absorbed layer ACTIVE before any HA document runs. Set UNCONDITIONALLY
-  // (try/catch swallows opaque-origin about:blank) so activation never depends on a
-  // hardcoded origin matching the harness.
+  // Turn the built-in layer on before any HA document runs. It is set for every origin (the
+  // try/catch covers the opaque origin of about:blank), so it never depends on a hard-coded origin.
   await page.addInitScript(() => {
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* opaque origin */ }
   });
 
   const stamp = await openDashboard(page);
 
-  // Belt-and-suspenders: re-assert the flag in the loaded HA page context (origin
-  // guaranteed correct here). companionLayerActive is read lazily by applyForEditor at
-  // editor-detection time — which is after this line — so this is in time.
+  // Set the flag again in the loaded HA page, where the origin is certainly right.
+  // applyForEditor reads companionLayerActive when it detects the editor, which happens
+  // after this line, so this is in time.
   await page.evaluate(() => {
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* ignore */ }
   });
@@ -92,9 +87,9 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
 
   const scroller = dialog.locator(`${HA_CODE_EDITOR} ${CM_SCROLLER}`).first();
 
-  // The companion injects on the editor SETTLE cycle (the sentinel re-attempts it on the
+  // The companion injects on the editor settle cycle (the sentinel re-attempts it on the
   // 60/180/420ms stable-hit probes, idempotently), riding the same cadence as the main
-  // extension's style reapply. So WAIT for its node to appear rather than checking one
+  // extension's style reapply. So wait for its node to appear rather than checking one
   // instant after open — the instant check is itself a race (a warm in-suite run
   // loses it). Mirrors the stale-resource expect.poll pattern in session.mjs.
   await expect
@@ -111,7 +106,7 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
     .toBe(true);
 
   // --- Active + cascade proof, read from the live scroller in one pass:
-  //  • the companion stylesheet node lives in THIS shadow root (the root where its
+  //  • the companion stylesheet node lives in this shadow root (the root where its
   //    .cm-* rules must sit to take effect) — proves the layer is active,
   //  • the computed scrollbar-color, and the cascaded --…-thumb var resolved to rgb
   //    via a throwaway probe (so an hsla() var and an rgba() scrollbar-color match). ---
@@ -148,11 +143,10 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
     contentType: 'application/json',
   });
 
-  // Activation diagnostic: is the force-active
-  // flag landing, is a real external companion registered in the coordinator (which
-  // would CORRECTLY keep the layer dormant by coexistence design and cannot be
-  // force-activated), and what does the diagnostics row read? Logged
-  // so the terminal shows it whether the test passes or fails.
+  // Activation diagnostic: whether the force-active flag landed, whether a real external
+  // companion is registered in the coordinator (which would rightly keep the layer dormant
+  // and cannot be force-activated), and what the diagnostics row reads. It is attached
+  // before the assertions, so the report has it whether the test passes or fails.
   const diag = await page.evaluate(() => {
     const out = {};
     try { out.flag = window.localStorage.getItem('nostrodomusCompanion'); } catch (e) { out.flag = `ERR:${e.message}`; }
@@ -163,20 +157,22 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
     try { out.companionLayer = window.__nostrodomus?.exportDiagnostics?.()?.companionLayer ?? null; } catch (e) { out.companionLayer = `ERR:${e.message}`; }
     return out;
   });
-  console.log('[companion-diag]', JSON.stringify({ ...diag, hasCompanionNode: probe.hasCompanionNode, rootStyleIds: probe.rootStyleIds }));
-  await testInfo.attach('companion-diag.json', { body: JSON.stringify(diag, null, 2), contentType: 'application/json' });
+  await testInfo.attach('companion-diag.json', {
+    body: JSON.stringify({ ...diag, hasCompanionNode: probe.hasCompanionNode, rootStyleIds: probe.rootStyleIds }, null, 2),
+    contentType: 'application/json',
+  });
 
   // (1) the companion layer is active and injecting its own stylesheet into the
   //     CodeMirror shadow root (where .cm-scroller lives).
   expect(
     probe.hasCompanionNode,
-    `companion stylesheet #${COMPANION_CODEBOX_STYLE_ID} not found in the CodeMirror shadow root — the absorbed layer is not active (or injected into the wrong root). ` +
+    `companion stylesheet #${COMPANION_CODEBOX_STYLE_ID} not found in the CodeMirror shadow root — the built-in layer is not active (or injected into the wrong root). ` +
       `force-active flag (localStorage nostrodomusCompanion)=${JSON.stringify(probe.lsCompanion)}; ` +
       `style nodes present in this root=[${probe.rootStyleIds.join(', ')}]`,
   ).toBe(true);
 
   // (2) the scroller's scrollbar-color is set (not the host default 'auto') and its
-  //     thumb RESOLVES TO the cascaded --nostrodomus-codebox-scrollbar-thumb — i.e. the
+  //     thumb resolves to the cascaded --nostrodomus-codebox-scrollbar-thumb — i.e. the
   //     companion CSS defers to the shared var; it does not hardcode.
   expect(probe.scrollbarColor, 'scroller scrollbar-color is unset/auto — companion scrollbar rule not applied').toMatch(/rgba?\(/);
   expect(probe.thumbVarRaw, '--nostrodomus-codebox-scrollbar-thumb is not defined on the scroller').not.toBe('');
@@ -188,11 +184,11 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
     `scrollbar-color thumb (${scrollbarThumbTriplet}) does not resolve to the cascaded --nostrodomus-codebox-scrollbar-thumb (${varThumbTriplet})`,
   ).toBe(varThumbTriplet);
 
-  // --- (3) Enlarge layer: the companion writes INLINE
-  // heights to the ha-code-editor WRAPPER (host) + .cm-editor + .cm-scroller. The wrapper
-  // height must land on the HOST (not on the .cm-editor the module is handed).
+  // --- (3) Enlarge layer: the companion writes inline
+  // heights to the ha-code-editor wrapper (host) + .cm-editor + .cm-scroller. The wrapper
+  // height must land on the host (not on the .cm-editor the module is handed).
   // Poll for it (settle cadence), then assert the inline values are
-  // the enlarge module's set — SIMPLE (taller) or tabbed. ---
+  // the enlarge module's set — simple (taller) or tabbed. ---
   const codeEditorHost = dialog.locator(HA_CODE_EDITOR).first();
   await expect
     .poll(() => codeEditorHost.evaluate((el) => (el.style && el.style.height ? el.style.height : '').trim()), {
@@ -210,7 +206,6 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
     };
   });
   await testInfo.attach('enlarge-heights.json', { body: JSON.stringify(enlarge, null, 2), contentType: 'application/json' });
-  console.log('[enlarge-diag]', JSON.stringify(enlarge));
   expect(isEnlargeHeight(enlarge.wrapper, ENLARGE_WRAPPER_HEIGHTS), `ha-code-editor wrapper inline height "${enlarge.wrapper}" is not an enlarge-layer value`).toBe(true);
   expect(isEnlargeHeight(enlarge.cm, ENLARGE_CM_HEIGHTS), `.cm-editor inline height "${enlarge.cm}" is not an enlarge-layer value`).toBe(true);
   expect(isEnlargeHeight(enlarge.scroller, ENLARGE_SCROLLER_HEIGHTS), `.cm-scroller inline height "${enlarge.scroller}" is not an enlarge-layer value`).toBe(true);
@@ -243,8 +238,8 @@ test('companion-parity: layer active — scrollbar stylesheet + var cascade, cod
   expect(new Set(samples).size, `scrollHeight moved during 3s idle: [${samples.join(', ')}]`).toBe(1);
 
   // --- Diagnostics: companion layer reports internal. ---
-  // CONTRACT: exportDiagnostics().companionLayer is one of
-  // 'internal' | 'external' | 'dormant(forced)'. With the absorbed layer active
+  // Contract: exportDiagnostics().companionLayer is one of
+  // 'internal' | 'external' | 'dormant(forced)'. With the built-in layer active
   // and no external files, it reads 'internal'.
   const companionLayer = await page.evaluate(() => {
     const api = window.__nostrodomus;

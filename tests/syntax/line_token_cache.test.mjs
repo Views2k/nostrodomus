@@ -1,5 +1,5 @@
-// Every syntax pass tokenized every rendered line again, about a hundred per keystroke, of
-// which one had changed.
+// A syntax pass covers every rendered line, about a hundred, while an edit changes one, so the
+// tokens of a line are kept until its text or position changes.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';

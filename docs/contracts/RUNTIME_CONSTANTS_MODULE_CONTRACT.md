@@ -39,6 +39,6 @@ No Home Assistant runtime reads
 No network calls
 ```
 
-`tools/verify.py` and `tools/check_runtime_contracts.py` fail when the module references one of these, when an export listed above is missing, or when `src/main.legacy.js` declares `SECURITY_LIMITS` or a provider id itself.
+`tools/verify.py` and `tools/check_runtime_contracts.py` fail when the module references one of these, when an export listed above is missing, or when `src/app.js` declares `SECURITY_LIMITS` or a provider id itself.
 
 Provider registration, suggestion logic and everything else that uses these values lives in the modules that import them.

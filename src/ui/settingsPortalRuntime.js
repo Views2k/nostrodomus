@@ -1,9 +1,8 @@
-// Nostrodomus settings and completion portal runtime owner.
-//
-// Owns overlay-root traversal metrics plus HA dialog-aware Settings portal host
-// creation. Dependencies are injected so the module preserves Home Assistant
-// editor/top-layer ordering without importing browser runtime globals directly
-// during tests.
+// Where the settings panel and the suggestion list are attached. The settings portal host goes
+// into the open top-layer dialog when there is one (a panel outside it could not be used while
+// the modal dialog is open), else into the card dialog, the editor's shadow root or the
+// home-assistant root. The overlay root lookups of src/editor/overlayRoot.js are wrapped here
+// with the runtime state, and each walk is counted for diagnostics. Dependencies are injected.
 
 import * as overlayRoots from '../editor/overlayRoot.js';
 
@@ -61,11 +60,9 @@ export function createSettingsPortalRuntime(ctx = {}) {
       recordRuntimeErrorOnce,
       diagnosticScopes: OVERLAY_ROOT_DIAGNOSTIC_SCOPES,
       targetedTraversal: overlayRootTraversalScopedEnabled(),
-      // When on (default), the targeted shadow walk also descends through the
-      // non-card-dialog editor panel hosts so codebox styling/syntax reach Dev
-      // Tools, raw config, and automation/script YAML editors. Default-on kill
-      // switch (no visible UI, to keep the frozen settings stylesheet byte-stable);
-      // set style.universalCodebox=false to restrict the reach to card dialogs.
+      // The walk also enters the hosts of the panel editors (Developer Tools, the raw dashboard
+      // configuration, the automation and script editors), unless style.universalCodebox is
+      // false (no control in the panel), which limits it to card dialogs.
       universalEditorHosts: state?.settings?.style?.universalCodebox !== false,
       onTraversal: recordOverlayRootTraversal,
     };
@@ -146,8 +143,7 @@ export function createSettingsPortalRuntime(ctx = {}) {
     host.style.setProperty("pointer-events", "none", "important");
 
     try {
-      if (host.parentNode !== root) root.appendChild(host);
-      else root.appendChild(host);
+      root.appendChild(host);
     } catch (err) {
       recordRuntimeErrorOnce("settings:portal-host-append", err, { phase: "ensureSettingsPortalHost", rootKind: rootIsTopLayerDialog ? "top-layer-dialog" : "root-portal" });
       try {

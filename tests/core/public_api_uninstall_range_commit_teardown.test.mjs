@@ -6,14 +6,12 @@ import { fileURLToPath } from 'node:url';
 import { createPublicApiRuntime } from '../../src/core/publicApiRuntime.js';
 import { createCodeboxStyleSettle } from '../../src/ui/codebox/codeboxStyleSettle.js';
 
-// The 180ms style-range commit timer (armed on slider release) survived uninstall:
-// clearCodeboxStyleSettleTimers sweeps only the settle-cascade Set, and the commit
-// callback's syntax half is not behind the enabled gate -- so releasing a syntax
-// slider and uninstalling within 180ms re-injected the source-class style node and
-// re-installed the smart-syntax observer uninstall had just disconnected. uninstall
-// now cancels the pending commit through the settle module's own canceller (which
-// also records the cancel in diagnostics). Harness mirrors
-// tests/core/public_api_uninstall_style_mutation_teardown.test.mjs.
+// uninstall cancels the 180ms style-range commit timer (armed on slider release) through the settle
+// module's own canceller, which also records the cancel in diagnostics. clearCodeboxStyleSettleTimers
+// sweeps only the settle-cascade Set, and the syntax half of the commit callback is not behind the
+// enabled gate, so a timer left running after a syntax slider release would re-inject the
+// source-class style node and re-install the smart-syntax observer that uninstall had just
+// disconnected. The harness mirrors tests/core/public_api_uninstall_style_mutation_teardown.test.mjs.
 function buildRuntime(state, lifecycleExtra = {}) {
   const noop = () => {};
   const lifecycle = {
@@ -80,11 +78,10 @@ test('uninstall stays clean when no range commit is pending', () => {
 });
 
 test('the shipped composition wires the canceller into the lifecycle', () => {
-  // The fix is load-bearing at TWO wires: the uninstall call in publicApiRuntime and
-  // the lifecycle key in the composition root. The unit test above injects its own
-  // lifecycle, so without this pin a refactor could drop the main.legacy key and the
-  // timer leak would silently return under a green gate.
-  const source = readFileSync(fileURLToPath(new URL('../../src/main.legacy.js', import.meta.url)), 'utf8');
+  // The cancel needs two wires: the uninstall call in publicApiRuntime and the lifecycle key in
+  // the composition root. The test above injects its own lifecycle, so this one checks that
+  // app.js passes the canceller; without it the timer would outlive uninstall again.
+  const source = readFileSync(fileURLToPath(new URL('../../src/app.js', import.meta.url)), 'utf8');
   const lifecycleIndex = source.indexOf('lifecycle: {');
   assert.ok(lifecycleIndex > 0, 'the lifecycle wiring block must exist');
   const block = source.slice(lifecycleIndex, source.indexOf('}', lifecycleIndex));

@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 
 import { dashboardActionBranchState } from '../../src/yaml/runtimeContextAdapter.js';
 
-// The dashboard action-branch state must be scoped to the block the cursor actually sits in.
-// Two regressions: (1) the fallback reached across into an earlier sibling card's tap_action;
-// (2) a dash-prefixed action parent mis-measured its child indent.
+// The dashboard action-branch state must be scoped to the block the cursor sits in: (1) the
+// fallback must not reach into an earlier sibling card's tap_action; (2) a dash-prefixed action
+// parent must measure its child indent from the key column.
 
-test('a card that follows a tap_action card does NOT inherit that action branch', () => {
-  // Cursor typing a key in the SECOND card; the first card has a tap_action.
+test('a card that follows a tap_action card does not inherit that action branch', () => {
+  // Cursor typing a key in the second card; the first card has a tap_action.
   const doc = 'cards:\n  - type: button\n    tap_action:\n      action: toggle\n  - type: entities\n    ent';
   const branch = dashboardActionBranchState(doc, doc.length);
   // The cursor is a top-level card-key position — it must not be classified as inside the

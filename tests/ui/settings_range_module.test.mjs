@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { formatStyleRangeValue, styleRangeGroupTouchesSyntax } from '../../src/ui/settingsRange.js';
 
-test('settings style range syntax group detector preserves v31.6.253 behavior', () => {
+test('styleRangeGroupTouchesSyntax is true for any group name that contains "syntax"', () => {
   assert.equal(styleRangeGroupTouchesSyntax('style.syntaxTintHue'), true);
   assert.equal(styleRangeGroupTouchesSyntax('style.syntaxTintSaturation'), true);
   assert.equal(styleRangeGroupTouchesSyntax('syntax'), true);
@@ -19,7 +19,7 @@ test('settings style range syntax group detector preserves v31.6.253 behavior', 
 });
 
 
-test('settings style range value formatter preserves v31.6.254 branch behavior', () => {
+test('formatStyleRangeValue formats hue, glow size, saturation and percent ranges', () => {
   assert.equal(formatStyleRangeValue('hue', 'style.syntaxTintHue', 184.5), '185°');
   assert.equal(formatStyleRangeValue('hue', 'style.syntaxTintHue', -10), '0°');
   assert.equal(formatStyleRangeValue('hue', 'style.syntaxTintHue', 361), '360°');

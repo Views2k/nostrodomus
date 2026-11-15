@@ -17,10 +17,10 @@ import {
 async function openSettingsViaPopup(page) {
   // The real entry point: the gear in the completion popup header (present
   // whenever the popup shows, even on an idle-pane explicit open with zero
-  // rows). On the REOPEN path focus
+  // rows). On the reopen path focus
   // has left the editor after the prior close, so a lone Ctrl+Space mounts the
   // popup but it polls hidden (the flake). Refocus the editor first, then wait
-  // for the gear to be visible, re-pressing Ctrl+Space ONLY while the popup is
+  // for the gear to be visible, re-pressing Ctrl+Space only while the popup is
   // hidden — re-pressing while it is open would toggle it closed.
   await page.locator(`${HUI_DIALOG_EDIT_CARD} ${HA_CODE_EDITOR} ${CM_CONTENT}`).first().click();
   const box = popup(page);
@@ -72,7 +72,7 @@ test('settings panel: tab switch, drag, value change, persistence across reopen'
   expect(Math.round(after.y - before.y), 'drag moved the panel less than 40px vertically').toBeGreaterThan(40);
   await expectDialogAlive(page, 'after dragging the settings panel');
 
-  // Change one value: a checkbox on the ACTIVE tab. Every
+  // Change one value: a checkbox on the active tab. Every
   // tab panel's inputs stay in the DOM, but inactive panels are display:none,
   // so an unscoped `.first()` grabs a hidden checkbox on tab 0 after the
   // switch to tab 1. The `:visible` filter targets the visible control on
@@ -99,9 +99,9 @@ test('settings panel: tab switch, drag, value change, persistence across reopen'
   await expect(sameCheckbox).toBeChecked({ checked: wasChecked });
 });
 
-// 0.1.253: the syntax theme set (color-named, count floor >=16, ~37) is selectable and switching a theme
-// REPAINTS the editor tokens — no collapse to base-white / a single color. The color-name coherence itself
-// is an offline/visual judgment; the behavioral repaint is what this pins.
+// The syntax theme set (color-named, at least 16, about 37) is selectable, and switching a theme
+// repaints the editor tokens instead of turning them all base white or one color. Whether the names
+// fit the colors is a visual judgment; this pins the repaint.
 test('theme repaint: the syntax theme set is selectable and switching one repaints the editor tokens', async ({ page }) => {
   const stamp = await openDashboard(page);
   await openSeededCardCodeEditor(page, stamp);
@@ -130,14 +130,14 @@ test('theme repaint: the syntax theme set is selectable and switching one repain
   expect(new Set(colors).size, `tokens collapsed to a single color (white-collapse?): ${JSON.stringify(colors)}`).toBeGreaterThan(1);
 });
 
-// No-touch contract items: a header click WITHOUT a drag must not move the saved position, and Escape must
-// close the Nostrodomus panel before HA's edit dialog.
+// A header click without a drag must not move the saved position, and Escape must close the
+// Nostrodomus panel before HA's edit dialog.
 test('settings edge behaviors: a no-drag header click keeps position; Escape closes Nostrodomus before the HA dialog', async ({ page }) => {
   const stamp = await openDashboard(page);
   await openSeededCardCodeEditor(page, stamp);
   const panel = await openSettingsViaPopup(page);
 
-  // mousedown + mouseup on the header with NO movement in between — a click, not a drag — must not shift it.
+  // mousedown + mouseup on the header with no movement in between — a click, not a drag — must not shift it.
   const handle = panel.locator(NOSTRODOMUS_SETTINGS_DRAG_HANDLE).first();
   const before = await panel.boundingBox();
   const hb = await handle.boundingBox();

@@ -64,12 +64,12 @@ test('a provider that uses the id of a built-in provider does not replace it at 
   assert.notEqual(state.providers.find(item => item.id === HACS_CATALOG_PROVIDER_ID), impostor, 'the built-in catalog provider is the one registered');
 });
 
-test('buildIndex without a provider list or without registerProvider behaves as before', () => {
+test('buildIndex without a provider list registers the built-in providers, and without registerProvider none', () => {
   const noList = { library: { packs: {} }, completionCache: new Map() };
   buildIndex({ state: noList, registerProvider: provider => { noList.providers.push(provider); } });
   assert.deepEqual(noList.providers.map(provider => provider.id), [STATIC_PROVIDER_ID, HACS_CATALOG_PROVIDER_ID]);
 
   const noRegister = { library: { packs: {} }, completionCache: new Map(), providers: [extension()] };
   buildIndex({ state: noRegister });
-  assert.deepEqual(noRegister.providers, [], 'nothing can be registered without registerProvider, as before');
+  assert.deepEqual(noRegister.providers, [], 'nothing can be registered without registerProvider');
 });

@@ -4,11 +4,11 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = process.cwd();
-const runtime = readFileSync(join(root, 'src/main.legacy.js'), 'utf8');
+const runtime = readFileSync(join(root, 'src/app.js'), 'utf8');
 const dist = readFileSync(join(root, 'dist/nostrodomus.js'), 'utf8');
 const providerRegistry = readFileSync(join(root, 'src/providers/providerRegistry.js'), 'utf8');
 const providerRuntime = readFileSync(join(root, 'src/providers/providerRuntime.js'), 'utf8');
-const telemetryRuntime = readFileSync(join(root, 'src/diagnostics/telemetryRuntime.js'), 'utf8');
+const diagnosticsRuntimeSource = readFileSync(join(root, 'src/diagnostics/diagnosticsRuntime.js'), 'utf8');
 const runtimeErrorRuntime = readFileSync(join(root, 'src/diagnostics/runtimeErrorRuntime.js'), 'utf8');
 const publicApiRuntime = readFileSync(join(root, 'src/core/publicApiRuntime.js'), 'utf8');
 // The settings panel runtime is a composer over src/ui/settings/ modules
@@ -30,8 +30,8 @@ const completionInsertionRuntime = readFileSync(join(root, 'src/completion/inser
 const completionRuntime = readFileSync(join(root, 'src/completion/completionRuntime.js'), 'utf8');
 const editorLifecycleSentinel = readFileSync(join(root, 'src/editor/editorLifecycleSentinel.js'), 'utf8');
 const editorDispatchRuntime = readFileSync(join(root, 'src/editor/editorDispatchRuntime.js'), 'utf8');
-const mainLegacyAdapters = readFileSync(join(root, 'src/composition/mainLegacyAdapters.js'), 'utf8');
-const diagnosticsOwner = `${runtime}\n${runtimeErrorRuntime}\n${publicApiRuntime}\n${providerRuntime}\n${telemetryRuntime}\n${settingsPanelRuntime}\n${settingsPortalRuntime}\n${settingsInteractionRuntime}\n${activeEditor}\n${contextDiagnosticsRuntime}\n${completionInsertion}\n${completionInsertionRuntime}\n${completionRuntime}\n${editorLifecycleSentinel}\n${editorDispatchRuntime}\n${mainLegacyAdapters}`;
+const appAdapters = readFileSync(join(root, 'src/composition/appAdapters.js'), 'utf8');
+const diagnosticsOwner = `${runtime}\n${runtimeErrorRuntime}\n${publicApiRuntime}\n${providerRuntime}\n${diagnosticsRuntimeSource}\n${settingsPanelRuntime}\n${settingsPortalRuntime}\n${settingsInteractionRuntime}\n${activeEditor}\n${contextDiagnosticsRuntime}\n${completionInsertion}\n${completionInsertionRuntime}\n${completionRuntime}\n${editorLifecycleSentinel}\n${editorDispatchRuntime}\n${appAdapters}`;
 
 test('runtime error recorder is present in owner module and dist', () => {
   for (const text of [runtimeErrorRuntime, dist]) {
@@ -53,8 +53,8 @@ test('provider boundary records consequential provider failures', () => {
     assert.match(text, /provider:\$\{providerId\}:timeout/);
   }
   assert.match(providerRuntime, /registry\.providerCandidatesLegacy\(ctx, state, runtimeProviderRegistryDeps\(\)\)/);
-  assert.match(runtime, /createMainLegacyProviderAdapters\(\{/);
-  assert.match(mainLegacyAdapters, /return providerRuntime\.providerCandidatesLegacy\(ctx\);/);
+  assert.match(runtime, /createAppProviderAdapters\(\{/);
+  assert.match(appAdapters, /return providerRuntime\.providerCandidatesLegacy\(ctx\);/);
 });
 
 test('diagnostics export and debug snapshot include runtime error readout', () => {
@@ -154,8 +154,8 @@ test('settings portal and settings-panel catches route fallbacks to runtime diag
     }
   }
 
-  // Exact catch formatting is source-level structure. After Priority 7 begins, dist is
-  // an esbuild bundle and may rewrite catch block formatting while preserving scopes.
+  // The exact catch formatting is checked in the source only: dist is an esbuild bundle and may
+  // format catch blocks differently while keeping the scopes.
   assert.match(settingsPortalRuntime, /catch \(err\) \{\s*recordRuntimeErrorOnce\("settings:portal-host-query"/s);
   assert.match(settingsPortalRuntime, /catch \(fallbackErr\) \{\s*recordRuntimeErrorOnce\("settings:portal-host-fallback-append"/s);
   assert.match(settingsPanelRuntime, /catch \(err\) \{ recordRuntimeErrorOnce\("diagnostics:context-clipboard-write"/);

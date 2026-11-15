@@ -7,16 +7,16 @@ import { isServiceDataFieldKeyContext, scoreItems } from '../../src/completion/s
 import { cloneDefaultSettings } from '../../src/core/settings.js';
 import { makeHassFixture } from '../fixtures/hassFixture.mjs';
 
-// Ranking contract for the headline lanes, asserted through the REAL pipeline
-// (context detection + all six providers + scoring) with the SHIPPED default
-// settings. Assertions state INTENDED behavior (user-usefulness), never recorded
+// Ranking contract for the headline lanes, asserted through the real pipeline
+// (context detection + all six providers + scoring) with the shipped default
+// settings. Assertions state intended behavior (user-usefulness), never recorded
 // output: expectedTop / mustRankAbove / mustIncludeTopN by label — no full-order
 // pins, and alias-fuzzy incidentals are deliberately not encoded.
 //
 // Contract: when the cursor is in a lane one provider exists to serve (a service
 // data: field key), that provider's rows lead the lane at the same match tier;
 // generic rows are reordered below, never removed. At root, the generic card-key
-// lane IS the context lane and keeps winning.
+// lane is the context lane and keeps winning.
 const ENGINE_VARIANTS = [
   ['default', {}],
   // The between-provider contract is identical with the engine on: dpFuzzy sorts
@@ -70,7 +70,7 @@ test('the lane predicate mirrors the provider gate: key/blank roles under a data
   assert.equal(isServiceDataFieldKeyContext({ ...base, yamlRole: 'blank' }), true);
   assert.equal(isServiceDataFieldKeyContext({ ...base, yamlPath: ['service_data'] }), true);
   // Defensive guards, unreachable through the live adapter but part of the contract:
-  // a kind-bearing ctx is a VALUE position and must never take the key lane.
+  // a kind-bearing ctx is a value position and must never take the key lane.
   assert.equal(isServiceDataFieldKeyContext({ ...base, valueKind: 'entity' }), false);
   assert.equal(isServiceDataFieldKeyContext({ ...base, yamlRole: 'value' }), false);
   assert.equal(isServiceDataFieldKeyContext({ ...base, lang: 'jinja' }), false);
@@ -180,6 +180,6 @@ for (const [variant, completions] of ENGINE_VARIANTS) {
   test(`[${variant}] root lane pin: card keys keep winning at root`, async () => {
     const pipeline = buildPipeline(makeHassFixture(), completions);
     const { labels } = await scoredLabels(pipeline, 'ty');
-    expectedTop(labels, 'type:', 'at root the generic card-key lane IS the context lane');
+    expectedTop(labels, 'type:', 'at root the generic card-key lane is the context lane');
   });
 }

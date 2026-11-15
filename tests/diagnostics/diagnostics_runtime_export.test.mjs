@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createDiagnosticsRuntime } from '../../src/diagnostics/telemetryRuntime.js';
+import { createDiagnosticsRuntime } from '../../src/diagnostics/diagnosticsRuntime.js';
 import { safeContextSummary, diagnosticsReadoutBundle } from '../../src/diagnostics/diagnosticsCore.js';
 import * as diagnosticsHealth from '../../src/diagnostics/diagnosticsHealth.js';
-import { activeEditorDiagnosticsReadoutEnvelopePayload } from '../../src/diagnostics/diagnosticsFastLaneHelpers.js';
+import { activeEditorDiagnosticsReadoutEnvelopePayload } from '../../src/diagnostics/diagnosticsReadoutHelpers.js';
 import { createEmbeddedLanguageDiagnostics } from '../../src/languages/embeddedLanguageDiagnostics.js';
 import { createSuggestionQualityRuntime } from '../../src/completion/suggestionQualityRuntime.js';
 import { collectContextSnapshotDryRun } from '../../src/context/contextSnapshotRuntimeAdapter.js';
@@ -70,7 +70,6 @@ function createHarness(overrides = {}) {
   const runtime = createDiagnosticsRuntime({
     CHANGELOG_SUMMARY: {},
     DEFAULT_SETTINGS: { style: {} },
-    LIVE_COMPANION_EDITOR_VERSION: 'test',
     PRODUCT_NAME: 'Nostrodomus',
     PROJECT_RELEASE_STATE: 'test',
     PROJECT_VERSION: '0.0.0',
@@ -121,7 +120,6 @@ function createHarness(overrides = {}) {
     runtimeSummary: diagnosticsHealth.runtimeSummary,
     safeContextSummary,
     state,
-    styleCssModuleStatus: () => ({}),
     suggestionQualityPayload: quality.suggestionQualityPayload,
     ...overrides.deps,
   });

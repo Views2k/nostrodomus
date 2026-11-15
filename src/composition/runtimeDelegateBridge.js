@@ -23,12 +23,10 @@ function createRuntimeDelegateBridge({ getRuntime, methods, fallbacks = {}, labe
   return bridge;
 }
 
-
 const CODEBOX_FRAME_METHODS = [
-  "codeboxFrameHostForEditor", "codeboxComposedParent", "activeCodeboxFramePortalRoot", "ensureCodeboxExternalFrameHost",
-  "removeCodeboxExternalFrame", "ensureCodeboxExternalFrame", "codeboxFrameTokenKey", "scheduleCodeboxExternalFrameSettleSync",
+  "codeboxFrameHostForEditor", "codeboxComposedParent", "removeCodeboxExternalFrame", "scheduleCodeboxExternalFrameSettleSync",
   "clearCodeboxExternalFrameSettleTimers", "syncCodeboxExternalFrame", "scheduleCodeboxExternalFrameSync", "removeCodeboxKeyboardContainment",
-  "eventPathHasCodeboxEditor", "shouldContainCodeboxKeyEvent", "installCodeboxKeyboardContainment", "installCodeboxExternalFrameEventGuards",
+  "eventPathHasCodeboxEditor", "shouldContainCodeboxKeyEvent", "installCodeboxKeyboardContainment",
 ];
 
 const CODEBOX_STYLE_METHODS = [
@@ -92,7 +90,6 @@ const EDITOR_LIFECYCLE_SENTINEL_METHODS = [
   "mutationRecordsAreCodeMirrorOnly", "targetContainsCodeMirror", "structuralObserverConfigForTarget", "mutationRecordLooksEditorStructural",
 ];
 
-
 const RUNTIME_ERROR_METHODS = [
   "recordRuntimeError", "recordRuntimeErrorOnce", "runtimeErrorReadout", "diagnosticsRuntimeErrorFallback",
 ];
@@ -141,7 +138,7 @@ const PERFORMANCE_TELEMETRY_METHODS = [
 ];
 
 const DIAGNOSTICS_METHODS = [
-  "providerSummaryLegacy", "providerSummary", "itemSummary", "debugSnapshot", "health", "styleCssModuleStatus", "embeddedLanguageDiagnostics",
+  "providerSummaryLegacy", "providerSummary", "itemSummary", "debugSnapshot", "health", "embeddedLanguageDiagnostics",
   "exportDiagnostics", "copyDiagnosticsToClipboard", "diagnosticValue", "diagnosticCard", "settingsStorageStatus", "systemStatusCard",
   "formatPerformanceEventMetric", "performanceDiagnosticsCard", "activeContextDiagnosticsSection", "contextRouteLabel", "contextInspectorPayload",
   "contextInspectorRows", "contextInspectorCard", "suggestionQualityRows", "suggestionQualityCard", "diagnosticsReasonIsInteractive",
@@ -178,7 +175,6 @@ const PROVIDER_METHODS = [
   "lovelaceContextRows", "lovelaceContextProvider", "snippetRow", "yamlPathHas", "snippetRowsForContext", "snippetProvider", "buildIndex",
   "runtimeProviderRegistryLimits", "runtimeProviderRegistryDeps",
 ];
-
 
 export function createRuntimeErrorRuntimeDelegates(getRuntime) {
   return createRuntimeDelegateBridge({ label: "runtimeErrorRuntime", getRuntime, methods: RUNTIME_ERROR_METHODS });
@@ -257,7 +253,6 @@ export function createSettingsInteractionRuntimeDelegates(getRuntime) {
 export function createProviderRuntimeDelegates(getRuntime) {
   return createRuntimeDelegateBridge({ label: "providerRuntime", getRuntime, methods: PROVIDER_METHODS });
 }
-
 
 export function createCodeboxFrameRuntimeDelegates(getRuntime) {
   return createRuntimeDelegateBridge({ label: "codeboxFrameRuntime", getRuntime, methods: CODEBOX_FRAME_METHODS });

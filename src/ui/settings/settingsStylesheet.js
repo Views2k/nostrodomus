@@ -1,30 +1,13 @@
-// The CSS string is under byte-identity guard
-// (tests/ui/settings_stylesheet_snapshot.test.mjs) and must not change by a
-// single character.
+// The stylesheet of the settings panel. tests/ui/settings_stylesheet_snapshot.test.mjs compares
+// it with a hash, so a change of a single character has to update that test.
 
 export function createSettingsStylesheet(deps = {}) {
   const { createSettingsElement } = deps;
 
-  // important-override registry — settings panel interaction css.
-
-  // external rules overridden: HA modal dialog / backdrop pointer-events management
-
-  //   (the panel portals into the active HA dialog top-layer), HA theme universal
-
-  //   transition rules (drag stability), and HA generic input styling (hue sliders).
-
-  // owner: settings panel style block (#nostrodomus-settings-root).
-
-  // reason: the panel must stay interactive inside HA's modal focus/pointer trap, and
-
-  //   dragging must not animate (drag-frame stability history).
-
-  // removal condition: portal-scoped pointer ownership negotiated with HA dialogs.
-
-  // verification: settings modal pointer portal + drag stability static tests; browser
-
-  //   smoke item 7.
-
+  // Several rules use `!important`: the panel is attached inside Home Assistant's modal dialog,
+  // whose pointer-events handling would otherwise make it unusable; theme rules that animate
+  // every element would make dragging lag; and Home Assistant's input styles would restyle the
+  // hue sliders.
   function makeSettingsStyle() {
     const style = createSettingsElement("style");
     style.textContent = `

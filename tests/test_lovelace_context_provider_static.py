@@ -5,11 +5,11 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/providers/lovelaceContextProvider.js"
-LEGACY = ROOT / "src/main.legacy.js"
+APP = ROOT / "src/app.js"
 REPORT = ROOT / "reports/LOVELACE_CONTEXT_PROVIDER_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 
 errors = []
 notes = []
@@ -46,7 +46,7 @@ for token in required_behavior_tokens:
         notes.append(f"PASS behavior token: {token}")
 
 if "export function contextRow(id, type, label, insert, aliases = [], meta = {}, options = {})" not in module:
-    errors.append("contextRow signature with injectable options was not preserved")
+    errors.append("contextRow must take injectable options as its last argument")
 
 if "return item" not in module:
     errors.append("contextRow behavior appears incomplete; missing return item")
@@ -60,11 +60,11 @@ for token in [
     "lovelaceContextRows",
     "lovelaceContextProvider",
 ]:
-    if token not in legacy:
-        errors.append(f"Legacy lost Lovelace context provider token: {token}")
+    if token not in app:
+        errors.append(f"app.js is missing Lovelace context provider token: {token}")
 
 if "export function detectContext" in module:
-    errors.append("Lovelace context provider must not absorb detectContext")
+    errors.append("Lovelace context provider must not define detectContext")
 
 for forbidden in [
     "showPopover",
@@ -94,9 +94,9 @@ for token in [
     "visibility:",
 ]:
     if token not in module:
-        errors.append(f"Expected v31.2 coverage token missing: {token}")
+        errors.append(f"Expected context coverage token missing: {token}")
     else:
-        notes.append(f"PASS v31.2 token: {token}")
+        notes.append(f"PASS context token: {token}")
 
 REPORT.write_text(
     "Lovelace context provider static test report\n\n"

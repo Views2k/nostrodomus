@@ -8,9 +8,7 @@
 //       .: |
 //         * { margin: 0; }
 //
-// Only a block scalar directly under `style:` was tracked as CSS. Under a nested key the lines
-// were read as YAML or as plain text, and a line that starts with '#' or '*' was painted as a
-// comment.
+// A line in such a block that starts with '#' or '*' is a selector, not a comment.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -103,6 +101,21 @@ test('YAML around the map keeps its meaning: comments, keys and list items', () 
   assert.deepEqual(kinds(DOC, 19, modes), ['yamlList:-', 'filter:light.kitchen', 'comment:# main']);
 });
 
+test('a selector key with a comment after its block indicator still opens CSS', () => {
+  const doc = [
+    'card_mod:',
+    '  style:',
+    '    .: |  # the card',
+    '      #x { color: red; }',
+    '    "ha-card $": |- # shadow root',
+    '      * { margin: 0; }',
+  ];
+  const modes = modesOf(doc);
+  assert.equal(modes[3].blockScalarKind, 'css');
+  assert.notEqual(modes[3].lineKind, 'comment');
+  assert.equal(modes[5].blockScalarKind, 'css');
+});
+
 test('a block scalar after the map has ended is text again', () => {
   const doc = [
     'card_mod:',
@@ -136,7 +149,7 @@ test('a YAML comment at a lower column does not end the map; a key at the map co
   assert.equal(modes[6].blockScalarKind, 'text', 'title is a sibling of style, outside the map');
 });
 
-test('a style map with plain values is YAML as before', () => {
+test('a style map with plain values is YAML', () => {
   // picture-elements: style holds CSS property names with plain values.
   const doc = ['elements:', '  - type: state-icon', '    style:', '      top: 50%', '      left: 30% # a third', '    entity: light.kitchen'];
   const modes = modesOf(doc);

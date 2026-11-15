@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 
 import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 
-// The css lane was `/style:\s*\|[\s\S]*$/.test(info.before)` where info.before is the
-// WHOLE document prefix, so one card_mod `style: |` near the top forced lang='css' for every line
-// below it, killing YAML/entity completion. The lane is bounded to an ACTUALLY-OPEN style block
-// scalar at the cursor (blockScalarContextAt, which nulls on dedent).
+// The CSS lane applies only inside a style block scalar that is open at the cursor
+// (blockScalarContextAt, which returns null after a dedent). A test against the whole text before
+// the cursor, such as `/style:\s*\|[\s\S]*$/`, would let one card_mod `style: |` near the top switch
+// every line below it to CSS and stop YAML and entity completion there.
 const settings = { triggerMode: 'auto', minChars: 1, suggestInComments: false };
 
 function at(sourceWithCursor) {
@@ -16,25 +16,25 @@ function at(sourceWithCursor) {
   return detectRuntimeContext(source, i, { triggerKind: 'typing', settings });
 }
 
-test('2A(a): cursor inside an open style: | block is CSS', () => {
+test('cursor inside an open style: | block is CSS', () => {
   const ctx = at('card_mod:\n  style: |\n    ha-card {\n      color: r__CURSOR__\n    }\n');
   assert.equal(ctx.lang, 'css');
   assert.equal(ctx.scope, 'card-mod-css');
 });
 
-test('2A(b): cursor on a sibling key BELOW a closed style: | block is YAML (the bug)', () => {
-  // entity: is dedented to root, so the style block has ended. Old code matched the earlier
-  // `style: |` against the whole prefix and wrongly returned css; must be yaml now.
+test('cursor on a sibling key below a closed style: | block is YAML', () => {
+  // entity: is dedented to root, so the style block has ended; the earlier `style: |` in the
+  // text before the cursor does not make this line CSS.
   const ctx = at('type: custom:button-card\ncard_mod:\n  style: |\n    ha-card { color: red; }\nentity: __CURSOR__');
   assert.equal(ctx.lang, 'yaml');
 });
 
-test('2A(c): a deeply-nested open style: | block is still CSS', () => {
+test('a deeply nested open style: | block is CSS', () => {
   const ctx = at('views:\n  - cards:\n      - type: custom:button-card\n        card_mod:\n          style: |\n            .b { color: b__CURSOR__ }\n');
   assert.equal(ctx.lang, 'css');
 });
 
-test('2A(d): cursor in a later open style block after an earlier closed one is CSS', () => {
+test('cursor in a later open style block after an earlier closed one is CSS', () => {
   const ctx = at('card_mod:\n  style: |\n    .a { color: red; }\ntype: x\ncard_mod:\n  style: |\n    .b { color: b__CURSOR__ }\n');
   assert.equal(ctx.lang, 'css');
 });

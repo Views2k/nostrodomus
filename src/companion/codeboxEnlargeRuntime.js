@@ -1,22 +1,20 @@
-// Companion codebox-enlargement learned memory.
+// Sizes the codebox: the main code editor of the card editor dialog, and the main editor of a
+// panel page (Developer Tools, the raw dashboard configuration, the automation and script
+// editors).
 //
-// The codebox enlargement to the tabbed height ships in the static CSS. This module
-// adds the learned refinement: editors without the Layout/Visibility/Config option-tab
-// row ("simple" editors) have unused vertical space, so the codebox can extend taller.
-// The mode is keyed per-dialog with a never-downgrade memory.
+// In the card dialog the codebox is fitted to the space between where it starts and the dialog
+// footer, measured once the dialog is laid out. Before that it gets a height from a viewport
+// formula, taller for an editor without the row of option tabs ("simple") than for a tabbed one;
+// which of the two a dialog is, is remembered per dialog. A panel editor gets a maximum height
+// and margins, so the frame and its glow have room on every side.
 //
-// Two adaptations forced by the binding gates (the stricter rule wins):
-//  - Ownership: main cedes CodeMirror internals to the companion (property-ownership
-//    contract), so this lives in the companion layer (sibling to scrollbarStyleRuntime),
-//    not in main's apply. It sets inline heights on .cm-editor/.cm-scroller
-//    (companion-owned); main's apply still skips them, protected tests unchanged.
-//  - No-wildcard: the tab scan must not use `querySelectorAll("*")`, so it is a
-//    bounded, depth-capped traversal that descends only into the registry's known
-//    editor-host types (OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR) and queries the
-//    registry's tab selectors at each root.
+// The heights are inline styles on the ha-code-editor host, .cm-editor and .cm-scroller. The
+// companion layer owns those elements (docs/contracts/STYLE_OWNERSHIP_CONTRACT.md); the codebox
+// style runtime does not write them. The tab scan enters only the known editor hosts
+// (OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR), depth-capped, never every element.
 //
-// Active by default; dormant under an external legacy companion or the force-dormant
-// flag (companionLayerActive).
+// Active by default; dormant while a standalone companion script owns the layer or the layer is
+// switched off by hand (companionLayerActive).
 
 import { companionLayerActive } from './coordinatorRuntime.js';
 import { insideCardOwnEditor, nestedInCardOwnEditor } from '../editor/cardOwnEditor.js';
@@ -24,84 +22,60 @@ import { OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR } from '../editor/overlayRoo
 import { CARD_DIALOG_EDITOR_PANE, CARD_DIALOG_STACKED_MEDIA, PANEL_ROW_EDITOR_HOST } from '../editor/haSelectors.js';
 import { HA_DIALOG, HA_DIALOG_FOOTER, HA_FORM, HA_SELECTOR, HA_YAML_EDITOR, HUI_CARD_ELEMENT_EDITOR, HUI_DIALOG_EDIT_CARD, OPTION_TAB_CONTAINERS, OPTION_TABS, WA_DIALOG } from '../editor/haSelectors.js';
 
-// Height constants. The tabbed defaults match the static codebox CSS; the SIMPLE_*
-// set is the taller override this module applies. Applied inline `!important`
-// (setHeight) to the dialog's MAIN codebox only, so they win over the frozen
-// CODEBOX_CSS and do not touch the form-nested Layout editor (FORM_NESTED_FILL).
+// Viewport formula heights for the card dialog's main codebox, used until the dialog can be
+// measured. Applied inline with `!important` (setHeight), so they win over the frozen
+// CODEBOX_CSS. The SIMPLE_* set is for an editor without the option tab row.
 //
-// Scrollbar-flush clearance: editor + scroller sit 14px above the host bottom (wrapper
-// height MINUS 14), down from the old ~38-40px frosted dead-strip. That brings the
-// horizontal scrollbar riding the .cm-scroller bottom close to flush while keeping its
-// ends — and the vertical down-arrow — clear of the host ::before 22px rounded frame
-// corners. A true-flush editor with the deliberate CONTENT_FIT square clip
-// (border-radius:0, which un-clips the down-arrow) pokes the bar past the corner arc;
-// rounding the content back would re-clip the down-arrow. 14px is the clean middle: at
-// that height the frame's corner inset is ~1.5px, so any arc overlap is sub-pixel.
-// Editor and scroller share the height so the residual strip is uniform.
-// Tabbed-lane height, derived from a measurement on a real HA instance
-// (innerHeight 1358, zoom 100%): the tabbed codebox TOP sits at 3vh + ~310px of fixed
-// dialog chrome (header + option tabs + code-mode toolbar; measured top 351px). The
-// dialog bottom edge is at 97vh, so ending the box 30px inside it gives
-// 97vh - 30 - (3vh + 310) = 94vh - 340px — the tallest box that stays inside the
-// dialog at every viewport height. Two earlier constants missed for want of this
-// measurement: 110vh - 399px outgrew the 94vh dialog on tall screens, and
-// 94vh - 198px assumed ~250px of chrome and ran 72px off a 1358px screen. The height
-// must keep the dialog's own 94vh slope; only the constant may change, and only with
-// a fresh top-offset measurement. SIMPLE and panel lanes untouched.
+// .cm-editor and .cm-scroller end 14px above the bottom of the ha-code-editor host. That keeps
+// the ends of the horizontal scrollbar and the vertical down arrow inside the 22px rounded
+// corners of the frame (the host's ::before); at 14px the corner's inset is about 1.5px.
+//
+// The tabbed height comes from a measurement on Home Assistant at an inner height of 1358px and
+// 100% zoom: the codebox starts 3vh + 310px from the top (dialog header, option tabs and the
+// code toolbar), and the dialog ends at 97vh. Ending the box 30px inside the dialog gives
+// 97vh - 30px - (3vh + 310px) = 94vh - 340px, which stays inside the dialog at every viewport
+// height. Keep the 94vh slope of the dialog; change the constant only with a new measurement of
+// where the codebox starts.
 const WRAPPER_HEIGHT = 'calc(94vh - 340px)';
 export const CM_HEIGHT = 'calc(94vh - 354px)';
 export const SCROLLER_HEIGHT = 'calc(94vh - 354px)';
 const SIMPLE_WRAPPER_HEIGHT = 'calc(94vh - 150px)';
 export const SIMPLE_CM_HEIGHT = 'calc(94vh - 164px)';
 export const SIMPLE_SCROLLER_HEIGHT = 'calc(94vh - 164px)';
-// Non-card-dialog panel editors (Dev Tools / raw config / automation / script YAML). HA otherwise fills
-// the editor edge-to-edge in the panel (ha-code-editor top 56, bottom == viewport bottom, ~full width),
-// so the host-owned glow halo and the frame have no room: the glow shows only where there happens to be a
-// gap. The card editor shows the glow on all sides because its ha-code-editor is smaller than its
-// overflow:visible pane (the pane is calc(94vh - 198px) but the editor is calc(94vh - 437px) → ~239px of
-// vertical room, plus pane padding and the 98vw dialog around the 54vw editor). So for panels we shrink
-// the host with room on every side (~10%): the glow halo (the ::before's `0 0 52px` outer shadow) then
-// shows all around and the frame (incl. the bottom border) wraps the box cleanly. Nothing clips it
-// (nearest clipping ancestor = null), so room equals visible glow. Values leave ≈56px each side for the
-// 52px halo; max-height (top header 56 + top room 52 + bottom room 52 = 160) caps tall scripts (short ones
-// keep their natural size). All applied inline → panel-scoped; the card dialog uses its learned heights.
+// Panel editors (Developer Tools, the raw dashboard configuration, the automation and script
+// editors). Home Assistant draws them edge to edge, below the 56px header and down to the bottom
+// of the window, which leaves no room for the frame's 52px outer glow. The host gets 56px of
+// room on each side and 52px above, and a maximum height that leaves 52px below
+// (56 + 52 + 52 = 160px); a short editor keeps its natural height. Nothing above the host clips,
+// so the room is all visible glow. In the card dialog the pane around the editor gives it that
+// room already.
 export const PANEL_MAX_HEIGHT = 'calc(100vh - 160px)';
 export const PANEL_TOP_ROOM = '52px';
 export const PANEL_SIDE_ROOM = '56px';
 export const PANEL_MAX_WIDTH = 'calc(100% - 112px)';
-// Inner clearance so the editor content, gutter line numbers and scrollbar clear the frame's 22px rounded
-// bottom corners. Without it the content fills square to the frame's bottom edge, so the last line number
-// (bottom-left) and the scrollbar end (bottom-right) run into the corner curve and get clipped. These
-// mirror the card editor's CODEBOX_CSS scroller + content padding exactly: the card never clips because it
-// carries this padding; panels share the same frame but never get CODEBOX_CSS (it also holds the 54vw
-// width that squished panels), so we apply just the padding here. Same padding on the same frame gives the
-// same result. Padding only, never the card's width/height.
+// The scroller and content padding of CODEBOX_CSS, so the last line number and the end of the
+// scrollbar stay clear of the frame's rounded bottom corners as they do in the card dialog.
+// Panels do not get CODEBOX_CSS itself: its 54vw width is for the two panes of the dialog.
 export const PANEL_SCROLLER_PADDING = '16px 18px 30px 14px';
 export const PANEL_CONTENT_PADDING = '0 8px 18px 0';
-// The scrollbar rides the scroller's right edge; with the scroller full-width that edge sits at the
-// frame's right edge, so the scrollbar's bottom end pokes past the rounded bottom-right corner. Inset the
-// scroller's right edge by the card editor's exact 18px gap (the card's scroller is calc(54vw - 18px),
-// 18px narrower than its 54vw pane) so the scrollbar clears the 22px corner. Same frame and same gap gives
-// the same result.
+// The scrollbar sits on the scroller's right edge. Insetting that edge by 18px, the gap the card
+// dialog has between its scroller (54vw - 18px) and its pane (54vw), keeps the bottom end of the
+// scrollbar inside the rounded corner.
 export const PANEL_SCROLLER_MAX_WIDTH = 'calc(100% - 18px)';
 
 // Measured fit for the card dialog's main codebox. The viewport formulas above assume a fixed
-// amount of dialog chrome above the editor. That amount varies with the card (option-tab row,
-// stack sub-card tab bar and toolbar, alerts), the Home Assistant release and the window size,
-// and every mismatch pushed the box below the dialog (measured live on 2026.11: a stack
-// sub-card editor ended 114px below the dialog and 98px below the window). When the editor is
-// laid out, its height is instead taken from where it actually starts and where the dialog
-// footer actually is. The formulas remain only as the value used before layout is measurable.
-export const FIT_FOOTER_GAP_PX = 22; // the gap the SIMPLE lane leaves above the footer when it fits
+// amount of dialog chrome above the editor, and that amount varies with the card (option tab
+// row, the tab bar and toolbar of a stack's sub-card, alerts), the Home Assistant release and
+// the window size (on 2026.11 a stack sub-card editor ended 114px below the dialog). Once the
+// editor is laid out, its height is taken from where it starts and where the dialog footer is.
+export const FIT_FOOTER_GAP_PX = 22; // the gap the simple formula leaves above the footer
 export const FIT_DIALOG_INSET_PX = 30; // used against the dialog edge when no footer is found
 export const FIT_MIN_HEIGHT_PX = 160;
 export const FIT_FLUSH_CLEARANCE_PX = 14; // editor + scroller sit this far above the host bottom
 
-// Active by default. An external legacy companion or the force-dormant flag still keeps
-// this internal layer dormant (companionLayerActive).
 const CODEBOX_ENLARGE_SHIPPED_ACTIVE = true;
 
-// The bounded host-descent selector (registry-sourced) + the depth cap.
+// The hosts the tab scan enters, and how deep.
 const TAB_SCAN_HOST_SELECTOR = OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR;
 const DEFAULT_MAX_DEPTH = 12;
 
@@ -141,7 +115,7 @@ function insidePanelRowEditor(node) {
   return false;
 }
 
-// Walk up composed parents to the nearest selector match (the host-chain idiom).
+// The nearest element matching `selector`, walking up through shadow hosts.
 function composedClosestSelector(node, selector) {
   let n = node;
   while (n) {
@@ -152,12 +126,11 @@ function composedClosestSelector(node, selector) {
   return null;
 }
 
-// Resolve the shadow root that hosts CodeMirror from any editor node. The active editor
-// (activeEditorCacheRuntime.styleEditorFromNode) is the `.cm-editor` div, which has no
-// shadowRoot of its own: its getRootNode() is the ha-code-editor shadow root (whose `.host`
-// is the wrapper element the WRAPPER height applies to). Returns a local, never the literal
-// `return host.shadowRoot`, which a settings-overlay regression guard
-// (test_settings_out_of_band_static) forbids in dist.
+// The shadow root that holds CodeMirror, from any editor node. The active editor is the
+// `.cm-editor` div (activeEditorCacheRuntime.styleEditorFromNode); its root node is the
+// ha-code-editor shadow root, whose host gets the wrapper height. The last branch returns a
+// local variable because tests/test_settings_out_of_band_static.py rejects the text
+// `return host.shadowRoot` in the bundle.
 function codeShadowRootForEditor(editor) {
   if (!editor) return null;
   try {
@@ -183,16 +156,14 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     isActive,
     visible = (el) => defaultVisible(el, globalRef),
     maxDepth = DEFAULT_MAX_DEPTH,
-    // Gate the non-card-dialog panel max-height cap (default on). Panels are only
-    // discovered/styled when style.universalCodebox is on, so this is also implicitly gated.
+    // style.universalCodebox: whether panel editors are sized at all.
     universalCodeboxEnabled = () => true,
     ResizeObserver: ResizeObserverRef = globalRef?.ResizeObserver,
     requestAnimationFrame: rafRef = globalRef?.requestAnimationFrame?.bind?.(globalRef),
     cancelAnimationFrame: cafRef = globalRef?.cancelAnimationFrame?.bind?.(globalRef),
   } = deps;
 
-  // Per-dialog learned mode (WeakMap keyed by the dialog element) — in-session only,
-  // exactly as v17 (no persistence).
+  // Whether each dialog is simple or tabbed, by dialog element, for this page load only.
   const dialogModeCache = new WeakMap();
   // Last measured wrapper height per ha-code-editor host, so an unchanged fit writes nothing.
   const lastFit = new WeakMap();
@@ -236,7 +207,7 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
           watch.frame = 0;
           const current = watch.editor;
           if (!current || current.isConnected === false) { stopWatching(); return; }
-          try { applyForEditor(current); } catch { /* fail-dark: sizing never throws into layout */ }
+          try { applyForEditor(current); } catch { /* a failed fit leaves the current height */ }
         };
         // Deferred to the next frame so the write never lands inside the observer's own delivery.
         watch.frame = typeof rafRef === 'function' ? (rafRef(run) || 0) : (run(), 0);
@@ -254,9 +225,8 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     return companionLayerActive({ globalRef, storage, shippedDefault: CODEBOX_ENLARGE_SHIPPED_ACTIVE });
   }
 
-  // Bounded tab detection: a visible tab container, or >=2 visible tabs (excluding
-  // Nostrodomus's own UI), means a tabbed editor. Descends only into known editor-host
-  // shadow roots, capped at maxDepth (the no-wildcard law).
+  // A visible tab container, or at least two visible tabs that are not Nostrodomus's own UI,
+  // means a tabbed editor. Enters only the known editor hosts, at most maxDepth deep.
   function hasOptionTabs(dialogShadowRoot) {
     if (!dialogShadowRoot?.querySelectorAll) return false;
     const seen = new Set();
@@ -284,46 +254,28 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     return false;
   }
 
-  // The learned memory: a dialog that has safely learned simple=true is not downgraded
-  // by transient detection (the settingsOpen guard); a real tab render after the first
-  // measurement DOES downgrade (the runoff repair). Pure over (detectedSimple,
-  // settingsOpen) + the per-dialog cache, so the truth table is unit-testable without
-  // the DOM.
+  // The simple or tabbed verdict for a dialog, from this measurement and what the dialog was
+  // before. While the settings panel is open the remembered verdict stands: the panel is attached
+  // inside the dialog, and a measurement taken then is not used. Otherwise tabs win: tabs seen
+  // now turn a simple dialog tabbed (they were not laid out yet at the first measurement), and a
+  // dialog once seen with tabs stays tabbed through a measurement taken mid-rebuild, when the row
+  // has no size. The verdict is pure over the arguments and the per-dialog memory, so it is
+  // tested without a DOM.
   /** @param {any} dialogKey @param {Record<string, any>} [options] */
   function learnedHeights(dialogKey, options = {}) {
     const { detectedSimple, settingsOpen = false } = options;
     const cached = dialogKey ? dialogModeCache.get(dialogKey) : null;
     let simple = detectedSimple;
     if (cached) {
-      if (settingsOpen) {
-        simple = cached.simple;
-      } else if (cached.simple === true && detectedSimple === false) {
-        simple = false; // runoff repair: real tabs rendered after the first measurement
-      } else if (cached.simple === false && detectedSimple === true) {
-        // Sticky tabbed: a dialog already learned as TABBED must not be flipped to simple by a
-        // single transient no-tabs measurement (a 0-sized / mid-rebuild moment when the tab row
-        // isn't measurable). Tabs are the truth — once seen, don't let a runoff moment poison the
-        // cache to simple=true (which then rides the settingsOpen guard and oversizes the codebox).
-        simple = false;
-      }
+      if (settingsOpen) simple = cached.simple;
+      else if (cached.simple === false) simple = false;
     }
     if (dialogKey) {
-      // Persist the runoff repair too. The 0-sized settle ladder can mis-learn a genuinely TABBED
-      // editor as simple=true (tabs aren't measurable yet); when tabs finally render the repair
-      // corrects the RETURNED value to simple=false, but this write-guard was false in that case, so
-      // the cache kept simple=true — and then opening Nostrodomus settings hit the settingsOpen guard,
-      // read the stale simple=true, and made a tabbed codebox 249px too tall. Persisting the repair
-      // makes the memory match the corrected verdict.
-      const runoffRepaired = !!cached && cached.simple === true && detectedSimple === false && !settingsOpen;
-      const shouldWriteCache = !cached || simple === true || (!settingsOpen && cached.simple !== true) || runoffRepaired;
-      if (shouldWriteCache) {
-        dialogModeCache.set(dialogKey, {
-          simple,
-          detectedSimple,
-          settingsOpen,
-          stickySimple: cached?.simple === true && detectedSimple === false,
-        });
-      }
+      // A dialog first seen as simple and then with tabs is remembered as tabbed, so that opening
+      // the settings panel does not bring back the taller simple height.
+      const tabsAppeared = !!cached && cached.simple === true && detectedSimple === false && !settingsOpen;
+      const shouldWriteCache = !cached || simple === true || (!settingsOpen && cached.simple !== true) || tabsAppeared;
+      if (shouldWriteCache) dialogModeCache.set(dialogKey, { simple });
     }
     return {
       simple,
@@ -406,8 +358,7 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
   }
 
   // What the panel branch wrote: for each element, the inline value and priority every property
-  // had before, so teardown and the universal switch can put them back. Without it uninstall
-  // left the margins, the height cap and the corner padding on the panel editor.
+  // had before, so teardown and style.universalCodebox can put them back.
   const panelSized = new Map();
 
   function setPanelProperty(el, prop, value) {
@@ -439,8 +390,7 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     }
   }
 
-  // Cap-only sizing for panel editors: sets max-height (so the box leaves room for the glow halo and a
-  // clean bottom border) without a fixed height, so a short script keeps its natural size.
+  // Panel editors get a maximum height and no fixed height, so a short script keeps its own.
   function setMaxHeight(el, value) {
     if (!el?.style?.setProperty) return;
     try {
@@ -449,10 +399,9 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     } catch { /* detached element */ }
   }
 
-  // Inset the panel ha-code-editor host from its container on the top and both sides so the host-owned
-  // glow halo has room there too (the bottom room comes from the max-height gap). Left margin + max-width
-  // leave equal left/right room without depending on the container being flex vs block; top margin drops
-  // the box below the panel header so the top glow shows on the panel surface, not under the header.
+  // Room for the glow above and on both sides of the panel's ha-code-editor host (below, the
+  // maximum height leaves it). Margins plus a maximum width give equal room on the left and right
+  // whether the container is a flex box or a block.
   function setFrameRoom(el) {
     if (!el?.style?.setProperty) return;
     try {
@@ -464,16 +413,12 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     } catch { /* detached element */ }
   }
 
-  // Give the panel's scroller + content the card editor's exact inner padding so the content, gutter line
-  // numbers and scrollbar clear the frame's rounded bottom corners (the card uses these values and never
-  // clips). Padding only, not the card's 54vw width/height (those squish panels).
+  // The card dialog's inner padding on the panel's scroller and content (see PANEL_SCROLLER_PADDING).
   function setCornerClearance(scroller, content) {
     if (scroller?.style?.setProperty) {
       try {
         setPanelProperty(scroller, 'padding', PANEL_SCROLLER_PADDING);
         setPanelProperty(scroller, 'box-sizing', 'border-box');
-        // Right gap: inset the scroller (and the scrollbar it carries) from the frame's right edge so
-        // the scrollbar's bottom end clears the rounded bottom-right corner (matching the card editor).
         setPanelProperty(scroller, 'max-width', PANEL_SCROLLER_MAX_WIDTH);
       } catch { /* detached element */ }
     }
@@ -485,11 +430,10 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     }
   }
 
-  // Editor-ready hook. Derives the dialog (composed walk-up), classifies simple vs
-  // tabbed through the learned memory, and applies the inline height set to the
-  // companion-owned CodeMirror internals + the ha-code-editor wrapper. No-op while
-  // dormant. `settingsOpen` lets the caller protect a learned-simple dialog from a
-  // transient downgrade while the Nostrodomus settings panel is open.
+  // Sizes the editor: the panel treatment outside a card dialog, the measured fit or the viewport
+  // formula for the dialog's main codebox, nothing for any other editor. Does nothing while the
+  // layer is dormant. `settingsOpen` keeps the remembered simple or tabbed verdict while the
+  // settings panel is open (see learnedHeights).
   /** @param {any} editor @param {Record<string, any>} [options] */
   function applyForEditor(editor, options = {}) {
     const { settingsOpen = false } = options;
@@ -497,8 +441,7 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     if (panelSized.size) forgetDetachedPanelSizing();
     const codeRoot = codeShadowRootForEditor(editor);
     if (!codeRoot) return null;
-    // The WRAPPER is the ha-code-editor host (codeRoot.host), NOT the node handed in — the active
-    // editor is the inner `.cm-editor`. The cm-editor / cm-scroller resolve from the CodeMirror root.
+    // The wrapper is the ha-code-editor host, not the `.cm-editor` that is passed in.
     const wrapper = codeRoot.host || null;
     const cmEditor = codeRoot.querySelector?.('.cm-editor') || null;
     const cmScroller = codeRoot.querySelector?.('.cm-scroller') || null;
@@ -506,18 +449,11 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     const dialog = composedClosestSelector(editor, HUI_DIALOG_EDIT_CARD);
 
     if (!dialog) {
-      // Non-card-dialog panel editor. HA fills it edge-to-edge in the panel, so the host-owned glow and
-      // frame have no room (a max-height alone only opens the bottom). Mirror the card editor (where
-      // ha-code-editor is smaller than its overflow:visible pane, with room on all sides): shrink the host
-      // with room on the top and both sides (setFrameRoom) and a max-height that leaves bottom room, ~10%
-      // overall. Nothing clips, so the glow halo shows all around and the frame (incl. bottom border)
-      // wraps the box cleanly. Gated on universalCodebox; inline → panel-scoped; the card dialog (below)
-      // keeps its learned heights.
-      // With the switch off a panel editor that was sized earlier is handed back.
+      // A panel editor (see PANEL_MAX_HEIGHT). With style.universalCodebox off, a panel editor
+      // that was sized earlier is handed back.
       if (!universalCodeboxEnabled()) { restorePanelSizing(); return null; }
-      // Only the panel's main editor gets the panel margins and height cap. The YAML editor of one
-      // row in the visual automation or script editor, and a code field inside a form, are small
-      // editors inside the page; the panel treatment pushed them 56px in from each side.
+      // Only the panel's main editor. The YAML editor of one row in the visual automation or
+      // script editor, and a code field inside a form, are small editors inside the page.
       if (insidePanelRowEditor(editor) || composedClosestSelector(editor, `${HA_FORM}, ${HA_SELECTOR}`)) return { embedded: true };
       setFrameRoom(wrapper);
       setMaxHeight(wrapper, PANEL_MAX_HEIGHT);
@@ -527,11 +463,9 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
       return { panel: true, maxHeight: PANEL_MAX_HEIGHT, frameRoom: true, cornerClearance: true };
     }
 
-    // Only the dialog's MAIN codebox gets the dialog-scale learned heights. The main
-    // editor is always ha-yaml-editor-wrapped and never inside a form control; a
-    // combo/custom card's embedded auxiliary editor (a raw ha-code-editor, or one
-    // nested in ha-form) would otherwise inherit the 94vh heights and blow off-screen.
-    // Registry-only, layout-free -- a belt against a discovery mis-selection.
+    // Only the dialog's main codebox gets the dialog heights. It is always inside ha-yaml-editor
+    // and never inside a form control or a custom card's own editor; any other code editor in
+    // the dialog (one a card embeds, a form field) would grow past the window with them.
     const isMainCodebox = !!composedClosestSelector(editor, HA_YAML_EDITOR)
       && !composedClosestSelector(editor, `${HA_FORM}, ${HA_SELECTOR}`)
       && !insideCardOwnEditor(editor)
@@ -540,8 +474,8 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
 
     watch.sized = { wrapper, cmEditor, cmScroller };
     watchLayout(editor, dialog);
-    // Measured fit first: it accounts for whatever sits above the editor, so it needs no
-    // simple/tabbed verdict. The learned viewport formulas apply only until layout is measurable.
+    // Measured fit first: it accounts for whatever sits above the editor, so it needs no simple
+    // or tabbed verdict. The viewport formulas apply only until the layout can be measured.
     const fitted = measuredHeights(wrapper, dialog, editor);
     if (fitted) {
       if (lastFit.get(wrapper) === fitted.wrapperPx) return fitted;
@@ -559,9 +493,7 @@ export function createCodeboxEnlargeRuntime(deps = {}) {
     setHeight(wrapper, heights.wrapper);
     setHeight(cmEditor, heights.cm);
     setHeight(cmScroller, heights.scroller);
-    // (The codebox's horizontal-overflow behavior is owned by the companion scrollbar layer's
-    // additive NO_WRAP sheet — long lines extend, the bar appears only when needed — NOT set
-    // inline here, so it doesn't override that sheet.)
+    // Horizontal overflow is left to the NO_WRAP sheet of companionStyleRuntime.
     return heights;
   }
 

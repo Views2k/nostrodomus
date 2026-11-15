@@ -145,7 +145,7 @@ test('overlay root supports targeted traversal with legacy wildcard fallback opt
 });
 
 test('universalEditorHosts targeted traversal descends through non-card-dialog editor panel hosts', () => {
-  // UNIVERSAL: the base targeted selector stops short of the
+  // The base targeted selector stops short of the
   // Dev Tools / raw-config / automation / script panel hosts.
   // With universalEditorHosts on, the bounded walk must descend through them.
   const root = makeElement();
@@ -156,7 +156,7 @@ test('universalEditorHosts targeted traversal descends through non-card-dialog e
 
   const baseSeen = [];
   nostrodomusWalkOpenRoots(root, candidate => baseSeen.push(candidate), new Set(), { targetedTraversal: true });
-  assert.equal(baseSeen.includes(panel.shadowRoot), false, 'base selector must NOT reach the panel host (the gap)');
+  assert.equal(baseSeen.includes(panel.shadowRoot), false, 'base selector must not reach the panel host (the gap)');
 
   const universalSeen = [];
   nostrodomusWalkOpenRoots(root, candidate => universalSeen.push(candidate), new Set(), {
@@ -166,12 +166,12 @@ test('universalEditorHosts targeted traversal descends through non-card-dialog e
   assert.equal(universalSeen.includes(panel.shadowRoot), true, 'universal selector must descend into the panel host');
 });
 
-test('base targeted traversal descends THROUGH a stack-card editor to reach the nested sub-card codebox (apply-on-open fix)', () => {
+test('the base targeted traversal descends through a stack-card editor to reach the nested sub-card codebox', () => {
   // Shadow-host chain on a stack card: hui-dialog-edit-card > hui-card-element-editor >
   // hui-stack-card-editor > hui-card-element-editor > ha-yaml-editor > ha-code-editor. Without
   // hui-stack-card-editor in the allowlist the bounded walk dead-ends at the stack editor, so the sub-card
-  // codebox is found (and styled) only after a click. It is a card-dialog host → in the BASE selector
-  // (works regardless of the universalCodebox kill switch).
+  // codebox is found (and styled) only after a click. It is a card-dialog host, so it is in the base
+  // selector (found whether or not style.universalCodebox is on).
   const root = makeElement();
   const stackEditor = makeElement({ className: 'hui-stack-card-editor' });
   stackEditor.localName = 'hui-stack-card-editor';

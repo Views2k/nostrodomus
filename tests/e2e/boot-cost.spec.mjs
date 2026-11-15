@@ -1,15 +1,14 @@
 // boot-cost.spec: the staged boot, with the completion library deferred.
 //
-// A full phase-A/B install split was measured as NOT worth the boot-path
-// complexity: it deferred ~0 ongoing observers and one style node (the runtime
-// is already lazy about per-editor work). Only the completion-library
-// deferral is kept: a dashboard that never opens an editor never
-// builds the ~184-entry index or registers providers (the real memory cost),
-// and `open()` loads it lazily on first use.
+// Only the completion library is deferred at boot. Splitting the whole install in two phases
+// would defer almost no ongoing observers and one style node, because the runtime is already
+// lazy about per-editor work, so it is not worth the boot-path complexity. With the deferral, a
+// dashboard that never opens an editor never builds the ~184-entry index or registers
+// providers (the real memory cost), and `open()` loads the library on first use.
 //
-// This spec proves both halves on an editor-less dashboard: the index is
-// deferred, and triggering the public open() loads it on demand. Observers /
-// style nodes / listeners are reported to confirm the runtime stays minimal.
+// This spec checks both halves on an editor-less dashboard: the index is deferred, and
+// calling the public open() loads it on demand. Observers, style nodes and listeners are
+// reported to show that the runtime stays minimal.
 
 import { test, expect, openDashboard } from './session.mjs';
 
@@ -91,7 +90,5 @@ test('ongoing cost: an editor-less dashboard defers the completion index until f
     `[ongoing-cost] after open() (loaded):  ${fmt(loaded)}`,
     `[ongoing-cost] deferred until first editor: indexKeys ${loaded.indexKeyCount}, providers ${loaded.providerCount}, styleNodes ${loaded.styleNodes - deferred.styleNodes}`,
   ];
-  // eslint-disable-next-line no-console
-  console.log(lines.join('\n'));
   testInfo.annotations.push({ type: 'ongoing-cost', description: lines.join(' | ') });
 });

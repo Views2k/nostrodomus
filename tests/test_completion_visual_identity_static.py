@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
-legacy = (ROOT / "src" / "main.legacy.js").read_text(encoding="utf-8")
+app = (ROOT / "src" / "app.js").read_text(encoding="utf-8")
 module = (ROOT / "src" / "completion" / "popupRuntime.js").read_text(encoding="utf-8")
-text = legacy + "\n" + module
+text = app + "\n" + module
 required = [
     'completionVisualKind',
     'completionPillLabel',

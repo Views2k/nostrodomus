@@ -123,20 +123,20 @@ test('a pass paints each requested editor once and does not carry editors over t
   });
 });
 
-test('a cancelled pass forgets its editors', () => {
+test('a canceled pass forgets its editors', () => {
   withFrames(({ runFrame, pendingFrames }) => {
     const fx = fixture();
     const first = fakeEditor(['entity: light.kitchen']);
     const second = fakeEditor(['name: Hall']);
     fx.runtime.scheduleSourceClassSmartSyntax(first.editor, 'style-reapply-skip-pointer');
     fx.runtime.disconnectSourceClassSmartSyntaxObserver('test');
-    assert.equal(pendingFrames(), 0, 'the scheduled pass is cancelled');
+    assert.equal(pendingFrames(), 0, 'the scheduled pass is canceled');
 
     fx.state.sourceClassSmartSyntaxLastRunAt = -100000;
     fx.runtime.scheduleSourceClassSmartSyntax(second.editor, 'style-reapply-skip-pointer');
     runFrame();
     const nodes = fx.highlightedNodes();
     assert.ok(nodes.has(second.lines[0].textNode));
-    assert.equal(nodes.has(first.lines[0].textNode), false, 'the editor of the cancelled request is not painted later');
+    assert.equal(nodes.has(first.lines[0].textNode), false, 'the editor of the canceled request is not painted later');
   });
 });

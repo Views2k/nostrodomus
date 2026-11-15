@@ -2,13 +2,13 @@
 // that pass every unit test and still break in the browser.
 //
 // Failure policy (tools/e2e/README.md):
-// - pageerror                → fails UNLESS allowlisted with `appliesTo:
-//                              'pageerror'` AND a `source` regex the stack
+// - pageerror                → fails unless allowlisted with `appliesTo:
+//                              'pageerror'` and a `source` regex the stack
 //                              matches (a bare message match is not enough —
 //                              a pageerror exception is loud by default);
 // - console.error            → fails unless allowlisted;
 // - console.warn             → collected and attached to the report; fails
-//                              ONLY for Nostrodomus-origin warnings that are not
+//                              only for Nostrodomus-origin warnings that are not
 //                              allowlisted (HA and third-party cards are
 //                              noisy — their warnings are information).
 
@@ -43,7 +43,7 @@ function isAllowlisted(text, allowlist) {
 }
 
 // A pageerror is suppressed only by an entry explicitly scoped to pageerrors
-// AND a `source` regex matched against the stack — so a message-only entry
+// and a `source` regex matched against the stack — so a message-only entry
 // can never silently swallow an uncaught exception from our own code.
 function isPageErrorAllowlisted(pageError, allowlist) {
   return allowlist.some(

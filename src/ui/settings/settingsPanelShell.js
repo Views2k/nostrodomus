@@ -1,7 +1,6 @@
-// openSettings split into focused build/attach steps. The orchestrator calls the
-// steps in statement order, and listener registration order plus event options are
-// preserved exactly. Shared mutable panel state (state.settingsPanel, drag/resize
-// transient state) keeps its original ownership.
+// The settings panel: openSettings builds the panel (header, tabs and their sections, the resize
+// handle), wires its controls, drag, resize and keyboard handling, and attaches it to the
+// settings portal.
 
 import { PRODUCT_NAME, PROJECT_VERSION } from '../../core/version.js';
 import { uiAccentVarsFromSettings } from '../codeboxStyle.js';
@@ -28,15 +27,10 @@ function copyTextWithoutClipboardApi(text) {
   }
 }
 
-// important-override registry: focus ring of the panel's Close button.
-// rule overridden: the button's own style attribute, which resets every property with
-//   all:unset, the outline included, so the focus ring the settings stylesheet gives every
-//   button in the panel never showed on it.
-// owner: this style element, added to the panel next to the settings stylesheet (whose text is
-//   under a byte-identity guard and is not changed).
-// reason: a declaration in a style attribute only yields to an important rule.
-// removal condition: the Close button no longer resets its outline in a style attribute.
-// verification: tests/ui/settings_panel_shell.test.mjs; keyboard focus on Close in a browser.
+// The focus ring of the panel's Close button. The button's style attribute resets every property
+// with `all: unset`, the outline included, and a declaration in a style attribute yields only to
+// an `!important` rule, so the focus ring the settings stylesheet gives the other buttons does
+// not show on it. This sheet sits next to the settings stylesheet, whose text is frozen.
 const CLOSE_BUTTON_FOCUS_CSS = `
         #nostrodomus-settings-root [data-close]:focus-visible {
           outline: 2px solid rgba(var(--nostrodomus-brand-rgb),.92) !important;
@@ -190,8 +184,8 @@ export function createSettingsPanelShell(deps = {}) {
     });
   }
 
-  // The truly-focused element, piercing shadow roots (HA nests the editor in ha-code-editor's shadow),
-  // so focus can be returned to it after the dialog closes. Fail-dark to null.
+  // The focused element, through shadow roots (the editor is inside ha-code-editor's), so focus
+  // can go back to it when the panel closes. Null when there is none or it cannot be read.
   function deepActiveElement() {
     try {
       let el = document.activeElement;
@@ -272,52 +266,52 @@ export function createSettingsPanelShell(deps = {}) {
     ]));
 
     function attachTabSwitching(panel) {
-    // Arrow keys move the focus along the tab row, Home and End go to its ends, as a tablist is
-    // expected to. Focus only: Enter or Space (the button's own click) selects the focused tab,
-    // so walking past Diagnostics or Context does not build it.
-    const tabButtons = Array.from(panel.querySelectorAll("[data-settings-tab]"));
-    for (const btn of tabButtons) {
-      btn.addEventListener("keydown", ev => {
-        const last = tabButtons.length - 1;
-        const index = tabButtons.indexOf(btn);
-        let next = index;
-        if (ev.key === "ArrowRight") next = index === last ? 0 : index + 1;
-        else if (ev.key === "ArrowLeft") next = index === 0 ? last : index - 1;
-        else if (ev.key === "Home") next = 0;
-        else if (ev.key === "End") next = last;
-        else return;
-        ev.preventDefault();
-        ev.stopPropagation();
-        tabButtons[next]?.focus?.();
-      });
-    }
-    for (const btn of panel.querySelectorAll("[data-settings-tab]")) {
-      btn.addEventListener("click", () => {
-        const next = btn.dataset.settingsTab || "general";
-        if (!allowedTabs.has(next)) return;
-        try { settingsStorage?.setItem?.(tabStorageKey, next); } catch (err) { recordRuntimeErrorOnce("settings:active-tab-storage-write", err, { phase: "settingsTabClick", tab: next }); }
-        for (const other of panel.querySelectorAll("[data-settings-tab]")) {
-          const selected = other === btn;
-          other.classList.toggle("active", selected);
-          other.setAttribute("aria-selected", selected ? "true" : "false");
-        }
-        for (const section of panel.querySelectorAll("[data-section]")) {
-          const selected = section.dataset.section === next;
-          section.classList.toggle("active", selected);
-          section.setAttribute("aria-hidden", selected ? "false" : "true");
-        }
-        // Telemetry is recorded only while the Diagnostics or Context tab is shown, and its
-        // rates are divided by that time. This call lets the recorder see the change now.
-        recordPerformanceEvent("settings-tab-switch", 0, next);
-        if (next === "context") {
-          refreshContextInspectorPanel("tab-switch");
-          refreshSuggestionQualityPanel("tab-switch");
-          startContextInspectorHeartbeat("tab-switch-context");
-        } else {
-          stopContextInspectorHeartbeat("tab-switch-hidden");
-        }
-      });
-    }
+      // Arrow keys move the focus along the tab row, Home and End go to its ends, as a tablist is
+      // expected to. Focus only: Enter or Space (the button's own click) selects the focused tab,
+      // so walking past Diagnostics or Context does not build it.
+      const tabButtons = Array.from(panel.querySelectorAll("[data-settings-tab]"));
+      for (const btn of tabButtons) {
+        btn.addEventListener("keydown", ev => {
+          const last = tabButtons.length - 1;
+          const index = tabButtons.indexOf(btn);
+          let next = index;
+          if (ev.key === "ArrowRight") next = index === last ? 0 : index + 1;
+          else if (ev.key === "ArrowLeft") next = index === 0 ? last : index - 1;
+          else if (ev.key === "Home") next = 0;
+          else if (ev.key === "End") next = last;
+          else return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          tabButtons[next]?.focus?.();
+        });
+      }
+      for (const btn of panel.querySelectorAll("[data-settings-tab]")) {
+        btn.addEventListener("click", () => {
+          const next = btn.dataset.settingsTab || "general";
+          if (!allowedTabs.has(next)) return;
+          try { settingsStorage?.setItem?.(tabStorageKey, next); } catch (err) { recordRuntimeErrorOnce("settings:active-tab-storage-write", err, { phase: "settingsTabClick", tab: next }); }
+          for (const other of panel.querySelectorAll("[data-settings-tab]")) {
+            const selected = other === btn;
+            other.classList.toggle("active", selected);
+            other.setAttribute("aria-selected", selected ? "true" : "false");
+          }
+          for (const section of panel.querySelectorAll("[data-section]")) {
+            const selected = section.dataset.section === next;
+            section.classList.toggle("active", selected);
+            section.setAttribute("aria-hidden", selected ? "false" : "true");
+          }
+          // Telemetry is recorded only while the Diagnostics or Context tab is shown, and its
+          // rates are divided by that time. This call lets the recorder see the change now.
+          recordPerformanceEvent("settings-tab-switch", 0, next);
+          if (next === "context") {
+            refreshContextInspectorPanel("tab-switch");
+            refreshSuggestionQualityPanel("tab-switch");
+            startContextInspectorHeartbeat("tab-switch-context");
+          } else {
+            stopContextInspectorHeartbeat("tab-switch-hidden");
+          }
+        });
+      }
     }
 
     return { s, langs, activeTab, body, attachTabSwitching };
@@ -325,12 +319,12 @@ export function createSettingsPanelShell(deps = {}) {
 
   // A tab other than the open one is built when it is first shown. Building Diagnostics
   // searches the page for the active editor, takes two performance snapshots and can create a
-  // WebGL context; building Context reads the editor context and the suggestion list; and every
-  // open of the panel paid for all of it with another tab in front. `build` returns the
-  // complete section. Until the tab is shown an empty section stands in for it, and it takes
-  // the built section's content when it becomes the active one, whichever code path activates
-  // it (a tab click, or the restore of the open tab after a settings change). Its controls are
-  // wired at that moment. Without MutationObserver the section is built with the panel.
+  // WebGL context; building Context reads the editor context and the suggestion list. `build`
+  // returns the complete section. Until the tab is shown an empty section stands in for it, and
+  // it takes the built section's content when it becomes the active one, whichever code path
+  // activates it (a tab click, or the restore of the open tab after a settings change). Its
+  // controls are wired at that moment. Without MutationObserver the section is built with the
+  // panel.
   function lazySectionPanel(name, activeTab, build) {
     const Observer = W?.MutationObserver;
     if (activeTab === name || typeof Observer !== "function") return build();
@@ -386,11 +380,11 @@ export function createSettingsPanelShell(deps = {}) {
       settingsCheckbox("Fuzzy / alias matching", "fuzzy", s.fuzzy),
       settingDesc("Matches labels, aliases, and related terms, not just exact prefixes."),
       settingsCheckbox("Replace Home Assistant native autocomplete", "replaceNativeAutocomplete", s.replaceNativeAutocomplete !== false),
-      settingDesc("When Nostrodomus has parity for the active value context, disables HA built-in entity/icon popups so Enter/Tab cannot be stolen by a second autocomplete layer."),
+      settingDesc("Turns off Home Assistant's own entity and icon suggestions in the code editor, so only one suggestion list responds to Enter and Tab."),
       settingsCheckbox("Search all enabled language packs", "globalSearch", s.globalSearch),
       settingDesc("Allows cross-language suggestions. More powerful, but less context-strict."),
       settingsTitle("Smart completion (experimental)"),
-      settingDesc("Newer surface-aware completion. Off by default; flip these to try it (no console needed)."),
+      settingDesc("All of these are off by default."),
       settingsCheckbox("Smart completion engine", "completions.engineV2", s.completions?.engineV2 === true, "nostrodomusToggle"),
       settingDesc("Surface awareness across Dev Tools, automations, scripts, and dashboards. Required by the experimental completion options below."),
       settingsCheckbox("Live entities inside templates", "completions.jinjaLane", s.completions?.jinjaLane === true, "nostrodomusToggle"),
@@ -398,7 +392,7 @@ export function createSettingsPanelShell(deps = {}) {
       settingsCheckbox("Pick from a field's allowed values", "completions.schemaValues", s.completions?.schemaValues === true, "nostrodomusToggle"),
       settingDesc("In a service call, typing a field's value (e.g. effect:) completes that field's allowed options from Home Assistant. Needs the smart engine on."),
       settingsCheckbox("Scope suggestions to the editor you're in", "completions.surfaceScope", s.completions?.surfaceScope === true, "nostrodomusToggle"),
-      settingDesc("Stops dashboard/card suggestions appearing while editing automations (and vice-versa). Fails open on unknown editors. Needs the smart engine on."),
+      settingDesc("Stops dashboard/card suggestions appearing while editing automations (and vice versa). Needs the smart engine on."),
       settingsCheckbox("Smarter match ranking", "completions.dpRanking", s.completions?.dpRanking === true, "nostrodomusToggle"),
       settingDesc("Ranks the best fuzzy match first — e.g. typing 'lk' puts light.kitchen at the top."),
       settingsCheckbox("Remember your favorites", "completions.frecency", s.completions?.frecency === true, "nostrodomusToggle"),
@@ -424,9 +418,8 @@ export function createSettingsPanelShell(deps = {}) {
         style: "display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px",
       }, langs.map(lang => settingsCheckbox(languageLabel(lang), lang, s.enabledLangs[lang], "lang"))),
       settingsTitle("Providers"),
-      settingDesc("Provider controls affect only real registered providers. Disabled providers are skipped before candidate generation for cleaner results and less work."),
+      settingDesc("Turn a provider off to leave its suggestions out."),
       safeSettingsRuntimeNode("provider-controls", () => providerControlsMarkup()),
-      settingDesc("Entity/service sub-toggles are reserved for a future architecture patch that splits Home Assistant runtime values into narrower providers."),
     ])));
 
     body.appendChild(lazySectionPanel("context", activeTab, () => sectionPanel("context", activeTab, [
@@ -445,19 +438,19 @@ export function createSettingsPanelShell(deps = {}) {
     // through its checkbox while another tab is the one shown.
     body.appendChild(sectionPanel("style", activeTab, [
       settingsTitle("Style"),
-      settingDesc("Local visual controls for the active Home Assistant codebox and Ctrl+Space popup. Color controls are real hue bars with independent enable switches, opacity, and saturation where useful."),
+      settingDesc("Local visual controls for the active Home Assistant codebox and Ctrl+Space popup. Each colored part has its own on/off switch, opacity, and saturation."),
       settingsTitle("Codebox text size"),
       settingsGrid("repeat(4,1fr)", Object.entries(STYLE_TEXT_SIZE_PRESETS).map(([key, preset]) => optionButton(preset.label, key, s.style?.codeTextSize || DEFAULT_SETTINGS.style.codeTextSize, "style.codeTextSize"))),
 
       settingsTitle("Codebox scrollbar"),
-      settingDesc("Controls the actual CodeMirror scroll thumb. The selector intentionally targets the active scroll element and its WebKit scrollbar parts to override the older maroon thumb."),
+      settingDesc("Controls the codebox scroll thumb."),
       styleToggle("Enable custom scrollbar styling", "style.scrollbarStyleEnabled", s.style?.scrollbarStyleEnabled ?? DEFAULT_SETTINGS.style.scrollbarStyleEnabled),
       styleColorBarControl("Scrollbar color", "style.scrollbarHue", s.style?.scrollbarHue ?? DEFAULT_SETTINGS.style.scrollbarHue),
       styleRangeControl("Scrollbar opacity", "style.scrollbarOpacity", s.style?.scrollbarOpacity ?? DEFAULT_SETTINGS.style.scrollbarOpacity, 0, 1, 0.01, percentLabel),
       styleRangeControl("Scrollbar saturation", "style.scrollbarSaturation", s.style?.scrollbarSaturation ?? DEFAULT_SETTINGS.style.scrollbarSaturation, 0, 2.5, 0.01, sliderNumberLabel),
 
       settingsTitle("Codebox border + glow"),
-      settingDesc("One integrated frame model, matched to the Nostrodomus menu style. This does not stack a second independent glow on top of the existing editor frame. Glow size controls direction: -100 is fully inside, 0 is off, and +100 is fully outside."),
+      settingDesc("A border and glow around the codebox, matched to the Nostrodomus menu style. Glow size sets the direction: -100 is fully inside, 0 is off, and +100 is fully outside."),
       styleToggle("Enable custom border and glow", "style.codeboxFrameEnabled", s.style?.codeboxFrameEnabled ?? DEFAULT_SETTINGS.style.codeboxFrameEnabled),
       styleColorBarControl("Border color", "style.codeboxBorderHue", s.style?.codeboxBorderHue ?? DEFAULT_SETTINGS.style.codeboxBorderHue),
       styleRangeControl("Border opacity", "style.codeboxBorderOpacity", s.style?.codeboxBorderOpacity ?? DEFAULT_SETTINGS.style.codeboxBorderOpacity, 0, 1, 0.01, percentLabel),
@@ -484,6 +477,7 @@ export function createSettingsPanelShell(deps = {}) {
       syntaxThemeSelect(s.style?.syntaxTintPreset || DEFAULT_SETTINGS.style.syntaxTintPreset),
       styleRangeControl("Syntax theme opacity", "style.syntaxThemeOpacity", s.style?.syntaxThemeOpacity ?? DEFAULT_SETTINGS.style.syntaxThemeOpacity, 0.35, 1, 0.01, percentLabel),
       styleRangeControl("Syntax theme saturation", "style.syntaxThemeSaturation", s.style?.syntaxThemeSaturation ?? DEFAULT_SETTINGS.style.syntaxThemeSaturation, 0.35, 1.85, 0.01, sliderNumberLabel),
+      settingDesc("Includes Classic (the default) plus a full spectrum of color-named palettes hue-sorted from red through magenta — Crimson, Amber, Green, Teal, Azure, Indigo, Violet, and Rose among them — and the light Parchment and Mist. Opacity and saturation apply to every palette without changing the selected theme."),
 
       settingsTitle("Editor warnings"),
       settingDesc("Off by default — Home Assistant's in-editor warnings and validation errors stay visible. Turn on to hide the editor warning banners (e.g. \"Visual editor is not supported\") when they overlap the bottom-left Show visual/code editor buttons. Editor-scoped; does not affect anything outside the card editor."),
@@ -492,7 +486,6 @@ export function createSettingsPanelShell(deps = {}) {
       settingsTitle("Active line highlight"),
       settingDesc("On by default — the highlight on the row your cursor is in (the faint wash that reads blue over the frosted surface) is hidden in every styled codebox. Turn this off to bring the current-line highlight back. Editor-scoped; the cursor and text selection are unaffected."),
       styleToggle("Hide active line highlight", "style.hideActiveLineHighlight", s.style?.hideActiveLineHighlight !== false),
-      settingDesc("Includes Classic (the default) plus a full spectrum of color-named palettes hue-sorted from red through magenta — Crimson, Amber, Green, Teal, Azure, Indigo, Violet, and Rose among them — and the light Parchment and Mist. Opacity and saturation apply to every palette without changing the selected theme."),
 
       settingsTitle("Ctrl+Space popup"),
       settingDesc("Popup sizing and visual density live here because they affect how the completion menu looks, not which suggestions are generated."),
@@ -502,6 +495,7 @@ export function createSettingsPanelShell(deps = {}) {
         optionButton("Large", "large", s.popupSize, "popupSize"),
       ]),
       settingsCheckbox("Show details pane in suggestion popup", "showDetailsPane", s.showDetailsPane),
+      settingDesc("Off by default so Ctrl+Space stays compact. Details are still available in diagnostics."),
       settingsCheckbox("Commit prefix-matched YAML keys when typing :", "commitCharacters", s.commitCharacters),
       settingsCheckbox("Offer buffer words when real providers have few matches", "wordFallback", s.wordFallback),
       settingsTitle("Completion accept mode"),
@@ -509,7 +503,6 @@ export function createSettingsPanelShell(deps = {}) {
         optionButton("Replace word tail", "replace", s.acceptMode || "replace", "acceptMode"),
         optionButton("Insert at cursor", "insert", s.acceptMode || "replace", "acceptMode"),
       ]),
-      settingDesc("Off by default so Ctrl+Space stays compact. Details are still available in diagnostics."),
     ]));
 
     body.appendChild(lazySectionPanel("help", activeTab, () => sectionPanel("help", activeTab, [
@@ -553,7 +546,7 @@ export function createSettingsPanelShell(deps = {}) {
     const resizeHandle = createSettingsElement("div", {
       className: "nostrodomus-settings-resize-handle",
       dataset: { resizeHandle: "" },
-      attrs: { title: "Resize settings", role: "separator", "aria-label": "Resize settings panel" },
+      attrs: { title: "Resize settings", role: "separator", "aria-label": "Resize settings panel with arrow keys" },
     });
     panel.appendChild(resizeHandle);
     return resizeHandle;
@@ -636,7 +629,6 @@ export function createSettingsPanelShell(deps = {}) {
     // Keyboard resize. The separator is focusable; arrow keys grow/shrink the panel (Shift for a
     // larger step). Mirrors the pointer resize's clamp + save so keyboard and mouse stay consistent.
     resizeHandle?.setAttribute?.("tabindex", "0");
-    resizeHandle?.setAttribute?.("aria-label", "Resize settings panel with arrow keys");
     resizeHandle?.addEventListener?.("keydown", ev => {
       const step = ev.shiftKey ? 32 : 10;
       let dw = 0;
@@ -800,6 +792,17 @@ export function createSettingsPanelShell(deps = {}) {
     if (toggle) toggle.checked = state.settings?.style?.syntaxTintEnabled !== false;
   }
 
+  // Sets a dotted settings path such as "style.glassDialog", creating the objects on the way.
+  function setSettingAtPath(path, value) {
+    const parts = path.split(".");
+    let target = state.settings;
+    for (const part of parts.slice(0, -1)) {
+      target[part] = target[part] && typeof target[part] === "object" ? target[part] : {};
+      target = target[part];
+    }
+    target[parts.at(-1)] = value;
+  }
+
   function attachSettingControlBehavior(panel) {
     for (const input of panel.querySelectorAll("input[data-k]")) {
       input.addEventListener("change", () => {
@@ -840,17 +843,8 @@ export function createSettingsPanelShell(deps = {}) {
         if (group === "minChars" || group === "maxItems") value = Number(value);
 
         applySettingChangePreservingInteraction("settings", () => {
-          if (group.includes(".")) {
-            const parts = group.split(".");
-            let target = state.settings;
-            for (const part of parts.slice(0, -1)) {
-              target[part] = target[part] && typeof target[part] === "object" ? target[part] : {};
-              target = target[part];
-            }
-            target[parts.at(-1)] = value;
-          } else {
-            state.settings[group] = value;
-          }
+          if (group.includes(".")) setSettingAtPath(group, value);
+          else state.settings[group] = value;
           if (group === "style.syntaxTintPreset") {
             state.settings.style = state.settings.style && typeof state.settings.style === "object" ? state.settings.style : {};
             state.settings.style.syntaxTintEnabled = value !== "default";
@@ -895,17 +889,8 @@ export function createSettingsPanelShell(deps = {}) {
         if (!group) return;
 
         applySettingChangePreservingInteraction("settings-select", () => {
-          if (group.includes(".")) {
-            const parts = group.split(".");
-            let target = state.settings;
-            for (const part of parts.slice(0, -1)) {
-              target[part] = target[part] && typeof target[part] === "object" ? target[part] : {};
-              target = target[part];
-            }
-            target[parts.at(-1)] = value;
-          } else {
-            state.settings[group] = value;
-          }
+          if (group.includes(".")) setSettingAtPath(group, value);
+          else state.settings[group] = value;
           if (group === "style.syntaxTintPreset") {
             state.settings.style = state.settings.style && typeof state.settings.style === "object" ? state.settings.style : {};
             state.settings.style.syntaxTintEnabled = true;
@@ -923,53 +908,34 @@ export function createSettingsPanelShell(deps = {}) {
         const group = input.dataset.styleToggle;
         if (!group) return;
         applySettingChangePreservingInteraction("style-toggle", () => {
-          const parts = group.split(".");
-          let target = state.settings;
-          for (const part of parts.slice(0, -1)) {
-            target[part] = target[part] && typeof target[part] === "object" ? target[part] : {};
-            target = target[part];
-          }
-          target[parts.at(-1)] = input.checked;
+          setSettingAtPath(group, input.checked);
         }, () => {
           scheduleCodeboxStyleReapply("style-toggle-change");
           if (String(input.dataset.styleToggle || "").includes("syntax")) scheduleSourceClassSyntaxRefresh("settings-syntax-toggle-change");
-          // The companion's warning-hide reconcile rides applyForEditor, which scheduleCodeboxStyle
-          // Reapply does not call (that path re-applies main's tokens to the cached editor only). So
-          // for style.hideEditorWarnings, re-run the companion layer on the active editor directly,
-          // otherwise the toggle persists but the nested warning sheet is never injected/removed.
-          // The glass sheet of the card editor dialog (style.glassDialog) is added and removed
-          // by the same layer.
+          // The warning sheets and the glass sheet of the card dialog belong to the companion
+          // layer, which the style reapply does not run, so it is run here on the active editor.
           if (input.dataset.styleToggle === "style.hideEditorWarnings" || input.dataset.styleToggle === "style.glassDialog") {
-            try { applyCompanionEditorLayer(state.activeEditorCache?.editor); } catch { /* fail-dark */ }
+            try { applyCompanionEditorLayer(state.activeEditorCache?.editor); } catch { /* the next editor probe applies it */ }
           }
         });
       });
     }
 
-    // Completions feature flags (settings.completions.*): a dotted-path toggle like the style
-    // toggles above, but for completion behavior (no style reapply needed; the completion engine
-    // re-reads settings on the next keystroke). Flips engineV2/jinjaLane/dpRanking from the panel
-    // instead of a console localStorage edit. Mirrors the nested-set; preserves interaction.
+    // The completion options (settings.completions.*). No style reapply: completion reads the
+    // settings again at the next keystroke.
     for (const input of panel.querySelectorAll("input[data-nostrodomus-toggle]")) {
       input.addEventListener("change", () => {
         const path = input.dataset.nostrodomusToggle;
         if (!path) return;
         applySettingChangePreservingInteraction("completions-toggle", () => {
-          const parts = path.split(".");
-          let target = state.settings;
-          for (const part of parts.slice(0, -1)) {
-            target[part] = target[part] && typeof target[part] === "object" ? target[part] : {};
-            target = target[part];
-          }
-          target[parts.at(-1)] = input.checked;
+          setSettingAtPath(path, input.checked);
         });
       });
     }
 
     for (const input of panel.querySelectorAll("input[data-style-range]")) {
-      // Color (hue) bars: tint the thumb's outer ring with the hue under it so the
-      // currently-selected color is obvious. Hue bars carry rangeFormat "hue"; other
-      // ranges (saturation/opacity) keep their default thumb. Purely visual, fail-dark.
+      // A color (hue) bar tints its thumb's ring with the hue under it, so the chosen color is
+      // plain to see. Other ranges keep the default thumb.
       const paintColorBarThumb = () => {
         if (input.dataset.rangeFormat !== "hue") return;
         const hue = Number(input.value);
@@ -1037,9 +1003,8 @@ export function createSettingsPanelShell(deps = {}) {
 
     panel.querySelector("[data-diag-copy-context]")?.addEventListener("click", async () => {
       const btn = panel.querySelector("[data-diag-copy-context]");
-      // The readout is the summary the ContextSnapshot card of this tab shows. The API has no
-      // read() of its own (asking for one always gave null). The editor is read once and the
-      // summary is made from that same result.
+      // The readout is the summary the ContextSnapshot card of this tab shows; the API has no
+      // read() of its own. The editor is read once and the summary is made from that result.
       const contextApi = W.__nostrodomus?.contextDiagnostics || null;
       const activeEditor = contextApi?.readActiveEditor?.() || null;
       const payload = JSON.stringify({
@@ -1083,6 +1048,8 @@ export function createSettingsPanelShell(deps = {}) {
       state.settings = cloneDefaultSettings();
       saveSettings("reset-defaults");
       scheduleCodeboxStyleReapply("reset-defaults");
+      // The warning and glass sheets follow the reset values only through the companion layer.
+      try { applyCompanionEditorLayer(state.activeEditorCache?.editor); } catch (err) { recordRuntimeErrorOnce("settings:reset-companion-layer", err, { phase: "resetDefaults" }); }
       closeSettings(false);
       openSettings();
     });
@@ -1178,9 +1145,8 @@ export function createSettingsPanelShell(deps = {}) {
     } catch (err) { recordRuntimeErrorOnce("settings:panel-popover-setup", err, { phase: "openSettings", portalKind }); }
     state.settingsPanel = panel;
     updateSettingsSaveStatus();
-    // Match the settings panel's scrollbar + borders to the user's codebox accent (border
-    // color). Inline override of the brand/accent tokens on the panel root only — the
-    // byte-frozen settings stylesheet is untouched; descendants inherit. Fail-dark.
+    // The panel's borders and scrollbar take the codebox accent (see uiAccentVarsFromSettings),
+    // set inline on the panel root and inherited by the rest.
     try {
       const accent = uiAccentVarsFromSettings(state?.settings?.style);
       panel.style.setProperty("--nostrodomus-brand-rgb", accent.brand);

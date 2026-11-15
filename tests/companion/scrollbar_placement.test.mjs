@@ -7,7 +7,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  createScrollbarStyleRuntime,
+  createCompanionStyleRuntime,
   CODEBOX_STYLE_ID,
   NO_WRAP_STYLE_ID,
   CONTENT_FIT_STYLE_ID,
@@ -20,7 +20,7 @@ import {
   GLASS_DIALOG_STYLE_ID,
   WA_DIALOG_STYLE_ID,
   WARNING_HIDE_STYLE_ID,
-} from '../../src/companion/scrollbarStyleRuntime.js';
+} from '../../src/companion/companionStyleRuntime.js';
 
 function fakeRoot() {
   const root = {
@@ -58,7 +58,7 @@ function fakeDocument() {
 }
 
 function makeRuntime({ active = true, hideWarnings = false } = {}) {
-  return createScrollbarStyleRuntime({
+  return createCompanionStyleRuntime({
     documentRef: fakeDocument(),
     isActive: () => active,
     hideEditorWarnings: () => hideWarnings,
@@ -106,9 +106,8 @@ test('applyToRoots injects each provided stylesheet once per root when active', 
   assert.equal(dialogRoot.children[0].id, DIALOG_ROOT_STYLE_ID);
   assert.equal(dialogRoot.children[1].id, PREVIEW_FILL_STYLE_ID, 'preview-fill sheet injected after DIALOG_ROOT_CSS');
   assert.ok(dialogRoot.children[1].textContent.includes('hui-section'));
-  // v0.1.199 — the preview card must CENTER (symmetric auto margins), never left-anchor. Guard the
-  // emitted PREVIEW_FILL_CSS: both margin-left:auto AND margin-right:auto, and NO offset (no lone
-  // right:/position:relative — that was the v0.1.197 nudge that broke centering).
+  // The preview card is centered with symmetric auto margins, never left-anchored, and has no
+  // offset (a lone right: or position:relative moves it off center).
   {
     const previewCss = dialogRoot.children[1].textContent;
     assert.ok(previewCss.includes('margin-left: auto'), 'preview card centers: has margin-left:auto');
@@ -136,7 +135,7 @@ test('first-injector-wins: an externally-owned id is left untouched', () => {
   const external = { id: CODEBOX_STYLE_ID, textContent: 'EXTERNAL', _parent: codeRoot };
   codeRoot.children.push(external);
 
-  // First-injector-wins keeps the external CODEBOX untouched; the additive sheets (different ids —
+  // First-injector-wins keeps the external codebox untouched; the additive sheets (different ids —
   // no-wrap, content-fit, fullscreen-hide, native-autocomplete-hide) are still injected, so applyToRoots
   // reports it injected.
   assert.equal(rt.applyToRoots({ codeRoot }), true, 'additive sheets injected; external codebox untouched');
@@ -189,10 +188,10 @@ test('applyForEditor derives codeRoot from the editor and dialogRoot via compose
   assert.equal(dialog.shadowRoot.children[0]?.id, DIALOG_ROOT_STYLE_ID, 'dialog-root injected into the dialog shadow root');
   assert.equal(dialog.shadowRoot.children[1]?.id, PREVIEW_FILL_STYLE_ID, 'preview-fill injected after dialog-root');
   assert.equal(dialog.shadowRoot.children[2]?.id, EDITOR_GUTTER_STYLE_ID, 'editor-gutter injected after preview-fill');
-  // Pre-2026.6 (no nested ha-dialog/wa-dialog): the wa-dialog sheet is NOT injected. The
-  // fakeRoot has no querySelectorAll, so the nested-editor warning walk finds nothing — the
-  // dialog shadow root carries only the dialog-root, preview-fill, editor-gutter, stacked-panes
-  // and glass-dialog sheets.
+  // Before Home Assistant 2026.6 (no nested ha-dialog/wa-dialog) the wa-dialog sheet is not
+  // injected. The fakeRoot has no querySelectorAll, so the nested-editor warning walk finds
+  // nothing: the dialog shadow root carries only the dialog-root, preview-fill, editor-gutter,
+  // stacked-panes and glass-dialog sheets.
   assert.equal(dialog.shadowRoot.children[3]?.id, STACKED_PANES_STYLE_ID, 'stacked-panes injected after editor-gutter');
   assert.equal(dialog.shadowRoot.children[4]?.id, GLASS_DIALOG_STYLE_ID, 'glass-dialog injected after stacked-panes');
   assert.equal(dialog.shadowRoot.children.length, 5, 'no wa-dialog / warning sheet when there is no nested editor');
@@ -224,10 +223,10 @@ test('applyForEditor injects the wa-dialog sizing sheet into ha-dialog\'s shadow
   assert.equal(haDialogShadow.querySelector(`#${WA_DIALOG_STYLE_ID}`), null, 'wa-dialog sheet removed on teardown');
 });
 
-// The "visual editor is not supported" notice AND real validation errors live inside the
-// nested editor host's shadow root — beyond DIALOG_ROOT_CSS's reach (live [alert-map] proof).
-// Build that nested host so the targeted walk can reach it. (fakeRoot only implements
-// querySelector by id, so the dialog shadow gets a minimal querySelectorAll stub.)
+// The "visual editor is not supported" notice and real validation errors live inside the nested
+// editor host's shadow root, out of DIALOG_ROOT_CSS's reach (seen on a live instance). The fake
+// below builds that nested host. (fakeRoot only implements querySelector by id, so the dialog
+// shadow gets a minimal querySelectorAll stub.)
 function makeNestedDialogEditor() {
   const editorHostShadow = fakeRoot();
   const editorHost = { localName: 'hui-card-element-editor', shadowRoot: editorHostShadow };
@@ -238,18 +237,18 @@ function makeNestedDialogEditor() {
   return { editor, dialogShadow, editorHostShadow };
 }
 
-test('hideEditorWarnings ON: warning-hide injected into nested editor shadow roots; preview-fill into dialog root', () => {
+test('with hideEditorWarnings on the warning hide goes into the nested editor shadow roots and the preview fill into the dialog root', () => {
   const rt = makeRuntime({ active: true, hideWarnings: true });
   const { editor, dialogShadow, editorHostShadow } = makeNestedDialogEditor();
 
   assert.equal(rt.applyForEditor(editor), true);
-  // dialog root always carries DIALOG_ROOT + PREVIEW_FILL (preview-fill is NOT gated)
+  // dialog root always carries DIALOG_ROOT + PREVIEW_FILL (preview-fill is not gated)
   assert.equal(dialogShadow.querySelector(`#${DIALOG_ROOT_STYLE_ID}`)?.id, DIALOG_ROOT_STYLE_ID);
   const fill = dialogShadow.querySelector(`#${PREVIEW_FILL_STYLE_ID}`);
   assert.equal(fill?.id, PREVIEW_FILL_STYLE_ID, 'preview-fill injected into dialog root');
   assert.ok(fill.textContent.includes('hui-section') && fill.textContent.includes('hui-grid-section'), 'covers both section types');
   assert.ok(fill.textContent.includes('zoom: 1.5'), 'preview enlarged ~50%');
-  // the NESTED editor host shadow root carries the warning-hide sheet (toggle ON)
+  // the nested editor host shadow root carries the warning-hide sheet (toggle on)
   const warn = editorHostShadow.querySelector(`#${WARNING_HIDE_STYLE_ID}`);
   assert.equal(warn?.id, WARNING_HIDE_STYLE_ID, 'warning-hide injected into the nested editor shadow root');
   assert.ok(warn.textContent.includes('ha-alert') && warn.textContent.includes('display: none'));
@@ -258,18 +257,18 @@ test('hideEditorWarnings ON: warning-hide injected into nested editor shadow roo
   assert.equal(editorHostShadow.querySelector(`#${WARNING_HIDE_STYLE_ID}`), null, 'warning-hide removed on teardown');
 });
 
-test('hideEditorWarnings OFF (default): preview-fill injected, but NO warning-hide (warnings stay visible)', () => {
+test('with hideEditorWarnings off (the default) the preview fill is injected and the warnings stay visible', () => {
   const rt = makeRuntime({ active: true, hideWarnings: false });
   const { editor, dialogShadow, editorHostShadow } = makeNestedDialogEditor();
 
   assert.equal(rt.applyForEditor(editor), true, 'preview-fill / codebox still applied');
   assert.equal(dialogShadow.querySelector(`#${PREVIEW_FILL_STYLE_ID}`)?.id, PREVIEW_FILL_STYLE_ID, 'preview-fill still injected');
-  assert.equal(editorHostShadow.querySelector(`#${WARNING_HIDE_STYLE_ID}`), null, 'no warning-hide when the toggle is OFF');
+  assert.equal(editorHostShadow.querySelector(`#${WARNING_HIDE_STYLE_ID}`), null, 'no warning-hide when the toggle is off');
 });
 
-test('hideEditorWarnings reconciles on re-apply: ON injects, flipping OFF removes the nested warning-hide', () => {
+test('hideEditorWarnings is reconciled on re-apply: on injects the nested warning hide, off removes it', () => {
   let hide = true;
-  const rt = createScrollbarStyleRuntime({
+  const rt = createCompanionStyleRuntime({
     documentRef: fakeDocument(),
     isActive: () => true,
     hideEditorWarnings: () => hide,
@@ -277,27 +276,25 @@ test('hideEditorWarnings reconciles on re-apply: ON injects, flipping OFF remove
   const { editor, editorHostShadow } = makeNestedDialogEditor();
 
   rt.applyForEditor(editor);
-  assert.equal(editorHostShadow.querySelector(`#${WARNING_HIDE_STYLE_ID}`)?.id, WARNING_HIDE_STYLE_ID, 'injected while ON');
+  assert.equal(editorHostShadow.querySelector(`#${WARNING_HIDE_STYLE_ID}`)?.id, WARNING_HIDE_STYLE_ID, 'injected while on');
 
-  // user flips the toggle OFF; the style-toggle change re-applies → reconcile removes the sheet
+  // user flips the toggle off; the style-toggle change re-applies → reconcile removes the sheet
   hide = false;
   rt.applyForEditor(editor);
-  assert.equal(editorHostShadow.querySelector(`#${WARNING_HIDE_STYLE_ID}`), null, 'removed after flipping OFF + re-apply');
+  assert.equal(editorHostShadow.querySelector(`#${WARNING_HIDE_STYLE_ID}`), null, 'removed after flipping it off + re-apply');
 });
 
-test('applyForEditor does NOT inject the dialog-geometry codebox sheet on a non-dialog (panel) editor', () => {
-  // The frozen CODEBOX_CSS encodes the card dialog's absolute
-  // geometry (.cm-editor/.cm-scroller { width: calc(-18px + 54vw); height: calc(94vh - 437px) }).
-  // On a non-dialog PANEL editor (Dev Tools / dashboard raw config / automation / script YAML),
-  // which fills its host and has no preview pane, that geometry squished the editor to ~54vw. The
-  // companion now gates the code-root sheets (CODEBOX_CSS + the NO_WRAP override that pairs with
-  // it) to the card-dialog context, so a panel editor keeps its native full-width geometry; main's
-  // decorative chrome still applies via discovery. The dialog-editor positive cases above cover
-  // the dialog path.
+test('applyForEditor does not inject the dialog-geometry codebox sheet on a panel editor', () => {
+  // The frozen CODEBOX_CSS encodes the card dialog's absolute geometry
+  // (.cm-editor/.cm-scroller { width: calc(-18px + 54vw); height: calc(94vh - 437px) }). A panel
+  // editor (Developer Tools, raw dashboard config, automation or script YAML) fills its host and has
+  // no preview pane; that geometry would squash it to about 54vw. The code-root sheets (CODEBOX_CSS
+  // and the NO_WRAP override that goes with it) are therefore only for the card dialog; main's
+  // decorative styling still reaches panel editors through discovery.
   const rt = makeRuntime({ active: true });
   const editor = { shadowRoot: fakeRoot(), matches: () => false, getRootNode: () => ({ host: null }) };
-  // The dialog-geometry sheets (CODEBOX_CSS / NO_WRAP / CONTENT_FIT) are NOT injected on a panel editor.
-  // The ungated FULLSCREEN_HIDE + NATIVE_AUTOCOMPLETE_HIDE sheets ARE (remove the fullscreen button and
+  // The dialog-geometry sheets (CODEBOX_CSS / NO_WRAP / CONTENT_FIT) are not injected on a panel editor.
+  // The ungated FULLSCREEN_HIDE + NATIVE_AUTOCOMPLETE_HIDE sheets are (remove the fullscreen button and
   // kill the native suggestion box everywhere), so applyForEditor reports it injected those two and nothing else.
   assert.equal(rt.applyForEditor(editor), true, 'panel: only the ungated sheets inject');
   assert.equal(editor.shadowRoot.children.length, 2, 'no dialog-geometry sheet — only the ungated fullscreen-hide + native-autocomplete-hide');
@@ -306,7 +303,7 @@ test('applyForEditor does NOT inject the dialog-geometry codebox sheet on a non-
 });
 
 test('applyToRoots with codeRootDialogScoped:false skips the dialog-geometry code-root sheets', () => {
-  // Direct-call guard for the dialog-scope gate: when the code root is NOT dialog-scoped, neither the
+  // Direct-call guard for the dialog-scope gate: when the code root is not dialog-scoped, neither the
   // frozen CODEBOX_CSS nor the NO_WRAP override is injected; the other roots are unaffected.
   const rt = makeRuntime({ active: true });
   const codeRoot = fakeRoot();
@@ -321,10 +318,9 @@ test('applyToRoots with codeRootDialogScoped:false skips the dialog-geometry cod
 });
 
 // The frozen CODEBOX_CSS carries the geometry of the dialog's main codebox (54vw wide,
-// 94vh - 437px high). The sizing layer leaves every other editor in the dialog alone: a code
-// editor a custom card puts in its own visual editor, or one inside a form field. The scrollbar
-// layer injected the geometry sheets into those as well, which forced a small embedded editor
-// to the size of the main one.
+// 94vh - 437px high). Like the sizing layer, the scrollbar layer leaves every other editor in the
+// dialog alone: a code editor a custom card puts in its own visual editor, or one inside a form
+// field. The geometry sheets would force such an embedded editor to the size of the main one.
 function dialogEditor({ yamlWrapped = true, inForm = false } = {}) {
   const dialog = { matches: (s) => s === 'hui-dialog-edit-card', shadowRoot: fakeRoot() };
   let host = dialog;
@@ -363,7 +359,7 @@ test('an embedded editor in the card dialog gets no dialog-geometry sheet', () =
       [FULLSCREEN_HIDE_STYLE_ID, NATIVE_AUTOCOMPLETE_HIDE_STYLE_ID],
       `${label}: only the sheets every code editor gets`,
     );
-    assert.equal(dialog.shadowRoot.children[0]?.id, DIALOG_ROOT_STYLE_ID, `${label}: the dialog itself is styled as before`);
+    assert.equal(dialog.shadowRoot.children[0]?.id, DIALOG_ROOT_STYLE_ID, `${label}: the dialog keeps its own sheet first`);
     assert.equal(dialog.shadowRoot.children.length, 5);
   }
 });

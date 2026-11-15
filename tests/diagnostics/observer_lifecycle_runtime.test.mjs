@@ -74,7 +74,7 @@ test('disconnectAllNostrodomusObservers reaches the companion layer observers', 
   assert.deepEqual(summary.registries.companionLayoutObservers, { before: 1, after: 0, disconnected: 1, pendingRecords: 0 });
   assert.equal(summary.disconnected, 8);
   assert.equal(summary.after.companionSettleObservers, 0);
-  assert.equal(state.styleRootObserver, null, 'the main runtime observers are disconnected as before');
+  assert.equal(state.styleRootObserver, null, 'the main runtime observers are disconnected too');
   assert.equal(runtime.observerLifecycleReadout().connectedTotal, 0);
 });
 
@@ -125,7 +125,7 @@ test('a companion hook that throws does not stop the readout or the disconnect',
   assert.equal(failing.log.some(row => row[0] === 'error' && row[1] === 'observer-lifecycle:disconnect-all'), true);
 });
 
-// main.legacy.js wires the hooks to the companion settle engine: the count from its snapshot, the
+// app.js wires the hooks to the companion settle engine: the count from its snapshot, the
 // disconnect through its cleanup. This runs the real engine through the same two expressions.
 test('the settle engine snapshot counts exactly the observers its cleanup disconnects', () => {
   const live = new Set();
@@ -169,14 +169,31 @@ test('the settle engine snapshot counts exactly the observers its cleanup discon
   assert.deepEqual(summary.registries.companionSettleObservers, { before: 4, after: 0, disconnected: 4, pendingRecords: 0 });
 });
 
-test('main.legacy.js gives the observer lifecycle the settle engine count and cleanup', async () => {
+test('app.js gives the observer lifecycle the settle engine count and cleanup', async () => {
   const { readFileSync } = await import('node:fs');
-  const source = readFileSync(new URL('../../src/main.legacy.js', import.meta.url), 'utf8');
+  const source = readFileSync(new URL('../../src/app.js', import.meta.url), 'utf8');
   const start = source.indexOf('observerLifecycleRuntime = createObserverLifecycleRuntime({');
   const block = source.slice(start, source.indexOf('observerLifecycleDisconnectAll = observerLifecycleRuntime.disconnectAllNostrodomusObservers;', start));
   assert.match(block, /companionObserverCounts: \(\) => \{/);
   assert.match(block, /companionSettleObservers: \(settle\.booted \? 1 : 0\) \+ \(settle\.observingDialog \? 1 : 0\) \+ \(settle\.openWatchers \|\| 0\)/);
-  assert.match(block, /companionWarningObservers: companionScrollbarRuntime\.warningObserverCount\(\),/);
+  assert.match(block, /companionWarningObservers: companionStyleRuntime\.warningObserverCount\(\),/);
   assert.match(block, /companionLayoutObservers: companionCodeboxEnlargeRuntime\.layoutObserverCount\(\),/);
-  assert.match(block, /disconnectCompanionObservers: \(\) => \{\s+companionSettleRuntime\.cleanup\(\);\s+companionScrollbarRuntime\.disconnectWarningObservers\(\);\s+companionCodeboxEnlargeRuntime\.stopWatchingLayout\(\);\s+\},/);
+  assert.match(block, /disconnectCompanionObservers: \(\) => \{\s+companionSettleRuntime\.cleanup\(\);\s+companionStyleRuntime\.disconnectWarningObservers\(\);\s+companionCodeboxEnlargeRuntime\.stopWatchingLayout\(\);\s+\},/);
+});
+
+test('disconnectAllNostrodomusObservers reports the records taken from the observers it disconnects', () => {
+  const log = [];
+  const withRecords = (name, count) => ({ disconnect() { log.push(name); }, takeRecords: () => Array.from({ length: count }, () => ({})) });
+  const { runtime, state } = harness({ withCompanion: false });
+  state.styleMutationObserver = withRecords('styleMutationObserver', 3);
+  state.styleRootObserver = withRecords('styleRootObserver', 1);
+  state.styleRootObservers = new Map([['a', { observer: withRecords('styleRootObservers:a', 2) }], ['b', { observer: withRecords('styleRootObservers:b', 0) }]]);
+
+  const summary = runtime.disconnectAllNostrodomusObservers('manual');
+  assert.equal(summary.registries.styleMutationObserver.pendingRecords, 3);
+  assert.equal(summary.registries.styleRootObserver.pendingRecords, 1);
+  assert.equal(summary.registries.styleRootObservers.pendingRecords, 2);
+  assert.equal(summary.registries.editorSentinelObservers.pendingRecords, 0, 'a registry disconnected by its owner reports none');
+  assert.equal(summary.pendingRecords, 6);
+  assert.equal(summary.disconnected, 4);
 });

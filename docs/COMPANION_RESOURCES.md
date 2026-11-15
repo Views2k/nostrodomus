@@ -9,7 +9,7 @@ The same behavior used to come from two standalone scripts, `nostrodomus_editor_
 | Module | What it does | Default |
 | --- | --- | --- |
 | `coordinatorRuntime.js` | Decides whether the layer is active, detects a loaded standalone script, reads the override key | - |
-| `scrollbarStyleRuntime.js` | Injects the scrollbar stylesheet and the editor layout stylesheets (dialog size, line wrapping, preview fill, glass editor dialog, optional hiding of editor warnings) | active |
+| `companionStyleRuntime.js` | Injects the scrollbar stylesheet and the editor layout stylesheets (dialog size, line wrapping, preview fill, glass editor dialog, optional hiding of editor warnings) | active |
 | `codeboxEnlargeRuntime.js` | Makes the codebox taller in editors without the option tab row and remembers the mode per dialog | active |
 | `companionSettleRuntime.js` | Re-applies the styling when the dashboard or the dialog changes: mutation observers plus a series of delayed passes up to 2800 ms after an event | active |
 | `inputQuietRuntime.js` | Postpones style, syntax refresh and diagnostics work while the user types | active |

@@ -1,5 +1,5 @@
 // Glow-overflow near-chain un-clip: isNonScrollingClipper decides whether a clipping ancestor (e.g. a
-// stack-card editor's div.card-config, overflow:auto) is SAFE to un-clip so the host-owned glow can spill.
+// stack-card editor's div.card-config, overflow:auto) is safe to un-clip so the host-owned glow can spill.
 // Real scroll regions (content overflow past the gutter threshold) must be left alone so scrolling is
 // never broken. Pure predicate — deterministic, no DOM. Mirrors a measured card-config case.
 

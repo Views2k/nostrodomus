@@ -1,31 +1,28 @@
-// Perf benchmark + regression guard for `dpRanking` (the optimal-alignment fuzzy ranker).
-// Run via `npm run test:perf` (advisory; excluded from the required gate so timing noise can
-// never flake `npm test`). Functional/quality assertions live in tests/scoring/*.
+// Benchmark of `dpRanking`, the optimal-alignment fuzzy ranker. Run with `npm run test:perf`; it is
+// left out of `npm test` so timing noise cannot fail the required checks. The ranking quality tests
+// are in tests/scoring/.
 //
-// WHY THIS EXISTS: flipping dpRanking default-ON is blocked on a MEASUREMENT, not a product
-// opinion. dpFuzzyScore is O(n*m) per *search string* (n=haystack<=120, m=query) and scoreItems
-// runs it once per uniqueSearchStrings(item) on every MATCHED candidate per keystroke (capped at
-// maxRuntimeEntities=750).
+// Turning dpRanking on by default needs this measurement. dpFuzzyScore is O(n*m) per search string
+// (n = haystack <= 120, m = query), and scoreItems runs it for every search string of every matched
+// candidate on each keystroke (at most maxRuntimeEntities = 750 candidates).
 //
-// REALISM MATTERS (label-only rows understate the cost ~3-4x):
-//   * Production entity rows carry aliases ['entity', domain, friendly] (haRuntimeProvider.js:469),
-//     so uniqueSearchStrings = [id, 'entity', domain, friendly] => dpFuzzy runs ~4x/candidate, not 1x.
-//   * Real ids/friendly-names reach 50-120 chars — the costly band of the O(n*m=120) curve, not ~25.
-//   * The 'entity' alias on every row means a short query like "en" matches ALL 750 — a real worst case.
-// This benchmark uses production-shaped rows + realistic lengths so the number is representative.
+// The rows are shaped like production rows, because label-only rows understate the cost 3 to 4 times:
+//   * entity rows carry the aliases ['entity', domain, friendly], so each candidate has four search
+//     strings ([id, 'entity', domain, friendly]);
+//   * real ids and friendly names reach 50 to 120 characters, the costly end of the curve;
+//   * the 'entity' alias on every row makes a short query like "en" match all 750, a real worst case.
 //
-// STATISTIC: best-of-N is the non-flaky floor (regression tripwires use it). But keystroke smoothness
-// is a TAIL property, so the ACCEPTANCE judgement is read on p90 (the felt slow keystroke).
+// Best of N is the stable number and is what the assertions use. Keystroke smoothness depends on the
+// slow keystrokes, so the budget is judged on p90.
 //
-// NO CACHE is correct, not a flaw: the live cache is keyed on ctx.prefix (scoring.js:473), so every
-// keystroke changes the prefix => cache miss => full recompute. Do not "add the cache" to look faster.
+// No cache on purpose: the live cache is keyed on ctx.prefix, so each keystroke misses it and
+// recomputes; a cache here would only make the number look better.
 //
-// TWO THRESHOLDS, kept distinct (a number chosen so the test passes is NOT the acceptance bar):
-//   * REGRESSION TRIPWIRES (asserted, on `best`): generous gross-slowdown catches that never flake.
-//   * ACCEPTANCE BUDGET (LOGGED, not asserted): a keystroke op should
-//     sit well under a 60fps frame (16.67ms) WITH headroom on REAL hardware. HA frontends run on
-//     Pi/old-laptop/phone, credibly 4-8x slower than a desktop development machine — so the p90 there must be a
-//     SMALL fraction of a frame (~2-3ms) to be safe, NOT merely under one frame here.
+// Two thresholds:
+//   * asserted, on `best`: generous ceilings that catch a gross slowdown and never flake;
+//   * logged, not asserted: the budget for a keystroke, well under a 60fps frame (16.67ms) on real
+//     hardware. Home Assistant frontends run on a Pi, an old laptop or a phone, 4 to 8 times slower
+//     than a desktop development machine, so p90 here should be about 2-3ms, not just under a frame.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -34,14 +31,15 @@ import { performance } from 'node:perf_hooks';
 import { scoreItems } from '../../src/completion/scoring.js';
 
 const FRAME_MS = 1000 / 60; // 16.67ms
-const ON_GROSS_CEILING_MS = 40; // regression tripwire on best (today realistic ~10-15ms); never flakes; NOT the acceptance bar
-const DELTA_GROSS_CEILING_MS = 14; // dpRanking surcharge tripwire on best (today realistic ~5-6ms); NOT the acceptance bar
+// Upper bounds on the best run: they catch a large slowdown and are not a speed target.
+const ON_GROSS_CEILING_MS = 40;
+const DELTA_GROSS_CEILING_MS = 14; // the dpRanking surcharge alone
 
 const DOMAINS = ['sensor', 'binary_sensor', 'switch', 'light', 'climate', 'cover', 'media_player', 'fan', 'lock', 'script', 'automation', 'number', 'select', 'input_boolean'];
 const ROOMS = ['living_room', 'kitchen', 'master_bedroom', 'garage', 'back_patio', 'upstairs_hallway', 'guest_bathroom', 'office'];
 const KINDS = ['temperature', 'humidity', 'illuminance', 'power_consumption', 'battery_level', 'motion', 'contact', 'state'];
 
-// Production-shaped rows: label = entity id, aliases = ['entity', domain, friendly] (haRuntimeProvider.js:469),
+// Production-shaped rows: label = entity id, aliases = ['entity', domain, friendly] (as haRuntimeProvider.js builds them),
 // with realistic id/friendly lengths (some long template-style ids in the costly 50-90 char band).
 const ENTITIES = Array.from({ length: 750 }, (_, i) => {
   const d = DOMAINS[i % DOMAINS.length];
@@ -77,7 +75,7 @@ const runOff = (q) => scoreItems(valueCtx(q), ENTITIES, { settings: OFF });
 const runOn = (q) => scoreItems(valueCtx(q), ENTITIES, { settings: ON });
 const fmt = (s) => `best=${s.best.toFixed(2)} med=${s.median.toFixed(2)} p90=${s.p90.toFixed(2)}ms`;
 
-test('perf(dpRanking): worst-case keystroke scoring — 750 production-shaped entities, short broad query', () => {
+test('perf(dpRanking): worst-case keystroke scoring — 750 production-shaped entities, short broad query', (t) => {
   // Prove the workload is production-shaped: rows must carry the 4 search strings real rows do
   // (id + 'entity' + domain + friendly), so dpFuzzy pays the real ~4x/candidate. A future schema
   // change that drops aliases would trip this and reveal the benchmark went unrepresentative.
@@ -92,22 +90,21 @@ test('perf(dpRanking): worst-case keystroke scoring — 750 production-shaped en
     const off = sample(() => runOff(q));
     const on = sample(() => runOn(q));
     const delta = on.best - off.best;
-    const accVerdict = on.p90 <= FRAME_MS / 2 ? 'UNDER ~half-frame proxy' : on.p90 <= FRAME_MS ? 'over half-frame, under one frame (this machine)' : 'OVER a full frame (this machine)';
-    console.log(`dpRanking worst "${q}": OFF ${fmt(off)} | ON ${fmt(on)} | delta(best)=${delta.toFixed(2)}ms | ACCEPTANCE(p90 vs ${(FRAME_MS / 2).toFixed(1)}ms): ${accVerdict}`);
+    const p90Frame = on.p90 <= FRAME_MS / 2 ? 'under half a frame' : on.p90 <= FRAME_MS ? 'between half a frame and a frame' : 'over a frame';
+    t.diagnostic(`dpRanking worst "${q}": off ${fmt(off)} | on ${fmt(on)} | delta(best)=${delta.toFixed(2)}ms | p90 on this machine: ${p90Frame}`);
     if (!worst || on.best > worst.on.best) worst = { off, on, delta };
   }
-  console.log(`dpRanking ACCEPTANCE NOTE: judge p90 against real hardware = this machine x ~4-8 (Pi/old-laptop/phone). A safe default-ON needs p90 here ~<3ms; base OFF scorer is the dominant cost, dpRanking the surcharge on top.`);
 
-  // REGRESSION TRIPWIRES (on the non-flaky floor; generous; NOT the acceptance bar — see header):
+  // The asserted ceilings (on best of N; generous; not the keystroke budget, see the header):
   assert.ok(worst.on.best < ON_GROSS_CEILING_MS, `dpRanking-ON worst best ${worst.on.best.toFixed(2)}ms exceeded the ${ON_GROSS_CEILING_MS}ms gross-regression ceiling`);
   assert.ok(worst.delta < DELTA_GROSS_CEILING_MS, `dpRanking surcharge ${worst.delta.toFixed(2)}ms exceeded the ${DELTA_GROSS_CEILING_MS}ms gross-regression ceiling`);
 });
 
-test('perf(dpRanking): typical keystroke — a specific 3+ char query prunes matches, surcharge shrinks', () => {
+test('perf(dpRanking): typical keystroke — a specific 3+ char query prunes matches, surcharge shrinks', (t) => {
   // A specific query (domain + room fragment) prunes most candidates, so both base cost and the
   // dpRanking surcharge drop sharply vs the broad worst case above.
   const off = sample(() => runOff('sensor.kit'));
   const on = sample(() => runOn('sensor.kit'));
-  console.log(`dpRanking typical "sensor.kit": OFF ${fmt(off)} | ON ${fmt(on)} | delta(best)=${(on.best - off.best).toFixed(2)}ms`);
+  t.diagnostic(`dpRanking typical "sensor.kit": off ${fmt(off)} | on ${fmt(on)} | delta(best)=${(on.best - off.best).toFixed(2)}ms`);
   assert.ok(on.best < ON_GROSS_CEILING_MS, `typical-case ON best ${on.best.toFixed(2)}ms exceeded the ${ON_GROSS_CEILING_MS}ms ceiling`);
 });

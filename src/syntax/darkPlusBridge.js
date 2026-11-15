@@ -1,5 +1,5 @@
-// Nostrodomus Dark+ classifier bridge: binds palette/settings into the pure classifier module and
-// keeps the inline painter as a fallback-only path.
+// Nostrodomus Dark+ classifier bridge: binds the palette and settings into the pure classifier
+// module and classifies lines and tokens for the class painter.
 // Cross-module calls go through the shared syntax runtime api object.
 
 import * as darkPlus from './darkPlusClassifiers.js';
@@ -11,45 +11,44 @@ export function createDarkPlusBridge(deps) {
     api,
   } = deps;
 
-function darkPlusColor(kind, syntax) {
+  function darkPlusColor(kind, syntax) {
     const color = syntax?.palette?.[kind] || DARKPLUS_SYNTAX_COLORS[kind] || DARKPLUS_SYNTAX_COLORS.fg;
     return syntaxColorWithOpacity(color, syntax?.themeOpacity ?? 1);
   }
 
-function darkPlusCssDepthDelta(text) {
+  function darkPlusCssDepthDelta(text) {
     return darkPlus.darkPlusCssDepthDelta(text);
   }
 
-function darkPlusCommitCssDepth(ctx, text) {
+  function darkPlusCommitCssDepth(ctx, text) {
     if (!ctx) return;
     const next = Math.max(0, (ctx.cssBlockDepth || 0) + darkPlusCssDepthDelta(text));
     ctx.cssBlockDepth = next;
   }
 
-function darkPlusLooksCssSelector(text) {
+  function darkPlusLooksCssSelector(text) {
     return darkPlus.darkPlusLooksCssSelector(text);
   }
 
-function darkPlusLooksCssDeclaration(text) {
+  function darkPlusLooksCssDeclaration(text) {
     return darkPlus.darkPlusLooksCssDeclaration(text);
   }
 
-function darkPlusLooksCssContinuation(text) {
+  function darkPlusLooksCssContinuation(text) {
     return darkPlus.darkPlusLooksCssContinuation(text);
   }
 
-function darkPlusIsJinjaLine(text) {
+  function darkPlusIsJinjaLine(text) {
     return darkPlus.darkPlusIsJinjaLine(text);
   }
 
-function darkPlusIsJinjaKeyword(token) {
+  function darkPlusIsJinjaKeyword(token) {
     return darkPlus.darkPlusIsJinjaKeyword(token);
   }
 
-function darkPlusLineKind(text, ctx) {
+  function darkPlusLineKind(text, ctx) {
     const raw = String(text || "");
     const t = raw.trim();
-    const lower = t.toLowerCase();
     const cssDepth = ctx?.cssBlockDepth || 0;
     if (!t) return "fg";
     if (ctx.blockComment) {
@@ -97,12 +96,12 @@ function darkPlusLineKind(text, ctx) {
     if (/^-?\d+(\.\d+)?(px|em|rem|vh|vw|%|s|ms|fr|ch|deg)?$/i.test(t)) return "number";
     if (/^[\w$.-]+\s*:/.test(t)) return "key";
     if (/^\|\s*[a-z_][\w-]*/i.test(t)) return "filter";
-    if (/^(if|else|elif|endif|for|endfor|set|in|not|and|or|is|defined)$/i.test(lower)) return "keyword";
+    if (/^(if|else|elif|endif|for|endfor|set|in|not|and|or|is|defined)$/i.test(t)) return "keyword";
     if (/^[A-Za-z_][\w.-]*$/.test(t)) return "string";
     return "fg";
   }
 
-function darkPlusTokenKind(span, lineText, lineKind) {
+  function darkPlusTokenKind(span, lineText, lineKind) {
     const text = String(span?.textContent || "");
     const t = text.trim();
     const full = String(lineText || "");
@@ -111,21 +110,20 @@ function darkPlusTokenKind(span, lineText, lineKind) {
     if (/^(\/\/|\/\*|\*\/)/.test(t) || (!cssLine && /^[#*]/.test(t))) return "comment";
     if (darkPlusIsJinjaLine(full) || lineKind === "jinja") {
       if (/^\{[#%{]-?$|^-?[#%}]\}$|^\{\{|^\}\}|^\{%|^%\}|^\{#|^#\}/.test(t)) return "punct";
-      if (/^(['"]).*\1$/.test(t) || /^['"]/.test(t)) return "string";
+      if (/^['"]/.test(t)) return "string";
       if (/^-?\d+(\.\d+)?$/.test(t)) return "number";
       if (/^(true|false|none|null)$/i.test(t)) return "bool";
-      if (/^\|?[A-Za-z_][\w-]*$/.test(t) && t.startsWith("|")) return "filter";
+      if (/^\|[A-Za-z_][\w-]*$/.test(t)) return "filter";
       if (darkPlusIsJinjaKeyword(t)) return "keyword";
       if (/^[-|>=<~!+*/%]+$/.test(t)) return "op";
-      if (/^[A-Za-z_][\w.-]*\(?$/.test(t)) return "jinja";
       return "jinja";
     }
-    if (/^(['"]).*\1$/.test(t) || /^['"]/.test(t)) return "string";
+    if (/^['"]/.test(t)) return "string";
     if (/^-?\d+(\.\d+)?(px|em|rem|vh|vw|%|s|ms|fr|ch|deg)?$/i.test(t)) return "number";
     if (/^(true|false|on|off|yes|no|null|none)$/i.test(t)) return "bool";
     if (/^--[A-Za-z0-9_-]+$/.test(t) || /^--[A-Za-z0-9_-]+\s*:/.test(t)) return "cssProp";
     if (/^(var|rgb|rgba|hsl|hsla|calc|linear-gradient|url)$/i.test(t) || /^(var|rgb|rgba|hsl|hsla|calc|linear-gradient|url)\(/i.test(t) || /^#[0-9a-f]{3,8}\b/i.test(t)) return "cssValue";
-    if (/^!important$/i.test(t) || /!important/i.test(t)) return "cssGlow";
+    if (/!important/i.test(t)) return "cssGlow";
     if (/^[:{}[\](),.;]+$/.test(t)) return "punct";
     if (/^[-|>=<~!+*/%]+$/.test(t)) return "op";
     if (lineKind === "cssSelector" && /^[.#]?[A-Za-z0-9_$:-]+$/.test(t)) return "cssSelector";
@@ -137,7 +135,7 @@ function darkPlusTokenKind(span, lineText, lineKind) {
     return lineKind || "fg";
   }
 
-function applyDarkPlusSyntaxColoring(editor, settings) {
+  function applyDarkPlusSyntaxColoring(editor, settings) {
     const source = api.installCodeMirrorSourceClassSyntax(editor, settings, "apply-darkplus-syntax-coloring");
     if (source?.installed) return source;
     return { lines: 0, spans: 0, skipped: true, sourceClassUnavailable: true };

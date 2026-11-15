@@ -1,9 +1,9 @@
-// ON-MOUNT FLASH FIX (v0.1.157) — sync-on-mount detection for panel editors.
-// Guards the two sentinel seams the open-flash fix added, WITHOUT a browser:
+// Sync-on-mount detection for panel editors, so they are styled before the first paint.
+// Checks the two sentinel hooks it needs, without a browser:
 //   1. mutationRecordLooksEditorStructural recognizes the panel YAML wrapper (ha-yaml-editor) so the
 //      panel-host observer's callback is not suppressed — the cue to nest-observe its shadow.
-//   2. refreshEditorSentinelRoots observes the injected panelEditorObservationRoots ONLY when
-//      universalCodebox is on AND an opening window is active (gated; a no-op otherwise).
+//   2. refreshEditorSentinelRoots observes the injected panelEditorObservationRoots only when
+//      universalCodebox is on and an opening window is active (gated; a no-op otherwise).
 // The e2e styled-at-mount spec is the live proof; this is the fast structural guard.
 
 import test from 'node:test';
@@ -67,25 +67,25 @@ test('refreshEditorSentinelRoots observes the panel roots when universal + openi
   assert.ok(observed.includes(wrapper), 'panel wrapper shadow is observed (so its .cm-editor mount fires a callback)');
 });
 
-test('panel roots are NOT observed when universalCodebox is OFF (gated)', () => {
+test('panel roots are not observed when universalCodebox is off', () => {
   const wrapper = fakeRoot('panel-yaml-wrapper');
   const { rt, observed } = makeRuntime({ enabled: false, openingWindow: true, panelRoots: [{ root: wrapper, label: 'panel-yaml-wrapper' }] });
   rt.refreshEditorSentinelRoots('test');
   assert.equal(observed.includes(wrapper), false, 'flag off → panel wrappers are never observed');
 });
 
-test('panel roots are NOT observed outside an opening window (bounded, not always-on)', () => {
+test('panel roots are observed only during an opening window, not all the time', () => {
   const wrapper = fakeRoot('panel-yaml-wrapper');
   const { rt, observed } = makeRuntime({ enabled: true, openingWindow: false, panelRoots: [{ root: wrapper, label: 'panel-yaml-wrapper' }] });
   rt.refreshEditorSentinelRoots('test');
   assert.equal(observed.includes(wrapper), false, 'no opening window → panel observation is not added (bounded to the open window)');
 });
 
-test('sync-on-mount fires PRE-PAINT for an OPENING card dialog too (apply-on-open flash fix), not just panels', () => {
-  // v0.1.174: the relaxed sync gate. When the card dialog's deep codebox shadow is observed (the card-dialog
-  // arm of panelEditorObservationRoots) and a .cm-editor/ha-code-editor mounts there, detection runs in the
-  // SAME pre-paint microtask — even with a card dialog present (previously the !activeEditDialog() gate
-  // suppressed it, so a stack/nested codebox flashed in on a post-paint probe). CM-gated + sameEditor-guarded.
+test('sync-on-mount also runs before the paint for an opening card dialog, not only for panels', () => {
+  // When the card dialog's deep codebox shadow is observed (the card-dialog arm of
+  // panelEditorObservationRoots) and a .cm-editor or ha-code-editor mounts there, detection runs in
+  // the same pre-paint microtask, with a card dialog present too; otherwise a stacked or nested
+  // codebox would show unstyled until a later probe. Gated on CodeMirror and on the same editor.
   const observers = [];
   class MockMutationObserver { constructor(cb) { this.cb = cb; observers.push(this); } observe() {} disconnect() {} takeRecords() { return []; } }
   const reapplies = [];
@@ -102,9 +102,9 @@ test('sync-on-mount fires PRE-PAINT for an OPENING card dialog too (apply-on-ope
     universalCodeboxEnabled: () => true,
     state,
     MutationObserver: MockMutationObserver,
-    activeEditDialog: () => ({ shadowRoot: {} }),                 // a VISIBLE card dialog — previously suppressed the sync fire
+    activeEditDialog: () => ({ shadowRoot: {} }),                 // a visible card dialog
     editCardDialogCandidates: () => [{ shadowRoot: {} }],
-    activeCodeboxStyleEditor: () => ({ querySelector: () => null }), // discovery now reaches the deep codebox (v0.1.173)
+    activeCodeboxStyleEditor: () => ({ querySelector: () => null }), // discovery reaches the deep codebox
     codeboxEditorCacheKey: () => 'k',
     scheduleCodeboxStyleReapply: (reason) => reapplies.push(reason),
     panelEditorObservationRoots: () => [{ root: nestedRoot, label: 'card-dialog-host:ha-code-editor' }],

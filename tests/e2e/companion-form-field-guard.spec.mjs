@@ -1,15 +1,14 @@
-// A CodeMirror nested in a visual-editor FORM FIELD must NOT be treated as the codebox.
+// A CodeMirror nested in a visual-editor form field must not be treated as the codebox.
 //
-// The persistence engine (companionSettleRuntime) re-applies on open to editors a click
-// never reached, which widened discovery's blast radius. It showed on a markdown
-// card's VISUAL editor: its content template field is a ha-code-editor inside
-// ha-selector-template / ha-form, and the companion force-sized it to calc(94vh - …),
-// overflowing the card and covering the "Show code editor" toggle.
-// visibleStyleEditorCandidate rejects ANY ha-form / ha-selector-nested CodeMirror (general,
+// The persistence engine (companionSettleRuntime) re-applies on open to editors a click never
+// reached, so discovery sees more editors. In a markdown card's visual editor the content template
+// field is an ha-code-editor inside ha-selector-template / ha-form; sized to calc(94vh - …) it
+// would overflow the card and cover the "Show code editor" toggle.
+// visibleStyleEditorCandidate rejects any ha-form / ha-selector-nested CodeMirror (general,
 // not markdown-specific — it must hold for condition/action editors and other form fields too).
 //
-// This spec opens the markdown card's VISUAL editor (never switches to YAML) and asserts the
-// template field's CodeMirror is NOT styled as the codebox: no companion stylesheet node, and
+// This spec opens the markdown card's visual editor (never switches to YAML) and asserts the
+// template field's CodeMirror is not styled as the codebox: no companion stylesheet node, and
 // no enlarge inline height.
 
 import { test, expect, openDashboard } from './session.mjs';
@@ -18,8 +17,8 @@ import { HA_CODE_EDITOR, HUI_MARKDOWN_CARD } from './selectors.mjs';
 
 const COMPANION_CODEBOX_STYLE_ID = 'nostrodomus-editor-v17-2-learned-style';
 
-test('form-field guard: a markdown visual-editor template CodeMirror is NOT treated as the codebox (no companion node, no enlarge height)', async ({ page }, testInfo) => {
-  // Force the companion layer ACTIVE so a missing guard WOULD style the field (else the test
+test('form-field guard: a markdown visual-editor template CodeMirror is not treated as the codebox (no companion node, no enlarge height)', async ({ page }, testInfo) => {
+  // Force the companion layer active so a missing guard would style the field (else the test
   // would pass vacuously).
   await page.addInitScript(() => {
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* opaque origin */ }
@@ -29,7 +28,7 @@ test('form-field guard: a markdown visual-editor template CodeMirror is NOT trea
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* ignore */ }
   });
 
-  // Open the markdown card in its VISUAL editor (do NOT switch to YAML).
+  // Open the markdown card in its visual editor (do not switch to YAML).
   const { dialog } = await openSeededCardCodeEditor(page, stamp, {
     cardSelector: HUI_MARKDOWN_CARD,
     cardText: 'Nostrodomus E2E',
@@ -55,10 +54,9 @@ test('form-field guard: a markdown visual-editor template CodeMirror is NOT trea
   // Settle for a beat (the 2800ms ladder), then assert no companion treatment landed.
   await expect.poll(async () => (await probe()).companionNode, { timeout: 4000, intervals: [250, 500, 750, 1000] }).toBe(false);
   const final = await probe();
-  console.log('[form-field-guard]', JSON.stringify(final));
   await testInfo.attach('form-field-guard.json', { body: JSON.stringify(final, null, 2), contentType: 'application/json' });
 
-  expect(final.companionNode, 'companion stylesheet node must NOT reach a form-field CodeMirror').toBe(false);
-  expect(final.hostHeight, `ha-code-editor host height "${final.hostHeight}" — the enlarge must NOT force-size a form-field editor`).not.toMatch(/94vh/);
-  expect(final.cmHeight, `.cm-editor height "${final.cmHeight}" — the enlarge must NOT force-size a form-field editor`).not.toMatch(/94vh/);
+  expect(final.companionNode, 'companion stylesheet node must not reach a form-field CodeMirror').toBe(false);
+  expect(final.hostHeight, `ha-code-editor host height "${final.hostHeight}" — the enlarge must not force-size a form-field editor`).not.toMatch(/94vh/);
+  expect(final.cmHeight, `.cm-editor height "${final.cmHeight}" — the enlarge must not force-size a form-field editor`).not.toMatch(/94vh/);
 });

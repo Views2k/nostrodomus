@@ -3,12 +3,11 @@ import assert from 'node:assert/strict';
 
 import { createEditorLifecycleSentinelRuntime } from '../../src/editor/editorLifecycleSentinel.js';
 
-// state.editorSentinelObservers is a strong-ref Map keyed by root object.
-// Each dialog open adds the dialog + its shadowRoot; the dedup keys on object identity, so a
-// reopened dialog (a fresh object) misses dedup and adds new entries. Nothing pruned detached
-// roots on close, so the Map grew unbounded, leaking detached dialog nodes + observers. The fix
-// adds a prune (mirroring pruneStyleRootObservers) that disconnects + deletes entries whose root
-// is no longer connected. It must NEVER drop a live root (would break editor detection).
+// state.editorSentinelObservers is a Map with strong references, keyed by root object. Each dialog
+// open adds the dialog and its shadowRoot; the dedup keys on object identity, so a reopened dialog
+// (a fresh object) adds new entries. Without a prune the Map would keep every detached dialog node
+// and its observers. The prune (like pruneStyleRootObservers) disconnects and deletes the entries
+// whose root is no longer connected, and never drops a live root, which would break editor detection.
 const noop = () => {};
 
 function makeRuntime(state) {

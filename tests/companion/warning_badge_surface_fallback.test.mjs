@@ -3,15 +3,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { createScrollbarStyleRuntime } from '../../src/companion/scrollbarStyleRuntime.js';
+import { createCompanionStyleRuntime } from '../../src/companion/companionStyleRuntime.js';
 
-// The warning badge stopped appearing in a custom-card edit dialog:
-// the dialog IS present with its ha-alert inside, but visibleDialogSurface() filters it
-// out (HA 2026.7 body/wa-dialog visibility), so activeEditDialog() returns null and the
-// badge source no-ops. The badge source goes through activeEditorWarningSurface,
-// which falls back to an edit-card candidate when the visible filter yields null. This
-// test drives the real injector on the resolved fallback surface (not the removed lane)
-// and pins the composition-root wiring.
+// In a custom-card edit dialog the dialog is present with its ha-alert inside, but
+// visibleDialogSurface() filters it out (Home Assistant 2026.7 body and wa-dialog visibility), so
+// activeEditDialog() returns null. The badge source therefore goes through
+// activeEditorWarningSurface, which falls back to an edit-card candidate when the visible filter
+// finds nothing. This test runs the real injector on that fallback surface and checks the wiring
+// in the composition root.
 function makeRoot(hostLocalName, { childHosts = [], alerts = [] } = {}) {
   const styles = [];
   const root = {
@@ -36,17 +35,17 @@ function makeCandidateSurface() {
   return { surface: { shadowRoot: rootA }, rootB, alertShadow };
 }
 
-// The fix's resolution semantics: the visible dialog, else the most recent candidate.
+// The surface: the visible dialog, else the most recent candidate.
 const resolveSurface = (activeEditDialog, candidates) => activeEditDialog() || candidates().slice(-1)[0] || null;
 
 test('the badge injects on the candidate fallback surface when activeEditDialog yields null', () => {
   const { surface, rootB, alertShadow } = makeCandidateSurface();
-  const rt = createScrollbarStyleRuntime({ documentRef: fakeDoc, isActive: () => true, hideEditorWarnings: () => false });
+  const rt = createCompanionStyleRuntime({ documentRef: fakeDoc, isActive: () => true, hideEditorWarnings: () => false });
 
   // Without the fallback: null surface -> nothing injected.
   assert.equal(rt.applyEditorWarningHide(resolveSurface(() => null, () => [])), false);
 
-  // Fixed behaviour: fall back to the present candidate (which holds the alert) -> badge injects.
+  // With the fallback: the present candidate (which holds the alert) is used and the badge is injected.
   const resolved = resolveSurface(() => null, () => [surface]);
   assert.equal(rt.applyEditorWarningHide(resolved), true);
   assert.ok(hasStyle(rootB, 'nostrodomus-editor-warning-badge-host'), 'HOST sheet injected on the fallback surface');
@@ -54,9 +53,9 @@ test('the badge injects on the candidate fallback surface when activeEditDialog 
 });
 
 test('the badge source is wired through activeEditorWarningSurface, which falls back to a candidate', () => {
-  const mainLegacy = readFileSync(fileURLToPath(new URL('../../src/main.legacy.js', import.meta.url)), 'utf8');
+  const appSource = readFileSync(fileURLToPath(new URL('../../src/app.js', import.meta.url)), 'utf8');
   assert.match(
-    mainLegacy,
+    appSource,
     /applyEditorWarningHide\(activeEditorWarningSurface\(\)\)/,
     'the badge surface source must use activeEditorWarningSurface, not the strict activeEditDialog',
   );

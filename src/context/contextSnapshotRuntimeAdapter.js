@@ -7,7 +7,7 @@
 import { completionWordTo, contextAdapterYamlKey } from '../yaml/runtimeContextAdapter.js';
 
 const CONTEXT_SNAPSHOT_CONTRACT_VERSION = 1;
-export const NOSTRODOMUS_CONTEXT_RUNTIME_ADAPTER_STAGE = '1D-dry-run-only';
+export const NOSTRODOMUS_CONTEXT_RUNTIME_ADAPTER_STAGE = 'context-snapshot-dry-run';
 const NOSTRODOMUS_CONTEXT_RUNTIME_ADAPTER_VERSION = 1;
 const NOSTRODOMUS_CONTEXT_RUNTIME_ADAPTER_MAX_SCAN_CHARS = 20000;
 
@@ -82,17 +82,15 @@ export function normalizeContextSnapshot(snapshot, overrides) {
 export function collectContextSnapshotDryRun(input) {
   const options = input || {};
   const rawDoc = typeof options.doc === 'string' ? options.doc : '';
-  // When the doc is longer than the scan cap we keep only its tail. The cursor position is given in
-  // ORIGINAL-doc coordinates, so it must be shifted by the dropped-prefix length — otherwise a cursor
-  // past 20000 chars was clamped to the tail end and the snapshot described the wrong line.
+  // Only the last part of a text longer than the scan cap is read, or, for a cursor above that
+  // part, the part that ends with the cursor's own line. The cursor position counts from the
+  // start of the whole text and is shifted by the part cut off; positions in the readout count
+  // from the start of the part read.
   let sliceStart = rawDoc.length > NOSTRODOMUS_CONTEXT_RUNTIME_ADAPTER_MAX_SCAN_CHARS
     ? rawDoc.length - NOSTRODOMUS_CONTEXT_RUNTIME_ADAPTER_MAX_SCAN_CHARS
     : 0;
   let sliceEnd = rawDoc.length;
   const rawPos = Number.isFinite(options.pos) ? options.pos : rawDoc.length;
-  // The tail does not hold a cursor that is further up: the position was clamped to the start of
-  // the tail and the snapshot described that line. For such a cursor the kept part is the text
-  // that ends with the cursor's own line. A cursor inside the tail is read as before.
   const cursorPos = contextAdapterClampPosition(rawDoc, rawPos);
   if (cursorPos < sliceStart) {
     const lineEnd = rawDoc.indexOf('\n', cursorPos);

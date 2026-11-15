@@ -11,8 +11,8 @@ repository in `docs/PROJECT_STRUCTURE.md`.
 ### Runtime shape
 
 - `src/main.js` is the ES-module entry: a one-line side-effect import of
-  `src/main.legacy.js`.
-- `src/main.legacy.js` is the runtime composition root. It owns startup order, Home
+  `src/app.js`.
+- `src/app.js` is the runtime composition root. It owns startup order, Home
   Assistant discovery, and lifecycle, and wires the modules together through
   dependency injection, with the factories in `src/composition/`. The number of wired
   modules is reported by `npm run check:modules`.

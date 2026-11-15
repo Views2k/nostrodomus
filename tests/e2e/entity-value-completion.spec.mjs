@@ -1,10 +1,11 @@
-// entity-value-completion.spec — the 0.1.257 adapter/classifier "split-brain" fix: an entity-shaped
-// VALUE completes to real entity ids even under an ARBITRARY/unknown key (and in an entities: list).
-// Drives the real editor + real hass entities.
+// entity-value-completion.spec: an entity-shaped value completes to real entity ids even under an
+// unknown key (and in an entities: list), with the adapter and the classifier agreeing on the value
+// kind. Drives the real editor and real hass entities.
 //
-// CRASH-SAFETY (see launch-gates.spec): the card dialog live-renders its preview and HA throws on an
-// undefined config.type, so we APPEND to the seeded card's valid `type: entities` config (type stays
-// defined; the entities card ignores the extra key) rather than clearing to a typeless doc.
+// To keep the preview from crashing (see launch-gates.spec): the card dialog live-renders its
+// preview and HA throws on an undefined config.type, so the spec appends to the seeded card's valid
+// `type: entities` config (type stays defined; the entities card ignores the extra key) rather than
+// clearing it to a typeless doc.
 //
 // Uses the seeded input_boolean.* entities (seed.mjs creates input_boolean.e2e_demo_one / _two), so the
 // assertion is stable regardless of what else the instance exposes.
@@ -22,13 +23,13 @@ import {
 // e2e container, so an "entity ids appear" assertion is deterministic.
 const SEEDED_ENTITY_RX = /\binput_boolean\.[a-z0-9_]+\b/;
 
-test('entity-value: an entity-shaped value under an UNKNOWN key completes to real entity ids', async ({ page }) => {
+test('entity-value: an entity-shaped value under an unknown key completes to real entity ids', async ({ page }) => {
   const stamp = await openDashboard(page);
   await openSeededCardCodeEditor(page, stamp); // cursor parked at end of the valid entities config
 
   // Append an unknown key carrying an entity-shaped value. `some_unknown_key` is not in any card
-  // schema — the 0.1.257 fix is exactly that the entity VALUE lane fires here, driven by the value
-  // shape, not the key. Type stays `entities` so the preview never crashes.
+  // schema; the entity value lane fires here because of the value's shape, not the key. Type stays
+  // `entities` so the preview never crashes.
   await page.keyboard.press('Enter');
   await page.keyboard.press('Shift+Home'); // drop CM's copied indent -> write at column 0
   await typeInYaml(page, 'some_unknown_key: input_boolean.');
@@ -44,9 +45,9 @@ test('entity-value: an entity-shaped value under an UNKNOWN key completes to rea
 });
 
 test('entity-value: a late-alphabet entity is reachable past the 750 per-query cap (prefix-first sourcing)', async ({ page }) => {
-  // 0.1.179: the seed creates 800 bulk_filler_* input_booleans + a late-alphabet input_boolean.zzz_marker.
-  // A flat alphabetical top-750 would drop zzz_marker behind the fillers; the prefix-first fix reaches it
-  // by filtering on the typed prefix BEFORE the cap. Requires the expanded seed (npm run e2e:up).
+  // The seed creates 800 bulk_filler_* input_booleans and a late-alphabet input_boolean.zzz_marker.
+  // A flat alphabetical top 750 would drop zzz_marker behind the fillers; filtering on the typed
+  // prefix before the cap reaches it. Requires the expanded seed (npm run e2e:up).
   const stamp = await openDashboard(page);
   await openSeededCardCodeEditor(page, stamp);
 
@@ -68,9 +69,9 @@ test('entity-value: a "- " item in an entities: list completes to real entity id
   const stamp = await openDashboard(page);
   await openSeededCardCodeEditor(page, stamp);
 
-  // Append a fresh entities: block with a dash item whose value is an entity prefix. This is the
-  // list-item half of the 0.1.257 fix (a typed value in an entities list). A second entities: key on
-  // the card is harmless to the preview (type stays defined); the completion is text/path driven.
+  // Append a list with a dash item whose value is an entity prefix (a typed value in an entities
+  // list). The preview is not affected (type stays defined); the completion is driven by the text
+  // and the path.
   for (const line of ['some_unknown_list:', '  - input_boolean.']) {
     await page.keyboard.press('Enter');
     await page.keyboard.press('Shift+Home');

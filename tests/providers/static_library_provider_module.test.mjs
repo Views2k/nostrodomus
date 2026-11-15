@@ -13,7 +13,7 @@ import {
   staticLibraryProvider,
 } from '../../src/providers/staticLibraryProvider.js';
 
-test('static library row sanitization preserves runtime limits and rejects hostile shapes', () => {
+test('static library row sanitization cuts fields to the limits and rejects hostile shapes', () => {
   const limits = { maxItemLabel: 5, maxInsertText: 8, maxAliases: 2, maxAlias: 4, maxCacheEntries: 2, maxRowsPerPack: 20 };
   const row = sanitizeLibraryRow([
     'row-id',
@@ -39,7 +39,7 @@ test('static library row sanitization preserves runtime limits and rejects hosti
   assert.equal(sanitizeLibraryRow(['id'], 'bad'), null);
 });
 
-test('normalizeItem preserves lowercase fields and searchable haystack', () => {
+test('normalizeItem adds the lowercase label and insert and a searchable haystack', () => {
   const item = normalizeItem(['light-row', 'yaml', 'entity', 'Kitchen Light', 'light.kitchen', ['kitchen', 'lamp']], 'yaml');
   assert.equal(item.id, 'light-row');
   assert.equal(item.labelLower, 'kitchen light');
@@ -67,7 +67,7 @@ test('staticLibraryProvider uses injected runtime state without browser globals'
   assert.deepEqual(provider.provide({ lang: 'yaml' }), [{ id: 'yaml-row' }, { id: 'css-row' }]);
 });
 
-test('cache helpers and buildIndex preserve bounded state behavior', () => {
+test('cache helpers evict the oldest entry past the limit, and buildIndex skips bad rows and registers the providers', () => {
   const state = {
     completionCache: new Map(),
     library: {

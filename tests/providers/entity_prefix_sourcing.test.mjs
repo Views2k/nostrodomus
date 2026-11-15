@@ -1,8 +1,8 @@
-// Prefix-aware entity sourcing — the fix for large installs (e.g. 3,347 entities) where the old
-// alphabetical 750-cap made late-alphabet domains (switch.*, sensor.*) uncompletable. The query is
-// now applied BEFORE the per-query cap, so a typed prefix reaches any entity; the cap only bounds
-// the row count. The source filter mirrors the scorer (substring/startsWith beat subsequence) so it
-// never drops a candidate the scorer would rank.
+// Prefix-aware entity sourcing for large installs (for example 3,347 entities). The query is
+// applied before the per-query cap of 750, so a typed prefix reaches any entity, including the
+// domains late in the alphabet (switch.*, sensor.*); the cap only bounds the row count. The source
+// filter follows the scorer (substring and startsWith rank above a subsequence), so it never drops
+// a candidate the scorer would rank.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -50,7 +50,7 @@ test('runtimeRowsForKind(entity): a late-alphabet entity is reachable via its pr
   assert.ok(withPrefix.length <= SECURITY_LIMITS.maxRuntimeEntities, 'still capped after filtering');
 });
 
-test('runtimeRowsForKind(entity): no prefix preserves prior behavior (all rows up to the cap)', () => {
+test('runtimeRowsForKind(entity): with no prefix every row up to the cap is returned', () => {
   const data = () => ({ entities: ['light.a', 'light.b', 'sensor.c'], entityNames: { 'light.a': 'A' } });
   const rows = runtimeRowsForKind('entity', { runtimeData: data });
   assert.deepEqual(rows.map((r) => r.insert).sort(), ['light.a', 'light.b', 'sensor.c']);

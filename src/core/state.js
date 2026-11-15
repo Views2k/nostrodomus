@@ -112,10 +112,9 @@ export function createRuntimeState({ version, settings, now = Date.now, isoNow =
       lastDelayedProbeReason: "",
       lastCoalescedProbeReason: "",
     },
-    // Boot-cost probe: main-thread time spent constructing and installing at boot,
-    // and the editor-sentinel observer count. The completion library is deferred
-    // (loads lazily on first editor), so an editor-less dashboard never builds the
-    // index or registers providers.
+    // Boot cost: main-thread time spent building and installing the runtime, and the number of
+    // sentinel observers after the boot. The completion library loads with the first editor and is
+    // not part of it.
     bootCost: {
       startedAt: 0,
       constructionMs: 0,
@@ -123,10 +122,9 @@ export function createRuntimeState({ version, settings, now = Date.now, isoNow =
       totalMs: 0,
       sentinelObservers: 0,
     },
-    // Runtime seam self-check: which HA-selector categories
-    // matched the live DOM at the last post-editor-open probe. Fail-dark:
-    // a missing critical seam marks the feature degraded in diagnostics, it
-    // never throws or logs. probeCount 0 = never run (no editor opened yet).
+    // The selector self-check (selectorSeamProbe.js): which registry selectors matched when it last
+    // ran after an editor opened. A missing critical selector shows as a warning in the health
+    // report. probeCount 0: it has not run yet.
     selectorSeamStatus: {
       probeCount: 0,
       lastProbeAt: 0,
@@ -142,9 +140,6 @@ export function createRuntimeState({ version, settings, now = Date.now, isoNow =
     editorSentinelDelayedProbeTimers: new Map(),
     editorSentinelProbeRaf: 0,
     editorSentinelLikelyOpeningUntil: 0,
-    lastSyntaxRecoveryFanoutReduction: "",
-    lastSyntaxRecoveryPendingDelayReason: "",
-    lastSyntaxRecoveryCoalescedDelayReason: "",
     codeMirrorSyntaxContentObserver: null,
     codeMirrorSyntaxContentEditorKey: "",
     codeMirrorSyntaxContent: null,
@@ -229,7 +224,6 @@ export function createRuntimeState({ version, settings, now = Date.now, isoNow =
     lastInitialSyntaxPaintGateInstall: null,
     lastInitialSyntaxPaintGateInstallSkip: null,
     lastSyntaxOwnerObserver: null,
-    lastSyntaxRecovery: null,
     persistentListeners: [],
     styleMutationObserver: null,
     styleMutationEditor: null,
@@ -264,7 +258,6 @@ export function createRuntimeState({ version, settings, now = Date.now, isoNow =
     dashboardContainmentCleanupLegacyWildcardShadowTraversals: 0,
     lastDashboardContainmentCleanupShadowTraversal: null,
     settingsTopLayerDialogShadowTraversalMode: "",
-    settingsTopLayerDialogTargetedShadowTraversals: 0,
     settingsTopLayerDialogLegacyWildcardShadowTraversals: 0,
     lastSettingsTopLayerDialogShadowTraversal: null,
     activeEditorReadoutTraversalMode: "",
@@ -282,9 +275,6 @@ export function createRuntimeState({ version, settings, now = Date.now, isoNow =
     lastStyleRootScanPendingReason: "",
     lastStyleRootScanCoalescedReason: "",
     styleRootScanLastAt: 0,
-    codeboxFrameOverlay: null,
-    codeboxFramePortalHost: null,
-    codeboxFramePortalRootKind: null,
     codeboxFrameEditor: null,
     codeboxFrameRaf: 0,
     codeboxFrameLastRectKey: "",
@@ -292,7 +282,6 @@ export function createRuntimeState({ version, settings, now = Date.now, isoNow =
     codeboxFramePendingRectKey: "",
     codeboxFrameStableFrames: 0,
     codeboxFrameHoldUntil: 0,
-    codeboxFrameEventsInstalled: false,
     codeboxFrameSettleTimers: new Set(),
     codeboxKeyboardContainmentHandlers: [],
     codeboxKeyboardContainmentEditor: null,
@@ -337,7 +326,6 @@ export function createRuntimeState({ version, settings, now = Date.now, isoNow =
     raf: 0,
     suppressUntil: 0,
     lastExplicitOpen: false,
-    lastTriggerChar: "",
     idleReason: "Click inside the editor, then start typing or press Ctrl+Space.",
     settings,
     performanceTelemetry: {

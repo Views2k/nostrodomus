@@ -1,6 +1,6 @@
 // Engine track `dpRanking`: the DP (optimal-alignment) fuzzy scorer. Locks the ordering
 // properties that make completion feel intelligent — boundary > mid-word, consecutive > gappy,
-// the HA `lk`→`light.kitchen` / `ltn`→`light.turn_on` cases — plus determinism + fail-dark.
+// the HA `lk`→`light.kitchen` / `ltn`→`light.turn_on` cases, determinism, and bad input.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -33,7 +33,7 @@ test('consecutive runs beat gappy alignments', () => {
   assert.ok(dpFuzzyScore('turn', 'tur') > dpFuzzyScore('t_u_r', 'tur'));
 });
 
-test('DP finds the OPTIMAL alignment, not the greedy first match', () => {
+test('DP finds the optimal alignment, not the greedy first match', () => {
   // Greedy would take a@0 then b@2 (gap); the optimal is the consecutive a@4,b@5 run.
   // Either way it matches, but the score must reflect the better (consecutive) alignment —
   // i.e. >= a clearly gappy-only arrangement of the same letters.

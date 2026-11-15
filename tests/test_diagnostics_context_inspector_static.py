@@ -2,17 +2,16 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src" / "main.legacy.js"
+SRC = ROOT / "src" / "app.js"
 DIST = ROOT / "dist" / "nostrodomus.js"
-TELEMETRY_RUNTIME = ROOT / "src" / "diagnostics" / "telemetryRuntime.js"
+TELEMETRY_RUNTIME = ROOT / "src" / "diagnostics" / "diagnosticsRuntime.js"
 SETTINGS_PANEL_RUNTIME = ROOT / "src" / "ui" / "settingsPanelRuntime.js"
 SETTINGS_MODULES_DIR = ROOT / "src" / "ui" / "settings"
 
 src = SRC.read_text(encoding="utf-8")
 telemetry_runtime = TELEMETRY_RUNTIME.read_text(encoding="utf-8") if TELEMETRY_RUNTIME.exists() else ""
 settings_panel_runtime = SETTINGS_PANEL_RUNTIME.read_text(encoding="utf-8") if SETTINGS_PANEL_RUNTIME.exists() else ""
-# The settings panel runtime is a composer over src/ui/settings/ modules;
-# the owner surface is the composer plus its modules.
+# The settings panel runtime composes the modules in src/ui/settings/; the checks read all of them.
 settings_modules = "\n".join(
     path.read_text(encoding="utf-8") for path in sorted(SETTINGS_MODULES_DIR.glob("*.js"))
 ) if SETTINGS_MODULES_DIR.exists() else ""

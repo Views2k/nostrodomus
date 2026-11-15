@@ -5,9 +5,8 @@ import { createCompletionRuntime } from '../../src/completion/completionRuntime.
 import { completionKeyAction } from '../../src/completion/keymap.js';
 import { renderCompletionPopup } from '../../src/completion/popupRuntime.js';
 
-// Settings opened only from a mousedown on the gear in the list header (or from the
-// console). With the list open, Ctrl+, now opens them, and the gear answers a keyboard or
-// assistive-technology activation as well.
+// With the list open, Ctrl+, opens Settings, and the gear in the list header answers a keyboard
+// or assistive-technology activation as well as a mousedown.
 
 const open = { popupOpen: true, scoped: true, viewAllowed: true };
 const listState = () => ({ settings: {}, items: [{ label: 'name:', matchTier: 0 }], selected: 0, context: { lang: 'yaml', yamlRole: 'key', prefix: 'na' } });
@@ -153,7 +152,7 @@ function gearOf(items) {
 }
 
 for (const [label, items] of [['the list', [{ label: 'alpha', type: 'key' }]], ['the idle pane', []]]) {
-  test(`the gear in ${label} opens Settings from the mouse, as before, and from a keyboard activation`, () => {
+  test(`the gear in ${label} opens Settings from the mouse and from a keyboard activation`, () => {
     const { gear, opened } = gearOf(items);
     assert.ok(gear, 'the gear is rendered');
     assert.equal(gear.tag, 'button');

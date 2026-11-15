@@ -1,14 +1,12 @@
-// Runtime seam self-check.
+// Selector self-check.
 //
-// A cheap, post-editor-open probe that evaluates each HA-selector category
-// from the registry against the live DOM and records which categories match.
-// Its purpose is the treadmill: when HA renames a DOM seam, the registry
-// selector stops matching, and instead of the feature silently erroring the
-// probe records the miss so diagnostics can surface "this seam is degraded."
+// After an editor opens, checks which Home Assistant selectors from the registry match the page
+// and records the result in state.selectorSeamStatus. When a Home Assistant release renames an
+// element the registry relies on, its selector stops matching and diagnostics show which one.
 //
-// Fail-dark law: this never throws and never logs. A probe error leaves the
-// last status untouched. Critical seams (the editor surface itself) drive the
-// coverage figure; optional seams are informational only.
+// It never throws; an error is recorded as a runtime error and leaves the last status as it was.
+// The critical selectors (the editor surface itself) make up the coverage figure; the others are
+// reported only.
 
 import {
   CM_CONTENT,
@@ -20,10 +18,9 @@ import {
   HUI_DIALOG_EDIT_CARD,
 } from "./haSelectors.js";
 
-// Each category names a registry seam to probe. `critical: true` means the
-// seam must match when an editor is open (its absence is a real degradation:
-// the editor/completion features ride on it); optional seams are reported but
-// do not lower coverage (they legitimately vary by HA layout / dialog state).
+// `critical: true` means the selector must match while an editor is open: the editor and
+// completion features depend on it. The others are reported but do not lower the coverage, because
+// they vary with the Home Assistant layout and the dialog state.
 export const SELECTOR_SEAM_CATEGORIES = Object.freeze([
   { name: "edit-dialog", selector: HUI_DIALOG_EDIT_CARD, critical: true },
   { name: "code-editor", selector: HA_CODE_EDITOR, critical: true },
@@ -31,46 +28,15 @@ export const SELECTOR_SEAM_CATEGORIES = Object.freeze([
   { name: "cm-content", selector: CM_CONTENT, critical: true },
   { name: "cm-scroller", selector: CM_SCROLLER, critical: false },
   { name: "ha-dialog", selector: HA_DIALOG, critical: false },
-  // Diagnostics label uses the short alias ha-root rather than the host
-  // element's own name, so the selector-registry static guard does not read a
-  // bare host string in this file. The selector itself is the registry
-  // constant; only the human-facing label differs.
+  // Labeled ha-root: the registry guard (tests/test_ha_selector_registry_static.py) allows the
+  // element name itself only in haSelectors.js.
   { name: "ha-root", selector: HOME_ASSISTANT, critical: false },
 ]);
 
 /**
- * Bounded, shadow-piercing existence check. Returns true as soon as any open
- * shadow subtree under `root` matches `selector`. Depth-capped (cheap; this
- * runs once per editor open, not on the typing hotpath).
- */
-export function selectorMatchesDeep(root, selector, maxDepth = 15) {
-  if (!root || !selector) return false;
-  const seen = new Set();
-  const walk = (node, depth) => {
-    if (!node || depth > maxDepth || seen.has(node)) return false;
-    seen.add(node);
-    try {
-      if (node.querySelector?.(selector)) return true;
-    } catch {
-      /* hostile/closed root — treat as no match, never throw */
-    }
-    let hosts = [];
-    try {
-      hosts = Array.from(node.querySelectorAll?.("*") || []);
-    } catch {
-      hosts = [];
-    }
-    for (const el of hosts) {
-      if (el.shadowRoot && walk(el.shadowRoot, depth + 1)) return true;
-    }
-    return false;
-  };
-  return walk(root, 0);
-}
-
-/**
- * The same check for several selectors in one walk: each root is read once, and the walk stops as
- * soon as every selector has matched. Returns the set of selectors that matched.
+ * Which of `selectors` match anywhere under `root`, through open shadow roots, in one walk: each
+ * root is read once, the walk is depth-capped, and it stops as soon as every selector has matched.
+ * Returns the set of selectors that matched.
  */
 export function selectorsMatchDeep(root, selectors, maxDepth = 15) {
   const found = new Set();
@@ -85,7 +51,7 @@ export function selectorsMatchDeep(root, selectors, maxDepth = 15) {
       try {
         if (node.querySelector?.(selector)) found.add(selector);
       } catch {
-        /* hostile/closed root — treat as no match, never throw */
+        /* a root that cannot be queried counts as no match */
       }
     }
     if (found.size === wanted.size) return;
@@ -105,8 +71,7 @@ export function selectorsMatchDeep(root, selectors, maxDepth = 15) {
 }
 
 /**
- * Evaluate every seam category against the document. Returns a pure result —
- * the caller decides whether/how to persist it.
+ * Checks every category against the document and returns the result without storing it.
  */
 export function evaluateSelectorSeams(deps = {}) {
   const documentRef = deps.document || (typeof document !== "undefined" ? document : null);
@@ -134,8 +99,8 @@ const SEAM_PROBE_DELAY_MS = 1500;
 const SEAM_PROBE_MIN_INTERVAL_MS = 30000;
 
 /**
- * Explicit-deps factory. `probe(reason)` runs the seam evaluation once and
- * writes it into `state.selectorSeamStatus`. Wrapped fail-dark.
+ * `probe(reason)` runs the check once and writes it into `state.selectorSeamStatus`; an error is
+ * recorded and the status is left as it was. `probeLater` schedules a run, and `cancel` drops it.
  */
 export function createSelectorSeamProbe(deps = {}) {
   const {
@@ -169,10 +134,9 @@ export function createSelectorSeamProbe(deps = {}) {
     }
   }
 
-  // The self-check is diagnostics. Run from editor detection it walked the whole app, through the
-  // dashboard behind the dialog, before the opened editor's first paint and again on every new
-  // detection. probeLater runs it after the editor has settled, and not again within
-  // SEAM_PROBE_MIN_INTERVAL_MS while the last result found every critical seam.
+  // The check walks the whole app, the dashboard behind the dialog included, so it does not run
+  // during editor detection. probeLater runs it once the editor has settled, and not again within
+  // SEAM_PROBE_MIN_INTERVAL_MS while the last result found every critical selector.
   let pendingTimer = 0;
   function probeLater(reason = "editor-open") {
     if (!state?.selectorSeamStatus || pendingTimer) return false;

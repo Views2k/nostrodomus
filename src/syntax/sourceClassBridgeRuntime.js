@@ -1,9 +1,8 @@
 // CodeMirror source-class bridge owner for Nostrodomus syntax runtime.
 //
 // This module owns the small browser-bridge adapter that turns Home Assistant's
-// active CodeMirror editor surface into the parts syntaxRuntime needs for
-// source-class styling. It intentionally keeps actual syntax painting in
-// src/syntax/syntaxRuntime.js.
+// active CodeMirror editor surface into the parts the syntax runtime needs for
+// source-class styling. It paints nothing itself.
 
 /**
  * @param {{
@@ -60,11 +59,9 @@ export function createSourceClassBridgeRuntime({
       && !!value.tags && !!value.HighlightStyle && typeof value.syntaxHighlighting === 'function';
   }
 
-  // The HA-loaded CodeMirror module (tags + highlight API) used to be read only as ._loadedCodeMirror
-  // off three objects -- one rename of that private field zeroed every read at once. Keep the
-  // conventional field as the fast path, then fall back to a field-name-independent probe that finds
-  // the module by its CodeMirror 6 highlight-API shape, so a single rename no longer takes out the
-  // sole acquisition path.
+  // Home Assistant keeps its CodeMirror module (tags and the highlight API) in the private field
+  // _loadedCodeMirror. That field is read first; without it the module is found by its CodeMirror 6
+  // highlight-API shape on any field, so a rename of the private field does not lose it.
   function probeCodeMirrorModule(...sources) {
     for (const source of sources) {
       const known = source && typeof source === 'object' ? source._loadedCodeMirror : null;

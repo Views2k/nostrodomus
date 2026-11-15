@@ -22,7 +22,7 @@ export function createSourceClassLifecycle(deps) {
     api,
   } = deps;
 
-function clearDarkPlusInlineSyntaxStyles(editor) {
+  function clearDarkPlusInlineSyntaxStyles(editor) {
     if (!editor?.querySelectorAll) return { cleared: 0 };
     let cleared = 0;
     const nodes = editor.querySelectorAll(".cm-content, .cm-line, .cm-line span, .cm-content span, [data-nostrodomus-text-preset], [data-nostrodomus-syntax-kind], [data-nostrodomus-darkplus-line-kind], [data-nostrodomus-darkplus-token-kind]");
@@ -42,13 +42,13 @@ function clearDarkPlusInlineSyntaxStyles(editor) {
     return { cleared };
   }
 
-// The sheet depends on the editor's highlighter configuration and the syntax settings. Both
-// are the same from one apply to the next, and building it asks CodeMirror for the class of
-// about thirty tags, so the last result is kept per view. state.config is replaced when the
-// editor is reconfigured; an editor without it rebuilds every time.
-const sourceClassCssByView = new WeakMap();
+  // The sheet depends on the editor's highlighter configuration and the syntax settings. Both
+  // are the same from one apply to the next, and building it asks CodeMirror for the class of
+  // about thirty tags, so the last result is kept per view. state.config is replaced when the
+  // editor is reconfigured; an editor without it rebuilds every time.
+  const sourceClassCssByView = new WeakMap();
 
-function sourceClassSyntaxCssFor(parts, syntax) {
+  function sourceClassSyntaxCssFor(parts, syntax) {
     const view = parts?.view;
     const config = view?.state?.config || null;
     let syntaxKey = "";
@@ -62,7 +62,7 @@ function sourceClassSyntaxCssFor(parts, syntax) {
     return built;
   }
 
-function installCodeMirrorSourceClassSyntax(editor, settings, reason = "source-class-syntax") {
+  function installCodeMirrorSourceClassSyntax(editor, settings, reason = "source-class-syntax") {
     const parts = codeMirrorSourceClassParts(editor);
     let nativeApiStatus = parts ? codeMirrorNativeHighlightApiStatus({ ...parts, editor }) : null;
     const editorKey = editor?.querySelector ? codeboxEditorCacheKey(editor) : "no-editor";
@@ -130,8 +130,8 @@ function installCodeMirrorSourceClassSyntax(editor, settings, reason = "source-c
 
     const cleanup = sourceAlreadyActive && !styleChanged ? { cleared: 0 } : clearDarkPlusInlineSyntaxStyles(editor);
     // Attaching the observer runs a syntax pass of its own, after it removed the ranges of the
-    // editor it was attached to before. That pass is the pass of this install. A pass here, ahead
-    // of the observer, was thrown away by that removal and done a second time.
+    // editor it was attached to before. That pass is the pass of this install; a pass here, ahead
+    // of the observer, would be discarded by that removal.
     let smart = null;
     if (!observerReady) {
       const passBefore = state.lastSmartSourceSyntax;
@@ -171,7 +171,7 @@ function installCodeMirrorSourceClassSyntax(editor, settings, reason = "source-c
     return source;
   }
 
-function refreshSourceClassSyntaxForOpenEditors(reason = "source-class-refresh") {
+  function refreshSourceClassSyntaxForOpenEditors(reason = "source-class-refresh") {
     const editors = [];
     const seen = new Set();
     const add = (editor) => {
@@ -208,7 +208,7 @@ function refreshSourceClassSyntaxForOpenEditors(reason = "source-class-refresh")
     return refreshed;
   }
 
-function appendSourceClassSyntaxRefreshReason(reason = "source-class-refresh", source = "source-class-refresh") {
+  function appendSourceClassSyntaxRefreshReason(reason = "source-class-refresh", source = "source-class-refresh") {
     const update = sourceClassSyntaxRefreshReasonUpdate(state.sourceClassSyntaxRefreshReason, reason || "source-class-refresh");
     if (update.duplicate) {
       state.sourceClassSyntaxRefreshReasonCoalesces = (state.sourceClassSyntaxRefreshReasonCoalesces || 0) + 1;
@@ -223,7 +223,7 @@ function appendSourceClassSyntaxRefreshReason(reason = "source-class-refresh", s
     return true;
   }
 
-function scheduleSourceClassSyntaxRefresh(reason = "source-class-refresh") {
+  function scheduleSourceClassSyntaxRefresh(reason = "source-class-refresh") {
     appendSourceClassSyntaxRefreshReason(reason || "source-class-refresh", "schedule");
     if (state.sourceClassSyntaxRefreshRaf) {
       return true;
@@ -238,7 +238,7 @@ function scheduleSourceClassSyntaxRefresh(reason = "source-class-refresh") {
     return true;
   }
 
-function editorUsesCodeMirrorSourceClassSyntax(editor) {
+  function editorUsesCodeMirrorSourceClassSyntax(editor) {
     if (!editor?.querySelector) return false;
     if (api.editorUsesCodeMirrorNativeHighlightSyntax(editor)) return true;
     if (editor.dataset?.nostrodomusSourceClassSyntax === VERSION) return true;

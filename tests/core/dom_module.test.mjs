@@ -11,9 +11,9 @@ import {
   replaceChildrenSafe,
 } from '../../src/core/dom.js';
 
-// Behavior coverage for the safe-DOM helpers (previously only structurally grep-pinned). This module
-// is the XSS-safety boundary — rendering goes through it instead of innerHTML — so these tests assert
-// the INTENDED contract: safe construction works, and unsafe tags/attributes/URLs/styles are rejected.
+// Behavior tests for the safe-DOM helpers. This module is the XSS safety boundary (rendering goes
+// through it instead of innerHTML), so the tests check its contract: safe construction works, and
+// unsafe tags, attributes, URLs and styles are rejected.
 
 class FakeNode {}
 class FakeText extends FakeNode {

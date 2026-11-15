@@ -1,31 +1,31 @@
-// The companion layer on a SIMPLE button card (type: button, no option-tab row), a case
+// The companion layer on a simple button card (type: button, no option-tab row), a case
 // companion-parity (entities card only) does not cover. This editor is discovered
-// through a NON-sentinel convergence path (initialSyntaxPaintGate), so the sentinel
-// never fires (editorSentinelStats.detections == 0). When the companion layer was
-// wired only to the editor sentinel, neither companion module (scrollbar OR enlarge)
-// applied here, while main's styling, which rides multiple paths, did. The companion
-// is driven from rememberActiveCodeboxEditor (the convergence point every discovery
-// path funnels through), so it reaches the editor regardless of which path won.
+// through a non-sentinel convergence path (initialSyntaxPaintGate), so the sentinel
+// never fires (editorSentinelStats.detections == 0). A companion wired only to the editor
+// sentinel would apply neither module (scrollbar or enlarge) here, while main's styling,
+// which rides multiple paths, would. The companion is driven from
+// rememberActiveCodeboxEditor (the convergence point every discovery path funnels
+// through), so it reaches the editor regardless of which path won.
 //
-// This spec asserts, ON THE BUTTON CARD:
+// This spec asserts, on the button card:
 //   (1) the scrollbar companion stylesheet node reaches the editor's CodeMirror root, and
 //   (2) the enlarge module lands an inline height set on the ha-code-editor wrapper +
 //       .cm-editor / .cm-scroller.
 // detections may legitimately be 0: the point is the companion applies via the
-// cache convergence, NOT that the sentinel fires. This spec accepts either height set
-// (SIMPLE or tabbed, like companion-parity) so the tab state of the instance does not
+// cache convergence, not that the sentinel fires. This spec accepts either height set
+// (simple or tabbed, like companion-parity) so the tab state of the instance does not
 // fail it.
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';
 import { CM_SCROLLER, HA_CODE_EDITOR, HUI_BUTTON_CARD } from './selectors.mjs';
 
-// The companion scrollbar stylesheet id (src/companion/scrollbarStyleRuntime.js).
+// The companion scrollbar stylesheet id (src/companion/companionStyleRuntime.js).
 const COMPANION_CODEBOX_STYLE_ID = 'nostrodomus-editor-v17-2-learned-style';
 
-// Enlarge inline-height value sets [SIMPLE (no tabs → taller), tabbed]
+// Enlarge inline-height value sets [simple (no tabs → taller), tabbed]
 // (src/companion/codeboxEnlargeRuntime.js). A button card is simple, but accept either
-// so HA tab-state never fails the spec; the [discovery-diag] line reveals which landed.
+// so HA tab-state never fails the spec; the discovery-enlarge.json attachment shows which landed.
 const ENLARGE_WRAPPER_HEIGHTS = ['calc(94vh - 150px)', 'calc(94vh - 340px)'];
 const ENLARGE_CM_HEIGHTS = ['calc(94vh - 164px)', 'calc(94vh - 354px)'];
 const ENLARGE_SCROLLER_HEIGHTS = ['calc(94vh - 164px)', 'calc(94vh - 354px)'];
@@ -49,9 +49,9 @@ function normalizeCalc(value) {
     .join('+');
 }
 
-test('companion discovery-path: a SIMPLE button card receives the companion layer regardless of discovery path', async ({ page }, testInfo) => {
-  // Force the absorbed layer ACTIVE before any HA document runs (localStorage escape
-  // hatch), and re-assert in the loaded page context — same as companion-parity.
+test('companion discovery-path: a simple button card receives the companion layer regardless of discovery path', async ({ page }, testInfo) => {
+  // Turn the built-in layer on before any HA document runs (localStorage switch) and again in
+  // the loaded page, as in companion-parity.
   await page.addInitScript(() => {
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* opaque origin */ }
   });
@@ -60,7 +60,7 @@ test('companion discovery-path: a SIMPLE button card receives the companion laye
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* ignore */ }
   });
 
-  // Open the SIMPLE button card's code editor — NOT the entities card.
+  // Open the simple button card's code editor, not the entities card.
   const { dialog } = await openSeededCardCodeEditor(page, stamp, {
     cardSelector: HUI_BUTTON_CARD,
     cardText: 'E2E Button',
@@ -96,19 +96,18 @@ test('companion discovery-path: a SIMPLE button card receives the companion laye
     };
   });
 
-  // Diagnostics for the morning evidence: detections MAY be 0 (the companion now rides
-  // the cache convergence, not the sentinel); companionLayer should read "internal".
+  // Diagnostics for the report: detections may be 0 (the companion rides the cache
+  // convergence, not the sentinel); companionLayer should read "internal".
   const diag = await page.evaluate(() => {
     const out = {};
     try { out.detections = window.__nostrodomus?.state?.editorSentinelStats?.detections ?? null; } catch (e) { out.detections = `ERR:${e.message}`; }
     try { out.companionLayer = window.__nostrodomus?.exportDiagnostics?.()?.companionLayer ?? null; } catch (e) { out.companionLayer = `ERR:${e.message}`; }
     return out;
   });
-  console.log('[discovery-diag]', JSON.stringify({ ...diag, enlarge }));
   await testInfo.attach('discovery-enlarge.json', { body: JSON.stringify({ diag, enlarge }, null, 2), contentType: 'application/json' });
 
   // (2) The enlarge module landed an inline height set on all three
-  //     targets. Accept SIMPLE or tabbed (compared through normalizeCalc).
+  //     targets. Accept simple or tabbed (compared through normalizeCalc).
   expect(isEnlargeHeight(enlarge.wrapper, ENLARGE_WRAPPER_HEIGHTS), `ha-code-editor wrapper height "${enlarge.wrapper}" is not an enlarge-layer value — the enlarge module did not apply to the button card`).toBe(true);
   expect(isEnlargeHeight(enlarge.cm, ENLARGE_CM_HEIGHTS), `.cm-editor height "${enlarge.cm}" is not an enlarge-layer value`).toBe(true);
   expect(isEnlargeHeight(enlarge.scroller, ENLARGE_SCROLLER_HEIGHTS), `.cm-scroller height "${enlarge.scroller}" is not an enlarge-layer value`).toBe(true);

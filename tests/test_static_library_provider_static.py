@@ -5,11 +5,11 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/providers/staticLibraryProvider.js"
-LEGACY = ROOT / "src/main.legacy.js"
+APP = ROOT / "src/app.js"
 REPORT = ROOT / "reports/STATIC_LIBRARY_PROVIDER_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 
 errors = []
 notes = []
@@ -52,8 +52,8 @@ for token in [
     "staticLibraryProvider",
     "buildIndex",
 ]:
-    if token not in legacy:
-        errors.append(f"Legacy lost static provider token: {token}")
+    if token not in app:
+        errors.append(f"app.js is missing static provider token: {token}")
 
 
 for token in [
@@ -70,16 +70,16 @@ for token in [
     "const BUILTIN_NOSTRODOMUS_LIBRARY_CORE_V1",
     "const BUILTIN_NOSTRODOMUS_LIBRARY_WEBDEV_V1",
 ]:
-    if token in legacy:
-        errors.append(f"Legacy still owns bundled static library catalog token: {token}")
+    if token in app:
+        errors.append(f"app.js must not own bundled static library catalog token: {token}")
     else:
-        notes.append(f"PASS legacy no longer owns bundled catalog token: {token}")
+        notes.append(f"PASS app.js does not own bundled catalog token: {token}")
 
-if "export function loadLibrary()" in module:
-    errors.append("loadLibrary lost async modifier in extracted source")
+if "export function loadLibrary(" in module:
+    errors.append("loadLibrary must be async")
 
-if "export async function loadLibrary()" not in module:
-    errors.append("loadLibrary must remain async in extracted source")
+if "export async function loadLibrary(" not in module:
+    errors.append("loadLibrary must be async")
 
 for forbidden in [
     "showPopover",

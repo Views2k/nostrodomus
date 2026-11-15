@@ -35,7 +35,8 @@ function fixtureFiles() {
 
 test('scoring module is pure from browser/runtime globals', () => {
   const text = readFileSync('src/completion/scoring.js', 'utf8');
-  assert.equal(/\bstate\b/.test(text), false, 'must not reference monolith runtime state');
+  // A quoted 'state' is the YAML key, not the runtime state object.
+  assert.equal(/(?<!['"])\bstate\b(?!['"])/.test(text), false, 'must not reference monolith runtime state');
   assert.equal(/\bdocument\b/.test(text), false, 'must not reference DOM document');
   assert.equal(/\bwindow\b/.test(text), false, 'must not reference browser window');
 });
@@ -54,7 +55,7 @@ test('ranking fixtures are documented and structurally valid', () => {
   }
 });
 
-test('allowType preserves mode behavior and snippet-provider quick rows', () => {
+test('allowType filters rows by mode and lets snippet-provider rows through in keys mode', () => {
   assert.equal(allowType({ type: 'snippet', source: 'static-library' }, { mode: 'keys' }), false);
   assert.equal(allowType({ type: 'snippet', source: 'snippet-templates' }, { mode: 'keys' }), true);
   assert.equal(allowType({ type: 'key', source: 'static-library' }, { mode: 'snippets' }), false);
@@ -82,9 +83,8 @@ test('itemMatchesYamlValueKind gates scalar value contexts', () => {
 });
 
 test('itemMatchesYamlValueKind keeps snippets and other rows out of the registry value lanes', () => {
-  // area_id:/device_id:/floor_id:/label_id: must complete only their own registry rows. Before the
-  // fix, these kinds fell through to the permissive source-based check and let ~17 snippet rows
-  // (source != static) leak into the popup.
+  // area_id:, device_id:, floor_id: and label_id: take only their own registry rows, not the
+  // snippet and entity rows that the source-based check for other kinds lets through.
   for (const kind of ['area', 'device', 'floor', 'label']) {
     assert.equal(itemMatchesYamlValueKind({ type: kind }, { valueKind: kind }), true, `${kind} row must pass its own lane`);
     assert.equal(itemMatchesYamlValueKind({ type: 'snippet', source: 'nostrodomus-snippets' }, { valueKind: kind }), false, `snippet must not leak into ${kind}`);
@@ -128,7 +128,7 @@ test('focused Lovelace context suppresses generic static rows', () => {
   assert.equal(shouldSuppressStaticForFocusedContext(ctx, [{ source: 'lovelace-context' }]), true);
 });
 
-test('camelMatch preserves the current uppercase-token contract', () => {
+test('camelMatch matches the initials of words that start with an uppercase letter only', () => {
   assert.equal(camelMatch('callServiceAction', 'csa'), false);
   assert.equal(camelMatch('CallServiceAction', 'csa'), true);
   assert.equal(camelMatch('entity_id', 'ei'), false);
@@ -258,10 +258,9 @@ test('scoreItems reuses previous rows only for prefix extension, not backspace',
   assert.deepEqual(requeried.map(row => row.id), ['provider.light']);
 });
 
-test('empty-prefix value list stays up after the key colon-space (no passive flicker)', () => {
-  // ':' is a trigger char, so `entity:` opens the value list; typing the trailing space
-  // (`entity: `, isTriggerChar false, empty prefix) must NOT zero the rows — afterKeyColon
-  // is an intentful value position. Both positions surface the same rows.
+test('empty-prefix value list stays up after the key colon and its space', () => {
+  // ':' is a trigger character, so `entity:` opens the value list. After the space that follows
+  // (`entity: `, isTriggerChar false, empty prefix) afterKeyColon keeps the same rows.
   const rows = [
     { id: 'e1', lang: 'yaml', type: 'entity', label: 'sensor.temp', insert: 'sensor.temp', source: 'ha-runtime-values', meta: {} },
     { id: 'e2', lang: 'yaml', type: 'entity', label: 'light.kitchen', insert: 'light.kitchen', source: 'ha-runtime-values', meta: {} },
@@ -271,7 +270,7 @@ test('empty-prefix value list stays up after the key colon-space (no passive fli
   const afterSpace = scoreItems({ ...base, isTriggerChar: false }, rows, { settings: { enabledLangs: { yaml: true } } });
   assert.equal(afterColon.length, 2, "':' opens the value list");
   assert.equal(afterSpace.length, 2, "the trailing space keeps it up (afterKeyColon), not passive-empty");
-  // A genuinely intent-less empty-prefix position (no trigger, no colon) still stays passive.
+  // An empty prefix with no trigger character and no colon before it gives no rows.
   const passive = scoreItems({ ...base, isTriggerChar: false, afterKeyColon: false }, rows, { settings: { enabledLangs: { yaml: true } } });
   assert.equal(passive.length, 0, 'no trigger and not after a colon → still suppressed');
 });

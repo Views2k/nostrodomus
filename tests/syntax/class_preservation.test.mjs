@@ -1,9 +1,9 @@
-// ON-FLASH FIX (class lifecycle) — restoreDroppedSmartSyntaxClass guard.
-// During a Ctrl+Space repaint, CodeMirror resets a .cm-line / token span className, DROPPING our
-// nostrodomus-syntax-line-* / nostrodomus-syntax-kind-* class to bare for a frame; the bracket/punctuation then
-// washes out to the native CM color. The class-preservation observer restores the dropped class
-// synchronously from the MutationObserver oldValue. This pins the pure restore logic deterministically
-// (no browser): a full dropout is restored; a legitimate kind-REPLACEMENT and non-editor elements are not.
+// restoreDroppedSmartSyntaxClass, the class-preservation guard.
+// During a Ctrl+Space repaint, CodeMirror resets a .cm-line or token span className, dropping our
+// nostrodomus-syntax-line-* / nostrodomus-syntax-kind-* class for a frame; the brackets and punctuation
+// then wash out to the native CM color. The class-preservation observer restores the dropped class
+// synchronously from the MutationObserver oldValue. These tests check the pure restore logic without a
+// browser: a full dropout is restored; a legitimate kind replacement and non-editor elements are not.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -39,7 +39,7 @@ test('restores a fully-dropped kind class (punct span never passes through bare 
   assert.ok(span.className.includes('nostrodomus-syntax-kind-punct'), 'the dropped kind-punct class is restored');
 });
 
-test('does NOT touch a legitimate kind REPLACEMENT (old kind -> new kind is not a dropout)', () => {
+test('a kind replaced by another kind is left alone (it is not a dropout)', () => {
   const line = fakeEl({ className: 'cm-line nostrodomus-syntax-line-string', localName: 'div', isLine: true });
   const restored = restoreDroppedSmartSyntaxClass(line, 'cm-line nostrodomus-syntax-line-punct');
   assert.equal(restored, false, 'a class of the family is still present — the painter replaced the kind');
@@ -58,7 +58,7 @@ test('no-op on elements that are neither a .cm-line nor a span', () => {
 });
 
 test('restore is idempotent — a restore mutation (old=bare) does not re-fire', () => {
-  // Models the observer seeing its OWN classList.add: oldValue is the bare state (no nostrodomus class),
+  // Models the observer seeing its own classList.add: oldValue is the bare state (no nostrodomus class),
   // so nothing is dropped and nothing is restored (prevents a feedback loop).
   const line = fakeEl({ className: 'cm-line nostrodomus-syntax-line-punct', localName: 'div', isLine: true });
   assert.equal(restoreDroppedSmartSyntaxClass(line, 'cm-line cm-indent-markers'), false);

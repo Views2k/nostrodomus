@@ -5,28 +5,25 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/diagnostics/diagnosticsCore.js"
-LEGACY = ROOT / "src/main.legacy.js"
-TELEMETRY_RUNTIME = ROOT / "src/diagnostics/telemetryRuntime.js"
+APP = ROOT / "src/app.js"
+TELEMETRY_RUNTIME = ROOT / "src/diagnostics/diagnosticsRuntime.js"
 REPORT = ROOT / "reports/DIAGNOSTICS_CORE_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 telemetry_runtime = TELEMETRY_RUNTIME.read_text(errors="replace") if TELEMETRY_RUNTIME.exists() else ""
-source_owner = legacy + "\n" + telemetry_runtime
+source_owner = app + "\n" + telemetry_runtime
 
 errors = []
 notes = []
 
 required = [
     "export function safeContextSummary",
-    "export function itemSummary",
-    "export function diagnosticValue",
-    "export function diagnosticCard",
     "export function diagnosticsReadoutString",
     "export function diagnosticsReadoutBool",
     "export function diagnosticsReadoutSafeWarnings",
     "export function diagnosticsReadoutSummary",
-    "export function diagnosticsMarkup",
+    "export function redactDiagnosticsUserText",
 ]
 
 for token in required:
@@ -38,11 +35,6 @@ for token in required:
 required_behavior_tokens = [
     "diagnostics",
     "summary",
-    "health",
-    "runtime",
-    "provider",
-    "markup",
-    "card",
 ]
 
 for token in required_behavior_tokens:
@@ -53,11 +45,10 @@ for token in required_behavior_tokens:
 
 for token in [
     "safeContextSummary",
-    "diagnosticsReadoutSummary",
-    "diagnosticsMarkup",
+    "diagnosticsReadoutBundle",
 ]:
     if token not in source_owner:
-        errors.append(f"Source owner lost diagnostics core token: {token}")
+        errors.append(f"Source owner is missing diagnostics core token: {token}")
 
 for forbidden in [
     "showPopover",

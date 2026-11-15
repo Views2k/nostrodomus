@@ -1,10 +1,6 @@
-// Runtime owner for the Nostrodomus settings panel.
-//
-// Thin composer: constructs the settings modules under src/ui/settings/ and
-// assembles the public return surface. Dependencies are injected so editor state,
-// diagnostics, and provider glue stay owned elsewhere. The settings panel shell
-// reads most of the injected ctx, so the composer forwards ctx to it wholesale;
-// each module's own deps destructure is the explicit review surface.
+// The settings panel: saving and closing, and the modules under src/ui/settings/ put together.
+// The panel shell uses most of the injected context, so it gets all of it; each module lists the
+// dependencies it reads at the top of its factory.
 
 import { SETTINGS_SCHEMA_VERSION } from '../core/settingsStorageKeys.js';
 import { createSettingsGeometry } from './settings/settingsGeometry.js';
@@ -39,10 +35,10 @@ export function createSettingsPanelRuntime(ctx = {}) {
   } = ctx;
 
   function currentStoredSchemaVersion() {
-    // Read the schemaVersion already in storage. A payload written by a NEWER build carries a
-    // higher one; loadSettings preserves it (migrateSettings future guard) but a plain save would
-    // stamp it back DOWN to our version, leaving newer-shaped content tagged as ours and re-running
-    // the newer build's (possibly destructive) migration on the next upgrade. Fail-dark to 0.
+    // The schemaVersion already in storage, or 0 when there is none or it cannot be read. A
+    // payload written by a newer build has a higher one, which loadSettings keeps; a save that
+    // wrote ours instead would tag newer settings as ours, and the newer build would migrate them
+    // a second time after the next upgrade.
     try {
       const raw = settingsStorage?.getItem?.(SETTINGS_WRITE_KEY);
       if (!raw) return 0;
@@ -51,9 +47,9 @@ export function createSettingsPanelRuntime(ctx = {}) {
     } catch { return 0; }
   }
 
-  // The header line of the open panel says when the browser refused the last save. Without it
-  // the change looked applied and was gone after a reload. The line's normal text is kept in its
-  // data attribute and comes back when a save succeeds.
+  // The header line of the open panel says when the browser refused the last save, which would
+  // otherwise look applied and be gone after a reload. The line's normal text is kept in its data
+  // attribute and comes back when a save succeeds.
   function updateSettingsSaveStatus() {
     const line = state.settingsPanel?.querySelector?.("[data-settings-save-status]");
     if (!line) return;
@@ -64,10 +60,9 @@ export function createSettingsPanelRuntime(ctx = {}) {
   }
 
   function saveSettings(reason = "settings-save") {
-    // Stamp the schemaVersion into the stored payload so a future
-    // build can migrate it (settingsRuntime.migrateSettings). It is storage
-    // metadata — state.settings itself never carries it (stripped on load).
-    // Never DOWNGRADE a future-build payload's version: stamp the higher of ours and the stored one.
+    // The stored payload carries a schemaVersion, so a later build can migrate it
+    // (settingsRuntime.migrateSettings); state.settings itself never has one. The higher of ours
+    // and the stored one is written.
     const stampVersion = Math.max(SETTINGS_SCHEMA_VERSION, currentStoredSchemaVersion());
     const serialized = JSON.stringify({ ...state.settings, schemaVersion: stampVersion });
     const stats = state.settingsSaveStats || (state.settingsSaveStats = { writes: 0, skippedUnchanged: 0, lastWriteAt: 0, lastSkipAt: 0, lastReason: "", lastSerializedLength: 0 });
@@ -81,9 +76,9 @@ export function createSettingsPanelRuntime(ctx = {}) {
       return false;
     }
 
-    // Fail-dark: a full quota or a blocked/denied store (private mode) must not throw out of a
-    // settings interaction. On failure, leave settingsLastSerialized unchanged so the next save
-    // retries, and record it once.
+    // A full or blocked store (private mode) does not throw out of a settings change: the error
+    // is recorded once and shown in the panel header, and settingsLastSerialized stays as it was,
+    // so the next save tries again.
     try {
       settingsStorage.setItem(SETTINGS_WRITE_KEY, serialized);
     } catch (err) {
@@ -131,8 +126,9 @@ export function createSettingsPanelRuntime(ctx = {}) {
     state.settingsPortalHost = null;
     pruneStyleRootObservers("settings-close");
 
-    // Return focus to wherever it was when the dialog opened (the gear button or the editor), so a
-    // keyboard/AT user isn't dropped at the document root. Best-effort: skip if the node is gone.
+    // Focus goes back to where it was when the panel opened (the gear button or the editor), so
+    // keyboard and screen reader users are not left at the document root. Skipped when that
+    // element is gone.
     const returnFocus = state.settingsReturnFocus;
     state.settingsReturnFocus = null;
     try {

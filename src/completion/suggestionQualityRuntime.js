@@ -92,11 +92,9 @@ export function createSuggestionQualityRuntime(deps = {}) {
     };
   }
 
-  // Called by every scoring pass, before the caller has stored the new list and its selected row.
-  // Building the payload here did the work of a diagnostics export on every keystroke, and the
-  // payload named the row at the selected index of the previous list. Only what the pass knows
-  // is kept. Every reader falls back to suggestionQualityPayload(state.context, state.items)
-  // when there is no stored payload, which builds it from the stored list when it is needed.
+  // Called by every scoring pass, before the caller has stored the new list and its selected row,
+  // so only what the pass knows is kept here. The payload is built when it is read, by
+  // suggestionQualityPayload(state.context, state.items), instead of on every keystroke.
   function recordSuggestionQuality(ctx, items, options = {}) {
     lastPass = { items, options };
     state.suggestionQuality = null;

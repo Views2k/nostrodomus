@@ -21,7 +21,7 @@ const fixtureIds = [
 
 test('observe-only detector reports status without driving autocomplete', () => {
   assert.equal(EMBEDDED_LANGUAGE_DETECTOR_VERSION, 1);
-  assert.equal(EMBEDDED_LANGUAGE_DETECTOR_STAGE, 'priority10-observe-only-embedded-language-detector');
+  assert.equal(EMBEDDED_LANGUAGE_DETECTOR_STAGE, 'embedded-language-detector');
 
   const status = embeddedLanguageDetectorImplementationStatus();
   assert.equal(status.ok, true);

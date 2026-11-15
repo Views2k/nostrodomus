@@ -1,4 +1,4 @@
-// The surface MUST isolate the scoring cache, or a Dev Tools Template result could be served from a
+// The surface must isolate the scoring cache, or a Dev Tools Template result could be served from a
 // card-editor cache slot (and vice-versa). Two affirmative guards: the full cacheKey (via the
 // cacheHit signal) and the incremental-filter reuse predicate.
 
@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 
 import { scoreItems, sameCompletionContextForIncrementalFilter } from '../../src/completion/scoring.js';
 
-test('cacheKey: contexts differing ONLY by surface do not share a cache slot', () => {
+test('cacheKey: contexts that differ only by surface do not share a cache slot', () => {
   const base = { lang: 'yaml', prefix: 'entity', shouldSuggest: true, triggerKind: 'typing', isTriggerChar: true };
   const ctxTemplate = { ...base, surface: 'devtools-template' };
   const ctxCard = { ...base, surface: 'card-editor' };
@@ -47,15 +47,15 @@ test('incremental-filter reuse refuses to bridge two surfaces', () => {
   assert.equal(sameCompletionContextForIncrementalFilter(prev, diffSurface), false, 'surface changed → no reuse');
 });
 
-test('OFF-path: no surface field behaves exactly as before (incremental reuse still works)', () => {
+test('without a surface field a longer prefix reuses the incremental filter', () => {
   const prev = { lang: 'yaml', prefix: 'ent', triggerKind: 'typing' };
   const next = { ...prev, prefix: 'enti' };
   assert.equal(sameCompletionContextForIncrementalFilter(prev, next), true, 'absent surface → both sides "" → unchanged behavior');
 });
 
-test('cacheKey: a data: block under a different service is a DISTINCT cache slot (no cross-service leak)', () => {
-  // Same YAML path/role/prefix — the ONLY difference is the resolved service in branchState.
-  // Without the branch discriminator the second block was served the first service's fields.
+test('cacheKey: a data: block under a different service gets its own cache slot', () => {
+  // Same YAML path, role and prefix; the only difference is the resolved service in branchState.
+  // Without the branch in the key, the second block would get the first service's fields.
   const base = { lang: 'yaml', scope: 'actions.action.data', yamlRole: 'blank', yamlKey: '', valueKind: '', focusKind: 'automation-action', pathText: 'actions.action.data', prefix: '', shouldSuggest: true, triggerKind: 'explicit', isTriggerChar: false };
   const light = { ...base, branchState: { parentKey: 'action', parentValue: 'light.turn_on' } };
   const sw = { ...base, branchState: { parentKey: 'action', parentValue: 'switch.turn_on' } };

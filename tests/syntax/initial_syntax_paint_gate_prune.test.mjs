@@ -34,7 +34,7 @@ test('the observer prune disconnects + drops detached roots, keeps live roots an
   assert.equal(observers.size, 2);
 });
 
-test('the prune is fail-dark: no observers Map, or a root with unknown connectivity, is a safe no-op', () => {
+test('the prune does nothing without an observers Map or for a root whose connection state is unknown', () => {
   assert.doesNotThrow(() => createInitialSyntaxPaintGate({ state: {} }).pruneDetachedInitialSyntaxPaintGateObservers());
   const observers = new Map([[{ nodeType: 11 /* no isConnected */ }, { disconnect() {} }]]);
   const gate = createInitialSyntaxPaintGate({ state: { initialSyntaxGateObservers: observers } });

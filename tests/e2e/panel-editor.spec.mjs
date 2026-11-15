@@ -3,19 +3,17 @@
 // suite does not reach. Assertions are runtime console probes promoted to executable specs:
 // [px] geometry, [clip] corner-clearance, [frame] frame layers, and the white-token cascade.
 //
-// Each test names the version it guards against (see the map at the bottom).
-//
-// Nostrodomus loads on the bare panel (banner present), but a panel editor reached by a HARD
+// Nostrodomus loads on the bare panel (banner present), but a panel editor reached by a hard
 // page.goto is not styled: the detection ladder arms on an SPA route change (`location-changed`),
 // and a hard page load does not fire that event. openPanelYamlEditor therefore SPA-navigates
 // (pushState + location-changed, replicating HA's navigate()). The editor is tagged frame-host=1
 // after the in-app navigation and before any click, so the geometry + corner specs assert at
-// waitForStyled with NO click. The "styled at mount" test covers the v0.1.157 sync-on-mount
-// detection: the sentinel observes the panel editor wrappers and fires CM-gated detection
-// synchronously from the observer (a pre-paint microtask), so frame-host is set before first paint
-// and the mount→styled gap collapses to ~0. The token white-out spec is test.fixme(): its bug is
-// closed (v0.1.155), but Ctrl+Space in the harness does not reproduce the kind-class drop, so the
-// spec cannot fail on a build that has the bug (see its FIXME note).
+// waitForStyled with no click. The "styled at mount" test covers the sync-on-mount detection: the
+// sentinel observes the panel editor wrappers and runs the CodeMirror detection synchronously from
+// the observer (a pre-paint microtask), so frame-host is set before the first paint and the gap
+// between mount and styling is about 0. The token white-out spec is test.fixme(): Ctrl+Space in the
+// harness does not reproduce the kind-class drop, so the spec cannot fail on a build where the
+// tokens turn white (see the note above it).
 
 import { test, expect, openDashboard, readStamp } from './session.mjs';
 import { HA_CODE_EDITOR, CM_CONTENT, CM_SCROLLER } from './selectors.mjs';
@@ -26,19 +24,19 @@ const PANELS = [
 ];
 
 /**
- * Open a panel editor in YAML mode. Nostrodomus loads as a Lovelace MODULE resource, so it is only
- * active for the frontend session AFTER a dashboard has loaded it — visit the seeded dashboard
- * first (which also runs the stale-resource guard), THEN navigate to the panel. The panel opens
- * in the VISUAL editor; 2026.6 exposes the full YAML CodeMirror editor via the toolbar overflow
+ * Open a panel editor in YAML mode. Nostrodomus loads as a Lovelace module resource, so it is only
+ * active for the frontend session after a dashboard has loaded it — visit the seeded dashboard
+ * first (which also runs the stale-resource guard), then navigate to the panel. The panel opens
+ * in the visual editor; 2026.6 exposes the full YAML CodeMirror editor via the toolbar overflow
  * menu (a `wa-dropdown`) → "Edit in YAML". Returns the panel's ha-code-editor locator.
  */
 async function openPanelYamlEditor(page, editPath) {
   await openDashboard(page); // loads + guards the Nostrodomus resource for the session (the app root)
-  // SPA-navigate to the panel — NOT page.goto. A hard page load does NOT fire HA's `location-changed`
+  // SPA-navigate to the panel — not page.goto. A hard page load does not fire HA's `location-changed`
   // event, so Nostrodomus's detection ladder never arms and the editor is never styled. (On a real
-  // SPA-navigated panel ha-code-editor is tagged frame-host=1 BEFORE any click; the SPA route-change
+  // SPA-navigated panel ha-code-editor is tagged frame-host=1 before any click; the SPA route-change
   // event is the trigger, not the click.) Replicate HA's navigate():
-  // pushState + the `location-changed` event both the router AND Nostrodomus's sentinel listen for.
+  // pushState + the `location-changed` event both the router and Nostrodomus's sentinel listen for.
   await page.evaluate((path) => {
     window.history.pushState(null, '', path);
     window.dispatchEvent(new CustomEvent('location-changed', { detail: { replace: false } }));
@@ -55,7 +53,7 @@ async function openPanelYamlEditor(page, editPath) {
       page.locator('ha-icon-button[label*="menu" i]'),
       page.getByRole('button', { name: /more|overflow|menu/i }),
     ];
-    // The panel HOST attaches (waited above) before its toolbar overflow trigger renders, so a
+    // The panel host attaches (waited above) before its toolbar overflow trigger renders, so a
     // one-shot count() can race ahead of the button and find nothing — an intermittent "trigger
     // not found". Wait for a candidate to actually exist before clicking; this also keeps the
     // failure below meaningful (trigger genuinely never rendered vs. checked-too-early).
@@ -113,9 +111,9 @@ async function waitForStyled(editor) {
 }
 
 /**
- * Focus the editor so keyboard input lands in it. This is NOT the styling trigger — the SPA route
+ * Focus the editor so keyboard input lands in it. This is not the styling trigger — the SPA route
  * change in openPanelYamlEditor arms Nostrodomus's detection ladder, which styles the editor without any
- * click (frame-host=1 BEFORE any click). The token spec calls this AFTER
+ * click (frame-host=1 before any click). The token spec calls this after
  * waitForStyled, purely to focus the CodeMirror content for its Ctrl+End / Ctrl+Space keystrokes.
  */
 async function clickIntoEditor(page) {
@@ -126,7 +124,7 @@ async function clickIntoEditor(page) {
  * Assert an inline calc() property tolerantly. The CSSOM normalizes calc() term order when it
  * serializes a style attribute: `calc(100vh - 160px)` comes back as `calc(-160px + 100vh)` (px sorts
  * before vh). A leading percentage happens to keep its place (`calc(100% - 112px)` stays), but that is
- * incidental — do NOT rely on substring order. So match "the prop IS a calc() and contains every
+ * incidental — do not rely on substring order. So match "the prop is a calc() and contains every
  * expected term", order-independent, instead of an exact string that a future browser could reorder.
  * `inline` = the element's literal style attribute; `prop` = the CSS property; `terms` = the calc terms.
  */
@@ -142,9 +140,9 @@ function expectCalc(inline, prop, terms, label) {
 
 for (const panel of PANELS) {
   test.describe(`panel editor: ${panel.kind} (/config/${panel.kind}/edit, YAML mode)`, () => {
-    // GUARD FOR: v0.1.141–142 (universal reach + the 54vw squish). On a pre-universal build the
-    // panel editor is the card-dialog geometry (or unstyled) — inPanel/SURFACE asserts go red.
-    test('SURFACE is a panel (not a card dialog) and the panel frame geometry is applied', async ({ page }, testInfo) => {
+    // A panel editor is styled as a panel, not with the card dialog's 54vw geometry, and not left
+    // unstyled.
+    test('the surface is a panel (not a card dialog) and the panel frame geometry is applied', async ({ page }, testInfo) => {
       const stamp = readStamp();
       const editPath = stamp[panel.pathKey];
       expect(editPath, `${panel.pathKey} missing from resource-stamp.json — re-run \`npm run e2e:up\` after this seed change`).toBeTruthy();
@@ -176,12 +174,12 @@ for (const panel of PANELS) {
       });
       await testInfo.attach('panel-geometry.json', { body: JSON.stringify(geo, null, 2), contentType: 'application/json' });
 
-      // SURFACE = panel.
+      // The surface is a panel.
       expect(geo.inDialog, 'panel editor unexpectedly has a hui-dialog-edit-card ancestor').toBe(false);
       expect(geo.inPanel, 'panel editor is not inside a recognized panel host').toBe(true);
 
-      // Panel frame geometry — codeboxEnlargeRuntime's inline panel sizing (v0.1.148/149/150). The
-      // runtime writes these as literal calc()/px inline, so assert the inline string (computed style
+      // Panel frame geometry: codeboxEnlargeRuntime's inline panel sizing. The runtime writes
+      // these as literal calc()/px inline, so assert the inline string (computed style
       // would be resolved to px). calc() props are matched order-tolerantly (expectCalc) because the
       // CSSOM normalizes calc term order on serialization (e.g. calc(100vh - 160px) → calc(-160px + 100vh)).
       expectCalc(geo.inline, 'max-width', ['100%', '112px'], 'panel max-width inset');
@@ -195,8 +193,8 @@ for (const panel of PANELS) {
       expect(geo.insetLeft, `no left-side glow room (insetLeft=${geo.insetLeft})`).toBeGreaterThan(20);
     });
 
-    // GUARD FOR: v0.1.149 (bottom-corner clip) + v0.1.150 (scrollbar right-gap). On v0.1.148 the
-    // scroller has no inner padding / right gap → the assertions below go red.
+    // The scroller has inner padding and a right gap, so the rounded bottom corners clip neither
+    // the last line numbers nor the scrollbar end.
     test('bottom-corner clearance: scroller carries the card-editor padding + 18px right gap', async ({ page }, testInfo) => {
       const stamp = readStamp();
       const editor = await openPanelYamlEditor(page, stamp[panel.pathKey]);
@@ -217,21 +215,21 @@ for (const panel of PANELS) {
 
       // The seeded script/automation is long enough to actually scroll (so clip matters).
       expect(clip.scrollH, 'seeded content did not overflow — the long script/automation seed is too short to test scroll/clip').toBeGreaterThan(clip.clientH);
-      // Inner clearance from the 22px rounded corners (v0.1.149) + scrollbar right gap (v0.1.150).
+      // Inner clearance from the 22px rounded corners and the scrollbar right gap.
       expect(clip.scrollerInline, 'scroller corner-clearance padding (16px 18px 30px 14px) missing').toContain('padding: 16px 18px 30px 14px');
       expectCalc(clip.scrollerInline, 'max-width', ['100%', '18px'], 'scroller right-gap max-width');
     });
 
-    // FIXME: guards the white-token regression fixed by the v0.1.155 yaml-token-color floor. Ctrl+Space
-    // in the harness does not reproduce the kind-class drop the bug needs, so this passes with and
-    // without the fix. To finish: provoke the real class-dropping re-render in the harness, then
-    // promote back to `test()`. The assertion itself is sound (it samples the RENDERED
-    // -webkit-text-fill-color against the live base fg).
+    // Marked fixme: the YAML token color floor keeps string and number tokens from falling back to
+    // the base white during a re-render, but Ctrl+Space in the harness does not reproduce the
+    // kind-class drop, so this passes with and without the floor. It can become `test()` once the
+    // harness provokes the real class-dropping re-render. The assertion itself samples the rendered
+    // -webkit-text-fill-color against the live base fg.
     test.fixme('syntax tokens stay colored (not base-white) through a Ctrl+Space re-render', async ({ page }, testInfo) => {
       const stamp = readStamp();
       const editor = await openPanelYamlEditor(page, stamp[panel.pathKey]);
       await waitForStyled(editor); // SPA nav (in openPanelYamlEditor) arms the detection ladder → styled without any click
-      await clickIntoEditor(page); // NOT the styling trigger — only to focus the editor for the keystrokes below
+      await clickIntoEditor(page); // not the styling trigger — only to focus the editor for the keystrokes below
 
       await page.keyboard.press('ControlOrMeta+End');
       await page.keyboard.press('ControlOrMeta+Space'); // the re-render that dropped the kind class
@@ -241,7 +239,7 @@ for (const panel of PANELS) {
         const root = hce.shadowRoot || hce.getRootNode();
         const container = root && root.querySelector ? root.querySelector('.cm-content') : null;
         // The editor's base foreground = the .cm-content fill (Nostrodomus sets -webkit-text-fill-color: <fg>
-        // here, and it INHERITS onto un-floored token spans). A token whose RENDERED fill equals this has
+        // here, and it inherits onto un-floored token spans). A token whose rendered fill equals this has
         // lost its syntax color — the white-out — whatever the exact value, so we compare dynamically
         // rather than trusting one hard-coded number.
         const baseFill = container ? getComputedStyle(container).getPropertyValue('-webkit-text-fill-color') : '';
@@ -254,7 +252,7 @@ for (const panel of PANELS) {
             text: (s.textContent || '').slice(0, 16),
             cls: s.className,
             color: cs.color,
-            // The RENDERED fill is what the user actually sees: -webkit-text-fill-color OVERRIDES `color`,
+            // The rendered fill is what the user actually sees: -webkit-text-fill-color overrides `color`,
             // and getComputedStyle resolves its `currentcolor` default back to the `color` value when no
             // fill rule applies — so this single read is the effective on-screen color.
             fill: cs.getPropertyValue('-webkit-text-fill-color') || cs.color,
@@ -265,15 +263,15 @@ for (const panel of PANELS) {
       const { baseFill, tokens } = sample;
       await testInfo.attach('panel-tokens.json', { body: JSON.stringify(sample, null, 2), contentType: 'application/json' });
 
-      // The white-out = a yaml-string/yaml-number span losing its semantic color and falling back to a flat
-      // base color. The bug lives in -webkit-text-fill-color (it OVERRIDES `color`), so we assert on the
-      // RENDERED FILL — NOT `color`. Sampling `color` does not show the bug: the CM-native class keeps
-      // `color` a syntax color while the inherited fill is white. A token is white-bugged if its fill
+      // The white-out: a yaml-string/yaml-number span loses its semantic color and falls back to a flat
+      // base color. It shows in -webkit-text-fill-color (which overrides `color`), so the assertion is on
+      // the rendered fill, not on `color`. Sampling `color` would not show it: the CM-native class keeps
+      // `color` a syntax color while the inherited fill is white. A token is whited out if its fill
       // equals (a) the editor's base foreground `baseFill` read above — i.e. it fell to the container fill
       // that inherits onto un-floored spans (sourceClassCssBuilder.js), or (b) HA's generic editor text
       // rgba(255, 255, 255, 0.67) (in case HA overrides the span fill
-      // directly and bypasses inheritance). The v0.1.155 floor sets the fill to the string/number/kind color
-      // (never the base fg) → green; pre-floor (≤ v0.1.154) the fill inherits the base fg → red.
+      // directly and bypasses inheritance). The floor sets the fill to the string, number or kind color,
+      // never the base fg; without it the fill inherits the base fg.
       const HA_GENERIC_WHITE = 'rgba(255, 255, 255, 0.67)';
       expect(tokens.length, 'no yaml-string/yaml-number tokens found to check (seed/selectors?)').toBeGreaterThan(0);
       expect(baseFill, 'could not read the editor base foreground fill (.cm-content not found?)').toBeTruthy();
@@ -284,12 +282,11 @@ for (const panel of PANELS) {
       ).toHaveLength(0);
     });
 
-    // GUARD FOR: the open-flash / on-mount gap (v0.1.157 sync-on-mount detection). With polled detection
-    // the editor was styled a few frames AFTER mount (tens of ms) — the visible flash.
-    // The sentinel observes the panel editor wrappers (panel host → ha-yaml-editor shadow → ha-code-editor shadow)
-    // and fires the same CM-gated detection synchronously from the observer (a pre-paint microtask) so
-    // frame-host is set before first paint → the mount→styled gap collapses to ~0. This test measures that
-    // gap and asserts it is within ~1 frame. Fails on v0.1.156 (polled ladder), passes on v0.1.157+.
+    // No unstyled flash when the panel opens. With polled detection the editor is styled a few frames
+    // after mount (tens of ms), which shows as a flash. The sentinel observes the panel editor wrappers
+    // (panel host → ha-yaml-editor shadow → ha-code-editor shadow) and runs the CodeMirror detection
+    // synchronously from the observer (a pre-paint microtask), so frame-host is set before the first
+    // paint. This test measures the gap between mount and styling and asserts it is within ~1 frame.
     test('styled at mount: no unstyled-paint flash on panel open', async ({ page }, testInfo) => {
       const stamp = readStamp();
       // Record, before navigation, the gap between each ha-code-editor's mount and its first styled
@@ -346,17 +343,9 @@ for (const panel of PANELS) {
   });
 }
 
-// NOTE: automation-lane completion (0.1.260, `actions: - action: … / data:` at the auto-indent
-// column) is covered crash-safely by launch-gates G7 in the CARD dialog. It is NOT driven in the live
+// Automation-lane completion (`actions: - action: … / data:` at the auto-indent
+// column) is covered crash-safely by launch-gates G7 in the card dialog. It is not driven in the live
 // automation panel here: HA's own automation editor (_yamlChanged) live-parses on every keystroke and
 // throws `'trigger' in <string>` on transient partial YAML (16 pageerrors during typing), so typing a
 // rebuilt automation into the real panel is not viable. The completion context is text/path-driven, so
 // the card-dialog G7 exercises the same branchState `kind: 'action-block'` code path.
-
-// Versions each test fails on:
-//   SURFACE + frame geometry        → v0.1.140 and earlier (before the universal reach of v0.1.141–142)
-//   bottom-corner clearance         → v0.1.148 (before v0.1.149 corner-clearance + v0.1.150 right-gap)
-//   tokens not base-white           → test.fixme (fixed in v0.1.155; Ctrl+Space in the harness does not
-//                                      reproduce the kind-class drop)
-//   styled at mount                 → v0.1.156 (polled ladder = the open-flash); passes on v0.1.157+
-//                                      (sync-on-mount detection from the panel-wrapper observers)

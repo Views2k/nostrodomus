@@ -34,7 +34,7 @@ test('isCommentContext catches a trailing YAML comment', () => {
   const line = 'entity: light.a # kit';
   // Cursor inside the trailing comment → suppressed (else the entity popup overwrites the comment).
   assert.equal(isCommentContext('yaml', { line, beforeCursor: 'entity: light.a # kit' }, ''), true, 'cursor after the # is inside the comment');
-  // Cursor still in the value (before the #) → NOT a comment.
+  // Cursor still in the value (before the #) → not a comment.
   assert.equal(isCommentContext('yaml', { line, beforeCursor: 'entity: li' }, ''), false, 'cursor before the # is in the value');
   // `#` without a leading space is part of the value, not a comment.
   assert.equal(isCommentContext('yaml', { line: 'entity: a#b', beforeCursor: 'entity: a#b' }, ''), false, 'a#b is a value');
@@ -45,7 +45,7 @@ test('isCommentContext catches a trailing YAML comment', () => {
 });
 
 test('isCommentContext gates the /* and <!-- scans by language', () => {
-  // /* … */ is a comment only in CSS/JS. In YAML a `/*` inside a value (e.g. a URL) must NOT
+  // /* … */ is a comment only in CSS/JS. In YAML a `/*` inside a value (e.g. a URL) must not
   // suppress completion — and the cross-line scan must not kill the rest of the recent buffer.
   const urlLine = { line: 'url: https://ex.com/*wild', beforeCursor: 'url: https://ex.com/*wild' };
   assert.equal(isCommentContext('yaml', urlLine, ''), false, 'YAML /* in a value is not a comment');
@@ -54,7 +54,7 @@ test('isCommentContext gates the /* and <!-- scans by language', () => {
   assert.equal(isCommentContext('yaml', { line: 'entity: light.k', beforeCursor: 'entity: light.k' }, 'note: "a /* b"'), false, 'stray /* in the YAML buffer does not suppress downstream');
   assert.equal(isCommentContext('css', { line: 'color: r', beforeCursor: 'color: r' }, '/* open block'), true, 'CSS open block comment still suppresses across lines');
 
-  // <!-- … --> is a comment only in HTML. In YAML/markdown content it must NOT suppress.
+  // <!-- … --> is a comment only in HTML. In YAML/markdown content it must not suppress.
   const md = { line: 'content: see <!-- x', beforeCursor: 'content: see <!-- x' };
   assert.equal(isCommentContext('yaml', md, ''), false, 'YAML/markdown <!-- is not a suppressing comment');
   assert.equal(isCommentContext('html', { line: '<!-- c', beforeCursor: '<!-- c' }, ''), true, 'HTML <!-- still a comment');
@@ -62,7 +62,7 @@ test('isCommentContext gates the /* and <!-- scans by language', () => {
 });
 
 test('isCommentContext gates the line-start # and // markers by language', () => {
-  // `#` starts a comment in YAML/Python but is an id SELECTOR in a card_mod CSS block.
+  // `#` starts a comment in YAML/Python but is an id selector in a card_mod CSS block.
   assert.equal(isCommentContext('css', { line: '#id {', beforeCursor: '#id {' }, ''), false, 'CSS #id selector is not a comment');
   assert.equal(isCommentContext('css', { line: '#id .child {', beforeCursor: '#id ' }, ''), false, 'mid-CSS id selector is not a comment');
   assert.equal(isCommentContext('yaml', { line: '# note', beforeCursor: '# note' }, ''), true, 'YAML # is still a comment');
@@ -115,10 +115,10 @@ test('yamlScanner facade keeps scalar and branch compatibility helpers', () => {
 
 test('a stray /* in YAML above a card_mod block does not suppress CSS completion inside it', () => {
   const line = { line: '      colo', beforeCursor: '      colo' };
-  // /* is in a YAML value ABOVE the `style: |` opener → not a CSS comment for the block below.
+  // /* is in a YAML value above the `style: |` opener → not a CSS comment for the block below.
   const strayAbove = 'name: "see http://x/*wild"\ncard_mod:\n  style: |\n    ha-card {\n      ';
   assert.equal(isCommentContext('css', line, strayAbove), false, 'a /* above the block opener is YAML text, not an open CSS comment');
-  // A real open /* INSIDE the block body still suppresses.
+  // A real open /* inside the block body still suppresses.
   const openInside = 'card_mod:\n  style: |\n    ha-card {\n      /* real open comment\n      ';
   assert.equal(isCommentContext('css', line, openInside), true, 'a real open /* inside the block is still a comment');
 });

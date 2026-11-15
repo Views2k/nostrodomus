@@ -48,7 +48,7 @@ test('bounded collection groups targets and descends into host shadow roots', ()
   assert.deepEqual(g.items, [item]);
   assert.deepEqual(g.ripples, [ripple]);
   assert.deepEqual(g.searches, [search]);
-  // ONLY them: nothing leaked into other groups
+  // Only them: nothing leaked into other groups
   assert.equal(g.popovers.length, 0);
   assert.equal(g.popups.length, 0);
   assert.equal(g.searchInputs.length, 0);
@@ -105,7 +105,7 @@ test('active apply injects the byte-identical stylesheet under the shared id (fi
 
 test('overlay host selector is included, not char-spread, in the picker scan selector', () => {
   const src = readFileSync(new URL('../../src/companion/pickerStyleRuntime.js', import.meta.url), 'utf8');
-  // OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR is a comma-joined STRING; spreading it (...) expands it
+  // OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR is a comma-joined string; spreading it (...) expands it
   // char-by-char into malformed selectors that throw in querySelectorAll. It must be included directly.
   assert.match(src, /\n\s*OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR,/, 'overlay selector included directly into the scan array');
   assert.doesNotMatch(src, /\.\.\.\s*OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR/, 'overlay selector must not be spread (it is a string)');

@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 
 import { createCompanionSettleRuntime, SETTLE_LADDER_MS } from '../../src/companion/companionSettleRuntime.js';
 
-// Every page load armed the thirteen rung boot ladder, and every rung ran a style pass: editor
-// discovery over the page and the cleanup walks that follow when none is found. The ladder is
-// there for an editor that mounts after the page loads (an automation opened by its address). On
-// a dashboard with no card dialog and no editor there is nothing for those passes to find.
+// Every page load arms the thirteen-rung boot ladder, for an editor that mounts after the page
+// loads (an automation opened by its address). Each rung's style pass runs editor discovery over
+// the page and cleanup walks when none is found; on a dashboard with no card dialog and no editor
+// there is nothing for those passes to find, so they are skipped.
 
 function harness({ pathname, dialogPresent = false, editorKnown = false } = {}) {
   const env = { dialogPresent, editorKnown, dialogWatches: 0 };
@@ -60,7 +60,7 @@ test('on a dashboard with no dialog and no editor the boot rungs run no style pa
   assert.equal(h.env.dialogWatches - watchesBefore, SETTLE_LADDER_MS.length, 'each rung still looks for a dialog element to watch');
 });
 
-test('a card dialog opened during the ladder is styled by the rungs that follow, as before', () => {
+test('a card dialog opened during the ladder is styled by the rungs that follow', () => {
   const h = harness({ pathname: '/lovelace/home' });
   h.rt.boot('install');
   h.flushFrames();

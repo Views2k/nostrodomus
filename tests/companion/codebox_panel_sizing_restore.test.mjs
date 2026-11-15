@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import { createCodeboxEnlargeRuntime, PANEL_MAX_HEIGHT, PANEL_MAX_WIDTH, PANEL_SIDE_ROOM } from '../../src/companion/codeboxEnlargeRuntime.js';
 
 // A panel editor (automation or script YAML, the template tool, raw dashboard config) gets inline
-// margins, a height cap and corner padding. Nothing recorded what was there before, so uninstall
-// and the universal switch left them on the page; only the card dialog's codebox was handed back.
+// margins, a height cap and corner padding. Uninstall and the universal switch must hand back the
+// inline values it had before, as they do for the card dialog's codebox.
 
 function inlineStyle(initial = {}) {
   const values = new Map(Object.entries(initial).map(([k, v]) => [k, { value: v, priority: '' }]));

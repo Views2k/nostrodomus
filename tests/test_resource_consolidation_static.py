@@ -2,7 +2,7 @@
 from pathlib import Path
 import sys
 ROOT = Path(__file__).resolve().parents[1]
-legacy = (ROOT / "src" / "main.legacy.js").read_text(encoding="utf-8", errors="replace")
+app = (ROOT / "src" / "app.js").read_text(encoding="utf-8", errors="replace")
 static_provider = (ROOT / "src" / "providers" / "staticLibraryProvider.js").read_text(encoding="utf-8", errors="replace")
 provider_runtime = (ROOT / "src" / "providers" / "providerRuntime.js").read_text(encoding="utf-8", errors="replace")
 docs = (ROOT / "docs" / "COMPANION_RESOURCES.md").read_text(encoding="utf-8", errors="replace") if (ROOT / "docs" / "COMPANION_RESOURCES.md").exists() else ""
@@ -13,8 +13,8 @@ for bad in [
     "[nostrodomus-library-core-v1] loaded",
     "[nostrodomus-library-webdev-v1] loaded",
 ]:
-    if bad in legacy:
-        errors.append(f"Legacy runtime still contains stale external library/log token: {bad}")
+    if bad in app:
+        errors.append(f"app.js must not load or log the external library files: {bad}")
 for required in [
     "BUILTIN_NOSTRODOMUS_LIBRARY_CORE_V1",
     "BUILTIN_NOSTRODOMUS_LIBRARY_WEBDEV_V1",
@@ -34,8 +34,8 @@ for required in [
     "loadLibrary, sanitizeLibraryRow",
     "snippetRowsForContext, snippetProvider, buildIndex",
 ]:
-    if required not in legacy:
-        errors.append(f"Legacy runtime missing provider runtime delegate-bundle token: {required}")
+    if required not in app:
+        errors.append(f"app.js is missing provider runtime delegate token: {required}")
 for path in [
     "reference/companions/nostrodomus_editor_v17_2_learned_reapply.js",
     "reference/companions/nostrodomus-picker-safe.js",

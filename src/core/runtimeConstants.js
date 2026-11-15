@@ -13,21 +13,17 @@ export const SECURITY_LIMITS = Object.freeze({
   maxYamlPathLines: 360,
   maxCacheEntries: 64,
   maxRuntimeEntities: 750,
-  // The full entity-id list kept in the runtime snapshot to filter from (prefix-aware sourcing).
-  // maxRuntimeEntities caps the rows returned per query; this caps how many ids are indexed so
-  // large installs (thousands of entities) can complete late-alphabet domains, not just the first
-  // 750 alphabetically. Bounds the per-cache-cycle build; the per-query row count stays bounded by
-  // maxRuntimeEntities after the prefix filter.
+  // How many entity ids the runtime snapshot keeps to filter from by prefix. maxRuntimeEntities caps
+  // the rows of one query; this cap is higher so an install with thousands of entities can still
+  // complete domains late in the alphabet, not only the first 750 ids.
   maxRuntimeEntitiesIndexed: 10000,
   maxRuntimeServices: 500,
-  // Like maxRuntimeEntitiesIndexed: index more service ids than the per-query row cap so the
-  // service value lane can prefix-filter to late-alphabet services (zwave_js.*, zha.*, ...) on
-  // large installs instead of only ever reaching the first 500 alphabetically.
+  // Like maxRuntimeEntitiesIndexed: more service ids are kept than one query returns, so services
+  // late in the alphabet (zwave_js.*, zha.*) can be completed on large installs.
   maxRuntimeServicesIndexed: 3000,
-  // Registries (areas/devices/floors/labels): caps applied at source in registryCatalog, not as a
-  // per-query filter like entities. Areas/floors/labels are small; devices get the entity-scale cap.
-  // No prefix filter is applied to registry rows: device ids are opaque (matched by name via the
-  // scorer's keywords), so id-prefix filtering would wrongly drop name matches; the scorer ranks them.
+  // Registries (areas, devices, floors, labels): capped where registryCatalog reads them, not per
+  // query. Areas, floors and labels are small; devices get the entity cap. Registry rows are not
+  // filtered by id prefix: a device id is opaque and matches by name through the scorer's keywords.
   maxRuntimeAreas: 300,
   maxRuntimeDevices: 750,
   maxRuntimeFloors: 100,

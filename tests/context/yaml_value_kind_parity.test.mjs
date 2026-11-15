@@ -4,12 +4,10 @@ import assert from 'node:assert/strict';
 import * as adapter from '../../src/yaml/runtimeContextAdapter.js';
 import * as classifier from '../../src/yaml/yamlContextClassifier.js';
 
-// The runtime keeps SIX duplicated context-classifier functions across the adapter (whose copies the live
-// eager paths call) and the classifier. The registry value lane was DEAD on 0.1.262 because a branch was
-// added to the classifier's yamlValueKind but not the adapter's, so it never fired live. Every one of
-// these duplicated functions carries the same risk. This pins ALL of them equivalent across a broad
-// matrix, so any future (or existing) divergence — a branch added to one copy only — fails here instead
-// of silently shipping a dead lane. Retire per-function as the duplication is consolidated.
+// Six context-classifier functions exist twice: in the adapter (the copies the live paths call) and
+// in the classifier. A branch added to one copy only never fires live (this happened to the registry
+// value lane). This test keeps all six equal across a broad input matrix. Drop a case when its
+// duplicate is removed.
 const KEYS = [
   '', 'entity', 'entity_id', 'entities', 'my_entity', 'sensor_entity_id',
   'area_id', 'area', 'device_id', 'floor_id', 'label_id',

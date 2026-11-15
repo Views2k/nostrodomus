@@ -3,12 +3,11 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-LEGACY = (ROOT / 'src' / 'main.legacy.js').read_text(encoding='utf-8', errors='replace')
+APP = (ROOT / 'src' / 'app.js').read_text(encoding='utf-8', errors='replace')
 BRIDGE = (ROOT / 'src' / 'composition' / 'runtimeDelegateBridge.js').read_text(encoding='utf-8', errors='replace')
 MODULE_PATH = ROOT / 'src' / 'ui' / 'codeboxStyleRuntime.js'
 CODEBOX_MODULES_DIR = ROOT / 'src' / 'ui' / 'codebox'
-# The codebox style runtime is a composer over src/ui/codebox/ modules;
-# the owned codebox body spans the composer plus its modules.
+# The codebox style runtime composes the modules in src/ui/codebox/; the checks read all of them.
 MODULE = MODULE_PATH.read_text(encoding='utf-8', errors='replace') if MODULE_PATH.exists() else ''
 if CODEBOX_MODULES_DIR.exists():
     for _module_path in sorted(CODEBOX_MODULES_DIR.glob('*.js')):
@@ -54,14 +53,14 @@ for token in [
     'installInitialSyntaxPaintGate("preflight-bootstrap");',
     'state.codeboxPreflightTargetedShadowTraversals =',
 ]:
-    require(token in MODULE, f'preflight runtime preserves behavior token: {token}')
+    require(token in MODULE, f'preflight runtime contains: {token}')
 
 for forbidden in [
     'function installCodeboxPreflightStyle(reason = "preflight") {\n    const installIntoRoot = (root) => {',
     'function installCodeboxPreflightObserver(reason = "preflight-observer") {\n    if (typeof MutationObserver !== "function") return false;',
     'function scheduleCodeboxPreflightMutationScan(records, reason = "mutation") {\n    const urgent = mutationRecordsContainEditorSurface(records);',
 ]:
-    require(forbidden not in LEGACY, f'legacy no longer owns preflight body: {forbidden[:80]}')
+    require(forbidden not in APP, f'app.js does not own preflight body: {forbidden[:80]}')
 
 REPORT.parent.mkdir(parents=True, exist_ok=True)
 REPORT.write_text(

@@ -1,7 +1,5 @@
-// Nostrodomus Settings label formatting seams.
-//
-// Keep these helpers pure: no DOM access, no browser storage, no events, no
-// timers, no styling, and no Home Assistant runtime reads.
+// Label text for the settings panel. Pure functions: no DOM, storage, events, timers or Home
+// Assistant reads.
 
 import { clampNumber } from '../core/string.js';
 
@@ -17,7 +15,6 @@ const LANGUAGE_LABELS = Object.freeze({
 export function languageLabel(lang) {
   return LANGUAGE_LABELS[lang] || String(lang).replace(/^\w/, (c) => c.toUpperCase());
 }
-
 
 export function glowSizeLabel(value) {
   const n = Math.round(clampNumber(value, -100, 100, 0));

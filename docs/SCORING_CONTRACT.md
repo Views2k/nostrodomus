@@ -1,6 +1,6 @@
 # Nostrodomus Scoring Contract
 
-`src/completion/scoring.js` ranks completion rows. It takes the context descriptor and the rows the providers returned, and returns the rows the popup shows, in order.
+`src/completion/scoring.js` ranks completion rows. It takes the context descriptor and the rows the providers returned, and returns the rows the suggestion list shows, in order.
 
 ## Purity rules
 
@@ -114,9 +114,7 @@ Ranking helpers, used by `scoreItems` and by tests:
 - `sameCompletionContextForIncrementalFilter(previousCtx, ctx)`
 - `camelMatch(label, query)`
 
-Recent accepts: `createRecentAcceptBoostStore(limit)`, `DEFAULT_RECENT_ACCEPT_STORE`, `recordRecentAcceptedCompletion(item, store)` and `recentAcceptKey(item)`. The store keeps counts in memory. `src/main.legacy.js` loads and saves it under the `nostrodomus.frecency` storage key.
-
-`compute`, `refresh` and `requestLiveUpdate` run detection, scoring and rendering through injected functions.
+Recent accepts: `createRecentAcceptBoostStore(limit)`, `DEFAULT_RECENT_ACCEPT_STORE`, `recordRecentAcceptedCompletion(item, store)` and `recentAcceptKey(item)`. The store keeps counts in memory. `src/app.js` loads and saves it under the `nostrodomus.frecency` storage key.
 
 ## Fixture corpus
 

@@ -14,7 +14,7 @@ import {
   shortItemMeta,
 } from '../../src/ui/suggestionPopup.js';
 
-test('suggestion popup helpers preserve source and kind labels', () => {
+test('suggestion popup helpers label each kind and source and fall back to the raw value', () => {
   assert.equal(itemKindLabel({ type: 'service' }), 'Service');
   assert.equal(itemKindLabel({ type: 'unknown-kind' }), 'unknown-kind');
   assert.equal(itemKindLabel(null), 'Item');
@@ -38,7 +38,7 @@ test('suggestion popup metadata and documentation match runtime strings', () => 
   assert.equal(itemDocumentation({ type: 'key' }), 'YAML key or Lovelace configuration completion.');
 });
 
-test('suggestion popup visual helpers preserve icons, pill labels, and accent palette', () => {
+test('suggestion popup visual helpers give each kind its icon, pill label and accent colors', () => {
   assert.equal(iconFor({ type: 'snippet' }), 'Sn');
   assert.equal(iconFor({ type: 'property' }), 'Pr');
   assert.equal(iconFor({ type: 'filter' }), '|');

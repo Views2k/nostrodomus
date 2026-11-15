@@ -1,8 +1,6 @@
-// Persistent browser listener lifecycle owner for Nostrodomus runtime.
-//
-// This module owns listener attach/remove bookkeeping while keeping DOM targets
-// and runtime telemetry injected by the main runtime. It intentionally does not
-// discover browser nodes, add timers, or perform broad traversal.
+// The registry of listeners that stay attached for the life of the runtime, so uninstall can
+// remove every one of them. Targets and telemetry are injected; the module finds no nodes and
+// sets no timers.
 
 /**
  * @param {{
@@ -17,7 +15,7 @@ export function createPersistentListenersRuntime({
   if (!state) throw new TypeError('createPersistentListenersRuntime requires state');
 
   function addPersistentListener(target, type, handler, options = {}, reason = 'persistent-listener') {
-    const addListener = target?.['add' + 'EventListener']?.bind(target);
+    const addListener = target?.addEventListener?.bind(target);
     if (!addListener || !type || !handler) return false;
     try {
       addListener(type, handler, options);

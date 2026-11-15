@@ -1,13 +1,9 @@
-// Main provider/HACS surface catalog.
-//
-// This module is pure contract data. It is intentionally not a live provider:
-// no DOM access, Home Assistant reads, storage, timers, network calls, provider
-// registration, popup rendering, or insertion behavior. The catalog gives
-// Provider Contract v2 real Home Assistant and HACS configuration surfaces to
-// work against, separate from any autocomplete behavior.
+// Catalog of Home Assistant and HACS card surfaces: card types, keys, nested keys and value
+// hints for each. Data only: no DOM access, Home Assistant reads, storage, timers, network
+// calls or provider registration. hacsCatalogProvider.js builds its rows from this catalog.
 
 export const HACS_PROVIDER_CATALOG_VERSION = 1;
-export const HACS_PROVIDER_CATALOG_STAGE = "priority10-provider-contract-v2-main-provider-catalog";
+export const HACS_PROVIDER_CATALOG_STAGE = "hacs-provider-catalog";
 
 function freezeSurface(surface) {
   return Object.freeze({

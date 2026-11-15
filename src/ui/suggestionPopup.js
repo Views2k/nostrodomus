@@ -1,8 +1,7 @@
-import { sanitizeInlineDocumentation } from '../core/sanitize.js';
-// Pure suggestion popup presentation helpers.
-// Keep this module browser/DOM-free: DOM construction, event wiring, placement,
-// and visual lifecycle ownership live in src/completion/popupRuntime.js.
+// The text, icon and colors of each row of the suggestion popup. No DOM: building, events,
+// placement and the popup's lifecycle are in src/completion/popupRuntime.js.
 
+import { sanitizeInlineDocumentation } from '../core/sanitize.js';
 import {
   HA_VALUE_PROVIDER_ID,
   LOVELACE_CONTEXT_PROVIDER_ID,

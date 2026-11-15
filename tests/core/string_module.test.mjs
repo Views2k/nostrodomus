@@ -14,7 +14,7 @@ import {
   sliderNumberLabel,
 } from '../../src/core/string.js';
 
-test('clampNumber preserves legacy numeric bounds and fallback behavior', () => {
+test('clampNumber bounds numbers and falls back for non-numbers', () => {
   assert.equal(clampNumber(5, 0, 10, 1), 5);
   assert.equal(clampNumber(-5, 0, 10, 1), 0);
   assert.equal(clampNumber(15, 0, 10, 1), 10);
@@ -22,14 +22,14 @@ test('clampNumber preserves legacy numeric bounds and fallback behavior', () => 
   assert.equal(clampNumber('bad', 0, 10, 1), 1);
   assert.equal(clampNumber(undefined, 0, 10, 1), 1);
   assert.equal(clampNumber(NaN, 0, 10, 1), 1);
-  // null/''/whitespace/false/[]/{} must fail dark to the fallback, NOT coerce to a finite 0
+  // null, '', whitespace, false, [] and {} must give the fallback, not coerce to a finite 0
   // and clamp to a min>0 bound (which silently over-desaturated themes from corrupt persisted settings).
   for (const bad of [null, '', '   ', false, true, [], [5], {}]) {
     assert.equal(clampNumber(bad, 0.35, 1.85, 1), 1, `${JSON.stringify(bad)} -> fallback`);
   }
 });
 
-test('style slider labels preserve legacy display formatting', () => {
+test('style slider labels format their values for display', () => {
   assert.equal(hueLabel(194.6), '195°');
   assert.equal(hueLabel(-12), '0°');
   assert.equal(hueLabel(720), '360°');
@@ -47,7 +47,7 @@ test('style slider labels preserve legacy display formatting', () => {
   assert.equal(sliderNumberLabel('bad'), '100%');
 });
 
-test('safeString preserves legacy nullable and truncation behavior', () => {
+test('safeString handles nullable values and truncates', () => {
   assert.equal(safeString('abc'), 'abc');
   assert.equal(safeString(123), '123');
   assert.equal(safeString(null), '');
@@ -69,7 +69,7 @@ test('safeString never truncates through a surrogate pair (well-formed output)',
 });
 
 
-test('client display labels preserve legacy diagnostics formatting', () => {
+test('client display labels format the diagnostics values', () => {
   assert.equal(displayMemoryLabel(null), 'RAM: unavailable');
   assert.equal(displayMemoryLabel(undefined), 'RAM: unavailable');
   assert.equal(displayMemoryLabel(0), 'RAM: unavailable');
@@ -87,7 +87,7 @@ test('client display labels preserve legacy diagnostics formatting', () => {
   assert.equal(displayMonitorLabel({ width: 800, height: 600, devicePixelRatio: 1.5 }), '800x600 @1.5x');
 });
 
-test('client GPU and browser display helpers preserve legacy diagnostics formatting', () => {
+test('client GPU and browser display helpers format the diagnostics values', () => {
   assert.equal(compactGpuRendererLabel(''), 'unavailable');
   assert.equal(compactGpuRendererLabel('unavailable'), 'unavailable');
   assert.equal(

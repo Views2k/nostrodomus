@@ -63,3 +63,21 @@ test('runtime error runtime clears state and returns diagnostics fallback payloa
   assert.equal(state.runtimeErrorStats.total, 0);
   assert.equal(state.lastError, null);
 });
+
+test('errors that no longer fit in the kept list are counted as dropped', () => {
+  const state = {};
+  const runtime = createRuntimeErrorRuntime({ state, logWarnOnce: () => {} });
+  for (let i = 0; i < 40; i += 1) runtime.recordRuntimeError('scope:fill', new Error(`e${i}`));
+  assert.equal(state.runtimeErrors.length, 40);
+  assert.equal(state.runtimeErrorStats.dropped, 0, 'nothing dropped while the list has room');
+
+  for (let i = 40; i < 45; i += 1) runtime.recordRuntimeError('scope:fill', new Error(`e${i}`));
+  assert.equal(state.runtimeErrors.length, 40, 'the list keeps the newest 40');
+  assert.equal(state.runtimeErrors[0].message, 'e5');
+  assert.equal(state.runtimeErrorStats.total, 45);
+  assert.equal(state.runtimeErrorStats.dropped, 5);
+  assert.equal(runtime.runtimeErrorReadout().stats.dropped, 5);
+
+  runtime.clearRuntimeErrors();
+  assert.equal(state.runtimeErrorStats.dropped, 0);
+});

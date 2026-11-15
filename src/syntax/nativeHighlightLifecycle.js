@@ -23,26 +23,12 @@ export function createNativeHighlightLifecycle(deps) {
   } = deps;
   const CODEMIRROR_NATIVE_HIGHLIGHT_BASE_STYLE_ID = "nostrodomus-cm-native-highlight-base-v1";
 
-// important-override registry — native-highlight base fg/caret css.
-
-// external rules overridden: CodeMirror theme fg/caret-color and HA theme universal
-
-//   transition rules during native-highlight ownership.
-
-// owner: native-highlight lifecycle (this module).
-
-// reason: base fg and caret must hold while the CM6 highlight extension owns token
-
-//   colors; transitions must stay dead to avoid first-paint flashes.
-
-// removal condition: CM theme bridge that sets these via the extension itself.
-
-// verification: native-highlight syntax tests; browser smoke syntax items.
-
-function buildCodeMirrorNativeHighlightBaseCss(syntax) {
-    // Neutral base fg, never the theme palette fg: darkPlusColor("fg") can be white #ffffff
-    // x opacity = rgba(255,255,255,0.67) on white-fg presets and would flash during a Ctrl+Space repaint
-    // gap. The var is wired to #d4d4d4 (codeboxPreflight.js / styleDomRuntime.js) so it stays neutral.
+  // !important keeps the base text color and the caret against CodeMirror's theme and the
+  // transition rules of Home Assistant themes while the highlight extension colors the tokens;
+  // a transition here would show the code uncolored for a moment when the editor opens.
+  function buildCodeMirrorNativeHighlightBaseCss(syntax) {
+    // The base fg is the neutral codebox fg variable (#d4d4d4 by default), not the palette fg,
+    // which is white on some presets and would flash during a Ctrl+Space repaint.
     const neutralFg = "var(--nostrodomus-codebox-syntax-fg, #d4d4d4)";
     const dim = api.darkPlusColor("dim", syntax);
     const glow = syntax?.active ? (syntax.textShadow || "none") : "none";
@@ -75,7 +61,7 @@ function buildCodeMirrorNativeHighlightBaseCss(syntax) {
     `;
   }
 
-function installCodeMirrorNativeHighlightBaseStyle(parts, syntax) {
+  function installCodeMirrorNativeHighlightBaseStyle(parts, syntax) {
     const root = parts?.root || null;
     if (!root) return false;
     const style = ensureStyleElementAtEnd(root, CODEMIRROR_NATIVE_HIGHLIGHT_BASE_STYLE_ID);
@@ -85,7 +71,7 @@ function installCodeMirrorNativeHighlightBaseStyle(parts, syntax) {
     return true;
   }
 
-function installCodeMirrorNativeHighlightSyntax(editor, settings, reason = "native-highlight-syntax") {
+  function installCodeMirrorNativeHighlightSyntax(editor, settings, reason = "native-highlight-syntax") {
     const parts = codeMirrorSourceClassParts(editor);
     if (!parts) return { installed: false, nativeHighlight: false, reason: "missing-codemirror-parts" };
     const syntax = resolveSyntaxTintSettings(settings || effectiveStyleSettings());
@@ -146,7 +132,7 @@ function installCodeMirrorNativeHighlightSyntax(editor, settings, reason = "nati
     return { ...native, clearedInlineNodes: cleanup.cleared || 0, ownership };
   }
 
-function scheduleNativeHighlightForActiveEditor(editor, reason = "active-editor-native-highlight") {
+  function scheduleNativeHighlightForActiveEditor(editor, reason = "active-editor-native-highlight") {
     const hasEditor = !!editor?.querySelector;
     const editorKey = hasEditor ? codeboxEditorCacheKey(editor) : "no-editor";
     const alreadyNative = hasEditor && editorUsesCodeMirrorNativeHighlightSyntax(editor);
@@ -254,17 +240,7 @@ function scheduleNativeHighlightForActiveEditor(editor, reason = "active-editor-
     return true;
   }
 
-function cancelSyntaxRecoveryTimersForNativeHighlight(reason = "native-highlight-owns-syntax") {
-    state.lastNativeHighlightRecoveryCancel = {
-      at: new Date().toISOString(),
-      reason,
-      cancelled: 0,
-      legacyRecoveryDeleted: true,
-    };
-    return 0;
-  }
-
-function suppressLegacySyntaxRecoveryForNativeHighlight(editor, reason = "native-highlight-owns-syntax") {
+  function suppressLegacySyntaxRecoveryForNativeHighlight(editor, reason = "native-highlight-owns-syntax") {
     const editorKey = codeboxEditorCacheKey(editor);
     const previousMode = state.codeMirrorSyntaxContentMode || "";
     let disconnectedSyntaxObserver = false;
@@ -281,7 +257,6 @@ function suppressLegacySyntaxRecoveryForNativeHighlight(editor, reason = "native
         disconnectedSmartObserver = true;
       }
     } catch { /* mid-frame HA mutation */ }
-    const cancelledRecoveryTimers = cancelSyntaxRecoveryTimersForNativeHighlight(reason);
     const result = {
       at: new Date().toISOString(),
       reason,
@@ -289,14 +264,13 @@ function suppressLegacySyntaxRecoveryForNativeHighlight(editor, reason = "native
       previousMode,
       disconnectedSyntaxObserver,
       disconnectedSmartObserver,
-      cancelledRecoveryTimers,
       suppressed: true,
     };
     state.lastNativeHighlightSyntaxOwnership = result;
     return result;
   }
 
-function editorUsesCodeMirrorNativeHighlightSyntax(editor) {
+  function editorUsesCodeMirrorNativeHighlightSyntax(editor) {
     if (!editor?.querySelector) return false;
     if (editor.dataset?.nostrodomusNativeHighlightSyntax === VERSION) return true;
     const content = editor.querySelector?.(".cm-content") || null;
@@ -305,7 +279,7 @@ function editorUsesCodeMirrorNativeHighlightSyntax(editor) {
     return !!root?.querySelector?.(`#${CODEMIRROR_NATIVE_HIGHLIGHT_BASE_STYLE_ID}`);
   }
 
-function nativeHighlightSyntaxContentPainted(content) {
+  function nativeHighlightSyntaxContentPainted(content) {
     if (!content?.querySelectorAll) return false;
     if (content.dataset?.nostrodomusNativeHighlightSyntax !== VERSION) return false;
     const root = content.getRootNode?.();
@@ -317,7 +291,6 @@ function nativeHighlightSyntaxContentPainted(content) {
     installCodeMirrorNativeHighlightBaseStyle,
     installCodeMirrorNativeHighlightSyntax,
     scheduleNativeHighlightForActiveEditor,
-    cancelSyntaxRecoveryTimersForNativeHighlight,
     suppressLegacySyntaxRecoveryForNativeHighlight,
     editorUsesCodeMirrorNativeHighlightSyntax,
     nativeHighlightSyntaxContentPainted,

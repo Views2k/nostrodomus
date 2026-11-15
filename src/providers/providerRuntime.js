@@ -35,7 +35,7 @@ export const PROVIDER_SETTINGS_META = Object.freeze({
   [STATIC_PROVIDER_ID]: { label: 'Static YAML/library keys', description: 'Local bundled library rows for YAML, CSS, JS, Jinja, HTML, and Python.' },
   [SNIPPET_PROVIDER_ID]: { label: 'Context snippets', description: 'Larger context-routed templates such as actions, triggers, conditions, and card blocks.' },
   [LOVELACE_CONTEXT_PROVIDER_ID]: { label: 'Lovelace context rows', description: 'Focused dashboard rows based on the active YAML path, such as action/card child keys.' },
-  [HA_VALUE_PROVIDER_ID]: { label: 'Home Assistant runtime values', description: 'Entities, services, themes, cards, icons, and actions from the local HA runtime. Entity/service sub-toggles require a future provider split.' },
+  [HA_VALUE_PROVIDER_ID]: { label: 'Home Assistant runtime values', description: 'Entities, services, themes, cards, icons, and actions from the local HA runtime.' },
   [WORD_FALLBACK_PROVIDER_ID]: { label: 'Word fallback', description: 'Lowest-priority fallback words from the current editor buffer when real providers have too few matches.' },
 });
 
@@ -85,8 +85,8 @@ export function createProviderRuntime(options = {}) {
     if (!state.settings.providers || typeof state.settings.providers !== 'object') state.settings.providers = {};
     const providers = state.settings.providers;
     // Every registered provider gets an entry, not only the five built-in ids: the Settings
-    // toggle changes an existing entry and does nothing without one, which left the catalog
-    // provider and providers added through the public API without a working toggle.
+    // toggle changes an existing entry and does nothing without one (the catalog provider and
+    // providers added through the public API are not built in).
     for (const providerId of [...BUILT_IN_PROVIDER_IDS, ...registeredProviderIds()]) {
       const entry = Object.prototype.hasOwnProperty.call(providers, providerId) ? providers[providerId] : null;
       if (!entry || typeof entry !== 'object') {
@@ -125,11 +125,8 @@ export function createProviderRuntime(options = {}) {
       providerEnabled: providerId => providerEnabled(providerId),
       recordRuntimeError,
       recordRuntimeErrorOnce,
-      // The provider-timeout deadline must share the clock the caller injected, or
-      // the injected `now` governs only the runtime cache while the timeout keeps
-      // reading the real clock — a split clock that drops providers under host load
-      // (and makes timing-controlled tests flaky). Production passes no `now`, so this
-      // stays byte-identical: the fallback is the same runtimeNowMs(windowRef).
+      // Provider timing uses the clock the caller passed in, the same one as the data cache;
+      // without one it reads performance.now() through runtimeNowMs.
       now: typeof options.now === 'function' ? options.now : () => runtimeNowMs(windowRef),
       limits: runtimeProviderRegistryLimits(),
     };

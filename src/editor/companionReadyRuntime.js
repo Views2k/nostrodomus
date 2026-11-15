@@ -1,8 +1,6 @@
-// Runtime owner for companion editor-ready handoff handling.
-//
-// The companion bridge can report CodeMirror editor readiness before the normal
-// HA dialog/editor observers settle. The handoff logic lives in one module so
-// the composition root only exposes the public delegate.
+// __nostrodomus.notifyEditorReady: a companion script can report a ready CodeMirror editor before
+// the dialog and editor observers have settled. A usable editor is remembered and styled at once;
+// otherwise the report schedules presence probes and a style pass.
 
 export function createCompanionReadyRuntime(ctx = {}) {
   const {

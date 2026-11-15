@@ -33,7 +33,7 @@ if 'function applySmartSyntaxRangeHighlights' not in smart_lifecycle:
 if '.cm-line.${lineCls}:not([data-nostrodomus-range-highlighted="1"])' not in smart_styles:
     errors.append('src/syntax/smartSyntaxStyles.js must keep whole-line fallback suppressed when range highlights are active')
 
-# The bundled runtime must carry the same behavior (minified names allowed).
+# dist must carry the same behavior.
 for token in [
     'highlights.set(',
     'applySmartSyntaxRangeHighlights',

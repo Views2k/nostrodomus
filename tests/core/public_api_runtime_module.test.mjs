@@ -36,8 +36,8 @@ test('public API runtime installs aliases, boots library before lifecycle, and r
     W,
     documentRef: { nodeType: 9 },
     state,
-    VERSION: 'nostrodomus-v0.1.27-runtime-surface-owner',
-    PROJECT_VERSION: '0.1.27',
+    VERSION: 'nostrodomus-v0.0.0-test',
+    PROJECT_VERSION: '0.0.0',
     apiMethods: {
       open: () => 'open',
       close: () => 'close',
@@ -58,8 +58,8 @@ test('public API runtime installs aliases, boots library before lifecycle, and r
     cancelAnimationFrameRef: value => events.push(`cancel:${value}`),
   });
 
-  assert.equal(runtime.api.version, 'nostrodomus-v0.1.27-runtime-surface-owner');
-  // boot() installs the full runtime but does NOT eagerly load the completion
+  assert.equal(runtime.api.version, 'nostrodomus-v0.0.0-test');
+  // boot() installs the full runtime but does not eagerly load the completion
   // library (it loads lazily on first editor via open()).
   let libraryLoads = 0;
   await runtime.boot(async () => { libraryLoads += 1; });

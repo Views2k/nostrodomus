@@ -1,7 +1,7 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src" / "main.legacy.js"
+SRC = ROOT / "src" / "app.js"
 SETTINGS_PANEL_RUNTIME = ROOT / "src" / "ui" / "settingsPanelRuntime.js"
 PROJECT = ROOT / "PROJECT.json"
 
@@ -10,8 +10,7 @@ SETTINGS_OWNER_DIR = ROOT / "src" / "ui" / "settings"
 text = SRC.read_text(encoding="utf-8")
 settings_panel_text = SETTINGS_PANEL_RUNTIME.read_text(encoding="utf-8")
 source_owner_text = text + "\n" + settings_panel_text
-# The settings owner functions live in src/ui/settings/* factories;
-# scan the owner modules too so the token assertions follow the code.
+# The settings panel is built by the modules in src/ui/settings/, so those are read too.
 for owner_module in sorted(SETTINGS_OWNER_DIR.glob("*.js")):
     source_owner_text += "\n" + owner_module.read_text(encoding="utf-8", errors="replace")
 project = PROJECT.read_text(encoding="utf-8")

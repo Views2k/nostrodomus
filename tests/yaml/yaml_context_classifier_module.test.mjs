@@ -50,14 +50,14 @@ test('value-kind classifier covers runtime and scalar keys', () => {
 });
 
 test('registry routing is flag-gated on ctx.registryLaneEnabled', () => {
-  // OFF (no gate): area_id/device_id/floor_id/label_id fall through to their legacy (no-row) kind,
+  // Off (no gate): area_id/device_id/floor_id/label_id fall through to their legacy (no-row) kind,
   // so the engine-off path is byte-identical.
   assert.equal(yamlValueKind({ yamlKey: 'area_id', yamlPath: ['target'] }), '');
   assert.equal(yamlValueKind({ yamlKey: 'device_id' }), '');
   assert.equal(yamlValueKind({ yamlKey: 'floor_id' }), '');
   assert.equal(yamlValueKind({ yamlKey: 'label_id' }), '');
 
-  // ON: the gate routes the canonical reference keys to their registry kind.
+  // On: the gate routes the canonical reference keys to their registry kind.
   assert.equal(yamlValueKind({ yamlKey: 'area_id', yamlPath: ['target'], registryLaneEnabled: true }), 'area');
   assert.equal(yamlValueKind({ yamlKey: 'area', registryLaneEnabled: true }), 'area', 'area: card key routes too');
   assert.equal(yamlValueKind({ yamlKey: 'device_id', registryLaneEnabled: true }), 'device');

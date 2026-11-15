@@ -15,14 +15,13 @@ import {
 } from '../../src/core/diagnostics.js';
 
 const root = process.cwd();
-const runtime = readFileSync(join(root, 'src/main.legacy.js'), 'utf8');
-const telemetryRuntime = readFileSync(join(root, 'src/diagnostics/telemetryRuntime.js'), 'utf8');
+const runtime = readFileSync(join(root, 'src/app.js'), 'utf8');
+const diagnosticsRuntimeSource = readFileSync(join(root, 'src/diagnostics/diagnosticsRuntime.js'), 'utf8');
 const providerRuntime = readFileSync(join(root, 'src/providers/providerRuntime.js'), 'utf8');
-const mainLegacyAdapters = readFileSync(join(root, 'src/composition/mainLegacyAdapters.js'), 'utf8');
+const appAdapters = readFileSync(join(root, 'src/composition/appAdapters.js'), 'utf8');
 
 test('registry and diagnostics keep their contract exports callable', () => {
-  // These imports were previously implicit existence checks (unused bindings);
-  // assert them explicitly so the contract is visible and lint-clean.
+  // Each contract export is asserted to be callable.
   const contractExports = {
     providerDiagnosticIdFromRegistryModule,
     providerTimeoutBudgetMsFromRegistryModule,
@@ -91,11 +90,11 @@ test('runtime provider registry is wired through the provider runtime owner with
   assert.match(providerRuntime, /return registry\.registerProvider\(provider, state\);/);
   assert.match(providerRuntime, /registry\.providerCandidates\(ctx, state, runtimeProviderRegistryDeps\(\)\)/);
   assert.match(providerRuntime, /registry\.providerCandidatesLegacy\(ctx, state, runtimeProviderRegistryDeps\(\)\)/);
-  assert.match(runtime, /const \{ providerCandidates \} = createMainLegacyProviderAdapters\(\{/);
-  assert.match(mainLegacyAdapters, /return providerRuntime\.providerCandidates\(ctx\);/);
-  assert.match(mainLegacyAdapters, /return providerRuntime\.providerCandidatesLegacy\(ctx\);/);
-  assert.match(telemetryRuntime, /ctx\.providerSummary\(state, \{/);
-  assert.match(telemetryRuntime, /return providerSummaryLegacy\(\);/);
+  assert.match(runtime, /const \{ providerCandidates \} = createAppProviderAdapters\(\{/);
+  assert.match(appAdapters, /return providerRuntime\.providerCandidates\(ctx\);/);
+  assert.match(appAdapters, /return providerRuntime\.providerCandidatesLegacy\(ctx\);/);
+  assert.match(diagnosticsRuntimeSource, /ctx\.providerSummary\(state, \{/);
+  assert.match(diagnosticsRuntimeSource, /return providerSummaryLegacy\(\);/);
   assert.match(runtime, /providerSummary: providerRegistry\.providerSummary/);
 });
 

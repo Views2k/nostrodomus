@@ -34,7 +34,7 @@ test('scoring runtime owns live scoreItems state glue and provider salt', () => 
   assert.equal(qualityPayload.options.candidateInputCount, 1);
 });
 
-test('scoring runtime preserves mode-aware type filtering and helper delegates', () => {
+test('scoring runtime filters types by the settings mode and delegates camelMatch and modeRank', () => {
   const state = { settings: { mode: 'snippets' } };
   const runtime = createScoringRuntime({ state });
 

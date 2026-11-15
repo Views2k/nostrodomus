@@ -18,8 +18,8 @@ import {
 /**
  * The seeded entities card's own "Edit" button. In 2026.6 edit mode every
  * card renders a visible per-card Edit button (clicking the card body does
- * NOT open the editor), so the button
- * must be scoped to THIS card's wrapper: the page shows one per card.
+ * not open the editor), so the button
+ * must be scoped to this card's wrapper: the page shows one per card.
  * Structural scoping first (wrapper candidates), geometric fallback (the
  * button sits directly under the card; :below() sorts by distance).
  */
@@ -79,7 +79,7 @@ export async function openSeededCardCodeEditor(page, stamp, { cardSelector = HUI
     );
   }
 
-  // visualOnly: stay in the VISUAL editor (do NOT switch to YAML). For cards whose visual
+  // visualOnly: stay in the visual editor (do not switch to YAML). For cards whose visual
   // editor embeds a CodeMirror form field (a markdown template selector, condition/action
   // editors): the companion-form-field-guard spec asserts that field is not the codebox.
   if (visualOnly) {
@@ -96,7 +96,7 @@ export async function openSeededCardCodeEditor(page, stamp, { cardSelector = HUI
   if ((await codeEditor.count()) === 0 || !(await codeEditor.first().isVisible())) {
     await showCode.first().click();
   }
-  // Arm the dialog lifecycle recorder. The dialog can VANISH mid-test in an
+  // Arm the dialog lifecycle recorder. The dialog can vanish mid-test in an
   // automated run (present at attach, absent from the whole DOM at failure
   // time). Every input event and the exact removal moment are timestamped so
   // the killing step or timer names itself in the failure.
@@ -106,9 +106,9 @@ export async function openSeededCardCodeEditor(page, stamp, { cardSelector = HUI
   await yaml.waitFor({ state: 'visible', timeout: 15000 });
   await expectDialogAlive(page, 'after switching to the code editor');
 
-  // skipEditorClick: leave the codebox UN-focused/UN-clicked. The apply-on-open spec
+  // skipEditorClick: leave the codebox unfocused and unclicked. The apply-on-open spec
   // needs this — any click (even outside the codebox) re-triggers companion discovery,
-  // so to prove the companion applies on DIALOG SETTLE rather than on a codebox click,
+  // so to prove the companion applies on dialog settle rather than on a codebox click,
   // the test must never click into the editor.
   if (!skipEditorClick) {
     // Focus and park the cursor at the end of the document.
@@ -175,16 +175,16 @@ async function dialogLifecycleLog(page) {
 }
 
 /**
- * Step-level liveness assertion: the 2026.6 vanish investigation hinges on
- * which step kills the dialog, so every spec names its steps. Cheap (one
- * shadow-piercing count), loud (dumps the lifecycle log on death).
+ * Step-level liveness assertion: every spec names its steps, so a failure says
+ * which step closed the dialog. Cheap (one shadow-piercing count), and it dumps
+ * the lifecycle log when the dialog is gone.
  */
 export async function expectDialogAlive(page, step) {
   const alive = (await page.locator(HUI_DIALOG_EDIT_CARD).count()) > 0;
   if (!alive) {
     const log = await dialogLifecycleLog(page);
     throw new Error(
-      `the edit dialog VANISHED ${step}.\ndialog lifecycle log: ${JSON.stringify(log, null, 2)}`,
+      `the edit dialog vanished ${step}.\ndialog lifecycle log: ${JSON.stringify(log, null, 2)}`,
     );
   }
 }
@@ -257,7 +257,7 @@ async function completionGateDiagnosis(page) {
       };
 
       // Runtime self-report: health() distinguishes a DOM-detected editor
-      // from a bound CodeMirror VIEW (looksLikeView(state.view)) and reports
+      // from a bound CodeMirror view (looksLikeView(state.view)) and reports
       // edit-dialog/scoping — the decisive split when the dialog is found but
       // typing does nothing.
       let healthChecks = null;
@@ -276,7 +276,7 @@ async function completionGateDiagnosis(page) {
       // Deep-pierce view-extraction probe. The runtime extracts the view from
       // the keydown's composedPath, which crosses every shadow, so viewBound can
       // be true while a structured ha-dialog → wa-dialog → querySelector probe
-      // finds nothing in the wa-dialog layer. This walks ALL shadow roots
+      // finds nothing in the wa-dialog layer. This walks all shadow roots
       // to locate ha-code-editor / .cm-editor wherever 2026.6 puts it, and
       // reads viewFromEvent's candidate properties on each.
       const looksLikeView = (v) =>
@@ -332,7 +332,7 @@ async function completionGateDiagnosis(page) {
       // (prefix/yamlRole), did shouldSuggest fire, were any items produced,
       // and was there an error? Empty context after typing = the dispatch
       // hook never fired (afterDispatch → compute never ran), which would
-      // ALSO explain runtime-hass false (runtimeData/runtimeCache only fill
+      // also explain runtime-hass false (runtimeData/runtimeCache only fill
       // during compute).
       let debug = null;
       try {

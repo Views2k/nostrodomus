@@ -135,7 +135,7 @@ test('provider timeout deadline reads the injected clock, not a separate real on
   assert.ok(!(frozenState.providerStats['slow-demo']?.timeoutDrops));
 
   // A clock that advances past the 8ms budget per read records the call as slow, proving the
-  // deadline is measured on the INJECTED clock. The finished rows are kept: the provider is
+  // deadline is measured on the injected clock. The finished rows are kept: the provider is
   // synchronous, so dropping them would save no time.
   let tick = 0;
   const racingState = baseState();

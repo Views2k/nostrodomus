@@ -8,15 +8,15 @@ import { CURSOR, suggestionPipeline } from '../fixtures/suggestionPipeline.mjs';
 
 // The two CSS rule snippets insert a whole `ha-card { ... }` rule. In the CSS text of a style
 // block they are offered where a rule can start and for text that their rule starts with (`ha`).
-// The words of their labels ("card_mod", "card-mod", "CSS variables") must not match: typing
-// `card` inside a rule is the start of `--card-background-color`.
+// The words of their labels and aliases ("card_mod", "card-mod", "CSS variables") must not
+// match: typing `card` inside a rule is the start of `--card-background-color`.
 
 const pipeline = await suggestionPipeline();
 const RULE_SNIPPETS = ['snip.card_mod.ha_card', 'snip.card_mod.css.variables'];
 const ruleSnippets = items => items.filter(item => RULE_SNIPPETS.includes(item.id)).map(item => item.id);
 const STYLE = 'type: tile\ncard_mod:\n  style: |\n';
 
-test('inside a rule, card completes the CSS variable as before', () => {
+test('inside a rule, card completes the CSS variable and brings no rule snippet', () => {
   for (const marked of [
     `${STYLE}    ha-card {\n      card${CURSOR}\n    }`,
     `${STYLE}    ha-card {\n      ca${CURSOR}\n    }`,

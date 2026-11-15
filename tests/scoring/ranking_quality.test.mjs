@@ -1,18 +1,16 @@
-// Completion RANKING QUALITY suite.
+// Completion ranking quality.
 //
-// Philosophy: assert INTENDED behavior — what a USER should get,
-// derived from how prefix/fuzzy matching SHOULD behave + what is most useful in that YAML
-// context — NOT recorded output. Observe real behavior, but if a clearly-right answer LOSES,
-// that is a ranking finding to REPORT, never encoded here as "expected". Mixed assertion types
-// so cases are not brittle: expectedTop (unambiguous), mustIncludeTopN (fuzzy/tie-prone),
-// mustRankAbove (semantic priority). Covers BOTH the shipped default path (all engine flags OFF)
-// AND the dpRanking-ON path (the quality ceiling) so the suite DOCUMENTS the gap between them.
+// The tests assert the intended behavior: what a user should get from prefix and fuzzy matching
+// and what is most useful in that YAML context, not recorded output. A clearly right answer that
+// loses is a ranking problem to report, never an expected value here. Three kinds of assertion keep
+// the cases from being brittle: expectedTop (unambiguous), mustIncludeTopN (fuzzy or tie-prone) and
+// mustRankAbove (semantic priority). The suite covers the default path (all engine flags off) and
+// the dpRanking path, so it shows the gap between them.
 //
-// Cases that are inherently judgement-laden (e.g. "sp" -> spa_pump vs sensor.power, where two
-// readings are equally defensible, or the authored sensor>light>switch domain weights) are
-// DELIBERATELY OMITTED: asserting them would encode an authored heuristic as a user-truth, the
-// exact trap this suite avoids. The within-tier cases use an UNAMBIGUOUS literal-token query
-// ("mt" -> switch.mt_relay) where the right answer is not in doubt.
+// Cases that are a matter of judgment (for example "sp" -> spa_pump vs sensor.power, where both
+// readings are defensible, or the authored sensor > light > switch domain weights) are left out on
+// purpose: asserting them would turn an authored heuristic into a fact about users. The within-tier
+// cases use an unambiguous literal-token query ("mt" -> switch.mt_relay).
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -24,7 +22,7 @@ import {
   recordRecentAcceptedCompletion,
 } from '../../src/completion/scoring.js';
 
-// Shipped default: all engine flags OFF. dpRanking ON = the quality ceiling.
+// The shipped default has every engine flag off; DP_ON turns dpRanking on.
 const DEFAULT = { mode: 'both', maxItems: 25, fuzzy: true, enabledLangs: { yaml: true, css: true, jinja: true } };
 const DP_ON = { ...DEFAULT, completions: { dpRanking: true } };
 
@@ -47,7 +45,7 @@ function mustRankAbove(rows, a, b, why) {
   const ia = at(rows, a);
   const ib = at(rows, b);
   assert.ok(ia >= 0 && ib >= 0, `${why}\n  both must be present: ${a}@${ia}, ${b}@${ib}\n  got = ${ids(rows).join(', ')}`);
-  assert.ok(ia < ib, `${why}\n  expected ${a} ABOVE ${b}\n  got order = ${ids(rows).join(', ')}`);
+  assert.ok(ia < ib, `${why}\n  expected ${a} above ${b}\n  got order = ${ids(rows).join(', ')}`);
 }
 function mustInclude(rows, id, why) {
   assert.ok(at(rows, id) >= 0, `${why}\n  expected ${id} present\n  got = ${ids(rows).join(', ')}`);
@@ -59,7 +57,7 @@ function mustExclude(rows, id, why) {
 // surfaces as a clear failure rather than a silently-passing test for the wrong reason).
 const tierOf = (label, prefix) => completionMatchRank({ label, aliases: [] }, prefix).tier;
 
-// INTENDED: a required service-data field is more useful first, so it leads the field lane by
+// On purpose: a required service-data field is more useful first, so it leads the field lane by
 // default. The labels are chosen so the alphabetical tie-break would otherwise put the optional
 // field first — so this asserts the required-first bias, not incidental label order.
 test('required service fields lead the field lane (default behavior)', () => {
@@ -71,9 +69,9 @@ test('required service fields lead the field lane (default behavior)', () => {
 });
 
 // =====================================================================================
-// CASE 1 — exact-prefix beats a looser subsequence (DEFAULT path).
-// Intended: typing "light" you mean the light.* domain; an entity that merely SCATTERS the
-// letters (sensor.living_room_light) is less likely your target than one that STARTS with it.
+// Case 1: an exact prefix beats a looser subsequence (default path).
+// Typing "light" means the light.* domain; an entity that only scatters the letters
+// (sensor.living_room_light) is less likely the target than one that starts with them.
 // =====================================================================================
 test('quality (default): exact-prefix entity beats a looser subsequence match', () => {
   const rows = scoreItems(valueCtx('light'), [
@@ -86,7 +84,7 @@ test('quality (default): exact-prefix entity beats a looser subsequence match', 
 });
 
 // =====================================================================================
-// CASE 2 — the "lk" marquee is a TIER win on the DEFAULT path.
+// Case 2: the "lk" initials win on match tier (default path).
 // "lk" word-boundary initials point at light.|k|itchen (tier 2, word-boundary subsequence);
 // lock.front_door / sensor.bulk_power are looser ordered subsequences (tier 2.5). The closer
 // match tier always leads, no flag needed.
@@ -105,7 +103,7 @@ test('quality (default): word-boundary initials "lk" -> light.kitchen lead loose
 });
 
 // =====================================================================================
-// CASE 3 — within one tier, the context-specific provider beats a generic static row (DEFAULT).
+// Case 3: within one tier, the context-specific provider beats a generic static row (default path).
 // Editing a card config, typing "ac": a context-aware "action" key should beat a generic
 // static-library "action" key — same exact-prefix tier, provider relevance decides.
 // =====================================================================================
@@ -127,14 +125,14 @@ test('quality (default): context-specific provider beats generic static at the s
 });
 
 // =====================================================================================
-// CASE 4 — tier-safety: recency can NEVER cross a match tier (DEFAULT path).
-// Even a maxed recently-accepted looser match must lose to a fresh exact-prefix match. matchTier
-// is the first sort key; recentBoost is the 5th. (Extends the single existing tier-safety case.)
+// Case 4: recency never crosses a match tier (default path).
+// Even a recently accepted looser match loses to a fresh exact-prefix match: matchTier is the
+// first sort key, recentBoost the fifth.
 // =====================================================================================
 test('quality (default): a recently-accepted looser match still loses to a fresh exact-prefix', () => {
   const recent = createRecentAcceptBoostStore(10);
   const looser = ent('sensor.kitchen_light'); // ordered-subsequence for "light"
-  recordRecentAcceptedCompletion(looser, recent); // make the WORSE match "recently used"
+  recordRecentAcceptedCompletion(looser, recent); // make the worse match "recently used"
   const rows = scoreItems(valueCtx('light'), [
     looser,
     ent('light.kitchen'), // exact-prefix, fresh
@@ -143,13 +141,11 @@ test('quality (default): a recently-accepted looser match still loses to a fresh
 });
 
 // =====================================================================================
-// CASE 5 — the relevant entity is SURFACED (not buried) among a realistic mixed set (DEFAULT).
-// "po" is a tie-prone query (porch vs power both read naturally), so the robust, non-brittle
-// claim is mustIncludeTopN: the porch switch you are reaching for is in the top results among a
-// large multi-domain install, never lost below the cap. (Picking an exact #1 between porch/power
-// would be the authored-tiebreak trap; top-N is the user-justifiable assertion.)
-// (The provider-side per-query-cap survival, filterEntityIdsByQuery, is a complementary provider
-// test worth adding separately; this asserts the scorer's selection.)
+// Case 5: the relevant entity is in the top results of a realistic mixed set (default path).
+// "po" is tie-prone (porch and power both read naturally), so the test only requires the porch
+// switch in the top three; naming an exact first between porch and power would assert an authored
+// tie-break. This checks the scorer; the provider's per-query cap (filterEntityIdsByQuery) is
+// checked in tests/providers/entity_prefix_sourcing.test.mjs.
 // =====================================================================================
 test('quality (default): a relevant entity is surfaced in the top results among many', () => {
   const many = [
@@ -164,7 +160,7 @@ test('quality (default): a relevant entity is surfaced in the top results among 
 });
 
 // =====================================================================================
-// CASE 6 — value-kind MEMBERSHIP (not order): an entity-value context keeps only entity rows.
+// Case 6: value-kind membership, not order: an entity-value context keeps only entity rows.
 // A service row offered into an entity slot is the wrong kind and must be filtered out entirely.
 // =====================================================================================
 test('membership (default): an entity-value context keeps entity rows and drops a service row', () => {
@@ -177,14 +173,14 @@ test('membership (default): an entity-value context keeps entity rows and drops 
 });
 
 // =====================================================================================
-// CASE 7 — within-tier QUALITY CEILING (dpRanking ON).
-// Two SAME-tier (ordered-subsequence) candidates for "mt": switch.mt_relay contains "mt" as a
-// literal contiguous token (unambiguously the target); climate.basement scatters m..t. With
-// dpRanking ON, the optimal-alignment scorer puts the contiguous match first. On DEFAULT this
-// tie has no quality discriminator and falls to alpha (climate < switch) — so the right answer
-// is NOT first by default. That is the gap, documented by CASE 8.
+// Case 7: within one tier, with dpRanking on.
+// Two candidates of the same tier (ordered subsequence) for "mt": switch.mt_relay contains "mt"
+// as a contiguous token (clearly the target); climate.basement scatters m..t. With dpRanking on,
+// the optimal-alignment scorer puts the contiguous match first. On the default path nothing tells
+// the two apart and the alphabetical order decides (climate < switch), so the right answer is not
+// first; case 8 shows that gap.
 // =====================================================================================
-test('quality (dpRanking ON): within one tier, the contiguous-token match leads', () => {
+test('quality (dpRanking on): within one tier, the contiguous-token match leads', () => {
   const strong = ent('switch.mt_relay'); // "mt" is a literal token
   const weak = ent('climate.basement');  // m..t scattered
   assert.equal(tierOf('switch.mt_relay', 'mt'), 2.5, 'precondition: same tier');
@@ -194,13 +190,12 @@ test('quality (dpRanking ON): within one tier, the contiguous-token match leads'
 });
 
 // =====================================================================================
-// CASE 8 — THE dpRanking-DEFAULT DECISION ITEM (documents both paths; asserts the GAP, not a
-// universal "correct"). With the WEAKER match recently accepted: on DEFAULT recency wins (the
-// weaker climate.basement leads); with dpRanking ON, match quality wins (switch.mt_relay leads).
-// This does NOT claim either is the one right answer — whether match-quality ranking should ship
-// ON by default is a PRODUCT decision. The suite exists to make the gap visible.
+// Case 8: what turning dpRanking on by default would change. With the weaker match recently
+// accepted, recency wins on the default path (climate.basement leads) and match quality wins with
+// dpRanking on (switch.mt_relay leads). The test does not claim either is right; whether
+// match-quality ranking should be on by default is a product decision, and this shows the gap.
 // =====================================================================================
-test('decision item: recency leads on the DEFAULT path; dpRanking ON makes match quality lead', () => {
+test('recency leads on the default path, and dpRanking on makes match quality lead', () => {
   const strong = ent('switch.mt_relay');
   const weak = ent('climate.basement');
   const recent = createRecentAcceptBoostStore(10);
@@ -209,10 +204,11 @@ test('decision item: recency leads on the DEFAULT path; dpRanking ON makes match
   const def = scoreItems({ ...valueCtx('mt') }, [strong, weak], { settings: DEFAULT, recentAccepts: recent, cacheSalt: 'def' });
   const on = scoreItems({ ...valueCtx('mt') }, [strong, weak], { settings: DP_ON, recentAccepts: recent, cacheSalt: 'on' });
 
-  // DEFAULT (shipped): no within-tier quality signal above recentBoost -> the recently-used weaker match leads.
-  expectedTop(def, 'e.climate.basement', 'SHIPPED default: recency outranks within-tier match quality');
-  // dpRanking ON (the quality ceiling): the better match leads despite the rival being recently used.
-  expectedTop(on, 'e.switch.mt_relay', 'dpRanking ON: match quality outranks recency');
-  // dpRanking only REORDERS — same candidate set both ways.
+  // Default path: no within-tier quality signal ranks above recentBoost, so the recently used
+  // weaker match leads.
+  expectedTop(def, 'e.climate.basement', 'default path: recency outranks within-tier match quality');
+  // With dpRanking on the better match leads, although the other one was used recently.
+  expectedTop(on, 'e.switch.mt_relay', 'dpRanking on: match quality outranks recency');
+  // dpRanking only reorders: the candidates are the same both ways.
   assert.deepEqual(ids(def).sort(), ids(on).sort(), 'same candidates, just reordered');
 });

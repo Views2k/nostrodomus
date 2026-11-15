@@ -6,7 +6,7 @@ The coordinator holds state only. It makes no network calls, writes no storage, 
 
 ## Who uses it
 
-- The main runtime installs it at startup (`installRuntimeCoordinator` in `src/core/runtimeCoordinator.js`, called from `src/main.legacy.js`) and registers itself with the id `main-completion-runtime`.
+- The main runtime installs it at startup (`installRuntimeCoordinator` in `src/core/runtimeCoordinator.js`, called from `src/app.js`) and registers itself with the id `main-completion-runtime`.
 - `src/editor/editorDispatchRuntime.js` marks quiet windows while editor transactions arrive in quick succession.
 - The companion layer (`src/companion/inputQuietRuntime.js`) marks and reads the `editor-input` window to postpone its own work during typing.
 - The two older standalone companion scripts carry their own copy of the installer and register as `v17-editor-bridge` and `picker-safe`. If one of them is loaded on the page, it shares this object with the main runtime, and the companion layer in the bundle stays dormant (see `docs/COMPANION_RESOURCES.md`).
@@ -62,6 +62,6 @@ All three return the `snapshot()` result, or `{ available: false, ... }` when no
 
 - The implementation lives in `src/core/runtimeCoordinator.js`. `src/companion/coordinatorRuntime.js` calls it and does not carry a second copy.
 - The coordinator stays local and bounded: no `fetch`, no `sendBeacon`, no `localStorage`, no intervals, no document traversal. `tests/test_runtime_coordinator_unification_static.py` checks this.
-- It coordinates quiet windows only. Completion ranking, insertion, the popup and Home Assistant's preview events are not its concern.
+- It coordinates quiet windows only. Completion ranking, insertion, the suggestion list and Home Assistant's preview events are not its concern.
 - Completion itself is never postponed by a quiet window. Only style, syntax refresh and diagnostics work is.
 - The API listed above is the handshake the standalone scripts use. `tests/companion/coordinator_api_parity.test.mjs` compares the two implementations, so a change to the API has to keep that test passing.

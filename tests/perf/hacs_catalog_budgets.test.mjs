@@ -1,7 +1,5 @@
-// Perf budgets for the scenarios of tests/providers/hacs_catalog_phase_c_fixtures.test.mjs.
-// Run via `npm run test:perf`; excluded from the default
-// `npm test` walk. The functional row-content assertions for the same scenarios
-// remain in the original file.
+// Perf budgets for the scenarios of tests/providers/hacs_catalog_surface_fixtures.test.mjs, which
+// checks the row content. Run with `npm run test:perf`; the default `npm test` walk leaves them out.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';

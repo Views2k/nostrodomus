@@ -20,7 +20,7 @@ test('a colon after an exactly typed key does not replace it with a longer key t
   // A partly typed key is still completed by the colon.
   const partial = { settings: {}, items: rows('conditions:', 'condition:'), selected: 0, context: { lang: 'yaml', yamlRole: 'key', prefix: 'cond' } };
   assert.equal(completionKeyAction({ key: ':' }, partial, open).type, 'commit-typed');
-  // The selected row is the exact key: commit as before.
+  // The selected row is the exact key: the colon commits it.
   const exactSelected = { settings: {}, items: rows('condition:', 'conditions:'), selected: 0, context: { lang: 'yaml', yamlRole: 'key', prefix: 'condition' } };
   assert.equal(completionKeyAction({ key: ':' }, exactSelected, open).type, 'commit-typed');
 });

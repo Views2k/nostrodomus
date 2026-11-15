@@ -56,9 +56,8 @@ export function cacheGet(cache, key) {
 
 export function cachePut(cache, key, value, maxEntries = SECURITY_LIMITS.maxCacheEntries) {
   if (!cache || typeof cache.set !== 'function') return;
-  // Bound the scoring cache so it can't leak on the keystroke path: a Map preserves insertion
-  // order, so evicting keys().next().value drops the oldest entry (FIFO) before we grow past the
-  // cap. Mirrors the bounded cacheSet in staticLibraryProvider so both writers behave the same.
+  // The cache is bounded: at the cap the oldest entry (first in the Map's insertion order) is
+  // dropped, the same as cacheSet in staticLibraryProvider.
   if (maxEntries > 0
       && typeof cache.size === 'number' && cache.size >= maxEntries
       && typeof cache.keys === 'function') {
@@ -72,7 +71,6 @@ export function camelMatch(label, query) {
   const caps = String(label).replace(/[^A-Z0-9]/g, '').toLowerCase();
   return caps.includes(String(query).toLowerCase());
 }
-
 
 function matchPrefixSpan(label = '', query = '', insensitive = false) {
   const text = String(label || '');

@@ -73,7 +73,7 @@ test('runtime context owner uses safe fallback when fallback detector throws', (
   assert.equal(errors[0].scope, 'context:runtime-module-fallback');
 });
 
-test('safe fallback preserves non-explicit idle shape', () => {
+test('the safe fallback for a typing request is an idle YAML context that does not suggest', () => {
   const result = safeFallbackContext('', 0, 'typing');
   assert.equal(result.lang, 'yaml');
   assert.equal(result.shouldSuggest, false);

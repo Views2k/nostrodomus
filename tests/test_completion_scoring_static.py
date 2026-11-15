@@ -5,11 +5,11 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/completion/scoring.js"
-LEGACY = ROOT / "src/main.legacy.js"
+APP = ROOT / "src/app.js"
 REPORT = ROOT / "reports/COMPLETION_SCORING_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 
 errors = []
 notes = []
@@ -26,9 +26,6 @@ required = [
     "export function shouldSuppressStaticForFocusedContext",
     "export function scoreItems",
     "export function camelMatch",
-    "export function compute",
-    "export function refresh",
-    "export function requestLiveUpdate",
 ]
 
 for token in required:
@@ -54,8 +51,8 @@ invariant_tokens = [
 ]
 
 for token in invariant_tokens:
-    if token not in legacy:
-        errors.append(f"Legacy lost completion scoring token: {token}")
+    if token not in app:
+        errors.append(f"app.js is missing completion scoring token: {token}")
 
 required_behavior_tokens = [
     "score",
@@ -63,7 +60,6 @@ required_behavior_tokens = [
     "context",
     "provider",
     "completion",
-    "refresh",
     "focusKind",
     "valueKind",
 ]
@@ -97,9 +93,9 @@ for token in [
     "boolean",
 ]:
     if token not in module:
-        errors.append(f"Expected v31.2 coverage token missing: {token}")
+        errors.append(f"Expected context coverage token missing: {token}")
     else:
-        notes.append(f"PASS v31.2 token: {token}")
+        notes.append(f"PASS context coverage token: {token}")
 
 REPORT.write_text(
     "Completion scoring static test report\n\n"

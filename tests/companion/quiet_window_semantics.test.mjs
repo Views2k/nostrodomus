@@ -1,13 +1,11 @@
 // Quiet-window semantics golden baseline.
 //
-// picker-safe's typing-session quiet window is the substrate that
-// src/companion/inputQuietRuntime.js absorbs and wires into the suppression-gap.
-// This test pins its behavior under a controlled
-// clock: the mark→active window duration, the defer-then-flush-after-quiet
-// sequence, and the CodeMirror hotpath-skip truth table. The functions under test
-// are a verbatim transplant of the source (a faithfulness guard proves no drift).
-// input_quiet_runtime.test.mjs has the richer timing tests against the absorbed
-// module. If this test fails, fix the module, not this file.
+// src/companion/inputQuietRuntime.js reproduces picker-safe's typing-session quiet window. This
+// test pins that window under a controlled clock: how long it stays active after a mark, the
+// defer-then-flush sequence, and the CodeMirror hot-path truth table. The functions under test are
+// a verbatim copy of the source, and one test checks that the copy has not drifted.
+// input_quiet_runtime.test.mjs has the detailed timing tests of the module. If this test fails,
+// fix the module, not this file.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -31,8 +29,8 @@ import {
   readCompanion,
   PICKER_PATH,
   extractFunctionSource,
-  absorbedModuleExists,
-  absorbedModulePath,
+  companionModuleExists,
+  companionModuleUrl,
 } from './_fixtures/companionSource.mjs';
 
 const QUIET_MS = 1000; // editorInputQuietMs default in source
@@ -59,7 +57,7 @@ test('defer suppresses picker work during quiet, then flushes it exactly once af
   const deferred = __nostrodomusDeferPickerWorkDuringEditorInput('picker-work', () => { ran += 1; });
   assert.equal(deferred, true, 'returns true while quiet');
   assert.equal(__nostrodomusPickerSafeSharedState.editorInputQuietSuppressions, 1);
-  assert.equal(ran, 0, 'work must NOT run synchronously while quiet');
+  assert.equal(ran, 0, 'work must not run synchronously while quiet');
   assert.ok(__pendingTimerCount() >= 1, 'a flush timer must be armed');
 
   __advanceClock(QUIET_MS + 500);
@@ -96,7 +94,7 @@ test('CodeMirror hotpath predicate truth table', () => {
   }
   // SVG-style className (baseVal) is read by __nostrodomusClassText
   assert.equal(__nostrodomusIsCodeMirrorEvent(evt([{ className: { baseVal: 'cm-line' } }])), true);
-  // partial class name must NOT match (relies on space padding)
+  // partial class name must not match (relies on space padding)
   assert.equal(__nostrodomusIsCodeMirrorEvent(evt([{ className: 'cm-content-wrapper' }])), false);
   // unrelated node, and empty path
   assert.equal(__nostrodomusIsCodeMirrorEvent(evt([{ localName: 'div', className: 'foo' }])), false);
@@ -134,14 +132,13 @@ test('quiet-window functions are byte-identical to the frozen picker-safe source
   }
 });
 
-// --- Absorbed-module predicate parity ---
-// CONTRACT for src/companion/inputQuietRuntime.js: export the pure
-// `isCodeMirrorEvent(event)` predicate with the identical truth table. (The pin here
-// is the predicate, the part most likely to regress.)
+// --- Built-in module predicate parity ---
+// src/companion/inputQuietRuntime.js must export the pure `isCodeMirrorEvent(event)` predicate
+// with the same truth table.
 const QUIET_MODULE = 'inputQuietRuntime.js';
-test('absorbed quiet module keeps the CodeMirror predicate truth table', async () => {
-  assert.ok(absorbedModuleExists(QUIET_MODULE), `src/companion/${QUIET_MODULE} is missing; this module is required, fix the move or rename`);
-  const mod = await import(absorbedModulePath(QUIET_MODULE));
+test('the built-in quiet module keeps the CodeMirror predicate truth table', async () => {
+  assert.ok(companionModuleExists(QUIET_MODULE), `src/companion/${QUIET_MODULE} is missing`);
+  const mod = await import(companionModuleUrl(QUIET_MODULE));
   assert.equal(typeof mod.isCodeMirrorEvent, 'function', 'module must export isCodeMirrorEvent()');
   assert.equal(mod.isCodeMirrorEvent(evt([{ localName: 'ha-code-editor' }])), true);
   assert.equal(mod.isCodeMirrorEvent(evt([{ className: 'x cm-scroller y' }])), true);

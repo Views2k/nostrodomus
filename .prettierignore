@@ -2,8 +2,3 @@ dist/
 node_modules/
 reports/
 data/
-companion_www/
-coverage/
-*.zip
-*.tar.gz
-*.tgz

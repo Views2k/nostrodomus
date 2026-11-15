@@ -8,12 +8,11 @@ import {
 import {
   runActiveEditorDiagnosticsReadoutWithCallbacks,
   missingActiveEditorReadoutPayload,
-} from './diagnosticsFastLaneHelpers.js';
+} from './diagnosticsReadoutHelpers.js';
 import { createEmbeddedLanguageDiagnostics } from '../languages/embeddedLanguageDiagnostics.js';
 
-
-// All diagnostics debug APIs hang off the single public namespace. The namespace is
-// created here only if boot has not installed the api object yet (crash-path safety).
+// The diagnostics APIs are members of window.__nostrodomus. The object is created here only when
+// the boot did not install it (the boot failed).
 function nostrodomusNamespace(W) {
   return W.__nostrodomus || (W.__nostrodomus = {});
 }
@@ -24,8 +23,7 @@ export function installContextDiagnosticsRuntime(ctx = {}) {
   const installState = ctx.state || null;
   if (!window || !document) return null;
   const nostrodomusExternalRuntimeErrorOnceKeys = new Set();
-  // FIFO-bound: the key embeds the (variable) error message, so distinct external errors could grow
-  // this set without limit. Evicting the oldest keeps recent dedup within the cap.
+  // The key contains the error message, so the set is capped and drops its oldest key first.
   const MAX_ONCE_KEYS = 500;
 
   function nostrodomusRuntimeApi() {
@@ -68,13 +66,13 @@ export function installContextDiagnosticsRuntime(ctx = {}) {
     }
     return result;
   };
-  const NOSTRODOMUS_CONTEXT_ACTIVE_EDITOR_READOUT_STAGE = "2C-active-editor-snapshot-readout";
+  const NOSTRODOMUS_CONTEXT_ACTIVE_EDITOR_READOUT_STAGE = "active-editor-snapshot-readout";
   const NOSTRODOMUS_CONTEXT_ACTIVE_EDITOR_READOUT_VERSION = 1;
   const NOSTRODOMUS_CONTEXT_ACTIVE_EDITOR_MAX_NODE_VISITS = 1800;
   const NOSTRODOMUS_CONTEXT_ACTIVE_EDITOR_MAX_CANDIDATES = 80;
 
-
-  (function installNostrodomusEmbeddedLanguageDetectorDiagnosticsStage10B() {
+  // __nostrodomus.embeddedLanguageDetector
+  (function installEmbeddedLanguageDetectorApi() {
     const W = window;
     const API_KEY = "embeddedLanguageDetector";
 
@@ -97,7 +95,7 @@ export function installContextDiagnosticsRuntime(ctx = {}) {
       return embeddedLanguageDetectorDiagnosticsFallback(payload);
     }
     nostrodomusNamespace(W)[API_KEY] = Object.freeze({
-      stage: "priority10-browser-visible-embedded-language-detector-diagnostics",
+      stage: "embedded-language-detector-diagnostics",
       version: 1,
       localOnly: true,
       redacted: true,
@@ -117,11 +115,12 @@ export function installContextDiagnosticsRuntime(ctx = {}) {
     });
   })();
 
-  (function installNostrodomusContextDiagnosticsReadoutStage2B() {
+  // __nostrodomus.contextDiagnostics
+  (function installContextDiagnosticsReadoutApi() {
     const W = window;
     const STORAGE_KEY = "nostrodomus.contextDiagnosticsReadout.enabled";
     const API_KEY = "contextDiagnostics";
-    const NOSTRODOMUS_CONTEXT_DIAGNOSTICS_READOUT_API_STAGE = "2B-local-diagnostics-readout";
+    const NOSTRODOMUS_CONTEXT_DIAGNOSTICS_READOUT_API_STAGE = "context-diagnostics-readout";
     const NOSTRODOMUS_CONTEXT_DIAGNOSTICS_READOUT_DEFAULT_ENABLED = false;
 
     function diagnosticsReadoutIsEnabled() {
@@ -164,7 +163,7 @@ export function installContextDiagnosticsRuntime(ctx = {}) {
         enabled: diagnosticsReadoutIsEnabled(),
         defaultEnabled: NOSTRODOMUS_CONTEXT_DIAGNOSTICS_READOUT_DEFAULT_ENABLED,
         createReadout: () => {
-          // main.legacy.js installs this runtime outside its boot closure, so no state is passed
+          // app.js installs this runtime outside its boot closure, so no state is passed
           // in. The runtime state hangs off the public API object once boot has run; it is
           // looked up for each readout, and the traversal counters are recorded in it.
           const state = installState || nostrodomusRuntimeApi()?.state || null;
@@ -190,4 +189,3 @@ export function installContextDiagnosticsRuntime(ctx = {}) {
     diagnosticsReadout: window.__nostrodomus?.contextDiagnostics || null,
   };
 }
-

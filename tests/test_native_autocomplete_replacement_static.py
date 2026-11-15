@@ -4,7 +4,7 @@ ROOT = Path(__file__).resolve().parents[1]
 settings = (ROOT / 'src/core/settings.js').read_text(encoding='utf-8')
 active_cache = (ROOT / 'src/editor/activeEditorCacheRuntime.js').read_text(encoding='utf-8')
 public_api = (ROOT / 'src/core/publicApiRuntime.js').read_text(encoding='utf-8')
-main = (ROOT / 'src/main.legacy.js').read_text(encoding='utf-8')
+main = (ROOT / 'src/app.js').read_text(encoding='utf-8')
 context = (ROOT / 'src/yaml/runtimeContextAdapter.js').read_text(encoding='utf-8')
 settings_panel = (ROOT / 'src/ui/settings/settingsPanelShell.js').read_text(encoding='utf-8')
 

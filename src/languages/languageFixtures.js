@@ -5,7 +5,7 @@
 // settings. Live autocomplete behavior does not depend on this corpus.
 
 export const LANGUAGE_FIXTURE_CORPUS_VERSION = 1;
-export const LANGUAGE_FIXTURE_CORPUS_STAGE = "priority10-fixture-detector-contract";
+export const LANGUAGE_FIXTURE_CORPUS_STAGE = "fixture-detector-contract";
 export const CURSOR_MARKER = "▮";
 
 function freezeFixture(fixture) {

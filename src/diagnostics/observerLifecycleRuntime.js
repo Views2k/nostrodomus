@@ -79,7 +79,7 @@ export function createObserverLifecycleRuntime(ctx = {}) {
     return {
       localOnly: true,
       readOnly: true,
-      stage: "C3",
+      stage: "close-binding-readiness",
       automaticTeardownBound: false,
       readyForAutomaticBinding: false,
       gateKey: OBSERVER_LIFECYCLE_DISCONNECT_GATE_KEY,
@@ -100,7 +100,7 @@ export function createObserverLifecycleRuntime(ctx = {}) {
       manualOnly: true,
       dryRunOnly: true,
       destructive: false,
-      stage: "C4",
+      stage: "close-dry-run",
       gateKey: OBSERVER_LIFECYCLE_CLOSE_DRY_RUN_GATE_KEY,
       gateEnabled: observerLifecycleCloseDryRunGateEnabled(),
       disconnectGateKey: OBSERVER_LIFECYCLE_DISCONNECT_GATE_KEY,
@@ -120,7 +120,7 @@ export function createObserverLifecycleRuntime(ctx = {}) {
       manualOnly: false,
       dryRunOnly: true,
       destructive: false,
-      stage: "C5",
+      stage: "close-dry-run-listener",
       listenerGateKey: OBSERVER_LIFECYCLE_CLOSE_DRY_RUN_LISTENER_GATE_KEY,
       listenerGateEnabled: observerLifecycleCloseDryRunListenerGateEnabled(),
       dryRunGateKey: OBSERVER_LIFECYCLE_CLOSE_DRY_RUN_GATE_KEY,
@@ -149,7 +149,7 @@ export function createObserverLifecycleRuntime(ctx = {}) {
       dryRunOnly: true,
       destructive: false,
       observerMutation: false,
-      stage: "C5",
+      stage: "close-dry-run-listener",
       reason: cleanReason,
       at: Date.now(),
       listenerGateKey: OBSERVER_LIFECYCLE_CLOSE_DRY_RUN_LISTENER_GATE_KEY,
@@ -220,7 +220,7 @@ export function createObserverLifecycleRuntime(ctx = {}) {
       dryRunOnly: true,
       destructive: false,
       observerMutation: false,
-      stage: "C4",
+      stage: "close-dry-run",
       gateKey: OBSERVER_LIFECYCLE_CLOSE_DRY_RUN_GATE_KEY,
       requiredGateValue: "enabled",
       disconnectGateKey: OBSERVER_LIFECYCLE_DISCONNECT_GATE_KEY,
@@ -346,6 +346,9 @@ export function createObserverLifecycleRuntime(ctx = {}) {
       return summary;
     }
 
+    // Records taken from the observers disconnected here, by registry. The registries with an owner
+    // that disconnects them report none.
+    const pendingByRegistry = {};
     try {
       if (before.codeboxPreflightObserver) disconnectCodeboxPreflightObserver(`${cleanReason}-central`);
       if (before.codeboxSlotUnclipObservers) cleanupCodeboxSlotUnclip(`${cleanReason}-central`);
@@ -354,33 +357,33 @@ export function createObserverLifecycleRuntime(ctx = {}) {
       if (before.codeMirrorSyntaxContentObserver) disconnectCodeMirrorSyntaxContentObserver(`${cleanReason}-central`);
       if (state.sourceClassSmartSyntaxObserver) disconnectSourceClassSmartSyntaxObserver(`${cleanReason}-central`);
       if (state.syntaxOwnerObserver && state.syntaxOwnerObserver !== state.codeMirrorSyntaxContentObserver) {
-        disconnectObserverLifecycleSingle(
+        pendingByRegistry.syntaxOwnerObserver = disconnectObserverLifecycleSingle(
           () => state.syntaxOwnerObserver,
           () => {
             state.syntaxOwnerObserver = null;
             state.syntaxOwnerEditorKey = "";
             state.syntaxOwnerContent = null;
           }
-        );
+        ).pendingRecords;
       }
       if (state.styleMutationObserver) {
-        disconnectObserverLifecycleSingle(
+        pendingByRegistry.styleMutationObserver = disconnectObserverLifecycleSingle(
           () => state.styleMutationObserver,
           () => {
             state.styleMutationObserver = null;
             state.styleMutationEditor = null;
             if (state.observerStats) state.observerStats.styleMutationGuardTargets = 0;
           }
-        );
+        ).pendingRecords;
       }
       if (state.styleRootObserver) {
-        disconnectObserverLifecycleSingle(
+        pendingByRegistry.styleRootObserver = disconnectObserverLifecycleSingle(
           () => state.styleRootObserver,
           () => { state.styleRootObserver = null; }
-        );
+        ).pendingRecords;
       }
       if (state.styleRootObservers?.size) {
-        disconnectObserverLifecycleMapValues(state.styleRootObservers, item => item?.observer || item, true);
+        pendingByRegistry.styleRootObservers = disconnectObserverLifecycleMapValues(state.styleRootObservers, item => item?.observer || item, true).pendingRecords;
         if (state.observerStats) {
           state.observerStats.shallowStyleRootObservers = 0;
           state.observerStats.deepStyleRootObservers = 0;
@@ -398,7 +401,7 @@ export function createObserverLifecycleRuntime(ctx = {}) {
     const after = observerLifecycleRegistryCounts();
     summary.after = after;
     for (const name of Object.keys(before)) {
-      summary.registries[name] = observerLifecycleRegistrySummary(name, before, after, 0);
+      summary.registries[name] = observerLifecycleRegistrySummary(name, before, after, pendingByRegistry[name] || 0);
       summary.disconnected += summary.registries[name].disconnected;
     }
     summary.pendingRecords = Object.values(summary.registries).reduce((sum, item) => sum + (item.pendingRecords || 0), 0);

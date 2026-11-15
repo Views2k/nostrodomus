@@ -6,11 +6,10 @@ import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 import { signatureHintModel, signatureHintText } from '../../src/completion/signatureHelp.js';
 import { makeHassFixture } from '../fixtures/hassFixture.mjs';
 
-// Sibling-indent blast radius, signature help: the hint gates on
-// isServiceDataFieldContext, so the phantom leaf made the parameter hint vanish for
-// every field after the first -- exactly when the user is filling the remaining
-// fields and most needs it. The existing signature_help suite pins the model with a
-// HAND-BUILT ctx; this suite drives it with the real detected context end-to-end.
+// The signature hint needs isServiceDataFieldContext, so a sibling field at the same indent must
+// not be read as a leaf of the field above it, or the hint would vanish for every field after the
+// first. signature_help.test.mjs checks the model with a hand-built context; this suite uses the
+// real detected context.
 const snapshot = runtimeData({ state: {}, limits: SECURITY_LIMITS, windowRef: {}, findHass: () => makeHassFixture(), now: () => 1_000 });
 
 function hintAt(doc) {

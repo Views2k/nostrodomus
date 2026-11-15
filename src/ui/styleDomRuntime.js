@@ -1,7 +1,7 @@
-// Nostrodomus style DOM/root runtime owner.
-// Owns DOM style-root helpers, codebox root cleanup, and style mutation guard
-// behavior. Dependencies stay injected so this module remains reusable and
-// avoids circular runtime imports.
+// Style elements and the roots they go in: finding the roots of the active editor, keeping one
+// stable element per root, writing the color tokens, removing Nostrodomus's nodes when no editor
+// is open, the steady-state skip of the style pass, and the observer that restyles the editor
+// when Home Assistant rewrites its style or class. Dependencies are injected.
 
 import {
   CM_OWNERS,
@@ -38,7 +38,6 @@ export function createStyleDomRuntime(ctx = {}) {
     NodeRef = globalThis.Node,
     MutationObserverRef = globalThis.MutationObserver,
     state = {},
-    STYLE_TEXT_SIZE_PRESETS = {},
     DARKPLUS_SYNTAX_COLORS = {},
     DARKPLUS_STYLE_ID = "nostrodomus-cm6-darkplus-v1-v5-style",
     codeboxStyleTokenMap,
@@ -72,13 +71,6 @@ export function createStyleDomRuntime(ctx = {}) {
       delete node.dataset.nostrodomusDarkplusLineKind;
       delete node.dataset.nostrodomusDarkplusTokenKind;
     }
-  }
-
-  function applyTextColorPreset(editor, settings) {
-    const preset = STYLE_TEXT_SIZE_PRESETS?.[settings?.style?.textSizePreset] || STYLE_TEXT_SIZE_PRESETS?.base;
-    if (!editor?.style || !preset) return;
-    editor.style.setProperty("--nostrodomus-font-size", `${preset.fontSize}px`);
-    editor.style.setProperty("--nostrodomus-line-height", String(preset.lineHeight));
   }
 
   function integrationDocumentStyleRoot() {
@@ -122,10 +114,10 @@ export function createStyleDomRuntime(ctx = {}) {
       style = documentRef.createElement("style");
       style.id = id;
     }
-    // Keep the node where it is when it already wins the cascade. It only has to move when a
-    // stylesheet that is not ours was added after it. Re-appending on every call queued two
-    // childList records per call in the editor shadow root, which the companion dialog observer
-    // read as a foreign change and answered with another apply (a self-sustaining ~30 Hz loop).
+    // The node stays where it is while it wins the cascade, and moves to the end only when a
+    // stylesheet that is not ours follows it. Appending it again on every call would queue two
+    // childList records each time in the editor shadow root, which the companion dialog observer
+    // answers with another apply, and so on (about 30 times a second).
     try {
       if (style.parentNode === container && !foreignStylesheetFollows(style)) return style;
       if (style.parentNode) style.parentNode.removeChild(style);
@@ -182,7 +174,6 @@ export function createStyleDomRuntime(ctx = {}) {
     return { style, changed: created || moved, created, moved };
   }
 
-
   function isCodeMirrorInlineStyleTarget(el) {
     try { return !!el?.matches?.(CM_OWNERS); } catch { return false; }
   }
@@ -212,9 +203,8 @@ export function createStyleDomRuntime(ctx = {}) {
       roots.push(root);
     };
 
-    // Codebox CSS is allowed only in the active editor/dialog ownership chain.
-    // Do not walk every Home Assistant shadow root; dashboard cards can contain
-    // SVG clip/mask internals that must remain untouched.
+    // Only the roots of the active editor and its dialog: dashboard cards can hold SVG clip and
+    // mask elements that the codebox CSS must not reach.
     if (!editor) return roots;
 
     addRoot(documentRef);
@@ -239,11 +229,10 @@ export function createStyleDomRuntime(ctx = {}) {
     return call(codeboxStyleBuildRootCss, { ...options, syntaxFg: options?.syntaxFg || DARKPLUS_SYNTAX_COLORS.fg }) || "";
   }
 
-  // Every container the codebox root style was put in. The cleanup walk further down descends
-  // only through the dashboard and dialog hosts, so it never reached the shadow roots of an
-  // editor panel (automation or script YAML, the template tool) or the one of
-  // home-assistant-main, and the stylesheet stayed there after uninstall and after the editor
-  // was gone. A container that left the page is dropped when the next one is added.
+  // Every container the codebox root style was put in. The cleanup walk further down enters only
+  // the dashboard and dialog hosts, and does not reach the shadow roots of an editor panel
+  // (automation or script YAML, the template tool) or of home-assistant-main; this list does. A
+  // container that left the page is dropped when the next one is added.
   const codeboxRootStyleContainers = new Set();
 
   function rememberCodeboxRootStyleContainer(container) {
@@ -412,10 +401,9 @@ export function createStyleDomRuntime(ctx = {}) {
     try { state.styleMutationObserver?.takeRecords?.(); } catch { /* injected observer */ }
     try { state.styleMutationObserver?.disconnect?.(); } catch { /* injected observer */ }
 
-    // Do not observe .cm-editor/.cm-scroller/.cm-content. CodeMirror mutates
-    // line/token DOM constantly and Nostrodomus also writes syntax data
-    // attributes there. Styling persistence only needs the stable host/wrapper
-    // surfaces; content changes are handled by editor dispatch and bounded style
+    // .cm-editor, .cm-scroller and .cm-content are not observed: CodeMirror changes their lines
+    // and tokens all the time, and the syntax painter writes data attributes there. The stable
+    // host and wrapper are enough; content changes are handled by the dispatch hook and the
     // settle passes.
     const targets = [];
     const addTarget = (node) => {
@@ -451,7 +439,6 @@ export function createStyleDomRuntime(ctx = {}) {
   return {
     activeEditorStyleRoot,
     applyCodeboxStyleTokensToElement,
-    applyTextColorPreset,
     buildCodeboxRootCss,
     clearStyledTextPreset,
     dashboardContainmentCleanupShadowHosts,

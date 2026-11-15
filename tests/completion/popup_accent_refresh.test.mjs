@@ -4,11 +4,9 @@ import assert from 'node:assert/strict';
 import { ensureCompletionOverlay } from '../../src/completion/popupRuntime.js';
 import { uiAccentVarsFromSettings } from '../../src/ui/codeboxStyle.js';
 
-// Regression guard for the popup accent: the accent CSS
-// vars used to be set only when the overlay was first created, so changing the codebox accent in
-// settings left the suggestion popup on the old color until the overlay was recreated. The reuse
-// path now refreshes them, guarded by a signature stamp so the per-render call writes nothing when
-// the accent is unchanged.
+// Changing the codebox accent in settings must recolor an existing suggestion popup, so the
+// overlay reuse path sets the accent CSS variables again. A signature stamp makes the call on
+// every render write nothing while the accent is unchanged.
 
 function fakeDom() {
   let setPropCalls = 0;
@@ -39,7 +37,7 @@ test('the popup accent refreshes when settings change on the reuse path', () => 
   const red = uiAccentVarsFromSettings(state.settings.style);
   assert.equal(box.style.vars['--nostrodomus-brand-rgb'], red.brand, 'brand applied on create');
 
-  // Change the codebox accent, then ensure again — the SAME box is reused, and the accent must
+  // Change the codebox accent, then ensure again — the same box is reused, and the accent must
   // track the new hue rather than stay on the create-time value.
   state.settings.style = { codeboxBorderHue: 220 };
   const reused = ensureCompletionOverlay(state, deps);

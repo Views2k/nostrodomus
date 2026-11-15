@@ -60,7 +60,7 @@ test('the request made inside the dispatch reads no layout; the read happens on 
   const h = wire();
   assert.equal(h.settle.scheduleCodeboxStyleReapply('editor-dispatch'), false, 'skipped: the syntax owner covers it');
   assert.equal(h.counts.layoutReads, 0, 'no layout read inside the dispatch');
-  assert.deepEqual(h.smartSyntax, [[h.editor, 'style-reapply-skip-editor-dispatch']], 'the syntax pass is requested at once, as before');
+  assert.deepEqual(h.smartSyntax, [[h.editor, 'style-reapply-skip-editor-dispatch']], 'the syntax pass is requested at once');
   assert.equal(h.state.codeboxStyleSkippedReapply, 1);
   h.runFrame();
   assert.equal(h.counts.layoutReads, 1, 'one visibility check on the frame');
@@ -81,7 +81,7 @@ test('an editor that is no longer visible gets the reapply on that same frame', 
   assert.equal(h.settle.scheduleCodeboxStyleReapply('editor-dispatch'), false);
   assert.deepEqual(h.applies, []);
   h.runFrame();
-  assert.deepEqual(h.applies, ['coalesced-editor-dispatch'], 'the reapply that the visibility check used to schedule');
+  assert.deepEqual(h.applies, ['coalesced-editor-dispatch'], 'the reapply that a visibility check would schedule');
   assert.equal(h.state.codeboxStylePendingReasons.size, 0);
 });
 
@@ -100,7 +100,7 @@ test('reasons the skip does not apply to read no layout at all', () => {
     const h = wire();
     h.settle.scheduleCodeboxStyleReapply(reason);
     assert.equal(h.counts.layoutReads, 0, reason);
-    assert.equal(h.state.codeboxStylePendingReasons.has(reason), true, `${reason} is scheduled as before`);
+    assert.equal(h.state.codeboxStylePendingReasons.has(reason), true, `${reason} is scheduled`);
     assert.deepEqual(h.smartSyntax, []);
   }
 });

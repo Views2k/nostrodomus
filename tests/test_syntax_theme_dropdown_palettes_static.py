@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import json
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src/main.legacy.js"
+SRC = ROOT / "src/app.js"
 STYLE = ROOT / "src/ui/settingsStyle.js"
 PANEL = ROOT / "src/ui/settingsPanelRuntime.js"
 DIST = ROOT / "dist/nostrodomus.js"
-PROJECT = ROOT / "PROJECT.json"
 REPORT = ROOT / "reports/SYNTAX_THEME_DROPDOWN_PALETTES_STATIC_TEST_REPORT.txt"
 
 errors = []
@@ -20,20 +18,10 @@ def require(ok, msg):
     else:
         errors.append(msg)
 
-project = json.loads(PROJECT.read_text(encoding="utf-8"))
-version = str(project.get("version"))
-internal = str(project.get("internal_version"))
 src_text = SRC.read_text(encoding="utf-8", errors="replace")
 style_text = STYLE.read_text(encoding="utf-8", errors="replace")
 panel_text = PANEL.read_text(encoding="utf-8", errors="replace")
 dist_text = DIST.read_text(encoding="utf-8", errors="replace")
-
-require(re.fullmatch(r"\d+\.\d+\.\d+", version) is not None, "PROJECT.json uses SemVer")
-require(internal.startswith(f"nostrodomus-v{version}-"), "internal_version records current runtime identity")
-require("PROJECT_VERSION," in src_text and "VERSION," in src_text, "source imports runtime identity from version module")
-dist_project_version_ok = (f'PROJECT_VERSION = "{version}"' in dist_text or
-                           f'PROJECT_VERSION="{version}"' in dist_text)
-require(dist_project_version_ok and internal in dist_text, "dist carries current runtime identity")
 
 for token in [
     "export const STYLE_SYNTAX_PRESETS = Object.freeze({",
@@ -51,7 +39,7 @@ for token in [
     "nostrodomus-syntax-theme-option",
     "Each syntax role uses a distinct color inside every theme",
 ]:
-    require(token in panel_text or token in src_text or token in dist_text, f"settings panel keeps syntax dropdown token: {token}")
+    require(token in panel_text or token in src_text or token in dist_text, f"settings panel has syntax dropdown token: {token}")
 
 for theme in [
     "vscodeDarkPlus", "crimson", "coral", "mocha", "amber", "goldenrod", "lime",

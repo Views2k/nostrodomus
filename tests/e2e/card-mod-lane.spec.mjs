@@ -1,11 +1,11 @@
-// card-mod-lane.spec — the 0.1.255/256 fix that BOUNDS the card_mod `style: |` CSS lane: CSS completes
-// INSIDE an open style block, but normal YAML completion resumes for a sibling key below/beside a closed
-// one (the bug killed the whole rest of the document to CSS). card_mod is ubiquitous, so this fired
-// constantly.
+// card-mod-lane.spec: the card_mod `style: |` CSS lane is bounded. CSS completes inside an open style
+// block, and YAML completion resumes for a sibling key below or beside a closed one instead of the
+// rest of the document turning into CSS. card_mod is in very many cards.
 //
-// CRASH-SAFETY (see launch-gates.spec): append to the seeded card's valid `type: entities` config so the
-// preview never sees an undefined type. card_mod is an unknown key to the entities card (ignored); the
-// completion is text-driven, so card_mod need not be installed on the instance.
+// To keep the preview from crashing (see launch-gates.spec), the spec appends to the seeded card's
+// valid `type: entities` config, so the preview never sees an undefined type. card_mod is an unknown
+// key to the entities card (ignored); the completion is text-driven, so card_mod need not be
+// installed on the instance.
 
 import { test, expect, openDashboard } from './session.mjs';
 import {
@@ -40,7 +40,7 @@ test('card_mod lane: YAML completion resumes for a key below a closed style: | b
   const stamp = await openDashboard(page);
   await openSeededCardCodeEditor(page, stamp);
 
-  // A card_mod block with a closed CSS scalar, then a fresh ROOT key below it. The lane must end with
+  // A card_mod block with a closed CSS scalar, then a fresh root key below it. The lane must end with
   // the block: `the` must offer the YAML `theme:` key (editor-completion proves the->theme on this card),
   // and no CSS property may leak out.
   await appendLines(page, ['card_mod:', '  style: |', '    ha-card { color: red; }']);
@@ -60,7 +60,7 @@ test('card_mod lane: CSS completion inside an open style: | block', async ({ pag
   const stamp = await openDashboard(page);
   await openSeededCardCodeEditor(page, stamp);
 
-  // Cursor inside an OPEN CSS rule — property completion, not YAML card keys.
+  // Cursor inside an open CSS rule — property completion, not YAML card keys.
   await appendLines(page, ['card_mod:', '  style: |', '    ha-card {']);
   await page.keyboard.press('Enter'); // accept CM indent — inside the open rule
   await typeInYaml(page, 'disp');

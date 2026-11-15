@@ -1,5 +1,5 @@
-// Nostrodomus YAML context classifier seam.
-// Pure YAML context classification, separate from the HA runtime provider seam.
+// Nostrodomus YAML context classifier.
+// Pure YAML context classification for the Home Assistant runtime provider.
 // Keep this module pure: no DOM, browser storage, runtime state, timers,
 // network, Settings, popup, insertion, or Home Assistant host access.
 
@@ -89,10 +89,10 @@ export function yamlValueKind(ctx) {
   if (!key && String(ctx?.yamlRole || '') === 'list-key' && /(^|\.)(entities)(\.|$)/.test(pathText)) return 'entity';
   if (!key) return '';
 
-  // Registry lane (flag-gated). Only fires when ctx.registryLaneEnabled rode in (engineV2 +
-  // registryLane on); absent, these keys fall through to their legacy kind ('' / scalar), so the
-  // engine-off path is byte-identical. Bare `area`/`device`/`floor`/`label` are display strings in
-  // some card configs, so only the canonical *_id reference keys (and `area:` for the area card) route.
+  // Area, device, floor and label ids, when the registryLane setting is on (it needs engineV2);
+  // otherwise these keys keep the kind they have without it. Bare `device`, `floor` and `label`
+  // are display strings in some card configs, so only the *_id keys count, plus `area:` for the
+  // area card.
   if (ctx?.registryLaneEnabled === true) {
     if (key === 'area_id' || key === 'area') return 'area';
     if (key === 'device_id') return 'device';
@@ -109,17 +109,17 @@ export function yamlValueKind(ctx) {
     if (yamlPathIncludes(ctx, ['conditions', 'condition'])) return 'condition-type';
     return typeKeyHoldsCardType(path) ? 'card-type' : '';
   }
-  // Modern `trigger:` sits under a plural `triggers:` list. Legacy `platform:` is the trigger-type
-  // key of the still-supported singular `trigger:` automation form (path token 'trigger'), so it also
-  // accepts the singular parent — otherwise legacy automations get no trigger-type completion.
+  // `trigger:` sits under a plural `triggers:` list. `platform:` is the trigger-type key of the
+  // older singular `trigger:` form, which Home Assistant still accepts, so it also takes the
+  // singular parent.
   if (key === 'trigger' && yamlPathIncludes(ctx, ['triggers'])) return 'trigger-type';
   if (key === 'platform' && yamlPathIncludes(ctx, ['triggers', 'trigger'])) return 'trigger-type';
   if (key === 'condition' && yamlPathIncludes(ctx, ['conditions', 'condition', 'choose', 'if', 'while', 'until', 'visibility'])) return 'condition-type';
   if (key === 'icon' || key.endsWith('_icon')) return 'icon';
   if (key === 'theme') return 'theme';
-  // `mode:` is the automation/script run-mode (single/restart/queued/parallel) at config scope,
-  // but under a service `data:` block it is a service field (e.g. humidifier.set_mode's mode).
-  // Classifying the data-block one as automation-mode hard-filtered its real values away.
+  // `mode:` is the automation or script run mode (single, restart, queued, parallel) at config
+  // scope, but under a service `data:` block it is a service field (humidifier.set_mode's mode)
+  // with values of its own.
   if (key === 'mode' && !yamlPathIncludes(ctx, ['data'])) return 'automation-mode';
   if (BOOLEAN_KEYS.has(key)) return 'boolean';
 

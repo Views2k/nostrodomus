@@ -130,7 +130,7 @@ test('a continuation that finds no rows is not computed again while nothing chan
 
   assert.deepEqual(h.computes, ['explicit'], 'the empty result is computed once');
   assert.deepEqual(h.renders, [0], 'the idle pane is rendered once');
-  assert.equal(h.state.overlay.style.display, 'block', 'the idle pane is shown, as before');
+  assert.equal(h.state.overlay.style.display, 'block', 'the idle pane is shown');
 });
 
 test('an empty continuation is computed again after the document or the caret changed', async () => {

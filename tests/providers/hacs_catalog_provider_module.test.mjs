@@ -16,7 +16,6 @@ import {
 } from '../../src/providers/hacsProviderCatalog.js';
 
 test('catalog card-type rows stay exported for surface callers', () => {
-  // Previously an implicit existence check via an unused import binding.
   assert.equal(typeof catalogCardTypeRows, 'function');
 });
 

@@ -65,7 +65,7 @@ test('a provider added through registerProvider gets an entry and a working togg
   assert.ok(!runtime.providerCandidates(keyCtx).some(item => item.id === 'ext.row'));
 });
 
-test('a stored choice is kept, and the built-in entries are made as before', () => {
+test('a stored choice is kept, a broken entry is reset, and the other built-in entries are enabled', () => {
   const { state, runtime } = setup();
   state.settings.providers = { [HACS_CATALOG_PROVIDER_ID]: { enabled: false }, [SNIPPET_PROVIDER_ID]: { enabled: false }, [STATIC_PROVIDER_ID]: 'broken' };
   const entries = runtime.ensureProviderSettings();

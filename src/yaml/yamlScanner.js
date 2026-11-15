@@ -47,10 +47,10 @@ export function yamlCurrentKey(info) {
   return parsed ? parsed.key : '';
 }
 
-// A trailing YAML/Python comment begins at an unquoted `#` that is at line start or preceded
-// by whitespace (mirrors stripYamlCommentRespectingQuotes). If one appears in the text before
-// the cursor, the cursor is inside that comment. `#` NOT preceded by whitespace (e.g. an
-// `a#b` value) and `#` inside quotes are not comments. CSS `#id`/`#fff` are gated out by lang.
+// A trailing YAML or Python comment begins at an unquoted `#` at line start or after whitespace,
+// as in stripYamlCommentRespectingQuotes. If one appears in the text before the cursor, the
+// cursor is inside that comment. A `#` after another character (an `a#b` value) or inside quotes
+// is not a comment; CSS `#id` and `#fff` are left out by the language check of the caller.
 function cursorInsideHashComment(text) {
   const s = String(text || '');
   let quote = '';
@@ -76,23 +76,21 @@ export function isCommentContext(lang, info, recent = '') {
   const lineBeforeCursor = beforeCursor;
   const scanned = `${recent || ''}\n${beforeCursor}`;
 
-  // `/* … */` is a comment only in CSS/JS; `<!-- … -->` only in HTML. Gate those scans by the
-  // detected language so a `/*` inside a YAML string (e.g. a URL) or a `<!--` in markdown content
-  // doesn't misfire — the cross-line scans below look back over the whole ~1600-char recent buffer,
-  // so an ungated hit killed completion for everything after it. Embedded regions still classify
-  // correctly: a card_mod style block reports lang 'css', a `<tag` line reports 'html'.
+  // `/* … */` is a comment only in CSS and JS, `<!-- … -->` only in HTML, so those scans depend on
+  // the detected language: a `/*` in a YAML string (a URL) or a `<!--` in markdown content is not
+  // a comment. The cross-line scans below read the whole recent text (about 1,600 characters), so
+  // a wrong hit would silence completion for everything after it. A card_mod style block reports
+  // lang 'css' and a `<tag` line reports 'html'.
   const cssLike = lang === 'css' || lang === 'js';
   const htmlLike = lang === 'html';
 
-  // Line-start comment markers are language-specific: `#` is a comment in YAML/Python, but a `#id`
-  // selector in a card_mod CSS block; `//` is a comment in JS/CSS, but a bare value (e.g. a `//host`
-  // path) in YAML. Gate each to the languages where it actually starts a comment (mirrors the
-  // before-cursor checks below) so an id-selector line or a `//`-prefixed value doesn't suppress
-  // completion. `{#` is Jinja-only.
+  // Line-start comment markers depend on the language: `#` is a comment in YAML and Python but an
+  // id selector in a card_mod CSS block; `//` is a comment in JS and CSS but a value (a `//host`
+  // path) in YAML. Each counts only where it starts a comment, as in the before-cursor checks
+  // below. `{#` is a Jinja comment everywhere.
   if ((lang === 'yaml' || lang === 'python') && trimmed.startsWith('#')) return true;
-  // Trailing comment: the cursor sits after an unquoted `#` later on the value line, e.g.
-  // `entity: light.a # kit|`. Without this the entity/value popup fired inside the comment
-  // and accepting a row overwrote the comment word.
+  // Trailing comment: the cursor is after an unquoted `#` later on the value line
+  // (`entity: light.a # kit|`), where an accepted row would overwrite the comment word.
   if ((lang === 'yaml' || lang === 'python') && cursorInsideHashComment(lineBeforeCursor)) return true;
   if (cssLike && trimmed.startsWith('//')) return true;
   if (trimmed.startsWith('{#')) return true;
@@ -115,10 +113,9 @@ export function isCommentContext(lang, info, recent = '') {
   const jinjaClose = lineBeforeCursor.lastIndexOf('#}');
   if (jinjaOpen !== -1 && jinjaOpen > jinjaClose) return true;
 
-  // For an EMBEDDED CSS block (card_mod `style: |`), a `/*` in the YAML ABOVE the block opener is
-  // YAML text, not a CSS comment — bound the cross-line `/*` scan to the block body so a stray `/*`
-  // in a nearby YAML value (e.g. a URL) doesn't mark the whole block as an open comment and suppress
-  // completion. A standalone CSS buffer (no block opener) scans in full, unchanged.
+  // In a CSS block inside YAML (card_mod `style: |`), a `/*` above the block opener is YAML text,
+  // not a CSS comment, so the cross-line `/*` scan reads only the block body. CSS text without a
+  // block opener is scanned in full.
   const cssBody = (() => {
     if (!cssLike) return scanned;
     const lines = scanned.split('\n');
@@ -208,7 +205,3 @@ export function detectContext(sourceText, cursorPosition = undefined, options = 
     dashboardActionPath: isDashboardActionPath(yamlPath, yamlKey),
   };
 }
-
-// Compatibility-only token markers for static structural tests: directYamlKey(raw),
-// yamlScalarValueKind, isScalarConfigContext, lineNumber, blockScalarIndent,
-// focusKind, pathText, existing-key-context.

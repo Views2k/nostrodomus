@@ -5,20 +5,17 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / 'src/ui/suggestionPopup.js'
-LEGACY = ROOT / 'src/main.legacy.js'
-# The popup DOM construction / event wiring / placement / render ownership that used to live
-# inline in main.legacy.js was extracted into src/completion/popupRuntime.js, and the
-# legacy-facing overlay/placement wrapper functions (ensureOverlay/placeAtCursor) now live in
-# src/composition/mainLegacyAdapters.js (createMainLegacyCompletionPopupAdapters). Same invariants,
-# current locations.
+APP = ROOT / 'src/app.js'
+# popupRuntime.js builds, places and renders the popup; createAppCompletionPopupAdapters in
+# appAdapters.js holds the ensureOverlay and placeAtCursor wrappers.
 POPUP_RUNTIME = ROOT / 'src/completion/popupRuntime.js'
-ADAPTERS = ROOT / 'src/composition/mainLegacyAdapters.js'
+ADAPTERS = ROOT / 'src/composition/appAdapters.js'
 ALLOWLIST = ROOT / 'docs/contracts/MODULE_WIRING_ALLOWLIST.json'
 DIST = ROOT / 'dist/nostrodomus.js'
 REPORT = ROOT / 'reports/SUGGESTION_POPUP_MODULE_WIRING_STATIC_REPORT.txt'
 
 module = MODULE.read_text(encoding='utf-8', errors='replace')
-legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
+app = APP.read_text(encoding='utf-8', errors='replace')
 popup_runtime = POPUP_RUNTIME.read_text(encoding='utf-8', errors='replace')
 adapters = ADAPTERS.read_text(encoding='utf-8', errors='replace')
 dist = DIST.read_text(encoding='utf-8', errors='replace') if DIST.exists() else ''
@@ -32,28 +29,21 @@ def require(ok, message):
     else:
         errors.append(message)
 
-require("from './ui/suggestionPopup.js'" in legacy, 'runtime imports suggestion popup module')
+require("from './ui/suggestionPopup.js'" in app, 'runtime imports suggestion popup module')
 require("from '../ui/suggestionPopup.js'" in popup_runtime, 'popup runtime imports suggestion popup module')
 
-# The runtime no longer wraps each helper in a `<name>FromSuggestionPopupModule(...)` delegate
-# bridge in main.legacy.js. The delegate-bridge wrapper pattern was retired when the popup
-# render/DOM ownership was extracted into src/completion/popupRuntime.js, which now imports the
-# pure helpers DIRECTLY by name and calls them. The invariant is unchanged: the runtime delegates
-# every popup-presentation decision to these module helpers (never reimplements them). Re-pointed
-# below to the helper's genuine current consumer (legacy import/call, popup-runtime import/call, or
-# the higher-level module helper that the runtime calls — which itself calls the leaf helper).
-# helper -> a (text, source-name) pair proving the runtime consumes that exact helper today.
+# The runtime takes every popup presentation decision from these helpers and never
+# reimplements them. Each entry names a call or import that shows where a helper is used.
 for helper, (token, source) in {
-    # itemKindLabel/shortItemMeta are leaf helpers consumed by completionDetailModel/itemDetail/
-    # itemDocumentation (all of which the runtime calls), so they ride those calls inside the module.
+    # Leaf helpers called inside the module by completionDetailModel, itemDetail and
+    # itemDocumentation, which the runtime calls.
     'itemKindLabel': ('itemKindLabel(item)', module),
     'shortItemMeta': ('shortItemMeta(item)', module),
-    # itemSourceLabel/itemDetail/itemDocumentation are imported and called directly in legacy.
-    'itemSourceLabel': ('itemSourceLabel,', legacy),
-    'itemDetail': ('itemDetail,', legacy),
-    'itemDocumentation': ('itemDocumentation,', legacy),
-    # iconFor/completionVisualKind/completionPillLabel/completionAccent are imported and called by
-    # the popup render in src/completion/popupRuntime.js.
+    # Imported and called by app.js.
+    'itemSourceLabel': ('itemSourceLabel,', app),
+    'itemDetail': ('itemDetail,', app),
+    'itemDocumentation': ('itemDocumentation,', app),
+    # Imported and called by the popup render in popupRuntime.js.
     'iconFor': ('iconFor(item)', popup_runtime),
     'completionVisualKind': ('completionVisualKind(item)', popup_runtime),
     'completionPillLabel': ('completionPillLabel(item)', popup_runtime),
@@ -75,38 +65,30 @@ for token in [
 ]:
     require(token in module, f'module suggestion popup invariant present: {token}')
 
-require('src/ui/suggestionPopup.js' not in allowed, 'suggestion popup removed from unwired allowlist')
+require('src/ui/suggestionPopup.js' not in allowed, 'suggestion popup is not on the unwired allowlist')
 
-# Popup ownership/delegation, re-pointed to current owners. The old delegate-bridge wrappers
-# (`function iconFor(item) { return iconForFromSuggestionPopupModule(item); }` etc.) were retired
-# with the bridge pattern: the popup runtime now imports iconFor/completionAccent from the module
-# (does NOT reimplement them), itemDocumentation is imported+used by legacy from the module, and
-# the render/overlay/place/mousedown ownership moved into popupRuntime.js + mainLegacyAdapters.js.
+# Who owns the popup: the popup runtime imports iconFor and completionAccent, app.js
+# imports itemDocumentation, and popupRuntime.js and appAdapters.js own render, overlay,
+# placement and the row mousedown.
 for token, source, where in [
-    # iconFor + completionAccent are delegated to the module (imported, not reimplemented) by the popup runtime.
     ('  iconFor,', popup_runtime, 'popup runtime imports iconFor from module'),
     ('  completionAccent,', popup_runtime, 'popup runtime imports completionAccent from module'),
-    # itemDocumentation is delegated to the module (imported, not reimplemented) by legacy.
-    ('  itemDocumentation,', legacy, 'legacy imports itemDocumentation from module'),
-    # render() ownership -> renderCompletionPopup in the popup runtime module.
+    ('  itemDocumentation,', app, 'app.js imports itemDocumentation from module'),
     ('export function renderCompletionPopup(state, deps = {}) {', popup_runtime, 'popup runtime owns render'),
-    # ensureOverlay() / placeAtCursor() wrapper functions -> mainLegacyAdapters (legacy-facing factory).
     ('function ensureOverlay() {', adapters, 'adapters own ensureOverlay wrapper'),
     ('function placeAtCursor() {', adapters, 'adapters own placeAtCursor wrapper'),
-    # ...backed by the popup runtime's overlay/placement owners.
     ('export function ensureCompletionOverlay(state, deps = {}) {', popup_runtime, 'popup runtime owns ensureCompletionOverlay'),
     ('export function placeCompletionPopupAtCursor(state, deps = {}) {', popup_runtime, 'popup runtime owns placeCompletionPopupAtCursor'),
-    # row mousedown -> single-quote source form now lives in the popup runtime render.
     ("row.addEventListener('mousedown'", popup_runtime, 'popup runtime wires row mousedown'),
 ]:
-    require(token in source, f'runtime popup ownership/delegation token preserved: {where}')
+    require(token in source, f'runtime popup ownership/delegation token present: {where}')
 
-for old_inline in [
+for local_copy in [
     'const map = {\n      key: "Key",',
     'const palette = {\n      snippet: { fg:',
     'if (item.source === HA_VALUE_PROVIDER_ID && item.type === "entity") {\n      return item?.meta?.friendly || shortItemMeta(item);',
 ]:
-    require(old_inline not in legacy, f'legacy no longer owns old popup helper body token: {old_inline[:45]}')
+    require(local_copy not in app, f'app.js does not own popup helper body token: {local_copy[:45]}')
 
 for token in [
     'function itemDocumentation',

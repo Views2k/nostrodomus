@@ -11,8 +11,8 @@ import {
 } from '../../src/companion/codeboxEnlargeRuntime.js';
 
 // Measured fit: the card dialog's main codebox ends just above the dialog footer, wherever the
-// editor actually starts. Numbers below are the live 2026.11 measurements that showed the old
-// viewport formulas running off the screen.
+// editor starts. The numbers below were measured on Home Assistant 2026.11, where the viewport
+// formulas ran off the screen.
 
 function sink(writes, tag, rect) {
   return {
@@ -58,8 +58,8 @@ function runtime(innerHeight) {
 const heightOf = (writes, tag) => writes.filter(([t, key]) => t === tag && key === 'height').map(([, , value]) => value).pop();
 
 test('a stack sub-card editor that starts low ends above the footer, not below the window', () => {
-  // Live: 927px window, editor top 352, dialog bottom 911. The old 94vh - 198px gave 673px
-  // (bottom 1025). The footer row starts at 843 in that dialog.
+  // Measured: 927px window, editor top 352, dialog bottom 911. The viewport formula 94vh - 198px
+  // gives 673px (bottom 1025). The footer row starts at 843 in that dialog.
   const { writes, editor } = buildDialog({ editorTop: 352, footerTop: 843, dialogBottom: 911 });
   const out = runtime(927).applyForEditor(editor);
 
@@ -72,7 +72,7 @@ test('a stack sub-card editor that starts low ends above the footer, not below t
 });
 
 test('a tab-less editor at 1358px keeps the height it already had (no visible change)', () => {
-  // Live: editor top 116, footer top 1265, old SIMPLE height 94vh - 150px = 1127px (bottom 1243).
+  // Measured: editor top 116, footer top 1265, viewport simple height 94vh - 150px = 1127px (bottom 1243).
   const { writes, editor } = buildDialog({ editorTop: 116, footerTop: 1265, dialogBottom: 1317 });
   runtime(1358).applyForEditor(editor);
   assert.equal(heightOf(writes, 'wrapper'), '1127px');

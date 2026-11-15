@@ -13,7 +13,7 @@ def require(cond, msg):
 
 require('function isCodeMirrorInlineStyleTarget' in codebox, 'codebox runtime must declare CodeMirror inline style ownership guard')
 require('if (isCodeMirrorInlineStyleTarget(el)) continue;' in codebox, 'codebox steady-state loop must not write inline styles to CM internals')
-require('The v17 companion owns .cm-editor overflow' in codebox, 'codebox runtime must document companion-owned overflow/scroller properties')
+require('the companion layer owns .cm-editor overflow' in codebox, 'codebox runtime must document companion-owned overflow/scroller properties')
 require('if (!isCodeMirrorInlineStyleTarget(frameHost)) applyCodeboxStyleTokensToElement(frameHost, tokens);' in codebox, 'frame host token writes must skip CM internals')
 require('if (isCodeMirrorInlineStyleTarget(el)) return false;' in style_dom, 'style DOM token writer must refuse CM internal inline targets')
 require('if (isCodeMirrorInlineStyleTarget(el)) return;' in settings_interaction, 'settings live preview token target collection must skip CM internals')

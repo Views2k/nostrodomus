@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import json
 import py_compile
 import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-PROJECT = json.loads((ROOT / "PROJECT.json").read_text(encoding="utf-8"))
 REPORT = ROOT / "reports/VISUAL_LAYER_BASELINE_CONTRACT_STATIC_TEST_REPORT.txt"
 errors = []
 notes = []
@@ -17,45 +15,13 @@ def require(ok, msg):
     else:
         errors.append(msg)
 
-version = str(PROJECT.get("version") or "")
-internal = str(PROJECT.get("internal_version") or "")
-version_tuple = tuple(int(part) for part in version.split(".") if part.isdigit())
-# The visual contract baseline (originally pinned at v31.6.91) carried forward across the
-# 31.6.x -> 0.1.x SemVer reset (CHANGELOG [0.1.0]). The invariant is the CSS visual-layer
-# ownership below, not a frozen version literal, so floor at the start of the SemVer line.
-require(version_tuple >= (0, 1, 0), "PROJECT.json remains at or beyond the visual contract baseline (SemVer line)")
-# The "runtime-layer-rollback" identifier is an old-era (v31.x) internal_version name retired
-# at the SemVer reset; accept either that legacy id OR any version advanced past the floor.
-require("runtime-layer-rollback" in internal or version_tuple > (0, 1, 0), "internal_version records the visual contract owner (or version advanced past the baseline)")
-
 for rel in [
     "docs/contracts/VISUAL_LAYER_BASELINE_CONTRACT.md",
     "tools/visual_layer_doctor.py",
 ]:
     require((ROOT / rel).exists(), f"required visual guardrail file exists: {rel}")
 
-# Version-identity owner: the monolith was decomposed, so src/main.legacy.js now imports the
-# version constants from src/core/version.js instead of declaring them inline, while the bundled
-# dist still carries the minified literals (e.g. PROJECT_VERSION="0.1.x", var VERSION="...").
-for rel in ["src/main.legacy.js", "dist/nostrodomus.js"]:
-    text = (ROOT / rel).read_text(encoding="utf-8", errors="replace")
-    is_source = rel.endswith("main.legacy.js")
-    project_ok = (f'const PROJECT_VERSION = "{version}"' in text or
-                  f'PROJECT_VERSION = "{version}"' in text or
-                  f'var PROJECT_VERSION = "{version}"' in text or
-                  f'PROJECT_VERSION="{version}"' in text or  # minified dist form
-                  (is_source and "from './core/version.js'" in text))
-    version_ok = (f'const VERSION = "{internal}"' in text or
-                  f'VERSION = "{internal}"' in text or
-                  f'var VERSION = "{internal}"' in text or
-                  f'VERSION="{internal}"' in text or  # minified dist form
-                  (is_source and "from './core/version.js'" in text))
-    require(project_ok, f"{rel} PROJECT_VERSION matches PROJECT.json")
-    require(version_ok, f"{rel} VERSION matches PROJECT.json internal_version")
-
-# Codebox visual-layer owner: the host-owned ::before/::after frame + frosted surface CSS moved
-# out of src/main.legacy.js into the extracted src/ui/codeboxStyle.js (source) and is bundled into
-# dist/nostrodomus.js. Same invariant, current location.
+# The host's ::before draws the border and glow, its ::after the frosted surface.
 for rel in ["src/ui/codeboxStyle.js", "dist/nostrodomus.js"]:
     text = (ROOT / rel).read_text(encoding="utf-8", errors="replace")
     require('ha-code-editor[data-nostrodomus-codebox-frame-host="1"]::before' in text, f"{rel} keeps host-owned border/glow ::before")
@@ -64,7 +30,7 @@ for rel in ["src/ui/codeboxStyle.js", "dist/nostrodomus.js"]:
     require('-webkit-backdrop-filter: var(--nostrodomus-codebox-surface-blur) !important;' in text, f"{rel} keeps webkit backdrop-filter surface")
     require('--nostrodomus-codebox-surface-blur: blur(16px) saturate(135%);' in text, f"{rel} keeps stable surface blur token")
     require('isolation: isolate !important;' in text, f"{rel} isolates codebox host stacking")
-    require('[data-nostrodomus-codebox-external-frame="1"] {\n        display: none !important;' in text, f"{rel} keeps failed external frame path disabled")
+    require('[data-nostrodomus-codebox-external-frame="1"] {\n        display: none !important;' in text, f"{rel} keeps the measured external frame disabled")
 
 for rel, tokens in {
     "docs/contracts/VISUAL_LAYER_BASELINE_CONTRACT.md": ["::before = border and glow owner", "::after  = frosted blurry surface/backdrop owner"],

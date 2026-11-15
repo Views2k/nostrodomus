@@ -9,7 +9,7 @@ import {
   runActiveEditorDiagnosticsReadoutWithCallbacks,
   shouldRecordPerformanceTelemetryDecision,
   startupBadgeStatusFromHealth,
-} from '../../src/diagnostics/diagnosticsFastLaneHelpers.js';
+} from '../../src/diagnostics/diagnosticsReadoutHelpers.js';
 
 assert.equal(startupBadgeStatusFromHealth(() => ({ ok: true, requiredOk: true })), 'ready');
 assert.equal(startupBadgeStatusFromHealth(() => ({ ok: false, requiredOk: true })), 'degraded');
@@ -59,7 +59,7 @@ assert.deepEqual(
   activeEditorDiagnosticsReadoutEnvelopePayload({ activeReadout: { ok: false, warning: 'missing' }, enabled: false, defaultEnabled: false }),
   {
     ok: false,
-    stage: '2C-active-editor-snapshot-readout',
+    stage: 'active-editor-snapshot-readout',
     enabled: false,
     defaultEnabled: false,
     consoleOnly: true,
@@ -84,7 +84,7 @@ assert.deepEqual(
   }),
   {
     ok: true,
-    stage: '2C-active-editor-snapshot-readout',
+    stage: 'active-editor-snapshot-readout',
     enabled: true,
     defaultEnabled: false,
     consoleOnly: true,
@@ -105,7 +105,7 @@ assert.deepEqual(
   runActiveEditorDiagnosticsReadoutWithCallbacks({ missingReadout: missingActiveEditorReadoutPayload }).activeEditor,
   {
     ok: false,
-    stage: '2C-active-editor-snapshot-readout',
+    stage: 'active-editor-snapshot-readout',
     localOnly: true,
     redacted: true,
     diagnosticsOnly: true,
@@ -120,5 +120,3 @@ assert.deepEqual(
     warning: 'missing-active-editor-readout-module',
   }
 );
-
-console.log('diagnostics fast-lane helpers tests passed');

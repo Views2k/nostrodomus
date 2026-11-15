@@ -100,7 +100,7 @@ test('inside a block a nested key ranks ahead of an own key that matches equally
   assert.ok(inBlock.indexOf('show_line:') < inBlock.indexOf('show:'), JSON.stringify(inBlock));
   assert.ok(inBlock.indexOf('show_points:') < inBlock.indexOf('show:'));
 
-  // At the card's own keys the order is the order of 0.1.276: the shorter label first.
+  // At the card's own keys the shorter label comes first.
   const ownKeys = ranked(`${MINI}sh`);
   assert.equal(ownKeys[0], 'show:');
 
@@ -108,7 +108,7 @@ test('inside a block a nested key ranks ahead of an own key that matches equally
   assert.equal(ranked(`${MINI.replace('  - sensor.temperature\n', '  - entity: sensor.temperature\n    show')}`)[0], 'show:');
 });
 
-test('at the card\'s own keys every key of the surface is offered, as before', () => {
+test('at the card\'s own keys every key of the surface is offered', () => {
   for (const doc of [
     MINI,
     `${MINI}ho`,

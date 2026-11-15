@@ -13,7 +13,7 @@ test('ha boots: seeded dashboard renders fresh Nostrodomus with a clean console'
   // The seeded dashboard actually rendered (entities card from seed.mjs).
   await expect(page.getByText('E2E Demo Entities').first()).toBeVisible({ timeout: 15000 });
 
-  // The Nostrodomus version banner for THIS build appeared in the console
+  // The Nostrodomus version banner for this build appeared in the console
   // (`✦ NOSTRODOMUS   v<semver>   ready`, emitted once at install).
   const semver = /-v(\d+\.\d+\.\d+)-/.exec(stamp.internalVersion)?.[1];
   if (!semver) throw new Error(`cannot parse a semver out of the stamp internalVersion: ${stamp.internalVersion}`);

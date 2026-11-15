@@ -1,8 +1,5 @@
-// Nostrodomus Settings style/theme seams.
-//
-// Owns bounded style preset data and syntax theme palette helpers. Keep it pure:
-// no DOM access, browser storage, events, timers, styling side effects, or Home
-// Assistant runtime reads.
+// The style presets (text sizes, syntax themes) and the syntax theme palettes. Pure: no DOM,
+// storage, events, timers or Home Assistant reads.
 
 import { clampNumber } from '../core/string.js';
 import {
@@ -144,15 +141,12 @@ export function ensureDistinctSyntaxPalette(palette, theme) {
 }
 
 export function syntaxThemePalette(theme, saturationMultiplier = 1) {
-  // Apply the saturation slider EXACTLY ONCE, in the closing map below, so it scales generated
-  // (syntaxHsl) and Classic (hardcoded hex) tokens identically. Previously the multiplier was also
-  // baked into `t` and re-applied inside every syntaxHsl call, so generated themes desaturated ~2.4x
-  // too steeply as the slider moved off 1.0 (and inconsistently with Classic). `t` no longer carries
-  // it, so syntaxHsl uses its default 1; at the default slider of 1 the output is byte-identical.
+  // The saturation slider is applied once, in the map at the end, so it scales the generated
+  // (syntaxHsl) and the fixed Classic colors alike. `t` does not carry it.
   const boost = clampNumber(saturationMultiplier, 0.35, 1.85, 1);
   const t = { ...(theme || STYLE_SYNTAX_PRESETS.vscodeDarkPlus) };
   const isDarkPlus = theme === STYLE_SYNTAX_PRESETS.vscodeDarkPlus || (t.label || "") === "Classic";
-  // Push every token's lightness AWAY from the editor background (brighter on dark
+  // Push every token's lightness away from the editor background (brighter on dark
   // themes, darker on light themes) by an emphasis rank, so tokens stay readable and
   // separate by lightness within the tight hue band.
   const isLight = (t.lightness ?? 64) < 50;

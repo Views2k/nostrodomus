@@ -1,6 +1,7 @@
-// Engine track `frecency`: the upgraded accept store (frequency + recency, persistable). Locks: the OFF
-// path is byte-identical to the legacy flat 4/8 recency (count ignored); the ON path adds a log-scaled
-// frequency term capped at 12; determinism (monotonic stamp); and snapshot/hydrate round-trip + fail-dark.
+// Engine track `frecency`: the accept store (frequency and recency, can be saved and restored). With
+// frecency off the boost is the flat 4/8 recency (count ignored); with it on a log-scaled frequency
+// term capped at 12 is added. Also: determinism (monotonic stamp), snapshot/hydrate round-trip and bad
+// input.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -10,17 +11,17 @@ import { createRecentAcceptBoostStore } from '../../src/completion/scoring.js';
 const A = { id: 'light.a' };
 const ageOut = (store, n = 6) => { for (let i = 0; i < n; i += 1) store.mark({ id: `filler.${i}` }); };
 
-test('boostFor OFF is byte-identical legacy recency (4 recent-ish, capped), ignoring frequency', () => {
+test('boostFor with frecency off is plain recency (8 within the last five accepts, 4 after that) and ignores frequency', () => {
   const s = createRecentAcceptBoostStore(50);
-  for (let i = 0; i < 8; i += 1) s.mark(A); // count 8 — but OFF must ignore count entirely
-  assert.equal(s.boostFor(A), 8, 'recent (within last 5) → 8, exactly as before');
-  assert.equal(s.boostFor(A, { frecency: false }), 8, 'explicit frecency:false === legacy');
+  for (let i = 0; i < 8; i += 1) s.mark(A); // count 8, which the off path must ignore
+  assert.equal(s.boostFor(A), 8, 'recent (within the last 5) → 8');
+  assert.equal(s.boostFor(A, { frecency: false }), 8, 'explicit frecency:false gives the same boost');
   assert.equal(s.boostFor({ id: 'never.accepted' }), 0, 'unseen item → 0');
   ageOut(s); // advance the stamp >5 past A's last accept
-  assert.equal(s.boostFor(A), 4, 'aged out of recent → 4 (legacy), still ignoring count');
+  assert.equal(s.boostFor(A), 4, 'aged out of recent → 4, still ignoring count');
 });
 
-test('boostFor ON adds a log-scaled frequency term, capped at 12', () => {
+test('boostFor with frecency on adds a log-scaled frequency term, capped at 12', () => {
   const s = createRecentAcceptBoostStore(50);
   s.mark(A); // count 1, recent
   assert.equal(s.boostFor(A, { frecency: true }), 9, '4 base + 4 recent + 1 freq(count1)');
@@ -30,7 +31,7 @@ test('boostFor ON adds a log-scaled frequency term, capped at 12', () => {
   assert.equal(s.boostFor(A, { frecency: true }), 12, 'capped at 12 (freq term maxes at 4)');
 });
 
-test('ON keeps a graded recency: an aged-out favorite drops its recency term but keeps its frequency', () => {
+test('with frecency on, an aged-out favorite drops its recency term but keeps its frequency', () => {
   const s = createRecentAcceptBoostStore(50);
   for (let i = 0; i < 8; i += 1) s.mark(A); // count 8, currently recent
   assert.equal(s.boostFor(A, { frecency: true }), 11);
@@ -56,13 +57,13 @@ test('snapshot/hydrate round-trip reproduces boosts and resumes the stamp above 
   for (const item of [A, { id: 'b' }, { id: 'c' }]) {
     assert.equal(s2.boostFor(item, { frecency: true }), s1.boostFor(item, { frecency: true }), 'boost reproduced after hydrate');
   }
-  // A fresh accept after hydrate must get a stamp ABOVE the hydrated max, so recency math never underflows.
+  // A fresh accept after hydrate must get a stamp above the hydrated max, so recency math never underflows.
   const before = s2.stamp();
   s2.mark({ id: 'new' });
   assert.ok(s2.stamp() > before, 'monotonic stamp resumes above the seeded max');
 });
 
-test('hydrate fail-darks on garbage and caps to the store limit; never throws', () => {
+test('hydrate ignores garbage, caps to the store limit and never throws', () => {
   const s = createRecentAcceptBoostStore(3);
   for (const bad of [null, undefined, {}, { entries: 'x' }, 'str', 42, [{ key: 123 }, { count: 'x' }]]) {
     assert.doesNotThrow(() => s.hydrate(bad), `hydrate(${JSON.stringify(bad)}) is safe`);

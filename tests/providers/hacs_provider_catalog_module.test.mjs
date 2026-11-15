@@ -14,7 +14,7 @@ import {
 
 test('main provider catalog pins high-value Home Assistant and HACS surfaces without runtime wiring', () => {
   assert.equal(HACS_PROVIDER_CATALOG_VERSION, 1);
-  assert.equal(HACS_PROVIDER_CATALOG_STAGE, 'priority10-provider-contract-v2-main-provider-catalog');
+  assert.equal(HACS_PROVIDER_CATALOG_STAGE, 'hacs-provider-catalog');
 
   for (const id of [
     'home-assistant-core',

@@ -3,13 +3,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / 'src' / 'completion' / 'snippets.js'
-LEGACY = ROOT / 'src' / 'main.legacy.js'
+APP = ROOT / 'src' / 'app.js'
 INSERTION = ROOT / 'src' / 'completion' / 'insertion.js'
 ALLOWLIST = ROOT / 'docs' / 'contracts' / 'MODULE_WIRING_ALLOWLIST.json'
 DIST = ROOT / 'dist' / 'nostrodomus.js'
 
 errors = []
-for path in [MODULE, LEGACY, INSERTION, ALLOWLIST, DIST]:
+for path in [MODULE, APP, INSERTION, ALLOWLIST, DIST]:
     if not path.exists():
         errors.append(f'missing file: {path.relative_to(ROOT)}')
 
@@ -26,12 +26,12 @@ if MODULE.exists():
         if forbidden in text:
             errors.append(f'snippets module must remain pure and not reference {forbidden}')
 
-if LEGACY.exists():
-    legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
-    if 'function parseSnippetTemplate(template)' in legacy:
-        errors.append('main runtime must not redeclare parseSnippetTemplate after module wiring')
-    if 'function hasSnippetPlaceholders(value)' in legacy:
-        errors.append('main runtime must not redeclare hasSnippetPlaceholders after module wiring')
+if APP.exists():
+    app = APP.read_text(encoding='utf-8', errors='replace')
+    if 'function parseSnippetTemplate(template)' in app:
+        errors.append('main runtime must not declare its own parseSnippetTemplate')
+    if 'function hasSnippetPlaceholders(value)' in app:
+        errors.append('main runtime must not declare its own hasSnippetPlaceholders')
 
 if INSERTION.exists():
     insertion = INSERTION.read_text(encoding='utf-8', errors='replace')

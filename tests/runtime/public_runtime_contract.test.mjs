@@ -7,7 +7,7 @@ import { runPublicRuntimeContract } from '../../tools/public_runtime_contract_ru
 
 const PROJECT = JSON.parse(readFileSync(new URL('../../PROJECT.json', import.meta.url), 'utf8'));
 
-test('built dist preserves the public Nostrodomus runtime contract', async () => {
+test('the built dist exposes the public Nostrodomus runtime contract', async () => {
   const result = await runPublicRuntimeContract();
   assert.equal(result.ok, true);
   assert.match(result.contract.version, new RegExp(`^nostrodomus-v${PROJECT.version.replaceAll('.', '\\.')}-.+`));
@@ -16,7 +16,7 @@ test('built dist preserves the public Nostrodomus runtime contract', async () =>
     assert.equal(result.contract.methods[method], true, `${method} method exists`);
   }
   for (const providerId of ['static-library', 'snippet-templates', 'lovelace-context', 'ha-runtime-values']) {
-    assert.ok(result.contract.providers.includes(providerId), `provider ${providerId} remains registered`);
+    assert.ok(result.contract.providers.includes(providerId), `provider ${providerId} is registered`);
   }
   assert.ok(!result.contract.diagnosticsGlobals.some(key => key !== '__nostrodomus' && key !== '__nostrodomusRuntimeCoordinatorV1'));
   assert.ok(result.contract.counts.libraryPackCount >= 1);

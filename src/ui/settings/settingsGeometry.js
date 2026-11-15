@@ -1,7 +1,5 @@
-// Position/size clamping, portal-viewport coordinate translation, and
-// position/size persistence for the settings panel. Shared mutable state
-// (state.settings, state.settingsPortalHost) stays owned by the composer and
-// is passed by reference.
+// Position and size of the settings panel: the limits for the current window, the translation
+// from window coordinates to the portal host's, and saving them with the settings.
 
 export function createSettingsGeometry(deps = {}) {
   const {

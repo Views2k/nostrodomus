@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import { lovelaceContextProvider } from '../../src/providers/lovelaceContextProvider.js';
 import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 
-// Sibling-indent blast radius, lovelace data/target lanes: the phantom leaf made
-// p.endsWith("data")/includes(".data") fail when data: heads the path (Dev Tools
-// service YAML shapes), so the second sibling fell through to the generic root rows.
+// A sibling key at the same indent must not be read as a leaf of the key above it: the data and
+// target checks (p.endsWith("data"), includes(".data")) would then fail when data: heads the path
+// (Developer Tools service YAML), and the second sibling would get the generic root rows.
 function rowsAt(doc) {
   const ctx = detectRuntimeContext(doc, doc.length, { triggerKind: 'explicit' });
   const provider = lovelaceContextProvider({ getDoc: () => doc, getPos: () => doc.length });
@@ -26,9 +26,9 @@ test('a root-level target block keeps its rows on the second sibling', () => {
   assert.ok(!labels.includes('type:'), 'the generic card rows must not replace the target block');
 });
 
-test('pin: nested tap_action data rows are identical on the first and second field', () => {
+test('nested tap_action data rows are identical on the first and second field', () => {
   const first = rowsAt('tap_action:\n  action: call-service\n  service: light.turn_on\n  data:\n    ');
   const second = rowsAt('tap_action:\n  action: call-service\n  service: light.turn_on\n  data:\n    brightness_pct: 50\n    ');
-  assert.deepEqual(second, first, 'the nested shape must not change with the fix');
+  assert.deepEqual(second, first, 'the second field gets the same rows as the first');
   assert.ok(first.length > 0);
 });

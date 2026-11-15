@@ -1,6 +1,6 @@
-// Pure-ish DOM builders for the settings panel (pills, range cards, toggles,
-// checkboxes, grids, syntax theme dropdown). Output structure is under snapshot
-// guard (tests/ui/settings_controls_snapshot.test.mjs).
+// The control builders of the settings panel: option pills, range cards, toggles, checkboxes,
+// grids and the syntax theme list. They only create elements; the shell wires them. Their
+// output is compared with a snapshot (tests/ui/settings_controls_snapshot.test.mjs).
 
 export function createSettingsControls(deps = {}) {
   const {

@@ -216,8 +216,8 @@ test('a tab switch and closing the panel each make one telemetry call', async ()
   assert.equal(panelAtCall === null, true, 'the call at close comes after the panel is gone, so it sees the closed gate');
 });
 
-// A save that the browser refuses (storage full or blocked) used to leave no trace in the panel:
-// the setting looked applied and was gone after a reload.
+// A save that the browser refuses (storage full or blocked) is shown in the panel; otherwise the
+// setting would look applied and be gone after a reload.
 test('a failed settings save is shown in the panel header until a save succeeds', () => {
   let full = false;
   const stored = new Map();
@@ -254,8 +254,8 @@ test('a failed settings save is shown in the panel header until a save succeeds'
   assert.equal(reopened.querySelector('[data-settings-save-status]').textContent, normal, 'the normal header line is back');
 });
 
-// The Refresh button of the Diagnostics tab refreshed the Context tab, which is hidden while
-// Diagnostics is shown, and nothing else: the cards kept the values from when the tab was built.
+// The Refresh button of the Diagnostics tab rebuilds the Diagnostics cards, not only the Context
+// tab, which is hidden while Diagnostics is shown.
 for (const activeTab of ['general', 'diagnostics']) {
   test(`Refresh rebuilds the Diagnostics cards (panel opened on ${activeTab})`, async () => {
     const h = createPanelHarness({ activeTab });
@@ -282,13 +282,13 @@ for (const activeTab of ['general', 'diagnostics']) {
   });
 }
 
-// "Copy context" asked the context diagnostics API for read(), which it does not have, so the
-// copied report always said readout: null.
+// "Copy context" builds the readout summary from the context diagnostics API and one
+// readActiveEditor() call; the API has no read() of its own.
 test('Copy context copies the readout summary and the redacted active-editor readout', async () => {
   const h = createPanelHarness();
   let reads = 0;
   h.W.__nostrodomus.contextDiagnostics = Object.freeze({
-    stage: '2B-local-diagnostics-readout',
+    stage: 'context-diagnostics-readout',
     diagnosticsOnly: true,
     shadowOnly: true,
     drivesAutocomplete: false,
@@ -308,7 +308,7 @@ test('Copy context copies the readout summary and the redacted active-editor rea
   const copied = JSON.parse(h.clipboard.at(-1));
   assert.deepEqual(copied.readout, {
     available: true,
-    stage: '2B-local-diagnostics-readout',
+    stage: 'context-diagnostics-readout',
     enabled: false,
     diagnosticsOnly: true,
     shadowOnly: true,
@@ -337,8 +337,8 @@ test('Copy context still copies readout: null when the context diagnostics API i
   assert.equal(copied.activeEditor, null);
 });
 
-// Choosing a syntax theme also turns syntax coloring on. The "Enable syntax theme coloring"
-// checkbox above the list kept showing the old state.
+// Choosing a syntax theme also turns syntax coloring on, and the "Enable syntax theme coloring"
+// checkbox above the list shows it.
 test('choosing a syntax theme checks the coloring checkbox it turns on', () => {
   const defaults = createPanelHarness().state.settings.style;
   const h = createPanelHarness({ activeTab: 'style', settings: { style: { ...defaults, syntaxTintEnabled: false } } });
@@ -361,7 +361,7 @@ test('choosing a syntax theme checks the coloring checkbox it turns on', () => {
 });
 
 // The Close button resets every property in its style attribute, the outline included, so the
-// focus ring the stylesheet gives every button in the panel never showed on it.
+// focus ring the stylesheet gives every button in the panel needs a rule of its own there.
 test('the Close button gets the focus ring of the other buttons', () => {
   const h = createPanelHarness();
   const panel = h.open();
@@ -425,8 +425,8 @@ test('arrow keys, Home and End move focus along the tab row without selecting', 
   assert.equal(h.state.settingsPanel === null, true);
 });
 
-// The panel's CSS minimum size (380 by 360) won over its maximum (the window minus 16px), so on a
-// phone narrower than 396px, or shorter than 376px on its side, part of the panel was off screen.
+// The panel's minimum size (380 by 360) gives way to its maximum (the window minus 16px), so the
+// whole panel stays on a phone narrower than 396px, or shorter than 376px on its side.
 test('the panel minimum size gives way to a small window', () => {
   const h = createPanelHarness();
   let panel = h.open();
@@ -450,7 +450,7 @@ test('the panel minimum size gives way to a small window', () => {
 
 // With the defaults the list opens only on Ctrl+Space: typing reaches the completion refresh
 // only while the list is open or "Keep Nostrodomus armed" is on. The General tab and the README
-// said suggestions appear while typing.
+// must not say that suggestions appear while typing.
 test('the General tab and the README describe when the list opens with the default settings', async () => {
   const { DEFAULT_SETTINGS } = await import('../../src/core/settings.js');
   assert.equal(DEFAULT_SETTINGS.keepOpen, false, 'the defaults are not changed');
@@ -511,4 +511,41 @@ test('Refresh keeps the cards that are shown when the new ones cannot be built',
   section.querySelector('[data-diag-refresh]').click();
   assert.equal(section.querySelector('.nostrodomus-diagnostics-grid').textContent, 'cards');
   assert.equal(h.named('recordRuntimeErrorOnce').some(call => call[1] === 'settings:diagnostics'), true, 'the failure is recorded');
+});
+
+test('each Style description sits next to the control it describes', () => {
+  const h = createPanelHarness();
+  h.open();
+  const nodes = Array.from(h.section('style').childNodes);
+  const indexOf = predicate => nodes.findIndex(predicate);
+  const title = text => indexOf(node => node.className === 'nostrodomus-section-title' && node.textContent === text);
+  const desc = start => indexOf(node => node.className === 'nostrodomus-setting-desc' && String(node.textContent).startsWith(start));
+
+  const themes = desc('Includes Classic (the default)');
+  assert.ok(themes > title('Syntax theme'), 'the list of syntax themes is in the Syntax theme part');
+  assert.ok(themes < title('Editor warnings'), 'and not under Editor warnings or Active line highlight');
+
+  const details = desc('Off by default so Ctrl+Space stays compact');
+  const detailsCheckbox = indexOf(node => !!node.querySelector?.('input[data-k="showDetailsPane"]'));
+  assert.equal(details, detailsCheckbox + 1, 'the details pane note follows its checkbox');
+  assert.ok(details < title('Completion accept mode'));
+});
+
+// Reset to default can turn "Hide editor warnings" off and "Glass editor dialog" on. Both sheets
+// belong to the companion layer, which the style reapply does not run.
+test('Reset to default re-applies the companion layer with the default settings', async () => {
+  const applied = [];
+  const editor = { id: 'active-editor' };
+  const h = createPanelHarness({
+    settings: { style: { hideEditorWarnings: true, glassDialog: false } },
+    overrides: { applyCompanionEditorLayer: (target) => { applied.push({ target, style: { ...h.state.settings.style } }); } },
+  });
+  h.state.activeEditorCache.editor = editor;
+  h.open();
+  const help = await h.showTab('help');
+  help.querySelector('[data-reset-defaults]').click();
+  assert.equal(applied.length, 1, 'the companion layer is applied once');
+  assert.equal(applied[0].target === editor, true, 'on the active editor');
+  assert.equal(applied[0].style.hideEditorWarnings, false, 'with the default settings');
+  assert.equal(applied[0].style.glassDialog, true);
 });

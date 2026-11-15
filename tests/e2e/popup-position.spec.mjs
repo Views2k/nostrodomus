@@ -1,6 +1,6 @@
-// popup-position.spec — the 0.1.201/203 completion-popup anchoring: the popup opens AT the caret
-// (word-start anchor, self-corrected for the containing-block offset, ~2px gap below the caret line),
-// not parked a fixed ~170px from the editor's left edge.
+// popup-position.spec: the completion popup opens at the caret (anchored at the word start,
+// corrected for the containing-block offset, about 2px below the caret line), not at a fixed ~170px
+// from the editor's left edge.
 //
 // Measures the caret with the view's own coordsAtPos (authoritative) against the popup's rendered box.
 // Uses a caret pushed well to the right so a "parked near the left edge" regression is unmistakable.
@@ -20,8 +20,8 @@ test('popup position: the completion popup opens at the caret, not parked at the
   await openSeededCardCodeEditor(page, stamp);
 
   // Append a key whose entity-shaped value pushes the caret well to the right, then open completion so
-  // the popup must track the caret horizontally (the wide-editor case the fix addresses). The value uses
-  // the seeded input_boolean. domain so real suggestions exist on the container (a domain absent on the
+  // the popup must track the caret horizontally (the wide-editor case). The value uses the seeded
+  // input_boolean. domain so real suggestions exist on the container (a domain absent on the
   // instance would compute zero rows and never render the popup to measure).
   await page.keyboard.press('Enter');
   await page.keyboard.press('Shift+Home');

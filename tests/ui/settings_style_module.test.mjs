@@ -14,7 +14,7 @@ import {
   syntaxThemePalette,
 } from '../../src/ui/settingsStyle.js';
 
-test('settings style preset value preserves v31.6.255 key, fallback, and first-value behavior', () => {
+test('stylePresetValue takes the key, then the fallback, then the first preset', () => {
   const presets = {
     compact: { fontSize: '12px' },
     normal: { fontSize: '14px' },
@@ -26,7 +26,7 @@ test('settings style preset value preserves v31.6.255 key, fallback, and first-v
   assert.deepEqual(stylePresetValue(presets, 'missing', 'alsoMissing'), { fontSize: '12px' });
 });
 
-test('settings style preset value preserves v31.6.255 truthy/falsy branch behavior', () => {
+test('stylePresetValue skips an empty or zero value for the fallback', () => {
   const values = {
     first: 'first-value',
     empty: '',
@@ -40,7 +40,7 @@ test('settings style preset value preserves v31.6.255 truthy/falsy branch behavi
 });
 
 
-test('effective style settings merge preserves v31.6.256 default/current branch behavior', () => {
+test('effectiveStyleSettings merges the current settings over the defaults', () => {
   const defaults = { glow: true, opacity: 0.8, syntaxTintEnabled: false };
   assert.deepEqual(effectiveStyleSettings(defaults, { opacity: 0.5 }), {
     glow: true,
@@ -51,7 +51,7 @@ test('effective style settings merge preserves v31.6.256 default/current branch 
   assert.deepEqual(effectiveStyleSettings(defaults, undefined), defaults);
 });
 
-test('effective style settings merge preserves legacy falsy current-style behavior', () => {
+test('effective style settings merge handles a falsy current style', () => {
   const defaults = { enabled: true };
   assert.deepEqual(effectiveStyleSettings(defaults, 0), defaults);
   assert.deepEqual(effectiveStyleSettings(defaults, ''), defaults);
@@ -59,7 +59,7 @@ test('effective style settings merge preserves legacy falsy current-style behavi
 });
 
 
-test('syntaxThemeOptions preserves legacy option label mapping behavior', () => {
+test('syntaxThemeOptions maps the option labels', () => {
   const presets = {
     vscodeDarkPlus: { label: 'VS Code Dark+' },
     customNoLabel: { baseHue: 123 },
@@ -78,7 +78,7 @@ test('settings style module owns bounded preset catalogs', () => {
   assert.equal(DARKPLUS_SYNTAX_COLORS.fg, '#d4d4d4');
 });
 
-test('syntax theme palette preserves Dark+ defaults and non-Dark+ distinct roles', () => {
+test('syntax theme palette has the Dark+ defaults, and another theme has the same roles in distinct colors', () => {
   const dark = syntaxThemePalette(STYLE_SYNTAX_PRESETS.vscodeDarkPlus, 1);
   assert.equal(dark.fg, '#d4d4d4');
   assert.equal(dark.key, '#9cdcfe');
@@ -90,7 +90,7 @@ test('syntax theme palette preserves Dark+ defaults and non-Dark+ distinct roles
   assert.notEqual(aurora.comment, aurora.keyword);
 });
 
-test('resolve syntax tint settings preserves default fallback and opacity bounds', () => {
+test('resolve syntax tint settings falls back to the default preset and clamps the opacities', () => {
   const resolved = resolveSyntaxTintSettings(
     { syntaxTintPreset: 'missing', syntaxThemeOpacity: 2, syntaxTintOpacity: 99, syntaxThemeSaturation: 1 },
     { syntaxTintPreset: 'vscodeDarkPlus', syntaxTintHue: 325, syntaxTintSaturation: 1, syntaxTintOpacity: 0.32, syntaxThemeOpacity: 1, syntaxThemeSaturation: 1 },
@@ -108,13 +108,13 @@ test('syntax color opacity uses the module-owned Dark+ foreground fallback', () 
 
 test('syntaxThemeSaturation is applied exactly once per token, consistently across themes', () => {
   const cobalt = Object.values(STYLE_SYNTAX_PRESETS).find(p => p.label === 'Cobalt');
-  // Single application: at 0.35 the key token desaturates once (43%), not twice (the old bug: 18%).
+  // Applied once: at 0.35 the key token desaturates to 43%, not twice (18%).
   assert.equal(syntaxThemePalette(cobalt, 0.35).key, 'hsl(188 43% 77%)');
-  // At the default slider (1.0) syntaxColorWithSaturation is a no-op, so it is the raw generated
-  // color — byte-identical to before the fix (nothing changes at the default).
+  // At the default slider (1.0) syntaxColorWithSaturation is a no-op: the key token keeps the raw
+  // generated color.
   assert.equal(syntaxThemePalette(cobalt, 1).key, 'hsl(188 122% 77%)');
-  // Classic (hardcoded hex, never through syntaxHsl) also responds to the slider — the multiplier is
-  // now the sole authority in the closing map for both generated and Classic themes.
+  // Classic (hard-coded hex, never through syntaxHsl) also responds to the slider: the closing map
+  // applies the multiplier to generated and Classic themes alike.
   const classic = STYLE_SYNTAX_PRESETS.vscodeDarkPlus;
   assert.notEqual(syntaxThemePalette(classic, 1).key, syntaxThemePalette(classic, 0.35).key);
 });

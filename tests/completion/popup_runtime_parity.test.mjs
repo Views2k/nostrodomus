@@ -52,7 +52,7 @@ test('popup position flips above and clamps horizontally within bounds', () => {
 
 test('popup stays on-screen when the editor band is narrower than the popup', () => {
   // A narrow codebox near the viewport's right edge: leftBound(1050) > rightBound(1290) - width(280).
-  // The old clamp snapped left back to 1050, pushing the right edge to 1330 (off-screen).
+  // Clamping left to 1050 would push the right edge to 1330, off the screen.
   const narrow = completionPopupPosition({ top: 300, bottom: 318, left: 1050 }, { width: 280, height: 150 }, { left: 1050, right: 1290, top: 10, bottom: 800 });
   assert.ok(narrow.left + 280 <= 1290, `right edge ${narrow.left + 280} must stay within rightBound 1290`);
   assert.ok(narrow.left >= 0, 'not off the left edge either');
@@ -61,7 +61,7 @@ test('popup stays on-screen when the editor band is narrower than the popup', ()
   assert.ok(tiny.left >= 0, 'left floored at 0 for an over-wide popup');
 });
 
-test('popup re-positions on editor SCROLL while open (one passive listener per scroller, idempotent, no-op when hidden)', () => {
+test('popup re-positions on editor scroll while open (one passive listener per scroller, idempotent, no-op when hidden)', () => {
   const listeners = [];
   const scroller = {
     addEventListener(type, handler, options) { listeners.push({ type, handler, options }); },
@@ -86,7 +86,7 @@ test('popup re-positions on editor SCROLL while open (one passive listener per s
   scrollListeners[0].handler();
   assert.equal(box.style.left, '300px', 'scroll re-positions the popup to follow the caret');
 
-  // Idempotent: a second placement does NOT add another scroll listener.
+  // Idempotent: a second placement does not add another scroll listener.
   placeCompletionPopupAtCursor(state, deps);
   assert.equal(listeners.filter(l => l.type === 'scroll').length, 1, 'no duplicate scroll listener');
 
@@ -97,17 +97,17 @@ test('popup re-positions on editor SCROLL while open (one passive listener per s
   assert.notEqual(box.style.left, '999px', 'a hidden popup is not re-positioned on scroll');
 });
 
-test('popup anchors at the WORD START (ctx.from), not the caret; falls back to the caret on a wrapped token', () => {
+test('popup anchors at the word start (ctx.from), not the caret; falls back to the caret on a wrapped token', () => {
   const scroller = { addEventListener() {}, getBoundingClientRect: () => ({ left: 38, right: 1402, top: 144, bottom: 800, width: 1364, height: 656 }) };
   const box = { dataset: {}, style: { display: 'block' }, getBoundingClientRect: () => ({ width: 280, height: 150 }) };
   const mk = (coordsAtPos, context) => ({ overlay: box, context, view: { dom: { querySelector: () => scroller, closest: () => null }, coordsAtPos } });
   const deps = { getPos: () => 10, ensureOverlay: () => box, windowRef: { innerWidth: 1440, innerHeight: 900, requestAnimationFrame: (fn) => fn() } };
 
-  // from (pos 3) on the SAME row at left=120; caret (pos 10) at left=300 → anchor under the word start.
+  // from (pos 3) on the same row at left=120; caret (pos 10) at left=300 → anchor under the word start.
   placeCompletionPopupAtCursor(mk((p) => (p === 3 ? { top: 400, bottom: 416, left: 120 } : { top: 400, bottom: 416, left: 300 }), { from: 3 }), deps);
   assert.equal(box.style.left, '120px', 'anchors at the token start (120), not the caret (300)');
 
-  // token WRAPPED: from is on a higher visual row → fall back to the caret left.
+  // token wrapped: from is on a higher visual row → fall back to the caret left.
   placeCompletionPopupAtCursor(mk((p) => (p === 3 ? { top: 360, bottom: 376, left: 1300 } : { top: 400, bottom: 416, left: 300 }), { from: 3 }), deps);
   assert.equal(box.style.left, '300px', 'wrapped token falls back to the caret left');
 });
@@ -126,14 +126,14 @@ test('self-corrects a containing-block offset so the box lands at the intended v
   const deps = { getPos: () => 5, ensureOverlay: () => box, windowRef: { innerWidth: 1440, innerHeight: 900, requestAnimationFrame: (fn) => fn() } };
   placeCompletionPopupAtCursor(state, deps);
   // intended: left 200, top 416+2(gap)=418; box reports +26/+40, so the code cancels the delta.
-  assert.equal(box.style.left, '174px', 'horizontal containing-block offset (26) cancelled');
-  assert.equal(box.style.top, '378px', 'vertical containing-block offset (40) cancelled');
+  assert.equal(box.style.left, '174px', 'horizontal containing-block offset (26) canceled');
+  assert.equal(box.style.top, '378px', 'vertical containing-block offset (40) canceled');
 });
 
-test('popup TRACKS the caret horizontally on a wide editor (no fixed left-of-editor cap), still clamped to the right edge', () => {
+test('on a wide editor the popup follows the caret horizontally and stays clamped to the right edge', () => {
   // A ~1364px-wide panel editor (bounds.left 48 .. right 1392), caret mid-editor.
   const wide = { left: 48, right: 1392, top: 144, bottom: 800 };
-  // Caret well to the right but not near the edge → popup follows the caret (was capped at left+170 = 218).
+  // Caret well to the right but not near the edge: the popup follows the caret (no cap at left + 170 = 218).
   const mid = completionPopupPosition({ top: 400, bottom: 416, left: 700 }, { width: 280, height: 150 }, wide);
   assert.ok(Math.abs(mid.left - 700) <= 4, `popup should track caret left ~700, got ${mid.left}`);
   // Caret near the right edge → still clamped so a 280px popup cannot overflow (rightBound - width = 1112).
