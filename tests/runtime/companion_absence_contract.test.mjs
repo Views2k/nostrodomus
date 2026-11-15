@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { runPublicRuntimeContract } from '../../tools/public_runtime_contract_runner.mjs';
 
 // Companion absence: the contract runner boots the built
-// dist with NO pre-existing coordinator global, NO v17 editor bridge, and NO
+// dist with no pre-existing coordinator global, no v17 editor bridge, and no
 // picker-safe companion loaded. These tests pin that
 // boot does not crash, the console carries exactly the one ready banner,
 // diagnostics report the companion layer correctly when it is alone, and zero

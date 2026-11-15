@@ -10,7 +10,7 @@ import {
   safeContextSummary,
 } from '../../src/diagnostics/diagnosticsCore.js';
 
-test('safeContextSummary preserves bounded public context shape without runtime state', () => {
+test('safeContextSummary keeps the public context fields, reports prefix and path lengths and drops the rest', () => {
   const summary = safeContextSummary({
     lang: 'yaml',
     scope: 'lovelace',
@@ -44,7 +44,7 @@ test('safeContextSummary preserves bounded public context shape without runtime 
   assert.equal(safeContextSummary(null), null);
 });
 
-test('diagnostics readout coercion helpers preserve truncation and warnings behavior', () => {
+test('diagnostics readout coercion helpers truncate strings, accept only true booleans and keep at most 10 warnings', () => {
   assert.equal(diagnosticsReadoutString('abcdef', 4), 'abcd…');
   assert.equal(diagnosticsReadoutString(null), '');
   assert.equal(diagnosticsReadoutBool(true), true);
@@ -61,7 +61,7 @@ test('diagnostics readout coercion helpers preserve truncation and warnings beha
   assert.deepEqual(diagnosticsReadoutSafeWarnings(null), []);
 });
 
-test('diagnosticsReadoutSummary preserves active editor readout shape through injected API', () => {
+test('diagnosticsReadoutSummary reports the API flags and the active editor readout', () => {
   const api = {
     stage: 'loaded',
     isEnabled: () => true,
@@ -99,7 +99,7 @@ test('diagnosticsReadoutSummary reads the editor readout inside the envelope rea
   assert.equal(missing.activeEditorWarning, 'no-active-codemirror-view-found');
 });
 
-test('diagnosticsReadoutBundle preserves readout seam behavior', () => {
+test('diagnosticsReadoutBundle reports an available readout with the active editor found', () => {
   const api = {
     stage: 'loaded',
     isEnabled: () => true,

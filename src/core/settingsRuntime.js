@@ -1,23 +1,17 @@
-// Settings load/reset lifecycle owner for Nostrodomus runtime.
-//
-// Storage, defaults, and UI close callbacks are injected so this module owns the
-// settings lifecycle without importing browser globals or Home Assistant state.
+// Loading, migrating and resetting the stored settings. Storage, defaults and the UI callbacks
+// are injected, so this module uses no browser globals and no Home Assistant state.
 
 import { SETTINGS_SCHEMA_VERSION } from './settingsStorageKeys.js';
 
-// Settings-migration ledger: an ordered list of numbered, idempotent
-// steps, each run once and gated by the stored payload's schemaVersion. Step 1
-// (the legacy-key fold) is a STORAGE-level migration handled by
-// migrateLegacySettings() before the payload is read, so its payload transform
-// here is a no-op — it records step 1 in the ledger. Future content migrations
-// add { toVersion: 2, migrate(payload) {...} }, etc.
+// The settings migrations, in order. A step runs for a stored payload whose schemaVersion is
+// below its toVersion, and running it twice changes nothing. Step 1, folding the legacy keys into
+// the write key, happens in storage (migrateLegacySettings) before the payload is read, so its
+// transform here leaves the payload as it is.
 const SETTINGS_MIGRATIONS = Object.freeze([
   { toVersion: 1, name: 'legacy-key-fold', migrate: (payload) => payload },
-  // v2 (active-line default flip): style.hideActiveLineHighlight first defaulted to false (the
-  // current-line wash shown) and now defaults to true (hidden). A value persisted under the old
-  // default was never a deliberate choice (the toggle was a no-op then). Drop the stale key so the
-  // new default applies; the working toggle re-persists a deliberate choice afterward. Idempotent;
-  // preserves every other style key.
+  // Step 2: style.hideActiveLineHighlight defaults to true. A value stored before schema version 2
+  // was saved while that toggle had no effect, so it is dropped and the default applies. Every
+  // other style key is kept.
   {
     toVersion: 2,
     name: 'active-line-default-reset',
@@ -33,10 +27,9 @@ const SETTINGS_MIGRATIONS = Object.freeze([
 ]);
 
 /**
- * Bring a stored settings payload up to `schemaVersion` through the ledger,
- * stamping the version. A payload written by a NEWER build (schemaVersion >
- * target) is returned untouched (`future: true`) so it is never downgraded or
- * destructively rewritten. Pure; the caller persists/strips as needed.
+ * Brings a stored settings payload up to `schemaVersion` through the migrations and stamps the
+ * version. A payload written by a newer build (a higher schemaVersion) is returned as it is, with
+ * `future: true`, so it is never downgraded or rewritten. Pure; the caller stores the result.
  */
 export function migrateSettings(stored, schemaVersion = SETTINGS_SCHEMA_VERSION) {
   const from = Number(stored && stored.schemaVersion) || 0;
@@ -57,9 +50,9 @@ export function migrateSettings(stored, schemaVersion = SETTINGS_SCHEMA_VERSION)
 }
 
 // The two counts the completion code uses as they are stored, with the range the panel offers.
-// The merge onto the defaults checks the type of a stored value, not its size, so a hand-edited
-// maxItems of 100000 (the row cap of the suggestion list) drew every candidate as a row. Style
-// numbers are not listed: they are clamped where they are used.
+// The merge onto the defaults checks the type of a stored value, not its size: a hand-edited
+// maxItems of 100000 (the row cap of the suggestion list) would draw every candidate as a row.
+// Style numbers are not listed: they are clamped where they are used.
 const STORED_COUNT_RANGES = Object.freeze({
   minChars: Object.freeze([0, 4]),
   maxItems: Object.freeze([1, 40]),
@@ -86,6 +79,8 @@ function stripSchemaVersion(payload) {
  *   closeSettings?: (...args: any[]) => void,
  *   closeCompletion?: (...args: any[]) => void,
  *   scheduleCodeboxStyleReapply?: (reason: string) => void,
+ *   applyCompanionEditorLayer?: (editor: any) => void,
+ *   recordRuntimeErrorOnce?: (scope: string, err: any, detail?: any) => void,
  *   structuredCloneRef?: (value: any) => any,
  *   schemaVersion?: number,
  * }} [deps]
@@ -103,6 +98,8 @@ export function createSettingsRuntime({
   closeSettings = () => {},
   closeCompletion = () => {},
   scheduleCodeboxStyleReapply = () => {},
+  applyCompanionEditorLayer = () => {},
+  recordRuntimeErrorOnce = () => {},
   structuredCloneRef = globalThis.structuredClone?.bind?.(globalThis),
   schemaVersion = SETTINGS_SCHEMA_VERSION,
 } = {}) {
@@ -121,10 +118,9 @@ export function createSettingsRuntime({
     return JSON.parse(JSON.stringify(value));
   }
 
-  // One-time storage migration: fold any surviving legacy-key payloads into the write
-  // key (existing write-key values win on conflict), then delete the legacy keys.
-  // Idempotent — a second run finds no legacy keys and does nothing. Legacy keys are
-  // only deleted after the merged payload has been written successfully.
+  // Folds the payloads stored under legacy keys into the write key (values already under the write
+  // key win), then deletes the legacy keys, but only after the merged payload has been written. A
+  // second run finds no legacy keys and does nothing.
   function migrateLegacySettings() {
     if (!storage || !settingsWriteKey || !settingsLegacyKeys.length) return 0;
     let current = null;
@@ -181,27 +177,23 @@ export function createSettingsRuntime({
       const raw = storage?.getItem?.(settingsWriteKey);
       if (raw) {
         loadedSettingsStorageKey = settingsWriteKey;
-        // Bring the stored payload to the current schemaVersion and
-        // persist the stamp (a newer-build payload is left untouched). The
-        // schemaVersion is storage metadata, stripped from the in-memory
-        // settings the runtime uses.
+        // Bring the stored payload to the current schemaVersion and store the stamp (a payload
+        // from a newer build is left as it is). schemaVersion is storage metadata and is not part
+        // of the settings the runtime uses.
         const { payload, changed, future } = migrateSettings(JSON.parse(raw), schemaVersion);
         if (changed && !future) {
           try { storage?.setItem?.(settingsWriteKey, JSON.stringify(payload)); }
           catch (err) { logWarnOnce('settings-schema-write', 'settings schemaVersion stamp failed; retried next load', err); }
         }
-        // Merge onto a MUTABLE deep clone of the defaults, not the frozen DEFAULT_SETTINGS itself.
-        // deepMerge shallow-copies the base and only builds fresh objects for keys the stored payload
-        // overrides — so merging onto the frozen defaults leaked those frozen nested blocks by
-        // reference for any block an (upgrading) user's stored settings omit, and the first nested
-        // toggle (completions/style/providers/enabledLangs) then threw "Cannot assign to read only
-        // property". A cloned base keeps state.settings fully mutable.
+        // Merge onto a mutable clone of the defaults, not the frozen DEFAULT_SETTINGS: deepMerge
+        // copies the base shallowly and builds new objects only for the blocks the stored payload
+        // has, so a block the payload lacks would stay frozen and the first change to it
+        // (completions, style, providers, enabledLangs) would throw.
         return clampStoredCounts(deepMerge(cloneDefaultSettings(), stripSchemaVersion(payload)));
       }
     } catch (err) {
-      // A corrupt/unparseable payload falls back to defaults below — so the source key was NOT the
-      // one actually loaded. Reset it (it was set optimistically before JSON.parse) so
-      // loadedSettingsKey() and diagnostics don't misreport that settings came from storage.
+      // A payload that cannot be parsed falls back to the defaults below, so no stored key was
+      // loaded; loadedSettingsKey() and diagnostics must not report one.
       loadedSettingsStorageKey = '';
       logWarnOnce(`bad-settings-${settingsWriteKey}`, 'ignored bad settings key', settingsWriteKey, err);
     }
@@ -217,16 +209,19 @@ export function createSettingsRuntime({
     }
     loadedSettingsStorageKey = '';
     state.settings = cloneDefaultSettings();
-    // Clear the save-dedupe fingerprint too: saveSettings skips a write when the payload
-    // equals settingsLastSerialized. Without this, re-applying a pre-reset value produces
-    // the same serialization, the save is deduped, storage stays empty, and the setting is
-    // silently lost on reload. Empty string never equals a real payload, so the next save writes.
+    // saveSettings skips a write when the payload equals settingsLastSerialized. Setting a value
+    // from before the reset again would give the same text, the write would be skipped and storage
+    // would stay empty, so the setting would be lost on reload. An empty string never equals a
+    // payload, so the next save writes.
     state.settingsLastSerialized = '';
     closeSettings(false);
     closeCompletion();
     // The editor is still drawn with the style settings from before the reset (frame, surface,
-    // syntax theme). Restyle it with the defaults, as the Reset button of the panel does.
+    // syntax theme). Restyle it with the defaults, as the Reset button of the panel does. The
+    // style reapply does not run the companion layer, which draws the editor warning and glass
+    // dialog sheets, so that is applied too.
     try { scheduleCodeboxStyleReapply('settings-reset'); } catch { /* styling never stops a reset */ }
+    try { applyCompanionEditorLayer(state.activeEditorCache?.editor); } catch (err) { recordRuntimeErrorOnce('settings:reset-companion-layer', err, { phase: 'resetSettings' }); }
     logInfoOnce('settings-reset', 'settings reset');
     return cloneForReturn(state.settings);
   }

@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import json
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src/main.legacy.js"
-FACTORY = ROOT / "src/composition/mainLegacyCompletionRuntimeFactory.js"
+SRC = ROOT / "src/app.js"
+FACTORY = ROOT / "src/composition/appCompletionRuntimeFactory.js"
 OWNER = ROOT / "src/completion/suggestionQualityRuntime.js"
 SCORING = ROOT / "src/completion/scoring.js"
 SETTINGS_PANEL = ROOT / "src/ui/settings/settingsPanelShell.js"
-DIAGNOSTICS = ROOT / "src/diagnostics/telemetryRuntime.js"
+DIAGNOSTICS = ROOT / "src/diagnostics/diagnosticsRuntime.js"
 DIST = ROOT / "dist/nostrodomus.js"
-PROJECT = ROOT / "PROJECT.json"
 REPORT = ROOT / "reports/SUGGESTION_QUALITY_DASHBOARD_STATIC_TEST_REPORT.txt"
 
 errors = []
@@ -29,11 +27,9 @@ scoring = SCORING.read_text(encoding="utf-8", errors="replace")
 settings_panel = SETTINGS_PANEL.read_text(encoding="utf-8", errors="replace")
 diagnostics = DIAGNOSTICS.read_text(encoding="utf-8", errors="replace")
 dist = DIST.read_text(encoding="utf-8", errors="replace")
-project = json.loads(PROJECT.read_text(encoding="utf-8"))
 
-# Source ownership: the payload/record body belongs to the completion owner module;
-# main.legacy.js is expected to keep only thin runtime delegates for compatibility.
-require('createMainLegacyCompletionRuntimeGroup' in src, "source wires completion runtime group factory")
+# The completion owner module builds and records the payload; app.js only delegates.
+require('createAppCompletionRuntimeGroup' in src, "source wires completion runtime group factory")
 require('createSuggestionQualityRuntime' in factory, "completion factory wires suggestion-quality owner runtime")
 require('suggestionQualityPayload' in factory and 'createSuggestionQualityRuntimeDelegates' in factory, "completion factory exposes suggestionQualityPayload delegate")
 require('recordSuggestionQuality' in factory and 'suggestionQualityRuntime' in factory, "completion factory keeps recordSuggestionQuality delegate")
@@ -44,11 +40,11 @@ require('providerMix: Object.fromEntries(providers)' in owner, "owner module own
 require('typeMix: Object.fromEntries(types)' in owner, "owner module owns type mix accounting")
 require('duplicateLabels: duplicateLabels.slice(0, 8)' in owner, "owner module bounds duplicate-label reporting")
 
-# Scoring remains the producer of fresh/cached suggestion quality events.
+# Scoring records the quality of fresh and cached results.
 require('recordSuggestionQuality(ctx, items' in scoring, "scoring records fresh scored results")
 require('recordSuggestionQuality(ctx, cached' in scoring, "scoring records cached results")
 
-# UI/diagnostics consumers still show and copy the local-only report.
+# Settings and diagnostics show and copy the local-only report.
 require('function suggestionQualityCard(' in diagnostics, "diagnostics renders a Suggestion Quality card")
 require('function refreshSuggestionQualityPanel(' in diagnostics, "diagnostics has a live refresh hook for the Context section")
 require('settingsTitle("Suggestion Quality")' in settings_panel, "settings panel places Suggestion Quality inside the Context category")
@@ -65,7 +61,7 @@ require('qualityMetric("Score spread"' not in diagnostics, "diagnostics does not
 require('qualityMetric("Cache"' not in diagnostics, "diagnostics does not show low-value cache-state metric")
 require('qualityMetric("Duplicate labels"' not in diagnostics, "diagnostics does not show low-value duplicate-label metric by default")
 
-# Bundle checks use relaxed token matching because esbuild may suffix imported helper names.
+# esbuild may add a numeric suffix to imported helper names, so the dist checks are looser.
 for text_name, text in (("dist", dist),):
     require('createSuggestionQualityRuntime' in text, f"{text_name} bundles suggestion-quality owner")
     require('function suggestionQualityPayload(' in text, f"{text_name} bundles redacted suggestion quality payload builder")
@@ -81,9 +77,6 @@ for text_name, text in (("dist", dist),):
     require('qualityMetric("Score spread"' not in text, f"{text_name} does not show abstract score-spread metric")
     require('qualityMetric("Cache"' not in text, f"{text_name} does not show low-value cache-state metric")
     require('qualityMetric("Duplicate labels"' not in text, f"{text_name} does not show low-value duplicate-label metric by default")
-
-version = project.get("version", "")
-require(project.get("internal_version", "").startswith(f"nostrodomus-v{version}-"), "PROJECT.json internal_version matches current version")
 
 REPORT.parent.mkdir(parents=True, exist_ok=True)
 REPORT.write_text(

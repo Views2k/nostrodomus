@@ -1,6 +1,6 @@
-// UNIVERSAL — on-open convergence for non-card-dialog panel editors.
+// Universal — on-open convergence for non-card-dialog panel editors.
 // Guards onEditorSurfaceNavigation: when style.universalCodebox is on, an SPA route change
-// arms a TIME-BOXED opening window + a bounded settle-probe ladder so the panel editor styles
+// arms a time-boxed opening window + a bounded settle-probe ladder so the panel editor styles
 // on open (no click); when the flag is off it is a strict no-op (dialog-only behavior).
 
 import test from 'node:test';
@@ -42,7 +42,7 @@ test('onEditorSurfaceNavigation (enabled) arms the opening window + the bounded 
   assert.equal(state.editorSentinelStats.universalNavigations, 1);
 });
 
-test('onEditorSurfaceNavigation (universalCodebox OFF) is a strict no-op', () => {
+test('onEditorSurfaceNavigation is a no-op when universalCodebox is off', () => {
   const { rt, state, scheduledDelays } = makeRuntime({ enabled: false });
   const result = rt.onEditorSurfaceNavigation('spa-navigation');
   assert.equal(result, false);

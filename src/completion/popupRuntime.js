@@ -12,8 +12,8 @@ import {
 } from '../ui/suggestionPopup.js';
 
 // A box that Home Assistant removed from the page together with the dialog that hosted it still
-// has display:block. It is not open: counted as open, it made the first change in the next
-// editor refresh the list and show it there without Ctrl+Space.
+// has display:block. It does not count as open; otherwise the first change in the next editor
+// would refresh the list and show it there without Ctrl+Space.
 export function completionPopupIsOpen(state) {
   return !!state?.overlay && state.overlay.isConnected !== false && state.overlay.style.display !== 'none';
 }
@@ -77,14 +77,14 @@ function ensureCompletionAnnouncer(state, documentRef) {
 }
 
 // Wire aria-controls/aria-expanded/aria-activedescendant onto the focused .cm-content so assistive
-// tech tracks the active option while typing (ARIA 1.1 editable-combobox pattern). Fail-dark: no
-// editor handle or a hostile node is a silent no-op — ARIA is additive and must never break editing.
+// tech tracks the active option while typing (ARIA 1.1 editable-combobox pattern). Without an
+// editor element, or when the element rejects the attributes, nothing happens: the ARIA is extra
+// and must never break editing.
 export function syncCompletionEditorAria(state, open) {
   let content = null;
   try {
-    // The combobox ARIA belongs on the editor the completion is SERVING (state.view — where the caret
-    // and typing are), not the styling cache's editor, which can be a different/stale editor on a
-    // multi-editor page. Prefer the served view's content; fall back to the styling cache.
+    // The attributes go on the editor the list serves (state.view, where the caret is). The style
+    // cache's editor can be another editor on a page with several, so it is only the fallback.
     content = state?.view?.contentDOM
       || state?.view?.dom?.querySelector?.('.cm-content')
       || state?.activeEditorCache?.editor?.querySelector?.('.cm-content')
@@ -94,8 +94,8 @@ export function syncCompletionEditorAria(state, open) {
   try {
     if (open && Array.isArray(state.items) && state.items.length) {
       const i = Math.min(Math.max(0, state.selected || 0), state.items.length - 1);
-      // CodeMirror observes this element. Writing an attribute that already has the value still
-      // queues a mutation record, so every render woke its observer three times.
+      // CodeMirror observes this element, and writing an attribute that already has the value
+      // still queues a mutation record, so unchanged values are not written.
       const setIfChanged = (name, value) => {
         if (typeof content.getAttribute === 'function' && content.getAttribute(name) === value) return;
         content.setAttribute(name, value);
@@ -108,7 +108,7 @@ export function syncCompletionEditorAria(state, open) {
       content.removeAttribute('aria-expanded');
       content.removeAttribute('aria-activedescendant');
     }
-  } catch { /* fail-dark */ }
+  } catch { /* the ARIA is optional; editing goes on without it */ }
 }
 
 export function clearCompletionPopupA11y(state) {
@@ -130,9 +130,9 @@ export function ensureCompletionOverlay(state, deps = {}) {
   } = deps;
 
   // The overlay root of a bound editor is the host element in the root node of the editor's own
-  // DOM (nostrodomusCodeEditorOverlayRoot). While the box sits in the host that sits in that root
-  // node, resolving the root again returns the same host, so the resolution is left out: one
-  // refresh asked for the box three or four times, each with an active-dialog lookup.
+  // DOM (nostrodomusCodeEditorOverlayRoot). While the box sits in a host in that root node,
+  // resolving the root again would return the same host, so the lookup (which includes an
+  // active-dialog search) is skipped. A refresh asks for the box several times.
   if (state.overlay && state.overlayRoot && state.overlay.parentNode === state.overlayRoot) {
     let viewRoot = null;
     try { viewRoot = (state.view || state.hookedView)?.dom?.getRootNode?.() || null; } catch { viewRoot = null; }
@@ -196,11 +196,10 @@ export function ensureCompletionOverlay(state, deps = {}) {
   return box;
 }
 
-// Match the suggestion pane's blue to the user's codebox accent (border color), so the popup
-// chrome tracks the same color as the codebox + settings panel. Inline tokens on the box;
-// descendants (match highlight, list scrollbar) inherit them. Idempotent: a signature stamp skips
-// the DOM writes when the accent is unchanged, so this stays cheap on the per-render reuse path.
-// Fail-dark — accent is decorative and must never break the popup.
+// Match the list's blue to the user's codebox accent (border color), so the list uses the same
+// color as the codebox and the settings panel. The tokens are set inline on the box and the
+// match highlight and the list scrollbar inherit them. A signature stamp skips the writes when the
+// accent is unchanged, since this runs on every render.
 function applyPopupAccentVars(box, state) {
   try {
     const accent = uiAccentVarsFromSettings(state?.settings?.style);
@@ -212,7 +211,6 @@ function applyPopupAccentVars(box, state) {
     box.style.setProperty('--nostrodomus-scrollbar-rgb', accent.scrollbar);
   } catch { /* accent is decorative; never break the popup */ }
 }
-
 
 export function completionPopupPosition(cursor, boxSize, bounds, options = {}) {
   const gap = Number(options.gap) || 2;
@@ -228,17 +226,10 @@ export function completionPopupPosition(cursor, boxSize, bounds, options = {}) {
   const availableBelow = bottomBound - cursorBottom - gap;
   const availableAbove = cursorTop - topBound - gap;
   const placeBelow = availableBelow >= height || availableBelow >= availableAbove;
-  // Track the caret horizontally. An earlier `min(cursorLeft, leftBound + 170)` capped the popup
-  // ~170px from the editor's left edge, which parked it far left of the caret on a wide editor
-  // (Dev Tools / panel / raw-config: a 1364px editor put the popup at ~244 while typing mid-line).
-  // The clamp below keeps a wide popup from overflowing the editor's right edge or going left of it,
-  // so a far-right caret still stays fully in view.
-  // rightBound/bottomBound are already viewport-clamped by the caller, but leftBound/topBound (the
-  // editor's near edge) are not — so when the editor band is narrower/shorter than the popup, the
-  // plain Math.max(leftBound, ...) snapped the popup back to the near edge and pushed its FAR edge off
-  // the viewport. Cap the near-edge clamp at the far viewport-safe bound (and floor at 0) so a narrow
-  // codebox near the screen edge slides the popup inward instead of off-screen. Wide editors (the
-  // common case) are unaffected: leftBound <= maxLeft there, so this is identical to the old clamp.
+  // The box follows the caret horizontally and stays between the editor's left edge and the right
+  // bound. The caller clamps rightBound and bottomBound to the window but not leftBound and
+  // topBound, so the far bound wins over the near edge (and 0 is the floor): an editor narrower
+  // than the box moves the box inward instead of pushing its far edge off the screen.
   const maxLeft = rightBound - width;
   const left = Math.max(0, Math.min(maxLeft, Math.max(leftBound, Math.min(cursorLeft, maxLeft))));
   const rawTop = placeBelow ? cursorBottom + gap : cursorTop - height - gap;
@@ -249,7 +240,7 @@ export function completionPopupPosition(cursor, boxSize, bounds, options = {}) {
 
 // Whether the caret is in the part of the editor that is visible in the window. CodeMirror gives
 // no coordinates for a line it no longer draws, which is a caret far outside the view. A view
-// that cannot be asked counts as visible, so the list stays as it did before.
+// that cannot be asked counts as visible, so the list stays where it is.
 function completionCaretOnScreen(state, deps) {
   const view = state?.view;
   if (typeof view?.coordsAtPos !== 'function') return true;
@@ -314,14 +305,11 @@ function popupRepositionHandler(state) {
   return state.popupReposition;
 }
 
-// Keep the popup glued to the caret when the editor scrolls while it's open. `scroll` events
-// are composed:false, so a document/window listener can't see the editor's own `.cm-scroller` (it lives
-// in the ha-code-editor shadow) — attach directly to that scroller. Idempotent (one listener per
-// scroller, marked with an expando), passive (never blocks scrolling), rAF-throttled, and a no-op while
-// the popup is hidden. The listener rides the scroller's lifetime (GC'd when the editor is destroyed).
-// The same handler is attached to the containers around the scroller (once per element for this
-// runtime state) and to the window for a resize or a scroll of the document, which move the
-// editor just the same.
+// Keeps the open list at the caret when the editor moves. `scroll` events are composed:false, so
+// a window listener does not see the editor's own `.cm-scroller` (it is in the ha-code-editor
+// shadow root); the passive handler goes on that scroller (once, marked with an expando), on the
+// containers around it (once per element) and on the window for a resize or a document scroll.
+// The scroller's listener goes away with the editor.
 function wirePopupScrollReposition(state, scroller, deps) {
   state.popupPlacementDeps = deps;
   const reposition = popupRepositionHandler(state);
@@ -365,10 +353,9 @@ export function placeCompletionPopupAtCursor(state, deps = {}) {
     windowRef = globalThis.window,
   } = deps;
 
-  // VS Code-style anchoring: pin the list under the start of the token being completed
-  // (state.context.from), not the caret, so it does not drift right as you type. The vertical row
-  // still comes from the caret, and if the token wrapped to a different visual row we fall back to the
-  // caret's left so the box never anchors off-screen on a previous line.
+  // The list sits under the start of the word being completed (state.context.from), not the
+  // caret, so it does not move right while typing. The row comes from the caret; when the word
+  // wrapped onto another visual row, the caret's left is used.
   const caretPos = getPos?.();
   const fromPos = Number.isFinite(state?.context?.from) ? state.context.from : caretPos;
   const caretCoords = state?.view?.coordsAtPos?.(caretPos);
@@ -392,8 +379,8 @@ export function placeCompletionPopupAtCursor(state, deps = {}) {
     ? {
         left: Math.max(margin, editorRect.left + margin),
         right: Math.min(innerWidth - margin, editorRect.right - margin),
-        // Vertically the list may leave the editor: clamped to the editor band, it covered the
-        // line being typed whenever neither side of the caret had room inside the band.
+        // Vertically the list may leave the editor: clamped to the editor, it would cover the
+        // line being typed whenever neither side of the caret has room inside a short editor.
         top: margin,
         bottom: innerHeight - margin,
       }
@@ -416,18 +403,12 @@ export function placeCompletionPopupAtCursor(state, deps = {}) {
     { gap },
   );
 
-  // Self-correct a containing-block offset: our box is position:fixed and computes viewport
-  // coords, but if a re-basing ancestor (transform/filter/etc.) makes the box's containing block
-  // something other than the viewport, it lands shifted down+right. Measure where it actually landed vs
-  // where we intended and cancel the delta. No-op (delta 0) when the containing block IS the viewport, so
-  // it can never regress; guarded against a non-numeric rect (e.g. a detached/test node → NaN → skip).
-  //
-  // The rectangle read at the top of this function was taken with the box at the position of the
-  // previous placement, so it already shows that offset: landed minus styled position. The offset
-  // does not depend on the position unless the containing block scales or rotates the box, and a
-  // box that is neither scaled nor rotated has a rectangle of its own layout size. In that case
-  // the corrected position is written at once; writing the position and reading the rectangle
-  // again forced a second layout on every keystroke and every scroll frame.
+  // The box is position:fixed, but an ancestor with a transform or a filter becomes its containing
+  // block and shifts it, so the shift (landed position minus styled position) is subtracted. The
+  // rectangle read above, at the previous position, already shows the shift when the box is not
+  // scaled or rotated (its rectangle then has its layout size), and the corrected position is
+  // written at once, without a second layout. Otherwise, or without a previous position, the box
+  // is placed, measured again and corrected.
   const styledLeft = parseFloat(box.style.left);
   const styledTop = parseFloat(box.style.top);
   const offsetKnown = !!rect && rect.width > 0 && rect.height > 0
@@ -548,9 +529,8 @@ function signatureHintElement(documentRef, model) {
 }
 
 function appendSignatureHint(box, state, ctx, documentRef, deps = {}) {
-  // A passive, display-only argument hint at the top of the popup. Gated default-off so the
-  // popup is byte-identical until the flag is on, and the snapshot (the same memoized cache)
-  // is read only when on.
+  // A display-only argument hint at the top of the list, behind the signatureHelp flag (off by
+  // default). The data snapshot is read only when the flag is on.
   if (state?.settings?.completions?.signatureHelp !== true || typeof deps.runtimeSnapshot !== 'function') return;
   let snapshot = null;
   try { snapshot = deps.runtimeSnapshot(); } catch { snapshot = null; }
@@ -565,10 +545,9 @@ function completionDetailElement(state, documentRef, deps = {}) {
   const model = completionDetailModel(item);
   if (!model) return null;
 
-  // For the highlighted item only, lazily enrich its documentation from the live runtime snapshot
-  // (service field schema, entity friendly name, registry id→name). Gated default-off, so the docs
-  // pane is byte-identical until the flag is on, and the snapshot (the same memoized cache) is read
-  // only when on: never per row, never per keystroke.
+  // With the lazyResolve flag on (off by default), the documentation of the highlighted row is
+  // filled in from the Home Assistant data snapshot (service fields, entity friendly name,
+  // registry names). Only this row is resolved, never every row.
   if (item && state?.settings?.completions?.lazyResolve === true && typeof deps.runtimeSnapshot === 'function') {
     let snapshot = null;
     try { snapshot = deps.runtimeSnapshot(); } catch { snapshot = null; }
@@ -757,7 +736,8 @@ export function renderCompletionPopup(state, deps = {}) {
     const detail = completionDetailElement(state, documentRef, deps);
     if (detail) box.appendChild(detail);
     // The 178px cap fits the header and the list. The details pane and the signature hint come on
-    // top of that and were cut off by overflow:hidden. Each of them limits its own height.
+    // top of that and would be cut off by overflow:hidden, so the cap is lifted for them; each
+    // limits its own height.
     const hasHint = !!box.querySelector?.('[data-nostrodomus-signature="1"]');
     box.style.maxHeight = detail || hasHint ? 'none' : '178px';
 

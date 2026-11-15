@@ -25,7 +25,7 @@ test('activeTopLayerDialog returns modal dialog from active dialog shadow root',
   assert.equal(result, modal);
 });
 
-test('activeTopLayerDialog preserves legacy-restored shadow traversal diagnostics', () => {
+test('activeTopLayerDialog records the shadow traversal diagnostics of the restored mode', () => {
   const nested = { tag: 'dialog', open: true, appendChild() {}, matches() { return false; } };
   const host = { shadowRoot: rootWith([nested]) };
   const state = {};

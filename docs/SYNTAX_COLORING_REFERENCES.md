@@ -35,7 +35,9 @@ Home Assistant's YAML editor often renders the content of a block scalar, for ex
 - Native highlight (`codeMirrorNativeHighlight.js`, `nativeHighlightLifecycle.js`): where Home Assistant's CodeMirror bundle exposes the needed API, a CodeMirror `HighlightStyle` extension with the theme colors is installed in the editor.
 - Source-class stylesheet (`sourceClassCssBuilder.js`, `sourceClassLifecycle.js`): a stylesheet in the editor's root that colors CodeMirror's own token classes, found through `highlightingFor()`. It sets the neutral foreground on the line container and not on every span.
 - Range highlights (`smartSyntaxTokenizers.js`, `smartSyntaxStyles.js`, `smartSyntaxLifecycle.js`): the visible lines are tokenized as YAML, CSS or Jinja, and the resulting ranges are registered with the CSS Custom Highlight API (`CSS.highlights`, styled through `::highlight()`). This colors text that has no token span. It is used when the browser supports the API.
-- Inline painter (`darkPlusBridge.js`, `darkPlusClassifiers.js`): the oldest path, which sets colors on spans. It remains as a fallback only.
+- Class painter (`smartSyntaxLifecycle.js`): where the browser has no CSS Custom Highlight API, the same token kinds are set as classes on CodeMirror's line and token elements, and the theme stylesheet colors those classes.
+
+Both take the kind of each line from `darkPlusBridge.js`, which uses the checks in `darkPlusClassifiers.js`. The range highlights then split the line into tokens with `smartSyntaxTokenizers.js`. The class painter gives a kind to each token span that CodeMirror rendered, with the token rules of the same module and the token classifier in `darkPlusBridge.js`.
 
 `initialSyntaxPaintGate.js` hides the editor content of a newly opened editor until the first colors are in place, so that the text does not appear uncolored for a moment.
 
@@ -50,7 +52,7 @@ The token kinds are listed in `SMART_SYNTAX_KIND_ORDER` in `src/syntax/smartSynt
 ## Rules
 
 - No whole-line color for a line of mixed syntax.
-- The inline painter does not become the primary path again.
+- The class painter is used only where the highlight API is missing.
 - Syntax repaints are postponed while the user types (`typingSessionLifecycle.js`).
 
 `tests/test_range_highlight_syntax_baseline_static.py` and `tools/check_runtime_contracts.py` check that the range highlight code stays in the modules named above and in the bundle.

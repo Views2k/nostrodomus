@@ -1,18 +1,17 @@
 #!/usr/bin/env python3
 from pathlib import Path
 import json
-import re
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / 'src/completion/insertion.js'
-LEGACY = ROOT / 'src/main.legacy.js'
-FACTORY = ROOT / 'src/composition/mainLegacyCompletionRuntimeFactory.js'
+APP = ROOT / 'src/app.js'
+FACTORY = ROOT / 'src/composition/appCompletionRuntimeFactory.js'
 ALLOWLIST = ROOT / 'docs/contracts/MODULE_WIRING_ALLOWLIST.json'
 REPORT = ROOT / 'reports/COMPLETION_INSERTION_MODULE_WIRING_STATIC_REPORT.txt'
 
 module = MODULE.read_text(encoding='utf-8', errors='replace')
-legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
+app = APP.read_text(encoding='utf-8', errors='replace')
 factory = FACTORY.read_text(encoding='utf-8', errors='replace')
 allowlist = json.loads(ALLOWLIST.read_text(encoding='utf-8'))
 allowed = allowlist.get('allowed_unwired_modules', {})
@@ -59,7 +58,7 @@ if "from '../completion/insertionRuntime.js'" not in factory:
 else:
     notes.append('PASS completion factory imports completion insertion runtime owner')
 
-if 'createMainLegacyCompletionRuntimeGroup' not in legacy:
+if 'createAppCompletionRuntimeGroup' not in app:
     errors.append('main runtime must wire completion runtime group factory')
 else:
     notes.append('PASS main runtime wires completion runtime group factory')
@@ -70,15 +69,15 @@ if 'insertItem(state, item' not in runtime_owner:
 else:
     notes.append('PASS insertion runtime delegates accepted rows to insertion module owner')
 
-for stale in [
+for local_copy in [
     'function prepareInsertText(rawInsert, ctx, item)',
     'function continuationForAcceptedItem(ctx, item)',
     'const ACTION_BRANCHES = Object.freeze',
 ]:
-    if stale in legacy:
-        errors.append(f'stale insertion implementation remains in main runtime: {stale}')
+    if local_copy in app:
+        errors.append(f'app.js has its own copy of an insertion helper: {local_copy}')
     else:
-        notes.append(f'PASS stale insertion implementation absent: {stale}')
+        notes.append(f'PASS app.js has no copy of: {local_copy}')
 
 for token in [
     'clearSnippetSession(state)',
@@ -91,9 +90,9 @@ for token in [
         notes.append(f'PASS snippet-session delegate wired: {token}')
 
 if 'src/completion/insertion.js' in allowed:
-    errors.append('src/completion/insertion.js must be removed from MODULE_WIRING_ALLOWLIST.json')
+    errors.append('src/completion/insertion.js must not be in MODULE_WIRING_ALLOWLIST.json')
 else:
-    notes.append('PASS insertion module removed from allowlist')
+    notes.append('PASS insertion module is not on the allowlist')
 
 REPORT.write_text(
     'Completion insertion module wiring static report\n\n'

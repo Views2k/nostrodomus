@@ -15,14 +15,14 @@ export function createSyntaxContentObservers(deps) {
     api,
   } = deps;
 
-function codeMirrorSyntaxContentMutationRelevant(records) {
+  function codeMirrorSyntaxContentMutationRelevant(records) {
     for (const record of records || []) {
       if (record?.type === "childList" || record?.type === "characterData") return true;
     }
     return false;
   }
 
-function resetCodeMirrorSyntaxContentObserverAliases(observer = null, mode = "") {
+  function resetCodeMirrorSyntaxContentObserverAliases(observer = null, mode = "") {
     if (mode === "source-class") {
       state.sourceClassSmartSyntaxObserver = observer;
       state.syntaxOwnerObserver = null;
@@ -45,7 +45,7 @@ function resetCodeMirrorSyntaxContentObserverAliases(observer = null, mode = "")
     state.sourceClassSmartSyntaxContent = null;
   }
 
-function disconnectCodeMirrorSyntaxContentObserver(reason = "disconnect-syntax-content-observer") {
+  function disconnectCodeMirrorSyntaxContentObserver(reason = "disconnect-syntax-content-observer") {
     const previousMode = state.codeMirrorSyntaxContentMode || "";
     try { state.codeMirrorSyntaxContentObserver?.disconnect?.(); } catch { /* injected observer */ }
     state.codeMirrorSyntaxContentObserver = null;
@@ -57,7 +57,7 @@ function disconnectCodeMirrorSyntaxContentObserver(reason = "disconnect-syntax-c
     resetCodeMirrorSyntaxContentObserverAliases(null, "");
   }
 
-function installCodeMirrorSyntaxContentObserver(editor, content, mode, onRecords, reason = "syntax-content-observer") {
+  function installCodeMirrorSyntaxContentObserver(editor, content, mode, onRecords, reason = "syntax-content-observer") {
     if (!editor?.querySelector || !content || typeof MutationObserver === "undefined") return false;
     const editorKey = codeboxEditorCacheKey(editor);
     if (state.codeMirrorSyntaxContentObserver &&
@@ -85,7 +85,7 @@ function installCodeMirrorSyntaxContentObserver(editor, content, mode, onRecords
     return true;
   }
 
-function suppressSyntaxOwnerSourceClassInstallForNativeFallback(editor, content, decision = {}) {
+  function suppressSyntaxOwnerSourceClassInstallForNativeFallback(editor, content, decision = {}) {
     const result = {
       at: new Date().toISOString(),
       version: VERSION,
@@ -109,7 +109,7 @@ function suppressSyntaxOwnerSourceClassInstallForNativeFallback(editor, content,
     return result;
   }
 
-function installSyntaxOwnerObserver(editor, reason = "syntax-owner") {
+  function installSyntaxOwnerObserver(editor, reason = "syntax-owner") {
     if (!editor?.querySelector || typeof MutationObserver === "undefined") return false;
     const nativeDecision = shouldSuppressLegacyInlineSyntaxOwnerForNativeHighlight({
       nativeHighlightActive: api.editorUsesCodeMirrorNativeHighlightSyntax(editor),

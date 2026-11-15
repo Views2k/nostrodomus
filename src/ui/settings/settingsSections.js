@@ -1,6 +1,6 @@
-// Tab section panels, help cards, and the fail-dark runtime wrappers that keep
-// Settings able to open when an individual section fails to render. Error routing
-// through recordRuntimeErrorOnce is preserved exactly.
+// The tab sections and help cards of the settings panel, and the wrappers that let the panel
+// open when one section fails to build: the error is recorded once (recordRuntimeErrorOnce) and
+// a card saying the section is unavailable takes its place.
 
 export function createSettingsSections(deps = {}) {
   const {

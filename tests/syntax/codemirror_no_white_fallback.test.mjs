@@ -1,14 +1,12 @@
-// ON-FLASH regression guard (v0.1.158): the generated CodeMirror CSS must NEVER hardcode a white /
-// near-white fallback on the base line/container, because during a Ctrl+Space repaint the Nostrodomus
-// semantic classes (nostrodomus-syntax-kind-* / nostrodomus-syntax-line-*) drop for ~1 frame and the base
-// `.cm-content .cm-line` rule wins — a white base flashes the whole line white (the traced
-// rule was `.cm-content .cm-line { color: rgba(255,255,255,0.67) !important }`, the theme palette fg of a
-// white-fg preset amplified by the syntax-opacity slider). The base fallback goes through the
-// NEUTRAL var(--nostrodomus-codebox-syntax-fg, #d4d4d4) and uses -webkit-text-fill-color: currentColor.
+// The generated CodeMirror CSS must not hard-code a white or near-white fallback on the base line
+// or container. During a Ctrl+Space repaint the Nostrodomus syntax classes (nostrodomus-syntax-kind-*,
+// nostrodomus-syntax-line-*) drop for about one frame and the base `.cm-content .cm-line` rule wins;
+// a white base (for example the palette fg of a white preset raised by the syntax opacity slider,
+// `rgba(255,255,255,0.67)`) flashes the whole line white. The base fallback goes through the neutral
+// var(--nostrodomus-codebox-syntax-fg, #d4d4d4) and uses -webkit-text-fill-color: currentColor.
 //
-// This guard drives BOTH generated-CSS builders with a WHITE foreground palette (the worst case) and
-// proves no white reaches the base. It is RED on the pre-fix source (base used the palette fg) and GREEN
-// on the fix. It is a LOGIC assertion over the generated string — it does not touch any frozen byte-pin.
+// Both CSS builders are driven with a white foreground palette, the worst case. The checks read the
+// generated text and touch no frozen stylesheet.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -40,8 +38,8 @@ function nativeHighlightCss() {
   return lifecycle.buildCodeMirrorNativeHighlightBaseCss({ active: false });
 }
 
-// White color / -webkit-text-fill-color INSIDE a .cm-content / .cm-line / .cm-activeLine block. The
-// property name is boundary-anchored ([\s;{]) so the legitimate `caret-color: #ffffff` is NOT matched
+// White color / -webkit-text-fill-color inside a .cm-content / .cm-line / .cm-activeLine block. The
+// property name is boundary-anchored ([\s;{]) so the legitimate `caret-color: #ffffff` is not matched
 // (its `color` is preceded by `-`), and caret-color is not text fill.
 const WHITE = String.raw`(?:#fff(?:fff)?\b|white\b|rgba\(\s*255\s*,\s*255\s*,\s*255)`;
 const WHITE_ON_CM_BASE = new RegExp(
@@ -70,10 +68,10 @@ for (const [name, build] of [['source-class', sourceClassCss], ['native-highligh
   });
 }
 
-test('source-class base .cm-content .cm-line uses the NEUTRAL var, not the (possibly-white) palette fg', () => {
+test('source-class base .cm-content .cm-line uses the neutral var, not the (possibly-white) palette fg', () => {
   const css = stripComments(sourceClassCss());
   // The base line fallback must thread the neutral var (wired to #d4d4d4), so a white-fg theme can never
-  // make the line flash white. RED on the pre-fix source (it emitted color: <palette fg>).
+  // make the line flash white.
   assert.match(
     css,
     /\.cm-content \.cm-line \{[^}]*color:\s*var\(--nostrodomus-codebox-syntax-fg,\s*#d4d4d4\)/i,
@@ -81,10 +79,10 @@ test('source-class base .cm-content .cm-line uses the NEUTRAL var, not the (poss
   );
 });
 
-// The smart-syntax "fg" kind/line classes are the DEFAULT/fallback kind (smartSyntaxKind normalizes any
+// The smart-syntax "fg" kind/line classes are the default/fallback kind (smartSyntaxKind normalizes any
 // unrecognized token to "fg"), so on a white-fg theme they render white and flash on a Ctrl+Space repaint
 // (the bracket/curly/plain-template white). They must resolve to the neutral var; every
-// OTHER kind must stay palette-driven (no flattening). Force the worst case: darkPlusColor("fg") = white.
+// other kind must stay palette-driven (no flattening). Force the worst case: darkPlusColor("fg") = white.
 const whiteFgDarkPlus = (kind) => (kind === 'fg' ? 'rgba(255, 255, 255, 0.67)' : '#abc123');
 
 test('smart-syntax fg kind/line classes resolve to the neutral var, never white', () => {
@@ -101,18 +99,18 @@ test('smart-syntax fg kind/line classes resolve to the neutral var, never white'
   }
 });
 
-test('the fg kind/line rules carry BOOSTED specificity so the neutral fg wins the override', () => {
+test('the fg kind and line rules carry raised specificity so the neutral fg wins the override', () => {
   const css = buildSmartSyntaxClassCss({ active: false }, undefined, whiteFgDarkPlus);
-  // A normal-specificity neutral fg rule was still overridden white on white-fg themes; the fix re-asserts
-  // fg at boosted specificity by REPEATING the Nostrodomus fg class (registry-safe — no doubled .cm-* class).
-  // Guard the boost so a future refactor can't silently drop it (which would reintroduce the white flash).
+  // A neutral fg rule at normal specificity is overridden to white on themes with a white fg, so the
+  // fg is set at raised specificity by repeating the Nostrodomus fg class (registry safe: no doubled
+  // .cm-* class). Without it the tokens would flash white.
   assert.match(css, /span\.nostrodomus-syntax-kind-fg\.nostrodomus-syntax-kind-fg\.nostrodomus-syntax-kind-fg/, 'fg kind rule must carry boosted (repeated-class) specificity');
   assert.match(css, /\.cm-line\.nostrodomus-syntax-line-fg\.nostrodomus-syntax-line-fg\.nostrodomus-syntax-line-fg/, 'fg line rule must carry boosted (repeated-class) specificity');
-  // ...and NON-fg kinds must NOT get the boost (kept surgical).
+  // ...and non-fg kinds must not get the boost (kept surgical).
   assert.doesNotMatch(css, /nostrodomus-syntax-kind-number\.nostrodomus-syntax-kind-number/, 'non-fg kinds must keep normal specificity');
 });
 
-test('the fg fix does NOT flatten other syntax kinds (number/string/punct keep their palette color)', () => {
+test('the raised fg rules leave the other syntax kinds alone (number, string and punct keep their palette color)', () => {
   const css = buildSmartSyntaxClassCss({ active: false }, undefined, whiteFgDarkPlus);
   for (const cls of ['nostrodomus-syntax-kind-number', 'nostrodomus-syntax-kind-string', 'nostrodomus-syntax-kind-punct']) {
     const block = new RegExp(cls + String.raw`[^{]*\{([^}]*)\}`).exec(css)?.[1];

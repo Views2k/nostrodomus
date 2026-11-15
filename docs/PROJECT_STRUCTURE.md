@@ -16,23 +16,25 @@ LICENSE                   MIT
 hacs.json                 HACS metadata (name, bundle file, minimum Home Assistant and HACS versions)
 PROJECT.json              project version, internal version string and project policies read by the tools
 package.json              npm scripts and development dependencies
-eslint.config.js, jsconfig.json, prettier.config.cjs, .editorconfig, .nvmrc
-                          lint, typecheck, format and editor configuration
+eslint.config.js, jsconfig.json, prettier.config.cjs, .editorconfig, .gitattributes, .nvmrc
+                          lint, typecheck, format, editor and line-ending configuration
 .github/workflows/ci.yml  CI: the gate on every push and pull request
+.github/workflows/validate.yml
+                          HACS repository validation on every push, pull request and once a day
 ```
 
 ## Runtime source and bundle
 
 ```text
-src/main.js               bundler entry; a one-line side-effect import of main.legacy.js
-src/main.legacy.js        runtime composition root; wires the modules together
+src/main.js               bundler entry; a one-line side-effect import of app.js
+src/app.js        runtime composition root; wires the modules together
 src/composition/          factories and adapters the composition root uses to build the runtimes
 src/core/                 version, constants, default settings, settings storage, state, logging, public API
 src/completion/           suggestion list, keymap, scoring, filtering, insertion, snippet sessions
 src/providers/            provider registry and the suggestion providers, including live Home Assistant data
 src/yaml/                 YAML context detection, branch state, scanning
 src/context/              context snapshot adapter and resolver
-src/languages/            embedded language detection and lane ranking
+src/languages/            embedded language detection, the language registry, per-language ranking fixtures
 src/snippets/             snippet catalog module
 src/syntax/               tokenizers, highlight ranges, source-class styling, paint scheduling
 src/editor/               CodeMirror bridge, active-editor discovery and cache, dispatch hook, Home Assistant selectors
@@ -48,7 +50,7 @@ dist/nostrodomus.js       the browser resource, built from src/main.js with esbu
 reference/companions/     two frozen legacy companion scripts, kept as reference for the parity tests
 ```
 
-`npm run check:modules` reports how many modules under `src/` are wired into the bundle and fails on a module that is not.
+`npm run check:modules` reports how many modules under `src/` are wired into the bundle. It fails on a module that is not wired and on an import from `src/core/` into another directory of `src/`.
 
 ## Tools
 
@@ -56,16 +58,15 @@ reference/companions/     two frozen legacy companion scripts, kept as reference
 tools/build.py                        build dist/nostrodomus.js and write reports/BUILD_LAST.txt
 tools/verify.py                       verification gate; runs the static tests; --release adds the release checks
 tools/verify_reproducible_build.py    compare a fresh esbuild bundle with the committed dist
-tools/check_module_wiring.py          fail on a src module that is not wired
+tools/check_module_wiring.py          fail on a src module that is not wired, or on src/core importing outside src/core
 tools/check_runtime_contracts.py      scan for forbidden runtime patterns and required contract text
 tools/visual_layer_doctor.py          check the codebox visual layer ownership
 tools/validate_snippets.py            validate the snippet catalog
 tools/version_bump.py                 update the version in PROJECT.json, package files and src/core/version.js
 tools/run_node_tests.mjs              run tests/**/*.test.mjs (npm test); --perf runs tests/perf only
-tools/check_js_syntax.mjs             node --check over the sources
 tools/check_lint_coverage.mjs         confirm that lint inspected every src module
 tools/public_runtime_contract_runner.mjs  helper that exercises the public API contract
-tools/triage_catches.py               inventory of catch blocks; --write produces reports/CATCH_TRIAGE.md
+tools/triage_catches.py               inventory of the catch blocks of src/app.js; --write produces reports/CATCH_TRIAGE.md
 tools/e2e/                            disposable Home Assistant container for the browser tests (see its README)
 ```
 
@@ -109,4 +110,4 @@ tools/e2e/.ha-state*/     state of the test container; ignored by git
 node_modules/             ignored by git
 ```
 
-`tools/verify.py` fails when it finds `*.backup_*` files in the tree or old generated bundle files next to `dist/nostrodomus.js`.
+`tools/verify.py` fails when it finds `*.backup_*` files in the tree.

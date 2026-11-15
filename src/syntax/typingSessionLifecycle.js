@@ -13,8 +13,9 @@ export function createTypingSessionLifecycle(deps) {
   } = deps;
   const TYPING_SESSION_EXIT_MS = 150;
 
-function noteTypingSessionSuppressed(area = "syntax", reason = "typing-session") {
-    const key = String(area || "syntax"), clean = String(reason || "typing-session").slice(0, 120);
+  function noteTypingSessionSuppressed(area = "syntax", reason = "typing-session") {
+    const key = String(area || "syntax");
+    const clean = String(reason || "typing-session").slice(0, 120);
     state.typingSessionSuppressed = state.typingSessionSuppressed || Object.create(null);
     state.typingSessionSuppressed[key] = (state.typingSessionSuppressed[key] || 0) + 1;
     state.lastTypingSessionSuppression = { at: new Date().toISOString(), area: key, reason: clean, active: !!state.typingSessionActive };
@@ -22,12 +23,12 @@ function noteTypingSessionSuppressed(area = "syntax", reason = "typing-session")
     return true;
   }
 
-function typingSessionOwnsEditorDispatchSettling() {
+  function typingSessionOwnsEditorDispatchSettling() {
     const last = state.typingSessionLastChangeTs || 0;
     return !!state.typingSessionActive || (last > 0 && Date.now() - last <= 350);
   }
 
-function finishTypingSession(view, reason = "typing-session-exit") {
+  function finishTypingSession(view, reason = "typing-session-exit") {
     state.typingSessionExitTimer = 0;
     const elapsed = Date.now() - (state.typingSessionLastChangeTs || 0);
     if (elapsed < TYPING_SESSION_EXIT_MS) {
@@ -42,7 +43,7 @@ function finishTypingSession(view, reason = "typing-session-exit") {
     scheduleDiagnosticsRefresh("typing-session-exit");
   }
 
-function enterTypingSession(view, reason = "editor-dispatch") {
+  function enterTypingSession(view, reason = "editor-dispatch") {
     state.typingSessionActive = true;
     state.typingSessionLastChangeTs = Date.now();
     if (state.typingSessionExitTimer) {

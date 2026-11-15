@@ -16,13 +16,11 @@ import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 import { makeHassFixture, FIXTURE_SERVICE_IDS } from '../fixtures/hassFixture.mjs';
 import { makeCustomCardsFixture } from '../fixtures/customCardsFixture.mjs';
 
-// Frozen parity list of the runtimeData() cache surface.
-// New keys may be ADDED — each addition must be itemized in the
-// same commit that extends this list. Existing keys/shapes may not change.
-// Additions: v0.1.80 added `cardMeta` (live custom-card type → {name, description}).
-// Additions: v0.1.81 added `serviceFields` (service id → capped field descriptor list).
-// Additions: v0.1.180 added the registry id-lists + name-maps:
-//   areas/areaNames, devices/deviceNames, floors/floorNames, labels/labelNames.
+// Frozen list of the runtimeData() cache keys. Keys may be added (extend this list in the same
+// change); existing keys and shapes may not change. Among them: `cardMeta` (custom card type to
+// {name, description}), `serviceFields` (service id to a capped field descriptor list) and the
+// registry id lists and name maps (areas/areaNames, devices/deviceNames, floors/floorNames,
+// labels/labelNames).
 const RUNTIME_CACHE_PARITY_KEYS = Object.freeze([
   'actions',
   'areaNames',
@@ -77,14 +75,14 @@ test('entities are regex-filtered, sorted, and capped', () => {
   assert.ok(data.entities.includes('light.kitchen'));
   assert.ok(data.entities.length >= 25, 'fixture should provide a realistic entity population');
 
-  // The STORED/indexed list is now capped by maxRuntimeEntitiesIndexed (maxRuntimeEntities is the
-  // per-QUERY row cap applied later in runtimeRowsForKind, so large installs can complete
+  // The stored, indexed list is capped by maxRuntimeEntitiesIndexed (maxRuntimeEntities is the
+  // per-query row cap applied later in runtimeRowsForKind, so large installs can complete
   // late-alphabet entities via the prefix filter rather than being truncated at the source).
   const capped = runtimeData(fixtureOptions({ limits: { ...SECURITY_LIMITS, maxRuntimeEntitiesIndexed: 5 } }));
   assert.deepEqual(capped.entities, expected.slice(0, 5));
 });
 
-test('entity friendly names are mapped, capped, and fail dark on missing attributes', () => {
+test('entity friendly names are mapped and capped, and missing attributes are skipped', () => {
   const data = runtimeData(fixtureOptions());
   assert.equal(data.entityNames['light.kitchen'], 'Kitchen Light');
   assert.equal(data.entityNames['sensor.long_name'].length, 140, '300-char friendly_name must be capped');
@@ -92,7 +90,7 @@ test('entity friendly names are mapped, capped, and fail dark on missing attribu
   assert.ok(!('sensor.humidity' in data.entityNames), 'state without friendly_name maps no name');
 });
 
-test('entity completion covers EVERY domain incl. automations/scripts/scenes, with friendly names as detail + keyword', () => {
+test('entity completion covers every domain incl. automations/scripts/scenes, with friendly names as detail + keyword', () => {
   // Entity sourcing applies no domain filter, so automation./script./scene. flow
   // through like any entity, and their friendly_name rides as sourceDetail + a fuzzy keyword.
   const data = runtimeData(fixtureOptions());
@@ -117,8 +115,8 @@ test('services are flattened to sorted domain.service ids and capped', () => {
   assert.ok(data.services.includes('climate.set_temperature'));
   assert.ok(data.services.includes('script.turn_on'));
 
-  // The STORED/indexed list is capped by maxRuntimeServicesIndexed (maxRuntimeServices is the
-  // per-QUERY row cap applied after the prefix filter, so late-alphabet services stay reachable).
+  // The stored, indexed list is capped by maxRuntimeServicesIndexed (maxRuntimeServices is the
+  // per-query row cap applied after the prefix filter, so late-alphabet services stay reachable).
   const capped = runtimeData(fixtureOptions({ limits: { ...SECURITY_LIMITS, maxRuntimeServicesIndexed: 3 } }));
   assert.deepEqual(capped.services, FIXTURE_SERVICE_IDS.slice(0, 3));
 });
@@ -155,7 +153,7 @@ test('registries are sourced into the cache: validated, sorted ids + name maps',
   assert.equal(data.deviceNames.def456, 'Thermostat', 'falls back to name when no user name');
 });
 
-test('registryCatalog caps, fails dark on absent/hostile registries, and degrades per-entry', () => {
+test('registryCatalog caps, survives absent or hostile registries, and drops bad entries one by one', () => {
   assert.deepEqual(registryCatalog(null), { ids: [], names: {} });
   assert.deepEqual(registryCatalog('garbage'), { ids: [], names: {} });
   assert.deepEqual(registryCatalog(undefined), { ids: [], names: {} });
@@ -163,7 +161,7 @@ test('registryCatalog caps, fails dark on absent/hostile registries, and degrade
   const capped = registryCatalog({ a: { name: 'A' }, b: { name: 'B' }, c: { name: 'C' } }, { max: 2 });
   assert.deepEqual(capped.ids, ['a', 'b']);
 
-  // A throwing value getter degrades that id's NAME only — the id itself survives.
+  // A throwing value getter degrades that id's name only — the id itself survives.
   const partial = registryCatalog({
     ok: { name: 'OK' },
     get boom() { throw new Error('hostile registry entry'); },
@@ -253,7 +251,7 @@ test('customCardCatalog normalizes, validates, dedupes, sorts, and caps the regi
   assert.deepEqual(capped.cards, cards.slice(0, 2));
 });
 
-test('customCardCatalog fails dark on absent or malformed registries', () => {
+test('customCardCatalog survives absent or malformed registries', () => {
   assert.deepEqual(customCardCatalog({ windowRef: {} }), { cards: [], cardMeta: {} });
   assert.deepEqual(customCardCatalog({ windowRef: { customCards: 'not-an-array' } }).cards, []);
   assert.deepEqual(customCardCatalog({ windowRef: { customCards: null } }).cards, []);
@@ -334,7 +332,7 @@ test('serviceFieldCatalog shapes every fixture service correctly', () => {
   assert.equal(lightOn.find(f => f.field === 'rgb_color').selectorKind, 'color_rgb');
   assert.equal(lightOn.find(f => f.field === 'effect').selectorKind, 'select');
 
-  // schemaValues: a `select` field captures its option VALUES (additive — other field keys intact).
+  // schemaValues: a `select` field captures its option values (additive — other field keys intact).
   assert.deepEqual(lightOn.find(f => f.field === 'effect').options, [{ value: 'colorloop', label: '' }, { value: 'random', label: '' }]);
   assert.deepEqual(lightOn.find(f => f.field === 'transition').options, [], 'a number field has no enumerated options');
 
@@ -368,7 +366,7 @@ test('serviceFieldCatalog shapes every fixture service correctly', () => {
   assert.equal(Object.keys(cappedServices).length, 1);
 });
 
-test('serviceFieldCatalog fails dark on absent or malformed services', () => {
+test('serviceFieldCatalog survives absent or malformed services', () => {
   assert.deepEqual(serviceFieldCatalog({ services: null }), {});
   assert.deepEqual(serviceFieldCatalog({ services: 'garbage' }), {});
   assert.deepEqual(serviceFieldCatalog({}), {});
@@ -444,18 +442,18 @@ test('no field suggestions outside data-mapping contexts', () => {
 
   const dataValue = ctxAt('actions:\n  - action: light.turn_on\n    data:\n      transition: ');
   assert.equal(isServiceDataFieldContext(dataValue), false, 'value position inside data is not a field-key context');
-  // The value position IS a service-field VALUE context (distinct from the key context above).
+  // The value position is a service-field value context (distinct from the key context above).
   assert.equal(isServiceDataFieldValueContext(dataValue), true, 'a service-data field value position is a value context');
   assert.equal(isServiceDataFieldValueContext(nestedUnderField), false, 'a mapping nested under a field is not a field value context');
   assert.equal(isServiceDataFieldValueContext(rootKey), false);
 });
 
-test('schemaValues: a service-field value position completes the field enum options ONLY when the flag is on', () => {
+test('schemaValues: a service-field value position completes the field enum options only when the flag is on', () => {
   const { provider } = fixtureProvider();
   const effectValue = ctxAt('actions:\n  - action: light.turn_on\n    data:\n      effect: ');
 
-  // Default-OFF byte-identity: with the flag absent, the provider does not handle a value position.
-  assert.equal(provider.canHandle(effectValue), false, 'flag off: value position not handled (unchanged)');
+  // Off by default: with the flag absent, the provider does not handle a value position.
+  assert.equal(provider.canHandle(effectValue), false, 'flag off: value position not handled');
 
   // Flag on (the context runtime would set this): the field's select options complete.
   const onCtx = { ...effectValue, schemaValuesEnabled: true };
@@ -472,8 +470,8 @@ test('schemaValues: a service-field value position completes the field enum opti
 test('surfaceScope: card-type values are surface-scoped (lovelace only) but only when the flag is on', () => {
   const { provider } = fixtureProvider();
   const cardType = ctxAt('type: '); // valueKind card-type, yamlRole value
-  // default-OFF: handled regardless of surface — byte-identical.
-  assert.equal(provider.canHandle(cardType), true, 'flag off: card-type handled (unchanged)');
+  // Off by default: handled regardless of surface.
+  assert.equal(provider.canHandle(cardType), true, 'flag off: card-type handled');
   assert.equal(provider.canHandle({ ...cardType, surface: 'automation', surfaceScopeEnabled: true }), false, 'card-type suppressed on an automation surface');
   assert.equal(provider.canHandle({ ...cardType, surface: 'card-editor', surfaceScopeEnabled: true }), true, 'card-type allowed on a card surface');
   assert.equal(provider.canHandle({ ...cardType, surface: 'unknown', surfaceScopeEnabled: true }), true, 'fail-open on an unknown surface');
@@ -518,7 +516,7 @@ test('one runtimeData pass populates card and service-field data from a single h
   assert.equal(walkCount(), 1, 'within the TTL no completion request walks hass again');
 });
 
-// --- Fail-dark hardening / degradation proof ---
+// --- Hostile or broken Home Assistant data: nothing throws, bad entries are dropped ---
 
 function withConsoleCapture(run) {
   const calls = [];
@@ -647,7 +645,7 @@ test('serviceFieldCatalog skips throwing services and fields but keeps healthy o
 
 test('serviceFieldCatalog flattens HA collapsible field sections', () => {
   // Modern HA (2024.3+) nests optional fields in a { collapsed, fields: {...} } section.
-  // The section key is NOT a valid service-data key; only the leaves are.
+  // The section key is not a valid service-data key; only the leaves are.
   const services = {
     light: {
       turn_on: {
@@ -700,7 +698,7 @@ test('customCardCatalog skips throwing registry entries but keeps healthy ones',
   assert.deepEqual(hostileWindow.consoleCalls, []);
 });
 
-test('customCardCatalog fail-darks on a hostile array (throwing element getter / iterator)', () => {
+test('customCardCatalog survives a hostile array (throwing element getter or iterator)', () => {
   // The per-entry guard did not cover the for...of itself: a real array with a throwing index getter
   // or a throwing Symbol.iterator threw straight out and aborted the runtime-data build.
   const throwGetter = [];

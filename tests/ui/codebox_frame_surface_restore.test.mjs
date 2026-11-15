@@ -5,9 +5,9 @@ import { createCodeboxUnclip } from '../../src/ui/codebox/codeboxUnclip.js';
 
 // The frame glow needs the wrappers around the editor unclipped: ha-code-editor, ha-yaml-editor,
 // the element editor, and a plain wrapper that clips without really scrolling. Their overflow,
-// contain, clip-path and mask were overwritten inline without a record of what was there, so the
-// cleanup that hands the dialog body back left these wrappers as they were written: a wrapper
-// with overflow:auto stayed at overflow:visible for as long as it lived, also after uninstall.
+// contain, clip-path and mask are written inline, so the unclip records what was there and the
+// cleanup that hands the dialog body back puts it back. Without the record, a wrapper with
+// overflow:auto would stay at overflow:visible for as long as it lives, also after uninstall.
 
 function styleStore(initial = {}) {
   const values = new Map(Object.entries(initial).map(([prop, value]) => [prop, { value, priority: '' }]));
@@ -65,7 +65,7 @@ function harness() {
   return { unclip, editor, codeEditor, yamlEditor, elementEditor, cardConfig, dialog, state };
 }
 
-test('the wrappers are unclipped for the frame, as before', () => {
+test('the wrappers are unclipped for the frame, and the CodeMirror element is not written to', () => {
   const h = harness();
   h.unclip.allowCodeboxFrameOverflow(h.editor);
   for (const wrapper of [h.yamlEditor, h.elementEditor, h.cardConfig]) {

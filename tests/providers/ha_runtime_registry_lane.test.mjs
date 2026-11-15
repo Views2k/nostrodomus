@@ -1,8 +1,8 @@
-// The ha-runtime-value provider's registry value lane. area_id:/device_id:/floor_id:/label_id:
-// complete real registry ids ONLY when the registryLane gate rode in on ctx (ctx.registryLaneEnabled,
-// set when engineV2 + registryLane are on). Otherwise yamlValueKind returns '' for those keys and the
-// provider is byte-identical to its self without the lane (no rows). Rows insert the bare id; the human name is
-// detail + a fuzzy keyword. Fail-dark on empty/missing registry data.
+// The ha-runtime-value provider's registry value lane. area_id:, device_id:, floor_id: and label_id:
+// complete real registry ids only when ctx carries the registryLane gate (ctx.registryLaneEnabled,
+// set when engineV2 and registryLane are on). Otherwise yamlValueKind returns '' for those keys and
+// the provider gives no rows for them. Rows insert the bare id; the human name is the detail and a
+// fuzzy keyword. Empty or missing registry data gives no rows.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -20,7 +20,7 @@ const liveData = () => ({
   labels: ['cozy'], labelNames: { cozy: 'Cozy' },
 });
 
-test('canHandle: area_id/device_id/floor_id/label_id with the lane ON → true', () => {
+test('canHandle: area_id, device_id, floor_id and label_id are handled with the lane on', () => {
   const p = haRuntimeValueProvider({ runtimeData: liveData });
   for (const key of ['area_id', 'device_id', 'floor_id', 'label_id']) {
     assert.equal(p.canHandle(regCtx(key)), true, `${key} engages the lane`);
@@ -28,7 +28,7 @@ test('canHandle: area_id/device_id/floor_id/label_id with the lane ON → true',
   assert.equal(p.canHandle(regCtx('area')), true, 'bare area: (area card) also routes');
 });
 
-test('canHandle: with the lane OFF the registry keys stay inert', () => {
+test('canHandle: with the lane off the registry keys are not handled', () => {
   const p = haRuntimeValueProvider({ runtimeData: liveData });
   for (const key of ['area_id', 'device_id', 'floor_id', 'label_id', 'area']) {
     assert.equal(p.canHandle(regCtx(key, { registryLaneEnabled: false })), false, `${key} OFF → no lane`);
@@ -36,7 +36,7 @@ test('canHandle: with the lane OFF the registry keys stay inert', () => {
   }
 });
 
-test('provide: returns LIVE registry rows that insert the bare id', () => {
+test('provide: returns live registry rows that insert the bare id', () => {
   const p = haRuntimeValueProvider({ runtimeData: liveData });
 
   const areas = p.provide(regCtx('area_id'));
@@ -50,7 +50,7 @@ test('provide: returns LIVE registry rows that insert the bare id', () => {
   assert.ok(p.provide(regCtx('label_id')).some(r => r.insert === 'cozy'), 'label id surfaced');
 });
 
-test('provide: fail-dark — empty / missing registry data yields []', () => {
+test('provide: empty or missing registry data yields []', () => {
   assert.deepEqual(haRuntimeValueProvider({ runtimeData: () => ({}) }).provide(regCtx('area_id')), []);
   assert.deepEqual(haRuntimeValueProvider({ runtimeData: () => ({ areas: undefined }) }).provide(regCtx('area_id')), []);
   assert.deepEqual(haRuntimeValueProvider({ runtimeData: () => ({ areas: [] }) }).provide(regCtx('area_id')), []);

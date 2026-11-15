@@ -289,9 +289,9 @@ test('snippet mirror replication happens on Tab and final cursor uses $0', () =>
   assert.equal(dispatches.at(-1).selection.anchor, parsed.finalCursor.start + 'Kitchen'.length);
 });
 
-test('exit caret lands AFTER the last placeholder value when a snippet has no $0', () => {
-  // Regression: the old `finalCursor || last` fallback parked the caret at the START of the last
-  // field (last.start) for every no-$0 snippet — so typing on after a snippet corrupted the last value.
+test('the exit caret lands after the last placeholder value when a snippet has no $0', () => {
+  // Without $0 the caret must go to the end of the last value; at its start, typing on after the
+  // snippet would change that value.
   let doc = 'key: aaa\nother: bbb';
   const dispatches = [];
   const view = {
@@ -321,7 +321,7 @@ test('exit caret lands AFTER the last placeholder value when a snippet has no $0
   assert.equal(moveSnippetPlaceholder(runtimeState, 1), true); // tab past it -> exit
   assert.equal(runtimeState.snippetSession, null);
   assert.equal(dispatches.at(-1).selection.anchor, last.end, 'caret at end of the last value (last.end)');
-  assert.notEqual(dispatches.at(-1).selection.anchor, last.start, 'NOT parked at the start of the last field');
+  assert.notEqual(dispatches.at(-1).selection.anchor, last.start, 'not parked at the start of the last field');
 });
 
 test('Shift-Tab at the first placeholder stays put, it does not exit the snippet forward', () => {
@@ -344,7 +344,7 @@ test('Shift-Tab at the first placeholder stays put, it does not exit the snippet
   // Shift-Tab at the first placeholder: session survives, still on stop 1.
   const ret = moveSnippetPlaceholder(rs, -1);
   assert.equal(ret, true);
-  assert.notEqual(rs.snippetSession, null, 'the session is NOT destroyed by a backward gesture at the first stop');
+  assert.notEqual(rs.snippetSession, null, 'the session is not destroyed by a backward gesture at the first stop');
   assert.equal(rs.snippetSession.index, 0, 'the caret stays on the first placeholder, it does not jump forward');
   // A forward Tab past the last stop still exits normally.
   assert.equal(moveSnippetPlaceholder(rs, 1), true); // -> stop 2
@@ -354,10 +354,10 @@ test('Shift-Tab at the first placeholder stays put, it does not exit the snippet
 });
 
 test('mirror replication through the hooked dispatch does not double-shift later placeholders', async () => {
-  // The shipped button-card snippet mirrors ${3:detail} with ${4} sitting between the two copies.
-  // Renaming stop 3 then Tab used to fire updateSnippetSessionAfterDispatch DURING the mirror dispatch,
-  // shifting stop 4 a second time — so Tab selected "['sensor.examp" instead of sensor.example and
-  // typing corrupted the Jinja. A reentrancy guard makes the mirror bookkeeping the sole authority.
+  // The shipped button-card snippet mirrors ${3:detail} with ${4} between the two copies. If
+  // updateSnippetSessionAfterDispatch ran during the mirror dispatch after renaming stop 3, stop 4
+  // would shift twice and Tab would select "['sensor.examp" instead of sensor.example. A reentrancy
+  // guard leaves the shifting to the mirror bookkeeping.
   const { createEditorDispatchRuntime } = await import('../../src/editor/editorDispatchRuntime.js');
   let doc = '';
   const view = {
@@ -390,9 +390,9 @@ test('mirror replication through the hooked dispatch does not double-shift later
 });
 
 test('updateSnippetSessionAfterDispatch tracks the current placeholder for edits before it and at its boundaries', () => {
-  // The old "touched" test never shifted the current placeholder for an edit entirely BEFORE it
-  // (a click+type earlier → returning to it selected a stale range) and mis-SHRANK it on a delete
-  // just PAST its end. Model insert vs delete/replace explicitly. Current placeholder = [10,16].
+  // An edit entirely before the current placeholder shifts it (returning to it must not select a
+  // stale range), and a delete just past its end leaves it as it is. Inserts and deletes or
+  // replaces are modeled separately. Current placeholder = [10,16].
   const cases = [
     ['insert 2 before (@5)', 100, 102, 5, 5, [12, 18]],
     ['backspace left boundary [9,10]', 100, 99, 9, 10, [9, 15]],

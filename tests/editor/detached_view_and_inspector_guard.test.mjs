@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createActiveEditorCacheRuntime } from '../../src/editor/activeEditorCacheRuntime.js';
-import { createDiagnosticsRuntime } from '../../src/diagnostics/telemetryRuntime.js';
+import { createDiagnosticsRuntime } from '../../src/diagnostics/diagnosticsRuntime.js';
 
 // [L]
 test('a view whose editor left the document is released so the no-editor backoff can arm', () => {

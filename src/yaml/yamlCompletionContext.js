@@ -25,7 +25,6 @@ const DEFAULT_CONTEXT_DESCRIPTOR = Object.freeze({
   afterKeyColon: false,
 });
 
-
 export const CONTEXT_DESCRIPTOR_FIELD_NAMES = Object.freeze(Object.keys(DEFAULT_CONTEXT_DESCRIPTOR));
 export const YAML_CONTEXT_ROLES = Object.freeze(['blank', 'comment', 'key', 'list-key', 'value']);
 const YAML_VALUE_KINDS = Object.freeze([
@@ -76,6 +75,7 @@ const NUMBER_KEYS = new Set([
 ]);
 const DURATION_KEYS = new Set(['delay', 'duration', 'for', 'hold_secs', 'scan_interval', 'tap_time', 'timeout', 'transition']);
 const STRING_KEYS = new Set(['label', 'name', 'navigation_path', 'title', 'unit', 'unit_of_measurement', 'url_path']);
+
 function clampCursor(sourceText, cursorPosition) {
   const size = String(sourceText || '').length;
   const numeric = Number(cursorPosition);
@@ -100,10 +100,6 @@ function lineInfoAt(sourceText, cursorPosition) {
     beforeCursor: line.slice(0, col),
     afterCursor: line.slice(col),
   };
-}
-
-function splitRecentLines(sourceText, cursorPosition) {
-  return recentLinesBeforeCursor(sourceText, cursorPosition);
 }
 
 // currentYamlPath and blockScalarContextAt are asked for the same text and cursor several times
@@ -142,8 +138,8 @@ export function stripYamlCommentRespectingQuotes(value) {
 }
 
 export function yamlKeyFromLine(rawLine) {
-  // Allow `$` and `.` in keys so card_mod shadow-DOM style blocks (`ha-card$: |`, `.: |`) register
-  // as block-scalar openers and enter the CSS lane, instead of being read as YAML with no key.
+  // `$` and `.` are allowed in keys so card_mod shadow-root style blocks (`ha-card$: |`, `.: |`)
+  // open block scalars whose content is CSS.
   const line = String(rawLine || '');
   const match = line.match(/^(\s*)(?:-\s*)?([A-Za-z0-9_$.-]+)\s*:\s*(.*)$/);
   if (match) {
@@ -154,8 +150,7 @@ export function yamlKeyFromLine(rawLine) {
     };
   }
   // card_mod selectors as keys: quoted (`"ha-card $": |`), or with spaces when the value opens a
-  // block scalar (`ha-icon $ ha-svg-icon: |`). Without these the block was not seen as a block
-  // scalar and its CSS got YAML card keys.
+  // block scalar (`ha-icon $ ha-svg-icon: |`), so the CSS under them is seen as a block scalar.
   const quoted = line.match(/^(\s*)(?:-\s*)?(?:"([^"]*)"|'([^']*)')\s*:(?:\s+(.*))?$/);
   if (quoted) {
     return {
@@ -175,11 +170,10 @@ export function yamlKeyFromLine(rawLine) {
   return null;
 }
 
-// Block-scalar close bound: for a dash-prefixed opener (`- style: |`) sibling keys of
-// the same list item sit at the KEY'S column (after the dash), deeper than the plain
-// leading-whitespace indent, so the bound must include the dash segment width.
-// The dash counts as a sequence indicator only when whitespace follows it: a key
-// that merely begins with a dash (`-foo:`) is a plain mapping key at its own indent.
+// The column at or below which a line closes a block scalar opened on this line. For
+// `- style: |` the sibling keys of the list item sit at the key's column, after the dash, so
+// the bound includes the dash and the blanks after it. A dash without a blank after it
+// (`-foo:`) is part of a plain key at its own indent.
 function yamlKeyColumn(rawLine, info) {
   const dash = /^(\s*)(-[ \t]+)/.exec(String(rawLine || ''));
   return dash ? dash[1].length + dash[2].length : info.indent;
@@ -198,14 +192,11 @@ export function yamlCursorRole(info) {
   return 'value';
 }
 
-// Keys whose value is a nested block (mapping or sequence), not a scalar. At the editor
-// auto-indent column an empty one of these is being OPENED, so the cursor descends into
-// it; an empty SCALAR field at its own column is a sibling being left blank and must pop.
-// Structural Home Assistant card/automation keys only -- an unknown key defaults to the
-// safe pop (the pre-auto-indent behavior), never to a wrong descend.
-// Excludes keys that also take a scalar value (columns/rows are NUMBER_KEYS; layout is a
-// mushroom/tile scalar; confirmation is boolean-capable) -- a key must be unambiguously a
-// block to descend into it, or a field left empty would wrongly keep its leaf.
+// Keys whose value is always a nested block (mapping or sequence), never a scalar. On the line
+// after an empty one of these, at the key's own column (where editors put the cursor), the
+// block is being opened and the cursor is inside it. An empty scalar key there is a sibling
+// left blank, and so is any key not listed: only Home Assistant card and automation keys that
+// never take a scalar are here (columns, rows, layout and confirmation can be scalars).
 const BLOCK_CONTAINER_KEYS = new Set([
   'data', 'service_data', 'target',
   'tap_action', 'hold_action', 'double_tap_action',
@@ -227,7 +218,7 @@ export function currentYamlPath(sourceText, cursorPosition) {
 }
 
 function computeCurrentYamlPath(sourceText, cursorPosition) {
-  const lines = splitRecentLines(sourceText, cursorPosition);
+  const lines = recentLinesBeforeCursor(sourceText, cursorPosition);
   const stack = [];
   let blockScalarIndent = null;
 
@@ -247,17 +238,13 @@ function computeCurrentYamlPath(sourceText, cursorPosition) {
     if (/^[|>]/.test(String(info.value || '').trim())) blockScalarIndent = yamlKeyColumn(raw, info);
   }
 
-  // Cursor-line sibling pop: when the cursor line did not parse as a key (a partial
-  // key being typed, a blank, a comment, a dedent), the loop above never consulted
-  // its indent, so a completed sibling would stay on the stack as a phantom leaf.
-  // Pop entries at or below the cursor column. Three carve-outs: content of an open
-  // block scalar stays anchored to its opener; dash lines pop strictly-deeper entries
-  // only (a `- item` legally sits at its parent key's own indent); and an empty-valued
-  // BLOCK-CONTAINER key immediately above the cursor is a block opener whose auto-indent
-  // lands the new line at the key's OWN column (editors do not add a level), so a cursor
-  // there opens that key's block rather than dedenting -- keep the opener. A SCALAR field
-  // left empty (`transition:`) is not a container: the cursor there is a sibling field,
-  // so it must still pop, or the block's own lane (service fields) dies.
+  // When the cursor line is not a key line (a key being typed, a blank, a comment, a dedent),
+  // the loop above never used its indent, and a finished sibling would stay on the stack.
+  // Entries at or right of the cursor column are dropped, with three exceptions: the content
+  // of an open block scalar stays with its opener; on a dash line only deeper entries go (a
+  // `- item` may sit at its parent key's indent); and an empty block container key on the
+  // line above, at the cursor column, stays, because the cursor is opening its block. An
+  // empty scalar key there (`transition:`) is a sibling, and the cursor leaves it.
   const cursorLine = lines[lines.length - 1] || '';
   if (blockScalarIndent === null && !yamlKeyFromLine(cursorLine)) {
     const cursorIndent = leadingWhitespace(cursorLine).length;
@@ -318,13 +305,12 @@ export function inferYamlScalarValueKind(yamlKey) {
   return '';
 }
 
-// NOT the live value-kind classifier. The runtime completion path derives valueKind from the two
-// live copies — runtimeContextAdapter.yamlValueKind (detection) and yamlContextClassifier.yamlValueKind
-// (provision) — which are pinned equivalent by tests/context/yaml_value_kind_parity.test.mjs. This
-// (yamlKey, path, role) variant feeds only describeYamlCompletionContext / the yamlScanner facade and
-// is not on the live lane; it uses a different path convention and intentionally diverges. To fix or
-// add a completion value lane, edit the two live copies together — never here (that is exactly the
-// dead-branch trap that silently broke the registry/platform/condition lanes).
+// The value kind for describeYamlCompletionContext and the yamlScanner facade only. Completion
+// at runtime takes valueKind from runtimeContextAdapter.yamlValueKind (detection) and
+// yamlContextClassifier.yamlValueKind (providers), which
+// tests/context/yaml_value_kind_parity.test.mjs keeps equal. This one uses a different path
+// convention and differs from them on purpose; a change to what completion offers belongs in
+// those two.
 export function inferYamlValueKind(yamlKey, path = [], role = '') {
   const key = String(yamlKey || '').toLowerCase();
   const lowerPath = normalizedPathParts(path);
@@ -367,43 +353,43 @@ export function inferFocusKind(path = [], yamlKey = '') {
   return '';
 }
 
+// Whether the last template opener before the cursor is still open.
+function insideOpenTemplate(before) {
+  return before.lastIndexOf('{{') > before.lastIndexOf('}}')
+    || before.lastIndexOf('{%') > before.lastIndexOf('%}')
+    || before.lastIndexOf('{#') > before.lastIndexOf('#}');
+}
+
 function inferEmbeddedLanguage(sourceText, cursorPosition, path = []) {
   const text = String(sourceText || '');
   const pos = clampCursor(text, cursorPosition);
   const before = text.slice(Math.max(0, pos - 1200), pos);
   const parts = Array.isArray(path) ? path.map(item => String(item || '').toLowerCase()) : [];
-  if (/({{|{%|{#)[\s\S]*$/.test(before) || /\|\s*[A-Za-z_][\w_]*$/.test(before.split('\n').pop() || '')) return 'jinja';
+  if (insideOpenTemplate(before) || /\|\s*[A-Za-z_][\w_]*$/.test(before.split('\n').pop() || '')) return 'jinja';
   if (parts.includes('card_mod') || parts.includes('style') || parts.includes('styles')) return 'css';
   return 'yaml';
 }
 
-// Classify which Home Assistant template-function argument the cursor sits in, so the live-entity
-// provider can fire inside `states('|')` / `is_state('|')` / `state_attr('x', '|')`. Pure,
-// regex-only, fail-dark: returns the fixed shape on any miss/hostile input and never throws.
-// expectKind 'entity' for a first-arg id position; 'attribute' for state_attr's second arg
-// (computed forward-compatibly; the provider serves only 'entity' until an attribute cache exists).
-// is_state's second arg is the value to match, not an entity, so it returns the empty default and no
-// entity completion fires there.
+// Which Home Assistant template-function argument the cursor is in, so the live-entity provider
+// can offer entities inside `states('|')`, `is_state('|')` and `state_attr('x', '|')`. Returns
+// the empty shape when the cursor is not in such an argument or the text is not a string.
+// expectKind is 'entity' for the first argument and 'attribute' for the second argument of
+// state_attr (the provider serves only 'entity' so far). The second argument of is_state is a
+// value to compare, so it gets the empty shape.
 export function classifyJinjaCallArg(textBefore) {
-  const empty = { fn: '', argIndex: -1, inStringLiteral: false, expectKind: '' };
-  try {
-    const s = typeof textBefore === 'string' ? textBefore : '';
-    const tail = s.slice(-200);
-    // state_attr 2nd arg: state_attr('light.x', '|   (first arg closed, comma, cursor in arg 2)
-    // The arg token is an id being typed ([\w.-]); crucially it must NOT contain ')' or the match
-    // would run PAST the call's close and leak fn/expectKind onto a later, unrelated expression
-    // (an UNQUOTED arg like states(x) has no closing quote to stop the old [^'"]* pattern).
-    const arg1 = tail.match(/\b(state_attr)\s*\(\s*(['"])[^'"]*\2\s*,\s*(['"]?)([\w.-]*)$/);
-    if (arg1) {
-      return { fn: 'state_attr', argIndex: 1, inStringLiteral: arg1[3] === "'" || arg1[3] === '"', expectKind: 'attribute' };
-    }
-    // 1st arg of an entity-taking function: states('| / is_state('| / state_attr('| / expand('| / ...
-    const arg0 = tail.match(/\b(states|is_state|state_attr|expand|area_id|device_id|has_value)\s*\(\s*(['"]?)([\w.-]*)$/);
-    if (arg0) {
-      return { fn: arg0[1], argIndex: 0, inStringLiteral: arg0[2] === "'" || arg0[2] === '"', expectKind: 'entity' };
-    }
-  } catch { /* fail-dark */ }
-  return empty;
+  const tail = (typeof textBefore === 'string' ? textBefore : '').slice(-200);
+  // Second argument of state_attr: `state_attr('light.x', '|`. The argument is an id being
+  // typed ([\w.-]), so the match cannot run past a `)` into a later expression.
+  const arg1 = tail.match(/\b(state_attr)\s*\(\s*(['"])[^'"]*\2\s*,\s*(['"]?)([\w.-]*)$/);
+  if (arg1) {
+    return { fn: 'state_attr', argIndex: 1, inStringLiteral: arg1[3] === "'" || arg1[3] === '"', expectKind: 'attribute' };
+  }
+  // First argument of a function that takes an entity: `states('|`, `is_state('|`, `expand('|`.
+  const arg0 = tail.match(/\b(states|is_state|state_attr|expand|area_id|device_id|has_value)\s*\(\s*(['"]?)([\w.-]*)$/);
+  if (arg0) {
+    return { fn: arg0[1], argIndex: 0, inStringLiteral: arg0[2] === "'" || arg0[2] === '"', expectKind: 'entity' };
+  }
+  return { fn: '', argIndex: -1, inStringLiteral: false, expectKind: '' };
 }
 
 // The opening of a template block that the typed word follows directly: '{%', '{% ', '{%- ' and
@@ -450,7 +436,6 @@ export function shouldSuggestForContext(role, info, options = {}) {
   return false;
 }
 
-
 export function blockScalarContextAt(sourceText, cursorPosition) {
   const text = String(sourceText || '');
   const pos = clampCursor(text, cursorPosition);
@@ -466,12 +451,12 @@ export function blockScalarContextAt(sourceText, cursorPosition) {
 }
 
 function computeBlockScalarContextAt(text, pos) {
-  const lines = splitRecentLines(text, pos);
+  const lines = recentLinesBeforeCursor(text, pos);
   const stack = [];
   let active = null;
 
-  for (let index = 0; index < lines.length; index += 1) {
-    const raw = lines[index] || '';
+  for (const line of lines) {
+    const raw = line || '';
     const trimmed = raw.trim();
     const indent = leadingWhitespace(raw).length;
 
@@ -493,7 +478,6 @@ function computeBlockScalarContextAt(text, pos) {
         bound: yamlKeyColumn(raw, info),
         path: stack.map(item => item.key),
         indicator: String(info.value || '').trim()[0] || '|',
-        lineIndex: index,
       };
     }
   }

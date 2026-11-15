@@ -32,7 +32,7 @@ test('runtime context adapter is pure from browser globals', () => {
   assert.doesNotMatch(text, /\bstate\s*[.[]/, 'must not read from a runtime state object');
 });
 
-test('detectRuntimeContext preserves dashboard action block behavior', () => {
+test('detectRuntimeContext reads the blank position after tap_action: as an action block', () => {
   const { source, pos } = cursor('tap_action:__CURSOR__');
   const ctx = detectRuntimeContext(source, pos, { triggerKind: 'explicit', settings: defaultSettings });
   assert.equal(ctx.lang, 'yaml');
@@ -58,7 +58,7 @@ test('runtime context adapter keeps scalar value prefixes and value kinds', () =
 });
 
 
-test('contextAdapterYamlKey preserves legacy dry-run YAML key regex behavior', () => {
+test('contextAdapterYamlKey reads the YAML key of a line the way the dry run does', () => {
   assert.equal(contextAdapterYamlKey('entity: light.kitchen'), 'entity');
   assert.equal(contextAdapterYamlKey('  - service: light.turn_on'), 'service');
   assert.equal(contextAdapterYamlKey('-service: light.turn_on'), 'service');
@@ -67,7 +67,7 @@ test('contextAdapterYamlKey preserves legacy dry-run YAML key regex behavior', (
   assert.equal(contextAdapterYamlKey(null), '');
 });
 
-test('runtime context adapter preserves embedded language detection', () => {
+test('runtime context adapter detects CSS in a card_mod style and Jinja in a template', () => {
   const css = cursor('card_mod:\n  style: |\n    ha-card {\n      color: r__CURSOR__\n    }\n');
   const cssCtx = detectRuntimeContext(css.source, css.pos, { triggerKind: 'typing', settings: defaultSettings });
   assert.equal(cssCtx.lang, 'css');
@@ -103,7 +103,7 @@ test('runtime context adapter respects trigger mode and comments', () => {
   assert.equal(shown.suppressPopup, false);
 });
 
-test('runtime context helpers preserve active runtime semantics', () => {
+test('runtime context helpers classify the line, value kinds, block keys, focus kinds and scalar contexts', () => {
   assert.equal(lineInfo('a\nbc', 3).lineNumber, 2);
   assert.equal(yamlValueKind({ yamlKey: 'action', yamlPath: ['sequence', 'action'], yamlRole: 'value' }), 'service');
   assert.equal(yamlValueKind({ yamlKey: 'action', yamlPath: ['tap_action', 'action'], yamlRole: 'value' }), 'action');
@@ -112,7 +112,7 @@ test('runtime context helpers preserve active runtime semantics', () => {
   assert.equal(isScalarConfigContext({ lang: 'yaml', yamlRole: 'value', yamlKey: 'unknown_key', valueKind: '' }), true);
 });
 
-test('dashboardActionBranchState preserves action branch continuation metadata', () => {
+test('dashboardActionBranchState reports the action branch, its keys and the keys already used', () => {
   const source = 'tap_action:\n  action: call-service\n  service: light.turn_on\n  target:\n    entity_id: light.kitchen\n  data:\n    brightness: 100\n';
   const branch = dashboardActionBranchState(source, source.indexOf('brightness'));
   assert.equal(branch.kind, 'action-block');
@@ -123,7 +123,7 @@ test('dashboardActionBranchState preserves action branch continuation metadata',
 });
 
 test('main runtime delegates detectContext through the runtime context owner with fallback', () => {
-  const source = readFileSync('src/main.legacy.js', 'utf8');
+  const source = readFileSync('src/app.js', 'utf8');
   const snapshotAdapter = readFileSync('src/context/contextSnapshotRuntimeAdapter.js', 'utf8');
   const runtimeOwner = readFileSync('src/yaml/runtimeContextRuntime.js', 'utf8');
   const dist = readFileSync('dist/nostrodomus.js', 'utf8');
@@ -233,36 +233,32 @@ test('runtime context does not treat ordinary unknown scalar words as entity com
   assert.notEqual(ctx.valueKind, 'entity');
 });
 
-test('explicit Ctrl+Space opens on a key line that already has a colon AFTER the caret (existing-key-context bypass)', () => {
-  // Caret at the start of an existing "icon: home": the colon + value sit AFTER the caret, so the
-  // before-caret prefix is empty and the line "looks complete". Pre-fix, the existing-key-context guard
-  // ran BEFORE the `else if (explicit)` branch, so an EXPLICIT Ctrl+Space was suppressed too — the
-  // popup opened only at end-of-line. An explicit
-  // invoke must always offer suggestions.
+test('explicit Ctrl+Space opens on a key line that already has a colon after the caret', () => {
+  // Caret at the start of an existing "icon: home": the colon and value are after the caret, so the
+  // prefix is empty and the line looks complete. The existing-key-context guard must not suppress
+  // an explicit Ctrl+Space, which always offers suggestions.
   const a = cursor('__CURSOR__icon: home');
   const aExplicit = detectRuntimeContext(a.source, a.pos, { triggerKind: 'explicit', settings: defaultSettings });
   assert.equal(aExplicit.yamlRole, 'key');
   assert.equal(aExplicit.prefix, '');
-  assert.equal(aExplicit.shouldSuggest, true);            // FAILS before the fix (false, idle 'existing-key-context')
+  assert.equal(aExplicit.shouldSuggest, true);
   assert.notEqual(aExplicit.idleReason, 'existing-key-context');
 
   // list-key form: caret before an existing "- type: custom"
   const d = cursor('- __CURSOR__type: custom');
   const dExplicit = detectRuntimeContext(d.source, d.pos, { triggerKind: 'explicit', settings: defaultSettings });
   assert.equal(dExplicit.yamlRole, 'list-key');
-  assert.equal(dExplicit.shouldSuggest, true);            // FAILS before the fix
+  assert.equal(dExplicit.shouldSuggest, true);
 
-  // GUARD UNCHANGED for typing: the same caret with a typing trigger stays suppressed (no auto-pop over
-  // an already-complete key line). The fix relaxes ONLY the explicit path.
+  // While typing, the same caret stays suppressed (no automatic popup over a complete key line).
   const aTyping = detectRuntimeContext(a.source, a.pos, { triggerKind: 'typing', settings: defaultSettings });
   assert.equal(aTyping.shouldSuggest, false);
   assert.equal(aTyping.idleReason, 'existing-key-context');
 });
 
-test('explicit Ctrl+Space opens at a kindless value position (pre-dot entity dead zone)', () => {
-  // 'humidity: sens' — entity-shaped typing BEFORE the dot: the domain-prefix lane cannot
-  // classify yet, valueKind is '', and the kindless-value else swallowed even an explicit
-  // invoke ("No suggestions" at that cursor). Ctrl+Space must always offer.
+test('explicit Ctrl+Space opens at a value position without a kind (an entity before its dot)', () => {
+  // 'humidity: sens': entity-shaped typing before the dot, so the domain-prefix lane cannot classify
+  // it yet and valueKind is ''. Ctrl+Space must still offer suggestions there.
   const a = cursor('type: custom:some-card\nhumidity: sens__CURSOR__');
   const aExplicit = detectRuntimeContext(a.source, a.pos, { triggerKind: 'explicit', settings: defaultSettings });
   assert.equal(aExplicit.yamlRole, 'value');
@@ -278,16 +274,15 @@ test('explicit Ctrl+Space opens at a kindless value position (pre-dot entity dea
   assert.equal(bExplicit.valueKind, '');
   assert.equal(bExplicit.shouldSuggest, true);
 
-  // TYPING UNCHANGED: the same cursors with a typing trigger stay silent (free-text values
-  // must not pop suggestions on every keystroke).
+  // While typing, the same cursors stay silent (free-text values must not open suggestions on
+  // every keystroke).
   const aTyping = detectRuntimeContext(a.source, a.pos, { triggerKind: 'typing', settings: defaultSettings });
   assert.equal(aTyping.shouldSuggest, false);
   assert.equal(aTyping.idleReason, '...');
   const bTyping = detectRuntimeContext(b.source, b.pos, { triggerKind: 'typing', settings: defaultSettings });
   assert.equal(bTyping.shouldSuggest, false);
 
-  // COMMENT ROLE UNCHANGED: the comment lane is a separate concern; explicit stays closed
-  // there regardless of the suggestInComments setting.
+  // In a comment an explicit invoke stays closed, whatever the suggestInComments setting says.
   const c = cursor('# note__CURSOR__');
   const cExplicit = detectRuntimeContext(c.source, c.pos, { triggerKind: 'explicit', settings: { ...defaultSettings, suggestInComments: true } });
   assert.equal(cExplicit.yamlRole, 'comment');

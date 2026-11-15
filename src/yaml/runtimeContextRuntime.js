@@ -68,10 +68,9 @@ export function createRuntimeContextRuntime(options = {}) {
 
   function detectContext(doc, pos, triggerKind = 'typing') {
     try {
-      // Universal-completions gating. engineV2 enables surface threading; jinjaLane (which
-      // requires engineV2) enables the live-entity Jinja lane. When engineV2 is off, surface is
-      // undefined and jinjaLane false, so the adapter adds no fields/bias and resolveContext
-      // returns the base descriptor by reference: behavior is byte-identical.
+      // engineV2 passes the editor surface to the detector; jinjaLane, registryLane, schemaValues
+      // and surfaceScope need engineV2. With engineV2 off, surface is undefined and every option
+      // is false, the detector adds nothing, and resolveContext returns the base descriptor itself.
       const engineOn = engineV2Enabled(state.settings);
       const jinjaLane = engineOn && completionSettings(state.settings).jinjaLane === true;
       const registryLane = engineOn && completionSettings(state.settings).registryLane === true;
@@ -87,18 +86,15 @@ export function createRuntimeContextRuntime(options = {}) {
         registryLane,
       });
       const resolved = resolveContext({ baseDescriptor, surface, engineEnabled: engineOn });
-      // Carry the live-entity-lane gate on the descriptor (the provider closure has no settings).
-      // Assign only when the engine is on, so the by-reference base descriptor is never mutated off.
+      // The providers have no settings of their own, so the settings they read ride on the
+      // descriptor: jinjaLane for the live-entity provider, registryLane for the classifier's
+      // yamlValueKind, schemaValues for the service-field values in haRuntimeValueProvider and
+      // surfaceScope for the Lovelace and Home Assistant runtime providers. They are set only with
+      // engineV2 on; with it off the descriptor is the base one and is not changed.
       if (engineOn) {
         resolved.jinjaLaneEnabled = jinjaLane;
-        // The registry value lane is read inside the pure classifier (yamlValueKind), so the gate
-        // must ride on ctx; absent, area_id:/device_id: keep their legacy (no-row) kind.
         resolved.registryLaneEnabled = registryLane;
-        // The service-field value picker reads this gate in haRuntimeValueProvider (its closure
-        // has no settings); absent, a service-field value position stays a no-row scalar.
         resolved.schemaValuesEnabled = schemaValues;
-        // Surface-scoping reads this gate in the lovelace + ha-runtime providers (pure, ctx-only);
-        // absent, no row is suppressed (byte-identical).
         resolved.surfaceScopeEnabled = surfaceScope;
       }
       return resolved;

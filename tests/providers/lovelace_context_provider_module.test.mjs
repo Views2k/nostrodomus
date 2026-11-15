@@ -43,7 +43,7 @@ test('Lovelace context path/recent helpers use injected document dependencies', 
   assert.equal(looksLikeButtonCardContext(ctx, { getDoc: () => doc, getPos: () => doc.length }), true);
 });
 
-test('Lovelace context rows preserve focused action/style behavior', () => {
+test('Lovelace context rows offer action keys under tap_action and style keys under styles', () => {
   const actionRows = lovelaceContextRows({
     lang: 'yaml',
     yamlRole: 'key',

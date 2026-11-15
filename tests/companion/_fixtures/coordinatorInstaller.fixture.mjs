@@ -1,4 +1,4 @@
-// VERBATIM transplant of the runtime coordinator installer.
+// Verbatim copy of the runtime coordinator installer.
 //
 // Generated once from reference/companions/nostrodomus_editor_v17_2_learned_reapply.js
 // (the installer in nostrodomus-picker-safe.js is byte-identical). This fixture is the

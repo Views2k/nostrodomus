@@ -1,17 +1,16 @@
 // Nostrodomus runtime identity constants.
 //
-// This is the first wired extraction from src/main.legacy.js. Keep it pure:
-// no DOM access, no browser storage, no events, no timers, and no Home Assistant
-// runtime reads. Update this file, PROJECT.json, package.json, package-lock.json,
-// src/core/changelogSummary.js, src/main.legacy.js import usage, and dist together for every patch.
+// Pure: no DOM access, no browser storage, no events, no timers and no Home Assistant runtime
+// reads. A release changes this file together with PROJECT.json, package.json, package-lock.json,
+// src/core/changelogSummary.js and dist (tools/version_bump.py does the version fields).
 
-export const VERSION = "nostrodomus-v0.1.280-hacs-install";
-export const PROJECT_VERSION = "0.1.280";
+export const VERSION = "nostrodomus-v0.1.281-cleanup";
+export const PROJECT_VERSION = "0.1.281";
 export const PROJECT_RELEASE_STATE = "beta";
 export const LIVE_COMPANION_EDITOR_VERSION = "nostrodomus-editor-v17.2.65-runtime-coordinator";
 export const PRODUCT_NAME = "Nostrodomus";
 export const LOG_PREFIX = `[${PRODUCT_NAME}]`;
 export const SETTINGS_WRITE_KEY = "nostrodomus.settings";
-// Separate key for the persisted frecency store (most-accepted-completions history), so it never bloats
-// the settings payload or trips settings dedupe. Read-once at boot, debounced write on accept, fail-dark.
+// The frecency store (the history of accepted rows) has its own key, so it neither grows the settings
+// payload nor changes it on every accept. Read once at boot; written 1.5 s after an accept.
 export const FRECENCY_WRITE_KEY = "nostrodomus.frecency";

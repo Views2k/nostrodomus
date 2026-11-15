@@ -10,9 +10,9 @@ import {
   rankingFixturesForSurface,
 } from '../../src/languages/laneRankingFixtures.js';
 
-test('lane ranking fixtures cover the main provider engineering targets without live behavior', () => {
+test('lane ranking fixtures cover the main HACS surfaces without live behavior', () => {
   assert.equal(LANE_RANKING_FIXTURE_VERSION, 1);
-  assert.equal(LANE_RANKING_FIXTURE_STAGE, 'priority10-provider-contract-v2-ranking-fixtures');
+  assert.equal(LANE_RANKING_FIXTURE_STAGE, 'lane-ranking-fixtures');
   assert.ok(LANE_RANKING_FIXTURES.length >= 8);
 
   const status = laneRankingFixtureStatus();

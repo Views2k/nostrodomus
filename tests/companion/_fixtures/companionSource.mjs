@@ -1,4 +1,4 @@
-// Shared companion source helper (NOT a test; not run by the runner, which only
+// Shared companion source helper (not a test; not run by the runner, which only
 // executes *.test.mjs). Used by the frozen golden baselines to read the frozen
 // companion files in reference/companions as text and extract regions verbatim,
 // so nothing is hand-copied. The companion files never change, so these
@@ -6,7 +6,7 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -25,8 +25,8 @@ export function sha256(text) {
 }
 
 // Extract the source text between a pair of backticks that follow `anchor`.
-// `openBacktickIndex` selects which backtick after the anchor OPENS the template
-// (the next backtick CLOSES it). The CSS bodies contain no backticks, so this is
+// `openBacktickIndex` selects which backtick after the anchor opens the template
+// (the next backtick closes it). The CSS bodies contain no backticks, so this is
 // unambiguous. Used to lift the verbatim template-literal bodies out of source.
 export function extractBacktickTemplate(text, anchor, openBacktickIndex = 0) {
   const at = text.indexOf(anchor);
@@ -70,16 +70,16 @@ export function extractFunctionSource(text, declaration) {
   throw new Error(`companionSource: unbalanced braces for ${JSON.stringify(declaration)}`);
 }
 
-// --- The two scrollbar-product CSS templates ---
+// --- The two scrollbar CSS templates ---
 // v17 injects its styling through two functions: injectStyle (generic, ~L1184)
-// and injectCodeCss (~L1377). The scrollbar product is carried by:
-//   1. CODEBOX  (id "nostrodomus-editor-v17-2-learned-style", injectCodeCss): the
+// and injectCodeCss (~L1377). The scrollbar styling is carried by:
+//   1. codebox  (id "nostrodomus-editor-v17-2-learned-style", injectCodeCss): the
 //      styled --nostrodomus-codebox-scrollbar-* scrollbar (::-webkit-scrollbar* +
 //      scrollbar-color), plus the codebox chrome it ships with.
-//   2. DIALOG-ROOT (id "...-dialog-root", injectStyle): native scrollbar
+//   2. dialog-root (id "...-dialog-root", injectStyle): native scrollbar
 //      suppression on .element-editor/.element-preview panes (scrollbar-width:
 //      none + ::-webkit-scrollbar { display:none }) alongside dialog sizing.
-// These are the two element IDs src/companion/scrollbarStyleRuntime.js reproduces byte-identically.
+// These are the two element IDs src/companion/companionStyleRuntime.js reproduces byte-identically.
 export const CODEBOX_CSS_ANCHOR = 'const css = ';
 export const DIALOG_ROOT_CSS_ANCHOR = '${STYLE_ID}-dialog-root';
 
@@ -98,12 +98,16 @@ export function extractInstallerSource(text) {
   return extractFunctionSource(text, INSTALLER_DECLARATION);
 }
 
-// Resolve an absorbed module path under src/companion, so the frozen baselines
-// also verify the real module.
-export function absorbedModulePath(relName) {
+// Path of a module under src/companion, so the frozen baselines also check the real module.
+export function companionModulePath(relName) {
   return join(REPO_ROOT, 'src', 'companion', relName);
 }
 
-export function absorbedModuleExists(relName) {
-  return existsSync(absorbedModulePath(relName));
+export function companionModuleExists(relName) {
+  return existsSync(companionModulePath(relName));
+}
+
+// The same module as a file: URL for import(), which does not accept a Windows path.
+export function companionModuleUrl(relName) {
+  return pathToFileURL(companionModulePath(relName)).href;
 }

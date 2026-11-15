@@ -9,7 +9,7 @@
 // also satisfies eslint's no-undef under the Node test globals. Do not edit the
 // verbatim region.
 
-// ---- test-controlled shim (NOT part of the verbatim transplant) ----
+// ---- test-controlled shim (not part of the verbatim copy) ----
 export const __clock = { t: 0 };
 const performance = { now: () => __clock.t };
 

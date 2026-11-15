@@ -109,9 +109,9 @@ test('completion keymap toggles docs with Ctrl+Space only when details pane is a
   );
 });
 
-test('Escape with the popup CLOSED in keepOpen mode passes through to the HA dialog', () => {
-  // popup open → swallow (close the popup, not the dialog); popup closed → pass through (let the
-  // dialog handle Escape) but still suppress keepOpen's re-open. Swallowing when closed was a hijack.
+test('Escape with the popup closed in keepOpen mode passes through to the HA dialog', () => {
+  // Popup open: swallow Escape (close the popup, not the dialog). Popup closed: let the dialog
+  // handle Escape, but still suppress keepOpen's re-open.
   const closed = completionKeyAction({ key: 'Escape' }, { settings: { keepOpen: true } }, { popupOpen: false, scoped: true });
   assert.equal(closed.prevent, false, 'a closed popup must not swallow Escape from the HA dialog');
   assert.equal(closed.stop, false);

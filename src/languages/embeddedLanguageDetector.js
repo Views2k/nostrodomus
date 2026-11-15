@@ -1,8 +1,8 @@
 // Observe-only embedded-language detector.
 //
-// Pure data-in/data-out module. It is intentionally not wired into live provider
-// routing: it classifies lane evidence for diagnostics and tests only, then
-// reports drivesAutocomplete=false.
+// Pure data-in/data-out module. It does not route completion: it classifies the language lane
+// of a fixture or a text snippet for the language tests, and its results say
+// drivesAutocomplete: false.
 
 import { CURSOR_MARKER, LANGUAGE_FIXTURES, languageFixtureCursorOffset, languageFixtureTextWithoutCursor } from './languageFixtures.js';
 import { getLanguageLane, LANGUAGE_LANE_IDS } from './languageLanes.js';
@@ -10,8 +10,8 @@ import { classifyEmbeddedLanguageSnapshot } from './embeddedLanguageDetectorCont
 import { LANE_RANKING_FIXTURES } from './laneRankingFixtures.js';
 
 export const EMBEDDED_LANGUAGE_DETECTOR_VERSION = 1;
-export const EMBEDDED_LANGUAGE_DETECTOR_STAGE = "priority10-observe-only-embedded-language-detector";
-const EMBEDDED_LANGUAGE_DETECTOR_SOURCE = "priority10-observe-only";
+export const EMBEDDED_LANGUAGE_DETECTOR_STAGE = "embedded-language-detector";
+const EMBEDDED_LANGUAGE_DETECTOR_SOURCE = "observe-only";
 
 const EMBEDDED_LANGUAGE_DETECTOR_EVIDENCE_ORDER = Object.freeze([
   "cursor-inside-jinja-delimiters",

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { glowSizeLabel, languageLabel } from '../../src/ui/settingsLabels.js';
 
-test('settings language labels preserve v31.6.242 known language labels', () => {
+test('settings language labels name the known languages', () => {
   assert.equal(languageLabel('yaml'), 'YAML / Lovelace');
   assert.equal(languageLabel('css'), 'CSS / card_mod');
   assert.equal(languageLabel('js'), 'JavaScript');
@@ -12,7 +12,7 @@ test('settings language labels preserve v31.6.242 known language labels', () => 
   assert.equal(languageLabel('python'), 'Python');
 });
 
-test('settings language labels preserve v31.6.242 fallback formatting', () => {
+test('settings language labels format unknown languages', () => {
   assert.equal(languageLabel('markdown'), 'Markdown');
   assert.equal(languageLabel('card_mod'), 'Card_mod');
   assert.equal(languageLabel(''), '');
@@ -22,7 +22,7 @@ test('settings language labels preserve v31.6.242 fallback formatting', () => {
 });
 
 
-test('settings glow size labels preserve v31.6.252 clamp, rounding, and off behavior', () => {
+test('settings glow size labels clamp, round and show off', () => {
   assert.equal(glowSizeLabel(0), '0 · off');
   assert.equal(glowSizeLabel(null), '0 · off');
   assert.equal(glowSizeLabel(undefined), '0 · off');

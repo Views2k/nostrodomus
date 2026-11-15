@@ -1,13 +1,14 @@
 // Passive signature help.
 //
-// A display-only argument hint for the call the cursor is inside: the active service's field
-// schema (from the live serviceFields catalog) or a Home Assistant Jinja function's signature
-// (curated, because HA ships no client-side schema for these). It renders as a static line at the
-// top of the suggestion popup; it intercepts no events, traps no focus, and owns no global element
-// (no-touch list), so it can never steal Enter/Tab or the cursor.
+// A display-only argument hint for the call the cursor is inside: the active service's fields
+// (from the serviceFields catalog) or a Home Assistant Jinja function's signature (a curated
+// list, because Home Assistant ships no client-side schema for these). It is a static line at the
+// top of the suggestion list; it handles no events and takes no focus, so Enter, Tab and the
+// cursor are unaffected.
 //
-// Pure: no DOM, window, storage, timers, network, or host reads — it reads only the context
-// descriptor + the runtimeData snapshot handed in, and fails dark to null. Never throws.
+// Pure: no DOM, window, storage, timers, network, or host reads. It reads only the context
+// descriptor and the runtimeData snapshot it is given, and gives null for anything else. Never
+// throws.
 
 import { isServiceDataFieldContext, serviceIdFromContext } from '../providers/haRuntimeProvider.js';
 
@@ -47,8 +48,8 @@ function serviceSignature(ctx, snapshot) {
   const id = serviceIdFromContext(ctx);
   if (!id) return null;
   const catalog = snapshot && typeof snapshot === 'object' ? snapshot.serviceFields : null;
-  // serviceFields is keyed lowercase (see serviceFieldCatalog); serviceIdFromContext already
-  // lowercases, but match lazyResolve.js and lowercase here too so the lookup can never miss.
+  // serviceFields is keyed in lower case (see serviceFieldCatalog). serviceIdFromContext already
+  // lowercases; the lookup lowercases too, as lazyResolve.js does.
   const fields = catalog && typeof catalog === 'object' ? catalog[id.toLowerCase()] : null;
   if (!Array.isArray(fields) || !fields.length) return null;
   const activeKey = String(ctx.yamlKey || ctx.prefix || '').trim().toLowerCase();
@@ -88,8 +89,9 @@ export function signatureHintModel(ctx, snapshot) {
 }
 
 /**
- * Plain-text rendering, e.g. light.turn_on(entity_id*, [brightness], color_name). Required params
- * carry a *, the active param is wrapped in [ ]. Used by the popup renderer and the tests.
+ * Plain-text form of a model, e.g. light.turn_on(entity_id*, [brightness], color_name). Required
+ * params carry a *, the active param is wrapped in [ ]. The list builds its own elements from the
+ * model; this form is for comparing models as text.
  */
 export function signatureHintText(model) {
   if (!model || !Array.isArray(model.params) || !model.params.length) return '';

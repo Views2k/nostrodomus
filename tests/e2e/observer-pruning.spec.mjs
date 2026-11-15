@@ -1,6 +1,6 @@
-// observer-pruning.spec — 0.1.254: the sentinel/style observer Maps prune detached roots, so repeatedly
-// opening and closing the edit dialog does NOT grow the observer count unbounded.
-// Cycles happen in ONE page session (no navigation) so a leak would actually accumulate.
+// observer-pruning.spec: the sentinel and style observer Maps prune detached roots, so opening and
+// closing the edit dialog again and again does not grow the observer count without bound.
+// Cycles happen in one page session (no navigation) so a leak would actually accumulate.
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';

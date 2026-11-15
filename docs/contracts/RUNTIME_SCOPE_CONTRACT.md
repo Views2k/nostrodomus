@@ -4,7 +4,7 @@ Nostrodomus changes Home Assistant's code editors and nothing else on the page. 
 
 ## Runtime shape
 
-`src/main.js` is the bundler entry and only imports `src/main.legacy.js`, which composes the modules under `src/`. esbuild bundles them into `dist/nostrodomus.js`. That file is what the browser loads, so behavior is verified against it.
+`src/main.js` is the bundler entry and only imports `src/app.js`, which composes the modules under `src/`. esbuild bundles them into `dist/nostrodomus.js`. That file is what the browser loads, so behavior is verified against it.
 
 `window.__nostrodomus` is the public API for support and debugging. The only other global on `window` is the shared coordinator object described in `docs/RUNTIME_COORDINATOR.md`.
 
@@ -22,9 +22,9 @@ DOM ownership:
 | Area | What Nostrodomus does there |
 | --- | --- |
 | Dashboard, sidebar, cards | Nothing: no styles, no pointer handlers, no keyboard handling |
-| Edit dialog and its top layer | Hosts the settings panel portal, receives the dialog layout styles. While `settings.style.glassDialog` is on (the default), the companion layer also makes the dialog surface translucent with a backdrop blur, through a stylesheet in the shadow root of `hui-dialog-edit-card` (`src/companion/scrollbarStyleRuntime.js`). The dashboard is seen through the dialog and is not styled |
-| `ha-code-editor` and the CodeMirror root | Completion popup, syntax styling, codebox frame |
-| A custom card's own visual editor | Nothing: no styles, no sizing, no completion, no keyboard handling. A code box in it keeps the suggestions the card turned on. The dialog is not enlarged or restyled because of it |
+| Edit dialog and its top layer | Hosts the settings panel portal, receives the dialog layout styles. While `settings.style.glassDialog` is on (the default), the companion layer also makes the dialog surface translucent with a backdrop blur, through a stylesheet in the shadow root of `hui-dialog-edit-card` (`src/companion/companionStyleRuntime.js`). The dashboard is seen through the dialog and is not styled |
+| `ha-code-editor` and the CodeMirror root | Suggestion list, syntax styling, codebox frame |
+| A custom card's own visual editor | Nothing: no styles, no sizing, no completion, no keyboard handling. A codebox in it keeps the suggestions the card turned on. The dialog is not enlarged or restyled because of it |
 | Card preview | The cards in it are observed only to avoid duplicate work. Home Assistant's `value-changed` and `input` events are never intercepted or replayed. The preview pane itself (`.element-preview`) gets the dialog layout styles and, while `settings.style.glassDialog` is on, a transparent background, from the same companion module |
 
 ## Required behavior
@@ -44,7 +44,7 @@ DOM ownership:
 - Mounting the settings panel in `document.body` while a modal dialog is open (see `SETTINGS_PORTAL_CONTRACT.md`).
 - Removing and re-adding stable style elements on every pass (see `STYLE_OWNERSHIP_CONTRACT.md`).
 
-`tools/check_runtime_contracts.py` fails when `src/main.legacy.js` or the bundle contains one of the markers of these approaches. `tests/test_no_forbidden_runtime_patterns_static.py` runs it as part of `tools/verify.py`.
+`tools/check_runtime_contracts.py` fails when `src/app.js` or the bundle contains one of the markers of these approaches. `tests/test_no_forbidden_runtime_patterns_static.py` runs it as part of `tools/verify.py`.
 
 ## Checks in a browser
 

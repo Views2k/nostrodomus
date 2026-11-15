@@ -1,7 +1,8 @@
-// registry-value-completion.spec — 0.1.180: the registry value lane completes area_id: to real area
-// names, and fails dark (no rows, no error) for a registry the instance lacks. Opt-in and stacked
-// (requires completions.engineV2 AND completions.registryLane, both default-OFF). Requires the expanded
-// seed (areas E2E Living Room / E2E Kitchen; devices are not WS-createable, so device_id: is fail-dark).
+// registry-value-completion.spec: the registry value lane completes area_id: to real area names, and
+// shows no rows and no error for a registry the instance lacks. Opt-in and stacked (requires
+// completions.engineV2 and completions.registryLane, both off by default). Requires the expanded seed
+// (areas E2E Living Room / E2E Kitchen; devices cannot be created over the websocket, so device_id:
+// has no rows).
 // Enable the flags before boot via the deep-merged nostrodomus.settings key.
 
 import { test, expect, openDashboard } from './session.mjs';
@@ -25,7 +26,7 @@ function enableRegistryLane() {
   } catch { /* opaque origin */ }
 }
 
-// Append a ROOT-level target block with the given registry-id value line, then open completion at that
+// Append a root-level target block with the given registry-id value line, then open completion at that
 // value. No `action:` sibling — a perform-action sibling routes the block to the action-block value
 // context (action enum + services) and swallows the nested registry value.
 async function openRegistryValue(page, valueLine) {
@@ -50,8 +51,8 @@ async function valueContextDiag(page) {
   });
 }
 
-// On 0.1.262 this lane was dead (area_id: offered action-enum + services, valueKind ""). The registry
-// branch is in the adapter's live yamlValueKind copy and registryLane is threaded into detection
+// The registry branch must be in the adapter's live yamlValueKind copy and registryLane must reach
+// the detection; otherwise area_id: offers the action enum and services with valueKind ""
 // (see tests/context/registry_value_lane.test.mjs).
 test('registry values: area_id: completes to real seeded area names', async ({ page }) => {
   await page.addInitScript(enableRegistryLane);
@@ -66,15 +67,15 @@ test('registry values: area_id: completes to real seeded area names', async ({ p
   ).toBe(true);
 });
 
-test('registry values: device_id: fails dark when no devices exist (no rows, no error)', async ({ page }) => {
+test('registry values: device_id: shows no rows and no error when no devices exist', async ({ page }) => {
   await page.addInitScript(enableRegistryLane);
   await openRegistryValue(page, '  device_id: ');
 
-  // Fail-dark: the instance has no WS-createable devices, so the lane yields no error. The whole-session
-  // console policy (session.mjs) fails the test on any runtime error; here we assert the editor survived
-  // the completion attempt and — if a popup opened at all — it did not throw. Devices present on the
-  // instance (from integrations) may legitimately appear; the point is graceful degradation, not a crash.
-  await expectDialogAlive(page, 'after device_id: Ctrl+Space (fail-dark)');
+  // No devices can be created over the websocket, so the lane must give no rows and no error. The
+  // whole-session console policy (session.mjs) fails the test on any runtime error; here we assert the
+  // editor survived the completion attempt and, if a popup opened at all, it did not throw. Devices
+  // the instance has from integrations may appear; the point is that nothing breaks.
+  await expectDialogAlive(page, 'after device_id: Ctrl+Space (no devices)');
   const popupVisible = await popup(page).isVisible().catch(() => false);
-  expect(typeof popupVisible, 'device_id: completion must not throw (fail-dark)').toBe('boolean');
+  expect(typeof popupVisible, 'device_id: completion must not throw').toBe('boolean');
 });

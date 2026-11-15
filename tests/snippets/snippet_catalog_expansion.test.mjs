@@ -103,11 +103,10 @@ test('automation action contexts expose expanded sequence snippets', () => {
 });
 
 test('target id-key snippets insert the bare key (no placeholder value) so live completion fills it', () => {
-  // Regression: these used to insert example placeholders (entity_id: light.example,
-  // area_id: living_room, device_id: device_id_here, label_id: label_id_here). At a key
-  // position the alias-exact match auto-accepted on Ctrl+Space and pasted the fake value
-  // on top of what was typed (e.g. "area_id: living_room:"). They now insert "<key>: $1"
-  // so the cursor lands in the value, where the live entity / registry completion takes over.
+  // With an example value (entity_id: light.example, area_id: living_room), the alias-exact match
+  // at a key position auto-accepts on Ctrl+Space and pastes the fake value on top of what was typed
+  // (e.g. "area_id: living_room:"). These snippets insert "<key>: $1", so the cursor lands in the
+  // value, where the live entity and registry completion takes over.
   const byId = new Map(snippetCatalogData.map(s => [s.id, s]));
   for (const id of ['snip.target.entity', 'snip.target.area', 'snip.target.device', 'snip.target.label']) {
     const insert = byId.get(id)?.insert || '';

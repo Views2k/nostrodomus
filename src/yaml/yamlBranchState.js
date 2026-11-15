@@ -97,8 +97,8 @@ export function yamlBranchState(sourceText, cursorPosition) {
   return {
     parentKey,
     parentIndent,
-    // The parent line's own already-parsed scalar value (e.g. the service id on
-    // a modern `- action: light.turn_on` step) — exposed, not re-parsed.
+    // The scalar value on the parent line itself, such as the service id of a
+    // `- action: light.turn_on` step.
     parentValue,
     currentIndent,
     siblings,

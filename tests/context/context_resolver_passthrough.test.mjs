@@ -1,9 +1,7 @@
-// Universal-completions context resolver — the behavior-neutrality fence.
-//
-// With the engine flag OFF (the default),
-// resolveContext returns the legacy descriptor UNCHANGED (same reference), so the live
-// completion path is byte-identical. When ON, it only ADDS fields and never mutates the
-// legacy enum fields (lang/valueKind/yamlRole) that the descriptor validator pins.
+// The universal-completions context resolver. With the engine flag off (the default),
+// resolveContext returns the base descriptor itself, unchanged, so the live completion path does
+// not change. With the flag on it only adds fields and never changes the base enum fields
+// (lang, valueKind, yamlRole) that the descriptor validator checks.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -31,26 +29,26 @@ function legacyDescriptor() {
   };
 }
 
-test('engine OFF (default): returns the base descriptor by REFERENCE, unchanged', () => {
+test('with the engine off (the default) the base descriptor itself is returned, unchanged', () => {
   const base = legacyDescriptor();
   assert.equal(resolveContext({ baseDescriptor: base, engineEnabled: false }), base, 'same reference');
   assert.equal(resolveContext({ baseDescriptor: base }), base, 'engineEnabled omitted → off');
-  assert.equal(resolveContext({ baseDescriptor: base, engineEnabled: 'true' }), base, 'truthy non-boolean does NOT enable');
+  assert.equal(resolveContext({ baseDescriptor: base, engineEnabled: 'true' }), base, 'truthy non-boolean does not enable');
 });
 
-test('engine OFF: a supplied surface arg is ignored — still returns the base by reference (byte-identity)', () => {
+test('with the engine off a supplied surface is ignored and the base descriptor itself is returned', () => {
   const base = legacyDescriptor();
   assert.equal(resolveContext({ baseDescriptor: base, surface: 'devtools-template', engineEnabled: false }), base, 'surface arg cannot force allocation when off');
 });
 
-test('fail-dark: bad base descriptor is returned as-is, never throws', () => {
+test('a bad base descriptor is returned as it is and nothing throws', () => {
   assert.equal(resolveContext({ baseDescriptor: null, engineEnabled: true }), null);
   assert.equal(resolveContext({ baseDescriptor: undefined, engineEnabled: true }), undefined);
   assert.equal(resolveContext(), undefined, 'no args → undefined, no throw');
   assert.equal(resolveContext({ baseDescriptor: 5, engineEnabled: true }), 5);
 });
 
-test('engine ON: preserves every legacy field byte-for-byte and never mutates enum fields', () => {
+test('with the engine on every base field is kept as it is and the enum fields are not changed', () => {
   const base = legacyDescriptor();
   const snapshot = JSON.parse(JSON.stringify(base));
   const out = resolveContext({ baseDescriptor: base, engineEnabled: true, hostInfo: { isCardDialog: true } });
@@ -64,7 +62,7 @@ test('engine ON: preserves every legacy field byte-for-byte and never mutates en
   assert.equal(out.yamlRole, 'value', 'yamlRole untouched');
 });
 
-test('engine ON: adds exactly the new channels', () => {
+test('with the engine on exactly the new channels are added', () => {
   const out = resolveContext({ baseDescriptor: legacyDescriptor(), engineEnabled: true, hostInfo: { isCardDialog: true } });
   assert.equal(out.surface, 'card-editor');
   assert.equal(out.expectedKind, 'entity', 'expectedKind aliases valueKind');
@@ -74,14 +72,14 @@ test('engine ON: adds exactly the new channels', () => {
   assert.equal(out.signatureTarget, null);
 });
 
-test('engine ON: replaceRange falls back to `to` when wordTo absent', () => {
+test('with the engine on replaceRange falls back to `to` when wordTo is absent', () => {
   const base = legacyDescriptor();
   delete base.wordTo;
   const out = resolveContext({ baseDescriptor: base, engineEnabled: true });
   assert.deepEqual(out.replaceRange, { from: 42, to: 42 });
 });
 
-test('engine ON: an explicit valid surface overrides hostInfo resolution', () => {
+test('with the engine on an explicit valid surface overrides the hostInfo surface', () => {
   const out = resolveContext({ baseDescriptor: legacyDescriptor(), engineEnabled: true, surface: 'devtools-template', hostInfo: { isCardDialog: true } });
   assert.equal(out.surface, 'devtools-template');
 });
@@ -97,7 +95,7 @@ test('RESOLVED_DESCRIPTOR_VERSION and SURFACES are stable contract', () => {
   assert.ok(Object.isFrozen(SURFACES));
 });
 
-test('resolveExpectedKind aliases valueKind and fails dark', () => {
+test('resolveExpectedKind aliases valueKind and returns the default for bad input', () => {
   assert.equal(resolveExpectedKind({ valueKind: 'service' }), 'service');
   assert.equal(resolveExpectedKind({ valueKind: '' }), '');
   assert.equal(resolveExpectedKind({}), '');
@@ -105,7 +103,7 @@ test('resolveExpectedKind aliases valueKind and fails dark', () => {
   assert.equal(resolveExpectedKind({ valueKind: 5 }), '', 'non-string → empty');
 });
 
-test('resolveSurface mapping table + fail-dark defaults', () => {
+test('resolveSurface mapping table and its defaults for bad input', () => {
   assert.equal(resolveSurface(undefined), 'card-editor', 'no host info → historical default');
   assert.equal(resolveSurface(null), 'card-editor');
   assert.equal(resolveSurface({ isCardDialog: true }), 'card-editor');

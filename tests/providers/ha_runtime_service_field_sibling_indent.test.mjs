@@ -6,10 +6,10 @@ import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 import { scoreItems } from '../../src/completion/scoring.js';
 import { makeHassFixture } from '../fixtures/hassFixture.mjs';
 
-// Sibling-indent blast radius, service-field KEY lane: the phantom leaf made
-// isServiceDataFieldContext (last path part === 'data') fail for every field after
-// the first -- the dominant real-world shape (typing the second field) got zero
-// service-field rows, and the required-first ordering rode the same dead lane.
+// A sibling field at the same indent must not be read as a leaf of the field above it:
+// isServiceDataFieldContext (last path part === 'data') would then fail for every field after the
+// first, and typing the second field (the usual case) would give no service-field rows and no
+// required-first ordering.
 function fixtureProvider(hass = makeHassFixture()) {
   return haRuntimeValueProvider({
     runtimeData: () =>

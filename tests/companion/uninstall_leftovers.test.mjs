@@ -5,13 +5,13 @@ import { readFileSync } from 'node:fs';
 import { installRuntimeCoordinator } from '../../src/core/runtimeCoordinator.js';
 import { unregisterRuntimeFromCoordinator } from '../../src/companion/coordinatorRuntime.js';
 
-// What an uninstall left behind: the timer of a pending frecency write (which then still wrote),
-// pending frames of a settings slider, the popup's host layer in the editor's root, and the
-// registration of this runtime in the shared coordinator.
+// What an uninstall must clean up besides the observers and styles: the timer of a pending
+// frecency write (which would still write), pending frames of a settings slider, the popup's host
+// layer in the editor's root, and the registration of this runtime in the shared coordinator.
 
-// main.legacy.js is a composition root that cannot be run per test (precedent:
-// tests/core/main_legacy_lifecycle_wiring.test.mjs), so its wiring is read from the source.
-const main = readFileSync(new URL('../../src/main.legacy.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+// app.js is a composition root that cannot be run per test (precedent:
+// tests/core/app_lifecycle_wiring.test.mjs), so its wiring is read from the source.
+const main = readFileSync(new URL('../../src/app.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
 const lifecycle = main.slice(main.indexOf('    lifecycle: {'), main.indexOf('  // Boot-cost probe: split the main-thread cost'));
 
 // The frecency write block of main, run with stand-ins for what it reads from the composition root.
@@ -19,7 +19,7 @@ function frecencyBlock({ frecency = true } = {}) {
   const start = main.indexOf('  let frecencyFlushTimer = 0;');
   const endMarker = '"frecency-write-pagehide-flush");';
   const end = main.indexOf(endMarker, start);
-  assert.ok(start > 0 && end > start, 'the frecency write block is found in main.legacy.js');
+  assert.ok(start > 0 && end > start, 'the frecency write block is found in app.js');
   const body = `${main.slice(start, end + endMarker.length)}\n  return { scheduleFrecencyWrite, flushPendingFrecencyWrite };`;
   const env = { writes: [], timers: new Map(), cleared: [], listeners: [], seq: 0 };
   const api = new Function(

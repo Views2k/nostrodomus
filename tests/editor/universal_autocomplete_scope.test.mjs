@@ -1,9 +1,8 @@
-// UNIVERSAL — autocomplete scope gates for non-card-dialog panel editors.
+// Completion scope in panel editors outside the card dialog.
 //
-// The decisive guard is the "no dashboard-wide Ctrl+Space leakage" invariant: the universal arm
-// must admit a keystroke/view ONLY when it resolves to a REAL editor surface inside an allowlisted
-// HA-native panel host, and must stay false on a bare dashboard, on a third-party card editor, and
-// when the flags are off. These tests pin exactly that.
+// With no card dialog open, a key or a view is in scope only when it belongs to an editor surface
+// inside one of the UNIVERSAL_PANEL_HOSTS. It stays out of scope on a dashboard, in a third-party
+// card editor, and with style.universalCodebox or style.universalAutocomplete off.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -50,21 +49,21 @@ test('isScopedEditorEvent admits a panel editor keystroke only with both flags o
   assert.equal(isScopedEditorEvent(ev, { state: FLAGS_ON }), true, 'panel editor + flags on → scoped');
   assert.equal(isScopedEditorEvent(ev, { state: AUTOCOMPLETE_OFF }), false, 'universalAutocomplete off → not scoped');
   assert.equal(isScopedEditorEvent(ev, { state: CODEBOX_OFF }), false, 'universalCodebox off → not scoped');
-  // No state (settings unloaded) → flags default ON (`undefined !== false`), consistent with the
-  // styling flag. The leak guard (editor surface + allowlisted host), NOT the flag, is what keeps
+  // No state (settings unloaded) → flags default on (`undefined !== false`), consistent with the
+  // styling flag. The leak guard (editor surface + allowlisted host), not the flag, is what keeps
   // the dashboard out of scope — so a valid panel path is still scoped here, and a dashboard path
   // is still rejected (proven in the next test).
   assert.equal(isScopedEditorEvent(ev), true, 'no deps → flag defaults on; panel path still scoped via the leak guard');
 });
 
-test('isScopedEditorEvent NEVER leaks: dashboard + third-party editor stay out of scope', () => {
+test('isScopedEditorEvent keeps the dashboard and third-party editors out of scope', () => {
   installNoDialogDom();
-  // Bare dashboard keydown: NO editor surface in the path, only dashboard hosts.
+  // Bare dashboard keydown: no editor surface in the path, only dashboard hosts.
   const dashboardPath = [{ tagName: 'DIV', matches: () => false }, hostNode('ha-panel-lovelace'), hostNode('hui-root')];
   assert.equal(isScopedEditorEvent({ composedPath: () => dashboardPath }, { state: FLAGS_ON }), false, 'dashboard (no editor surface) → never scoped');
 
-  // Third-party card with its OWN CodeMirror on the dashboard: has an editor surface, but it is
-  // NOT inside an allowlisted panel host (hui-card is not in UNIVERSAL_PANEL_HOSTS).
+  // Third-party card with its own CodeMirror on the dashboard: has an editor surface, but it is
+  // not inside an allowlisted panel host (hui-card is not in UNIVERSAL_PANEL_HOSTS).
   const thirdPartyPath = [cmSurfaceNode(), hostNode('some-custom-card'), hostNode('hui-card'), hostNode('ha-panel-lovelace')];
   assert.equal(isScopedEditorEvent({ composedPath: () => thirdPartyPath }, { state: FLAGS_ON }), false, 'third-party editor not in an allowlisted host → never scoped');
 
@@ -77,7 +76,7 @@ test('UNIVERSAL_PANEL_HOSTS covers each universal surface but not dashboard/card
     assert.ok(UNIVERSAL_PANEL_HOSTS.split(',').map((s) => s.trim()).includes(tag), `${tag} is allowlisted`);
   }
   for (const tag of ['ha-panel-lovelace', 'hui-root', 'hui-card', 'home-assistant']) {
-    assert.equal(UNIVERSAL_PANEL_HOSTS.split(',').map((s) => s.trim()).includes(tag), false, `${tag} is NOT allowlisted (no dashboard leak)`);
+    assert.equal(UNIVERSAL_PANEL_HOSTS.split(',').map((s) => s.trim()).includes(tag), false, `${tag} is not allowlisted (no dashboard leak)`);
   }
 });
 
@@ -89,7 +88,7 @@ test('isViewAllowed admits a visible CM view inside an allowlisted panel host (f
   assert.equal(isViewAllowed(view, { state: FLAGS_ON }), true, 'view inside an allowlisted panel host → allowed');
   assert.equal(isViewAllowed(view, { state: AUTOCOMPLETE_OFF }), false, 'flag off → not allowed');
 
-  // A view NOT inside an allowlisted host (dashboard card) is rejected even with flags on.
+  // A view not inside an allowlisted host (dashboard card) is rejected even with flags on.
   const dashDom = { ...box(), matches: () => false, getRootNode: () => ({ host: hostNode('hui-card', { getRootNode: () => ({}) }) }) };
   assert.equal(isViewAllowed(cmView(dashDom), { state: FLAGS_ON }), false, 'view outside an allowlisted host → not allowed');
 

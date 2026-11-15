@@ -7,7 +7,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 project = json.loads((ROOT / 'PROJECT.json').read_text(encoding='utf-8'))
 module_path = ROOT / 'src' / 'core' / 'version.js'
-legacy_path = ROOT / 'src' / 'main.legacy.js'
+app_path = ROOT / 'src' / 'app.js'
 dist_path = ROOT / 'dist' / 'nostrodomus.js'
 build_py = (ROOT / 'tools' / 'build.py').read_text(encoding='utf-8', errors='replace')
 version_bump = (ROOT / 'tools' / 'version_bump.py').read_text(encoding='utf-8', errors='replace')
@@ -15,9 +15,9 @@ errors = []
 
 version = str(project.get('version') or '')
 internal = str(project.get('internal_version') or '')
-legacy = legacy_path.read_text(encoding='utf-8', errors='replace')
+app = app_path.read_text(encoding='utf-8', errors='replace')
 dist = dist_path.read_text(encoding='utf-8', errors='replace')
-identity_wired = "from './core/version.js'" in legacy
+identity_wired = "from './core/version.js'" in app
 
 if not module_path.exists():
     errors.append('missing src/core/version.js')
@@ -44,24 +44,24 @@ else:
         errors.append('src/core/version.js must be pure; forbidden runtime reference(s): ' + ', '.join(sorted(set(forbidden_runtime))))
 
 if identity_wired:
-    if not legacy.lstrip().startswith('import {') or "from './core/version.js';" not in legacy[:700]:
-        errors.append('src/main.legacy.js must import runtime identity constants at the top')
-    if 'const VERSION =' in legacy[:900] or 'const PROJECT_VERSION =' in legacy[:900] or 'const SETTINGS_WRITE_KEY =' in legacy[:900]:
-        errors.append('src/main.legacy.js must not keep duplicate extracted constants near the top')
-    # Dist is esbuild whitespace-minified and collapses consecutive consts into
-    # one var statement; assert presence without spacing or var keyword.
+    if not app.lstrip().startswith('import {') or "from './core/version.js';" not in app[:700]:
+        errors.append('src/app.js must import runtime identity constants at the top')
+    if 'const VERSION =' in app[:900] or 'const PROJECT_VERSION =' in app[:900] or 'const SETTINGS_WRITE_KEY =' in app[:900]:
+        errors.append('src/app.js must not declare its own copies of the version constants near the top')
+    # esbuild joins consecutive consts into one var statement without spaces.
     if 'var VERSION="' not in dist or 'PROJECT_VERSION="' not in dist:
         errors.append('dist must include bundled runtime identity module constants')
 else:
-    if internal not in legacy:
-        errors.append('legacy runtime missing current internal_version')
-    if f'PROJECT_VERSION = "{version}"' not in legacy:
-        errors.append('legacy runtime missing current PROJECT_VERSION')
+    if internal not in app:
+        errors.append('app.js missing current internal_version')
+    if f'PROJECT_VERSION = "{version}"' not in app:
+        errors.append('app.js missing current PROJECT_VERSION')
 
-if 'failed-esbuild-required-for-modules' not in build_py or 'Legacy-copy fallback is disabled' not in build_py:
-    errors.append('tools/build.py must disable legacy-copy fallback once main.legacy.js imports modules')
-if 'VERSION_MODULE' not in version_bump or '--copy-source-to-dist is unsafe after runtime module extraction' not in version_bump:
-    errors.append('tools/version_bump.py must update src/core/version.js and block unsafe source-to-dist copy')
+# app.js imports modules, so an unbundled copy of it would not run.
+if '"--bundle"' not in build_py or 'copy2(APP' in build_py or '--allow-legacy-fallback' in build_py:
+    errors.append('tools/build.py must bundle with esbuild and never copy src/app.js to dist')
+if 'VERSION_MODULE' not in version_bump or 'copyfile(APP' in version_bump or '--copy-source-to-dist' in version_bump:
+    errors.append('tools/version_bump.py must update src/core/version.js and never copy src/app.js to dist')
 
 if errors:
     print('RUNTIME IDENTITY MODULE TEST FAILED')

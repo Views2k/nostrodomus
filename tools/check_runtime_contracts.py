@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Read-only runtime contract scanner for Nostrodomus.
 
-This complements tools/verify.py by keeping historical no-touch regressions in one
-small, fast check. It does not mutate files and it does not contact Home Assistant.
+A fast check for forbidden runtime patterns, rejected approaches and the tokens the
+contracts in docs/contracts/ require. It writes no files and does not contact Home
+Assistant.
 """
 from __future__ import annotations
 
@@ -13,23 +14,21 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 RUNTIME_FILES = [
-    ROOT / "src" / "main.legacy.js",
+    ROOT / "src" / "app.js",
     ROOT / "dist" / "nostrodomus.js",
 ]
-# The codebox visual layer (host ::before/::after frame + frosted surface + surface-blur token
-# + backdrop-filters + isolation + transparency) was extracted out of main.legacy.js into
-# src/ui/codeboxStyle.js, and hostSurfaceSelector + the `isolation: isolate ${bangPriority};`
-# template form into src/ui/codebox/codeboxPreflight.js, during the module decomposition.
+# The codebox visual layer (host ::before/::after frame, frosted surface, blur token, backdrop
+# filters, isolation, transparency) is built in src/ui/codeboxStyle.js. hostSurfaceSelector and
+# the `isolation: isolate ${bangPriority};` template are in src/ui/codebox/codeboxPreflight.js.
 VISUAL_LAYER_SOURCE_OWNER_FILES = [
     ROOT / "src" / "ui" / "codeboxStyle.js",
     ROOT / "src" / "ui" / "codebox" / "codeboxPreflight.js",
 ]
 RUNTIME_TOKEN_SOURCE_OWNER_FILES = [
-    ROOT / "src" / "main.legacy.js",
+    ROOT / "src" / "app.js",
     ROOT / "src" / "ui" / "settingsInteractionRuntime.js",
     ROOT / "src" / "ui" / "styleDomRuntime.js",
     ROOT / "src" / "syntax" / "syntaxRuntime.js",
-    # applySmartSyntaxRangeHighlights moved here during the syntax-runtime decomposition.
     ROOT / "src" / "syntax" / "smartSyntaxLifecycle.js",
 ]
 COMPANION_FILES = [
@@ -90,7 +89,6 @@ REQUIRED_COMPANION_TOKENS = [
 
 REQUIRED_DOC_TOKENS = {
     "docs/contracts/VISUAL_LAYER_BASELINE_CONTRACT.md": ["::before = border and glow owner", "::after  = frosted blurry surface/backdrop owner"],
-    # The contract opens with "single source of truth"; the guard tracks that wording.
     "docs/contracts/RUNTIME_IDENTITY_MODULE_CONTRACT.md": ["src/core/version.js", "single source of truth", "No window/document access", "esbuild"],
     "docs/contracts/SETTINGS_STORAGE_KEYS_MODULE_CONTRACT.md": ["src/core/settingsStorageKeys.js", "SETTINGS_MIGRATION_LEGACY_KEYS", "deletes a legacy key only after the write key holds the merged payload", "No window/document access"],
     "docs/contracts/RUNTIME_CONSTANTS_MODULE_CONTRACT.md": ["src/core/runtimeConstants.js", "SECURITY_LIMITS", "No window/document access"],
@@ -118,12 +116,6 @@ def main(argv: list[str] | None = None) -> int:
 
     errors: list[str] = []
     warnings: list[str] = []
-    project = {}
-    try:
-        project = json.loads((ROOT / "PROJECT.json").read_text(encoding="utf-8"))
-    except Exception:
-        project = {}
-    runtime_layer_rollback = "runtime-layer-rollback" in str(project.get("internal_version") or "")
 
     source_visual_owner_text = "\n".join(read(path) for path in VISUAL_LAYER_SOURCE_OWNER_FILES)
     source_visual_owner_text = source_visual_owner_text.replace("isolation: isolate ${bangPriority};", "isolation: isolate !important;")
@@ -139,7 +131,7 @@ def main(argv: list[str] | None = None) -> int:
                 token_present = token_present or "ensureSettingsPortalHost" in text
             if token == "window.__nostrodomus":
                 token_present = token_present or "W.__nostrodomus" in text
-            if path.name == "main.legacy.js" and not token_present:
+            if path.name == "app.js" and not token_present:
                 token_present = token in source_runtime_owner_text
             if not token_present:
                 errors.append(f"{path.relative_to(ROOT)} missing required runtime token: {token}")
@@ -149,8 +141,7 @@ def main(argv: list[str] | None = None) -> int:
             if token not in visual_text:
                 errors.append(f"{visual_label} missing required visual layer token: {token}")
 
-    # CSS.highlights range-highlight ownership moved from syntaxRuntime.js into the smart-syntax
-    # lifecycle/styles modules during the syntax decomposition; check it at its current owner + dist.
+    # The CSS.highlights range highlights are applied by the smart-syntax lifecycle and styles modules.
     syntax_runtime_text = read(ROOT / "src" / "syntax" / "smartSyntaxLifecycle.js") + "\n" + read(ROOT / "src" / "syntax" / "smartSyntaxStyles.js")
     dist_text = read(ROOT / "dist" / "nostrodomus.js")
     if "CSS.highlights" not in syntax_runtime_text or ("CSS.highlights" not in dist_text and "CSS?.highlights" not in dist_text):
@@ -174,7 +165,6 @@ def main(argv: list[str] | None = None) -> int:
             if forbidden in version_text:
                 errors.append(f"src/core/version.js must stay pure; found {forbidden}")
 
-
     settings_keys_text = read(SETTINGS_KEYS_MODULE)
     if not settings_keys_text:
         errors.append("missing settings storage keys module: src/core/settingsStorageKeys.js")
@@ -186,17 +176,14 @@ def main(argv: list[str] | None = None) -> int:
             if forbidden in settings_keys_text:
                 errors.append(f"src/core/settingsStorageKeys.js must stay pure; found {forbidden}")
 
-    legacy_text = read(ROOT / "src" / "main.legacy.js")
+    legacy_text = read(ROOT / "src" / "app.js")
     settings_keys_wired = "from './core/settingsStorageKeys.js'" in legacy_text
     runtime_constants_wired = "from './core/runtimeConstants.js'" in legacy_text
     if settings_keys_wired:
         if "const SETTINGS_LEGACY_KEYS =" in legacy_text[:1200] or "const SETTINGS_READ_KEYS =" in legacy_text[:1200]:
-            errors.append("src/main.legacy.js must not redeclare settings storage key arrays after extraction")
-    elif runtime_layer_rollback:
-        if "const SETTINGS_LEGACY_KEYS =" not in legacy_text:
-            errors.append("rollback runtime must preserve monolithic SETTINGS_LEGACY_KEYS")
+            errors.append("src/app.js must not redeclare settings storage key arrays; it imports src/core/settingsStorageKeys.js")
     else:
-        errors.append("src/main.legacy.js must import src/core/settingsStorageKeys.js")
+        errors.append("src/app.js must import src/core/settingsStorageKeys.js")
 
     runtime_constants_text = read(RUNTIME_CONSTANTS_MODULE)
     if not runtime_constants_text:
@@ -210,12 +197,9 @@ def main(argv: list[str] | None = None) -> int:
                 errors.append(f"src/core/runtimeConstants.js must stay pure; found {forbidden}")
     if runtime_constants_wired:
         if "const SECURITY_LIMITS =" in legacy_text[:1800] or "const STATIC_PROVIDER_ID =" in legacy_text[:1800]:
-            errors.append("src/main.legacy.js must not redeclare runtime constants after extraction")
-    elif runtime_layer_rollback:
-        if "const SECURITY_LIMITS =" not in legacy_text:
-            errors.append("rollback runtime must preserve monolithic SECURITY_LIMITS")
+            errors.append("src/app.js must not redeclare runtime constants; it imports src/core/runtimeConstants.js")
     else:
-        errors.append("src/main.legacy.js must import src/core/runtimeConstants.js")
+        errors.append("src/app.js must import src/core/runtimeConstants.js")
 
     for path in DOC_FILES:
         if not path.exists():

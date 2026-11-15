@@ -8,7 +8,7 @@ function emptyDocument() {
   return { activeElement: null, querySelectorAll: () => [] };
 }
 
-// main.legacy.js installs the context diagnostics outside its boot closure, with no state. By
+// app.js installs the context diagnostics outside its boot closure, with no state. By
 // then boot has put the public API object, which carries the runtime state, on the window.
 test('the active-editor readout records its traversal in the runtime state of the installed API', () => {
   const state = { activeEditorReadoutTargetedTraversals: 0, activeEditorReadoutLegacyWildcardTraversals: 0, lastActiveEditorReadoutTraversal: null };
@@ -46,8 +46,18 @@ test('a state passed to the installer is used first', () => {
   assert.equal(window.__nostrodomus.state.activeEditorReadoutTargetedTraversals, undefined);
 });
 
-test('main.legacy.js installs the context diagnostics after boot has installed the API object', () => {
-  const source = readFileSync(new URL('../../src/main.legacy.js', import.meta.url), 'utf8');
+test('the installed diagnostics APIs are diagnostics only and do not drive autocomplete', () => {
+  const window = {};
+  installContextDiagnosticsRuntime({ window, document: emptyDocument() });
+  for (const key of ['contextDiagnostics', 'embeddedLanguageDetector']) {
+    const api = window.__nostrodomus[key];
+    assert.equal(api.diagnosticsOnly, true, `${key} is diagnostics only`);
+    assert.equal(api.drivesAutocomplete, false, `${key} does not drive autocomplete`);
+  }
+});
+
+test('app.js installs the context diagnostics after boot has installed the API object', () => {
+  const source = readFileSync(new URL('../../src/app.js', import.meta.url), 'utf8');
   const boot = source.indexOf('await publicApiRuntime.boot();');
   const install = source.indexOf('installContextDiagnosticsRuntime({ window, document });');
   assert.ok(boot > 0 && install > boot, 'the install call follows the boot call');

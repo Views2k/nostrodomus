@@ -34,9 +34,9 @@ require('ACTION_PARENT_KEYS' in module, 'yamlBranchState module owns action pare
 require('splitRecentLines' in module and 'recentLinesBeforeCursor' in module, 'yamlBranchState module scans the shared bounded line window')
 require('yamlBranchState' in context, 'yamlCompletionContext imports yamlBranchState module')
 require(re.search(r'export function yamlBranchState\(sourceText, cursorPosition\) \{\s*return branchState.yamlBranchState\(sourceText, cursorPosition\);\s*\}', context, flags=re.S) is not None, 'yamlCompletionContext preserves wrapper export')
-require('src/yaml/yamlBranchState.js' not in (allow.get('allowed_unwired_modules') or {}), 'yamlBranchState removed from unwired allowlist')
-require('yamlBranchState as contextYamlBranchState' in scanner, 'yamlScanner keeps compatibility through yamlCompletionContext')
-require('yamlBranchState' in adapter, 'runtimeContextAdapter keeps compatibility through yamlCompletionContext')
+require('src/yaml/yamlBranchState.js' not in (allow.get('allowed_unwired_modules') or {}), 'yamlBranchState is not on the unwired allowlist')
+require('yamlBranchState as contextYamlBranchState' in scanner, 'yamlScanner uses yamlBranchState through yamlCompletionContext')
+require('yamlBranchState' in adapter, 'runtimeContextAdapter uses yamlBranchState')
 require('branchState.yamlBranchState' in exec_test and 'describeYamlCompletionContext uses the wired YAML branch-state module' in exec_test, 'executed branch-state wiring test exists')
 
 for forbidden in ['window', 'document', 'localStorage', 'sessionStorage', 'querySelector', 'addEventListener', 'fetch(', 'sendBeacon', 'setTimeout', 'eval(', 'new Function']:

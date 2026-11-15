@@ -10,8 +10,8 @@ browser crash and prevents Ctrl+Space/codebox styling from installing.
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAIN = (ROOT / "src/main.legacy.js").read_text(encoding="utf-8")
-ADAPTERS = (ROOT / "src/composition/mainLegacyAdapters.js").read_text(encoding="utf-8")
+MAIN = (ROOT / "src/app.js").read_text(encoding="utf-8")
+ADAPTERS = (ROOT / "src/composition/appAdapters.js").read_text(encoding="utf-8")
 
 
 def index(token: str) -> int:
@@ -21,10 +21,10 @@ def index(token: str) -> int:
 
 
 def test_diagnostics_scheduler_adapter_exists_before_runtime_constructors() -> None:
-    adapter_pos = index("const diagnosticsSchedulerAdapters = createMainLegacyDiagnosticsSchedulerAdapters({")
+    adapter_pos = index("const diagnosticsSchedulerAdapters = createAppDiagnosticsSchedulerAdapters({")
     function_pos = index("function scheduleDiagnosticsRefresh(reason = 'diagnostics-refresh')")
     syntax_pos = index("syntaxRuntime = createSyntaxRuntime({")
-    settings_pos = index("settingsPanelRuntime = createMainLegacySettingsPanelRuntime({")
+    settings_pos = index("settingsPanelRuntime = createAppSettingsPanelRuntime({")
     editor_pos = index("editorDispatchRuntime = createEditorDispatchRuntime({")
 
     assert adapter_pos < function_pos < syntax_pos < settings_pos < editor_pos
@@ -51,10 +51,9 @@ def _wiring_block(start_token: str) -> str:
 
 
 def test_request_live_update_bare_shorthand_is_forbidden() -> None:
-    # The bare shorthand resolves against whatever `requestLiveUpdate` symbol the
-    # bundled scope provides; before the v0.1.59 rename it bound the completion
-    # group const ahead of its declaration and crashed startup with a TDZ
-    # ReferenceError. Wiring must always name requestCompletionLiveUpdate.
+    # The bare shorthand binds whatever `requestLiveUpdate` the bundled scope provides, which can
+    # be the completion group const before its declaration: a TDZ ReferenceError at startup.
+    # Wiring must name requestCompletionLiveUpdate.
     assert "\n    requestLiveUpdate,\n" not in MAIN, (
         "bare requestLiveUpdate shorthand is TDZ-prone in the bundled scope; "
         "pass requestLiveUpdate: requestCompletionLiveUpdate explicitly"
@@ -63,7 +62,7 @@ def test_request_live_update_bare_shorthand_is_forbidden() -> None:
 
 def test_settings_wiring_defers_completion_live_update_read() -> None:
     settings_pos = index("settingsInteractionRuntime = createSettingsInteractionRuntime({")
-    group_pos = index("} = createMainLegacyCompletionRuntimeGroup({")
+    group_pos = index("} = createAppCompletionRuntimeGroup({")
     # The settings interaction runtime is constructed before the completion
     # runtime group destructure declares requestCompletionLiveUpdate, so the
     # settings wiring must read the symbol lazily (inside a callback), never

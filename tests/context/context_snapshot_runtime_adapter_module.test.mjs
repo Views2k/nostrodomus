@@ -33,7 +33,7 @@ test('ContextSnapshot runtime adapter keeps the dry-run contract shape', () => {
   });
 });
 
-test('ContextSnapshot runtime adapter clamps positions using the legacy numeric contract', () => {
+test('ContextSnapshot runtime adapter clamps positions to the text and treats a non-number as its end', () => {
   assert.equal(contextAdapterClampPosition('abcdef', -10), 0);
   assert.equal(contextAdapterClampPosition('abcdef', 3), 3);
   assert.equal(contextAdapterClampPosition('abcdef', 999), 6);
@@ -41,7 +41,7 @@ test('ContextSnapshot runtime adapter clamps positions using the legacy numeric 
   assert.equal(contextAdapterClampPosition('abcdef', '3'), 6);
 });
 
-test('ContextSnapshot runtime adapter preserves legacy line role detection', () => {
+test('ContextSnapshot runtime adapter detects the role of a line', () => {
   assert.equal(contextAdapterYamlRole(contextAdapterLineInfo('type: custom:button-card', 1)), 'key');
   assert.equal(contextAdapterYamlRole(contextAdapterLineInfo('type: custom:button-card', 8)), 'value');
   assert.equal(contextAdapterYamlRole(contextAdapterLineInfo('  - ', 4)), 'list-key');
@@ -93,7 +93,7 @@ test('collectContextSnapshotDryRun suppresses comments and suggests blank/key/li
   assert.equal(listKey.snapshot.suggestion.shouldSuggest, true);
 });
 
-test('normalizeContextSnapshot only merges one object layer like the legacy helper', () => {
+test('normalizeContextSnapshot merges nested objects one level deep', () => {
   const normalized = normalizeContextSnapshot({ yaml: { role: 'key', key: 'entity' } }, {
     yaml: { key: 'type' },
     language: 'yaml',
@@ -103,15 +103,15 @@ test('normalizeContextSnapshot only merges one object layer like the legacy help
   assert.equal(normalized.yaml.key, 'type');
 });
 
-test('ContextSnapshot runtime adapter module remains pure browser-free source', () => {
+test('ContextSnapshot runtime adapter module uses no browser globals', () => {
   const text = readFileSync('src/context/contextSnapshotRuntimeAdapter.js', 'utf8');
   assert.doesNotMatch(text, /\bwindow\b|\bdocument\b|localStorage|sessionStorage|fetch\s*\(|XMLHttpRequest|new\s+MutationObserver|requestAnimationFrame|setTimeout|setInterval/);
 });
 
 test('dry-run snapshot locates the cursor in a doc longer than the 20000-char scan window', () => {
-  // The doc is tail-sliced to the scan window; the cursor pos is in ORIGINAL-doc coordinates and must
-  // be shifted by the dropped-prefix length. Put the cursor on a distinctive line that is inside the
-  // window but NOT at the very end, so a missing offset (old bug: clamp to window end) is visible.
+  // Only the end of the doc is scanned; the cursor position is in whole-doc coordinates and must be
+  // shifted by the length of the dropped start. The cursor sits on a line inside the window but not
+  // at its end, so a missing shift (clamping to the window end) is visible.
   const head = 'x: 1\n'.repeat(4200); // ~21000 chars, past the 20000 window
   const marker = 'marker: findme';
   const tail = '\nafter: 1\n'.repeat(50);

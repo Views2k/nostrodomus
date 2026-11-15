@@ -8,12 +8,12 @@ import { readFileSync } from 'node:fs';
 
 import {
   buildGlassDialogCss,
-  createScrollbarStyleRuntime,
+  createCompanionStyleRuntime,
   GLASS_DIALOG_BACKDROP_FILTER,
   GLASS_DIALOG_STYLE_ID,
   GLASS_DIALOG_SURFACE_OPACITY_PERCENT,
   STACKED_PANES_STYLE_ID,
-} from '../../src/companion/scrollbarStyleRuntime.js';
+} from '../../src/companion/companionStyleRuntime.js';
 
 const SURFACE_LINE = '--ha-dialog-surface-background: color-mix(in srgb, var(--card-background-color, var(--ha-color-surface-default, #fff)) 60%, transparent);';
 const BLUR_LINE = '--ha-dialog-surface-backdrop-filter: blur(18px) saturate(135%);';
@@ -127,7 +127,7 @@ function fakeDocument() {
 const glassSheet = (root) => root.querySelector(`#${GLASS_DIALOG_STYLE_ID}`);
 
 test('on (the default): the sheet is injected into the dialog root, once, after the other dialog sheets', () => {
-  const rt = createScrollbarStyleRuntime({ documentRef: fakeDocument(), isActive: () => true });
+  const rt = createCompanionStyleRuntime({ documentRef: fakeDocument(), isActive: () => true });
   const dialogRoot = fakeRoot();
   assert.equal(rt.applyToRoots({ dialogRoot }), true);
   const ids = dialogRoot.children.map((c) => c.id);
@@ -148,7 +148,7 @@ test('on (the default): the sheet is injected into the dialog root, once, after 
 
 test('off: nothing is injected, and turning it off removes the sheet on the next apply', () => {
   let on = false;
-  const rt = createScrollbarStyleRuntime({ documentRef: fakeDocument(), isActive: () => true, glassDialog: () => on });
+  const rt = createCompanionStyleRuntime({ documentRef: fakeDocument(), isActive: () => true, glassDialog: () => on });
   const dialogRoot = fakeRoot();
   rt.applyToRoots({ dialogRoot });
   assert.equal(glassSheet(dialogRoot), null, 'not injected while the setting is off');
@@ -167,7 +167,7 @@ test('off: nothing is injected, and turning it off removes the sheet on the next
 
 test('turning it off removes the sheet even when the settings panel has no editor to pass', () => {
   let on = true;
-  const rt = createScrollbarStyleRuntime({ documentRef: fakeDocument(), isActive: () => true, glassDialog: () => on });
+  const rt = createCompanionStyleRuntime({ documentRef: fakeDocument(), isActive: () => true, glassDialog: () => on });
   const dialog = { matches: (s) => s === 'hui-dialog-edit-card', shadowRoot: fakeRoot() };
   const yamlEditor = { matches: (s) => s === 'ha-yaml-editor', getRootNode: () => ({ host: dialog }) };
   const editor = { shadowRoot: fakeRoot(), matches: () => false, getRootNode: () => ({ host: yamlEditor }) };
@@ -185,14 +185,14 @@ test('turning it off removes the sheet even when the settings panel has no edito
 });
 
 test('dormant companion layer: no glass sheet', () => {
-  const rt = createScrollbarStyleRuntime({ documentRef: fakeDocument(), isActive: () => false, glassDialog: () => true });
+  const rt = createCompanionStyleRuntime({ documentRef: fakeDocument(), isActive: () => false, glassDialog: () => true });
   const dialogRoot = fakeRoot();
   assert.equal(rt.applyToRoots({ dialogRoot }), false);
   assert.equal(dialogRoot.children.length, 0);
 });
 
 test('teardown removes the sheet', () => {
-  const rt = createScrollbarStyleRuntime({ documentRef: fakeDocument(), isActive: () => true });
+  const rt = createCompanionStyleRuntime({ documentRef: fakeDocument(), isActive: () => true });
   const dialogRoot = fakeRoot();
   rt.applyToRoots({ dialogRoot });
   assert.ok(glassSheet(dialogRoot));
@@ -213,7 +213,7 @@ test('teardown removes the sheet', () => {
 
 function themedRuntime() {
   const reads = [];
-  const rt = createScrollbarStyleRuntime({
+  const rt = createCompanionStyleRuntime({
     documentRef: fakeDocument(),
     isActive: () => true,
     globalRef: {
@@ -265,9 +265,9 @@ test('the host is read once per opening, and a theme chosen between two openings
 // ---- wiring in the composition root (read from the source, as in uninstall_leftovers.test.mjs) ----
 
 test('main passes the setting to the companion layer, and uninstall tears that layer down', () => {
-  const main = readFileSync(new URL('../../src/main.legacy.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
-  const construction = main.slice(main.indexOf('const companionScrollbarRuntime = createScrollbarStyleRuntime({'), main.indexOf('const companionInputQuietRuntime'));
+  const main = readFileSync(new URL('../../src/app.js', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const construction = main.slice(main.indexOf('const companionStyleRuntime = createCompanionStyleRuntime({'), main.indexOf('const companionInputQuietRuntime'));
   assert.ok(construction.includes('glassDialog: () => state.settings?.style?.glassDialog !== false,'));
   const teardown = main.slice(main.indexOf('companionScrollbarTeardown: () => {'), main.indexOf('companionSettleCleanup:'));
-  assert.ok(teardown.includes('return companionScrollbarRuntime.teardown();'), 'the uninstall lifecycle runs the teardown that removes the sheet');
+  assert.ok(teardown.includes('return companionStyleRuntime.teardown();'), 'the uninstall lifecycle runs the teardown that removes the sheet');
 });

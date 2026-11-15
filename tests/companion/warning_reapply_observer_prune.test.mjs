@@ -1,12 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { createScrollbarStyleRuntime } from '../../src/companion/scrollbarStyleRuntime.js';
+import { createCompanionStyleRuntime } from '../../src/companion/companionStyleRuntime.js';
 
-// ensureWarningReapplyObserver stores one MutationObserver per badged
-// container root in a strong Map cleared only on teardown. Each card-editor dialog open/close
-// therefore left its observer + detached root retained for the session (a leak). The observer setup
-// now prunes roots that have left the DOM.
+// ensureWarningReapplyObserver keeps one MutationObserver per badged container root in a Map that
+// teardown clears. Without pruning, every card editor dialog that opens and closes would leave its
+// observer and detached root in memory for the session, so the setup drops roots that left the DOM.
 
 function makeRuntime() {
   const disconnected = [];
@@ -15,7 +14,7 @@ function makeRuntime() {
     observe() {}
     disconnect() { disconnected.push(this); }
   }
-  const runtime = createScrollbarStyleRuntime({
+  const runtime = createCompanionStyleRuntime({
     MutationObserver: FakeMutationObserver,
     active: () => true,
     hideEditorWarnings: () => false,
@@ -59,15 +58,15 @@ test('detached badged roots are pruned + disconnected; live roots and document a
   assert.equal(disconnected.length, 1, 'document not disconnected');
 });
 
-test('prune is fail-dark: unknown connectivity is kept, no throw', () => {
+test('prune keeps a root whose connection state is unknown and does not throw', () => {
   const { runtime } = makeRuntime();
   runtime.ensureWarningReapplyObserver({ nodeType: 11 /* no isConnected */ }, null);
   assert.doesNotThrow(() => assert.equal(runtime.pruneDetachedWarningReapplyObservers(), 0));
 });
 
 test('owned-style registries prune detached roots on the next apply', () => {
-  // Regression: ownedRoots (shadow roots we injected styles into) grew across every dialog open and
-  // was only walked on teardown, so detached roots accumulated for the session.
+  // ownedRoots (the shadow roots that got our styles) must drop detached roots on the next apply,
+  // not only on teardown, or they pile up over a session.
   const { runtime } = makeRuntime();
   const root = fakeShadowRoot(true);
   runtime.applyToRoots({ codeRoot: root, codeRootDialogScoped: true }); // adds `root` to ownedRoots

@@ -3,10 +3,9 @@
 // storage, network calls, or logging.
 
 export function clampNumber(value, min, max, fallback) {
-  // Only real numbers and non-empty numeric strings are coerced; null / '' / whitespace / false /
-  // arrays / objects all coerce via Number() to a finite 0 and would otherwise silently clamp to a
-  // min>0 bound (e.g. a corrupt persisted `syntaxThemeSaturation: null` -> 0.35) instead of the
-  // intended fallback. Fail dark to the fallback for every non-numeric input.
+  // Only numbers and non-empty numeric strings are read. Number() turns null, '', whitespace,
+  // false, arrays and objects into 0, which would clamp to a minimum above 0 (a stored
+  // `syntaxThemeSaturation: null` would become 0.35); every such input gets the fallback.
   const n = (typeof value === "number" || (typeof value === "string" && value.trim() !== "")) ? Number(value) : NaN;
   if (!Number.isFinite(n)) return fallback;
   return Math.min(max, Math.max(min, n));
@@ -55,11 +54,10 @@ export function displayViewportLabel(viewport = {}) {
   return "viewport unavailable";
 }
 
-// eslint-disable-next-line no-unused-vars -- the signature (screenInfo included) is pinned source+dist by test_client_capability_display_static.py
+// eslint-disable-next-line no-unused-vars -- clientCapabilitiesRuntime passes screenInfo; test_client_capability_display_static.py checks this signature
 export function displayMonitorLabel(viewport = {}, screenInfo = {}) {
-  // Compatibility alias for older diagnostics callers. This reports the
-  // browser-visible viewport only; frontend JavaScript cannot reliably
-  // enumerate a user's physical multi-monitor layout.
+  // The browser-visible viewport only: frontend JavaScript cannot reliably list a user's physical
+  // monitors.
   return displayViewportLabel(viewport);
 }
 

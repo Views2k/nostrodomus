@@ -62,7 +62,7 @@ test('requests that cannot be handled still build nothing', () => {
   assert.equal(catalog.reads(), 0);
 });
 
-test('key and value requests are answered as before', () => {
+test('key rows need a catalog surface, and a card-type request lists the catalog cards', () => {
   const provider = hacsCatalogProvider();
   const keyCtx = { shouldSuggest: true, lang: 'yaml', yamlRole: 'key', catalogSurfaceId: 'mini-graph-card' };
   assert.equal(provider.canHandle(keyCtx), true);

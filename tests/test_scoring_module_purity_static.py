@@ -24,8 +24,9 @@ for token in [
     else:
         notes.append(f"PASS token: {token}")
 
+# A quoted word is a string value (the YAML key 'state'), not a reference to the global.
 for forbidden in ["state", "document", "window"]:
-    if re.search(rf"\b{forbidden}\b", text):
+    if re.search(rf"(?<!['\"])\b{forbidden}\b(?!['\"])", text):
         errors.append(f"scoring.js must not reference runtime/global token: {forbidden}")
     else:
         notes.append(f"PASS no token: {forbidden}")

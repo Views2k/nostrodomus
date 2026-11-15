@@ -5,7 +5,7 @@ import { createPerformanceTelemetryRuntime } from '../../src/diagnostics/perform
 import {
   measurePerformanceEventWithCallbacks,
   shouldRecordPerformanceTelemetryDecision,
-} from '../../src/diagnostics/diagnosticsFastLaneHelpers.js';
+} from '../../src/diagnostics/diagnosticsReadoutHelpers.js';
 import {
   diagnosticEventMetric,
   evaluatePerformanceBudgets,
@@ -235,7 +235,7 @@ test('resetPerformanceTelemetry zeroes counters and leaves timers and live state
 
   const snapshot = runtime.resetPerformanceTelemetry();
 
-  assert.deepEqual(calls, [], 'no pending UI or frame timer is cancelled');
+  assert.deepEqual(calls, [], 'no pending UI or frame timer is canceled');
   assert.deepEqual(snapshot.events, {});
   assert.equal(snapshot.suppressed.total, 0);
 
@@ -267,4 +267,19 @@ test('resetPerformanceTelemetry zeroes counters and leaves timers and live state
   assert.equal(state.observerStats.shallowStyleRootObservers, 4);
   assert.equal(state.observerStats.deepStyleRootObservers, 1);
   assert.equal(state.observerStats.lastObserverMode, 'scoped');
+});
+
+// --- the budget status row ---
+test('the budget status says warning when an event is over its budget', (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: 1_000_000 });
+  const { state, runtime } = createHarness();
+  state.settingsPanel = fakePanel('diagnostics');
+  const within = runtime.performanceStatsSnapshot();
+  assert.equal(within.budget.ok, true);
+  assert.equal(within.budgetStatus, 'ok');
+
+  runtime.recordPerformanceEvent('compute', 80, 'slow');
+  const over = runtime.performanceStatsSnapshot();
+  assert.equal(over.budget.ok, false, 'one compute of 80 ms is over the 50 ms maximum');
+  assert.equal(over.budgetStatus, 'warning');
 });

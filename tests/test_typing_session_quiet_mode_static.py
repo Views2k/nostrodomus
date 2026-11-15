@@ -2,8 +2,8 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAIN = (ROOT / 'src' / 'main.legacy.js').read_text(encoding='utf-8')
-ADAPTERS = (ROOT / 'src' / 'composition' / 'mainLegacyAdapters.js').read_text(encoding='utf-8')
+MAIN = (ROOT / 'src' / 'app.js').read_text(encoding='utf-8')
+ADAPTERS = (ROOT / 'src' / 'composition' / 'appAdapters.js').read_text(encoding='utf-8')
 DISPATCH_RUNTIME = (ROOT / 'src' / 'editor' / 'editorDispatchRuntime.js').read_text(encoding='utf-8')
 SYNTAX = '\n'.join((ROOT / 'src' / 'syntax' / name).read_text(encoding='utf-8') for name in ('syntaxRuntime.js', 'typingSessionLifecycle.js', 'nativeHighlightLifecycle.js', 'smartSyntaxLifecycle.js', 'sourceClassLifecycle.js', 'initialSyntaxPaintGate.js', 'syntaxContentObservers.js'))
 STATE = (ROOT / 'src' / 'core' / 'state.js').read_text(encoding='utf-8')
@@ -53,15 +53,16 @@ def test_editor_dispatch_diagnostics_are_gated_but_popup_update_remains_live():
 
 
 def test_syntax_runtime_suppresses_semantic_and_range_work():
-    # The class painter is still suppressed during a typing session, but only when the browser
-    # has no CSS Custom Highlight API. In range mode the ranges are the only color layer and are
-    # rebuilt while typing (they write nothing to the DOM), so that suppression was removed.
+    # The class painter is suppressed during a typing session only when the browser has no CSS
+    # Custom Highlight API. In range mode the ranges are the only color layer and write nothing to
+    # the DOM, so they are rebuilt while typing.
     for token in (
         'if (state.typingSessionActive && !rangeMode) {',
         'recordPerformanceEvent("typing-session-suppressed"',
     ):
         require(token, SYNTAX, 'syntax typing-session suppression')
-    assert 'noteTypingSessionSuppressed("range-highlight-rebuild", "typing-session-active")' not in SYNTAX,         'range rebuilds must not be suppressed during a typing session'
+    assert 'noteTypingSessionSuppressed("range-highlight-rebuild", "typing-session-active")' not in SYNTAX, \
+        'range rebuilds must not be suppressed during a typing session'
 
 
 if __name__ == '__main__':

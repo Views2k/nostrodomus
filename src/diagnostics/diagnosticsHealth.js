@@ -1,6 +1,6 @@
-// Nostrodomus diagnostics health module.
-// This layer owns bounded runtime/provider/engine health summaries only.
-// It must not own diagnostics markup, settings UI, DOM mounting, browser storage, clipboard, popup UI, network behavior, or state mutation.
+// Nostrodomus health report: bounded summaries of the runtime, the providers and the engine.
+// No markup, settings UI, DOM mounting, browser storage, clipboard, popup UI, network access or
+// state changes.
 
 function boundedArrayLength(value) {
   return Array.isArray(value) ? value.length : 0;
@@ -77,9 +77,9 @@ export function health(runtimeState = {}, options = {}) {
   const seam = runtimeState?.selectorSeamStatus || null;
   const seamProbed = (seam?.probeCount || 0) > 0;
   const seamMissing = Array.isArray(seam?.missingCritical) ? seam.missingCritical : [];
-  // Contextual: OK until an editor has actually been opened (can't assess
-  // seams with no editor); once probed, a missing critical HA-selector seam
-  // means HA likely renamed a DOM element the registry still expects.
+  // Contextual: OK until an editor has opened, since the selectors cannot be checked without one.
+  // After that, a missing critical selector most likely means Home Assistant renamed an element
+  // the registry still expects.
   addContextual(
     "selector-seam-coverage",
     !seamProbed || seamMissing.length === 0,
@@ -87,13 +87,10 @@ export function health(runtimeState = {}, options = {}) {
       ? `${seam.coverage}% critical HA-selector coverage${seamMissing.length ? ` (missing: ${seamMissing.join(", ")})` : ""}`
       : "HA-selector seams not yet probed (no editor opened)",
   );
-  // Staged boot: the completion library / index / providers load on the first
-  // editor (phase B), not at boot. While staged boot is still in phase A (no
-  // editor opened yet), their absence is expected, so treat these as contextual
-  // (deferred), not required failures. That way an editor-less staged dashboard
-  // reads "ready", not "degraded" (the startup badge derives from requiredOk; a
-  // degraded badge would also be a Nostrodomus-origin console.warn).
-  // In eager boot, or once phase B has run, they are required again.
+  // The completion library, index and providers load with the first editor, not at boot. Until
+  // then (completionStaged) their absence is expected and the checks are contextual, so a
+  // dashboard without an editor reads "ready", not "degraded": the startup badge follows
+  // requiredOk, and a degraded badge is also a console warning. Once loaded they are required.
   const completionStaged = options.completionStaged === true;
   const addCompletionReadiness = (name, ok, detail) => {
     if (completionStaged) { contextualChecks.add(name); addContextual(name, ok, detail); }

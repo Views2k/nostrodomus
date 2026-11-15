@@ -1,9 +1,9 @@
 // Perf budgets, kept apart from the functional suites.
 // Run via `npm run test:perf`; excluded from the default `npm test` walk so
-// the required gate is timing-flake-free by construction. Functional
-// assertions for these scenarios remain in their original files:
+// the required gate is timing-flake-free by construction. The functional
+// assertions for these scenarios are in:
 //   - tests/autocomplete/autocomplete_closure_quality.test.mjs
-//   - tests/autocomplete/autocomplete_new_surface_closure.test.mjs
+//   - tests/autocomplete/hacs_surface_closure.test.mjs
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -18,9 +18,9 @@ import { snippetProvider } from '../../src/providers/snippetProvider.js';
 
 const FIXTURE = 'tests/fixtures/autocomplete/busy_thermostat_dashboard.yaml';
 
-// Mirrors the NEW_SURFACES list in tests/autocomplete/autocomplete_new_surface_closure.test.mjs
+// Mirrors the HACS_SURFACES list in tests/autocomplete/hacs_surface_closure.test.mjs
 // (not imported: importing a .test.mjs module would re-register its tests).
-const NEW_SURFACES = [
+const HACS_SURFACES = [
   'vertical-stack-in-card',
   'atomic-calendar-revive',
   'clock-weather-card',
@@ -83,11 +83,11 @@ test('perf: all-surface indexed provider sweep stays under the 2ms budget', () =
   }, 2);
 });
 
-test('perf: new surface key/value provider sweep stays under the 2ms budget', () => {
+test('perf: the key and value sweep over the listed HACS surfaces stays under the 2ms budget', () => {
   const provider = hacsCatalogProvider();
-  bestOf('new surface key/value provider sweep', () => {
+  bestOf('listed HACS surface key/value provider sweep', () => {
     let count = 0;
-    for (const id of NEW_SURFACES) {
+    for (const id of HACS_SURFACES) {
       count += provider.provide({ shouldSuggest: true, lang: 'yaml', yamlRole: 'key', catalogSurfaceId: id }).length;
       count += provider.provide({ shouldSuggest: true, lang: 'yaml', yamlRole: 'value', catalogSurfaceId: id }).length;
     }

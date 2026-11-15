@@ -13,7 +13,7 @@ import { LANGUAGE_FIXTURES, getLanguageFixture } from '../../src/languages/langu
 
 test('embedded language detector contract classifies the fixture corpus without live runtime wiring', () => {
   assert.equal(EMBEDDED_LANGUAGE_DETECTOR_CONTRACT_VERSION, 1);
-  assert.equal(EMBEDDED_LANGUAGE_DETECTOR_STAGE, 'priority10-fixture-detector-contract');
+  assert.equal(EMBEDDED_LANGUAGE_DETECTOR_STAGE, 'fixture-detector-contract');
   assert.ok(EMBEDDED_LANGUAGE_EVIDENCE_ORDER.includes('weak-evidence-stays-yaml'));
 
   const status = embeddedLanguageDetectorContractStatus();
@@ -44,7 +44,7 @@ test('snapshot classifier is pure data-in/data-out and has conservative fallback
     text: 'ha-card { color: var(--primary-text-color); }',
   });
   assert.equal(css.laneId, 'css');
-  assert.equal(css.source, 'priority10-contract-only');
+  assert.equal(css.source, 'contract-classifier');
   assert.equal(css.drivesAutocomplete, false);
 
   const weak = classifyEmbeddedLanguageSnapshot({

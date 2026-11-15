@@ -54,7 +54,7 @@ test('companion ready runtime falls back to settle probes when no editor is read
   ]);
 });
 
-test('companion ready runtime preserves native fallback skip path', () => {
+test('companion ready runtime skips the preflight when the native fallback owns the editor and still holds the frame', () => {
   const state = {};
   const editor = { querySelector: () => ({}) };
   const decision = { skip: true, reason: 'native-owner' };

@@ -35,11 +35,10 @@ export function createPerformanceTelemetryRuntime(ctx = {}) {
     isViewAllowed,
   } = ctx;
 
-  // The Diagnostics and Context sections of the open panel, looked up once per panel element.
-  // This gate is asked on every telemetry call; a selector query over the whole panel each time
-  // was the cost of having Settings open. A panel keeps its section elements for as long as it
-  // exists (a tab that is built late fills the same element), so each later call is two class
-  // checks. A rebuilt or reopened panel is a new element and is looked up again.
+  // The Diagnostics and Context sections of the open panel, looked up once per panel element,
+  // since this gate is asked on every telemetry call. A panel keeps its section elements for as
+  // long as it exists (a tab that is built late fills the same element), so each later call is two
+  // class checks. A rebuilt or reopened panel is a new element and is looked up again.
   let diagnosticsSectionsPanel = null;
   let diagnosticsSections = [];
 
@@ -214,7 +213,7 @@ export function createPerformanceTelemetryRuntime(ctx = {}) {
       telemetryMode: telemetry.mode || 'on',
       telemetryGated: telemetry.gated === true,
       telemetrySuppressed: telemetry.suppressed || { total: 0, lastName: '' },
-      budgetStatus: budget.status || 'ok',
+      budgetStatus: budget.ok === false ? 'warning' : 'ok',
       budget,
       topByTotalMs: byTotal,
       topByAverageMs: events.slice().sort((a, b) => b.avgMs - a.avgMs).slice(0, 8),

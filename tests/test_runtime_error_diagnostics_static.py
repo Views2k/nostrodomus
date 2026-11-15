@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-project = json.loads((ROOT / 'PROJECT.json').read_text(encoding='utf-8'))
-# The monolith was decomposed into src/*.js modules and the diagnostics runtime
-# moved out of src/main.legacy.js into dedicated owner modules (src/diagnostics/*,
-# src/providers/*, src/editor/*, src/completion/*, src/ui/*). The invariant is unchanged
-# ("every runtime catch is instrumented through the runtime-error recorder"), it just
-# moved across files, so the SOURCE side now reads the whole src/ tree, not one file.
+# Every runtime catch is recorded through the runtime-error recorder. The catches are spread over
+# the whole src/ tree, so the source checks read all of it.
 src_all = "\n".join(
     p.read_text(encoding='utf-8', errors='replace')
     for p in sorted((ROOT / 'src').rglob('*.js'))
 )
-# The dedicated external-diagnostics ("context diagnostics") runtime is its own owner
-# module now; the unbridged-call positional checks below scope to that file's content.
+# The context diagnostics runtime is checked on its own for calls that skip the bridge.
 external_src = (ROOT / 'src/diagnostics/contextDiagnosticsRuntime.js').read_text(encoding='utf-8', errors='replace')
 dist = (ROOT / 'dist/nostrodomus.js').read_text(encoding='utf-8', errors='replace')
 report = ROOT / 'reports' / 'CATCH_TRIAGE.md'
@@ -25,20 +19,9 @@ def require(ok, msg):
     if not ok:
         errors.append(msg)
 
-# Version-identity owner: originally pinned at 31.6.98 with the "provider-contract-runtime-boundary"
-# internal_version. That literal was retired at the 31.6.x -> 0.1.x SemVer reset (CHANGELOG [0.1.0]).
-# The invariant is the diagnostics instrumentation below, not a frozen version literal, so floor at
-# the start of the SemVer line and accept either the legacy internal id OR a version advanced past it.
-version = str(project.get('version') or '')
-internal_version = str(project.get('internal_version') or '')
-version_tuple = tuple(int(part) for part in version.split('.') if part.isdigit())
-require(version_tuple >= (0, 1, 0), 'PROJECT.json remains at or beyond the diagnostics baseline (SemVer line)')
-require('provider-contract-runtime-boundary' in internal_version or version_tuple > (0, 1, 0),
-        'internal version records provider contract runtime boundary (or version advanced past the baseline)')
-
-# Each fact below holds in BOTH the (source-spaced) src tree and the minified dist. Where the
-# minifier strips only whitespace (function declarations, object properties), the dist form is the
-# same string without the spaces; scope-string and template-literal facts are identical in both.
+# Each fact holds in the src tree and in dist. Where esbuild only removes spaces (function
+# declarations, object properties) the dist form is the same text without them; scope strings and
+# template literals are identical in both.
 for rel_text, name, minified in [(src_all, 'src/', False), (dist, 'dist/nostrodomus.js', True)]:
     def fact(src_form, dist_form, msg):
         require((dist_form if minified else src_form) in rel_text, f'{name} {msg}')
@@ -49,9 +32,7 @@ for rel_text, name, minified in [(src_all, 'src/', False), (dist, 'dist/nostrodo
     fact('runtimeErrors: runtimeErrorReadout()',
          'runtimeErrors:runtimeErrorReadout()',
          'exposes runtimeErrors API')
-    # Provider canHandle/provide failures are routed through the runtime-error recorder via the
-    # registry's local `record`/`recordOnce` aliases (bound to recordRuntimeError/...Once in
-    # src/providers/providerRegistry.js); the template-literal scope is identical in src and dist.
+    # providerRegistry.js receives the recorders as `record` and `recordOnce`.
     fact('record(`provider:${providerId}:canHandle`', 'record(`provider:${providerId}:canHandle`',
          'routes provider canHandle failures through recordRuntimeError')
     fact('record(`provider:${providerId}:provide`', 'record(`provider:${providerId}:provide`',
@@ -78,9 +59,8 @@ for rel_text, name, minified in [(src_all, 'src/', False), (dist, 'dist/nostrodo
          'has external diagnostics one-shot bridge')
     require('nostrodomusRecordRuntimeErrorOnce("diagnostics:readout-storage-read"' in rel_text, f'{name} instruments diagnostics readout storage gate through bridge')
 
-    # External (context) diagnostics must not call the in-runtime recorders directly — they must go
-    # through the nostrodomus* bridge. For src the external runtime is its own owner module; for
-    # dist the bundled function is sliced positionally from its install entry onward.
+    # The context diagnostics runtime must call the recorders through the nostrodomus* bridge. In
+    # dist its code is taken from installContextDiagnosticsRuntime to the end of the bundle.
     if minified:
         external_start = rel_text.find('function installContextDiagnosticsRuntime')
         external_text = rel_text[external_start:] if external_start >= 0 else ''
@@ -134,11 +114,8 @@ for rel_text, name, minified in [(src_all, 'src/', False), (dist, 'dist/nostrodo
     ]:
         require(scope in rel_text, f'{name} instruments {scope}')
 require((ROOT / 'tools' / 'triage_catches.py').exists(), 'catch triage tool exists')
-# The normal apply wrapper runs verify before optional generated reports are written.
-# The triage tool is required, and any existing report must be well-formed,
-# but the pre-deploy static gate must not require reports/CATCH_TRIAGE.md to
-# already exist. Run `python3 tools/triage_catches.py --write` after apply to
-# generate or refresh the report.
+# reports/CATCH_TRIAGE.md is written by `python3 tools/triage_catches.py --write` and may be
+# missing; when it exists it must be well formed.
 if report.exists():
     text = report.read_text(encoding='utf-8', errors='replace')
     require('Total catch sites:' in text, 'catch triage report includes total')

@@ -1,8 +1,7 @@
-// Runtime owner for Nostrodomus Settings interaction, live-preview, and scroll preservation.
-//
-// Dependency-injected: owns timers and interaction state, but does not import
-// Home Assistant or browser globals directly beyond the provided document/window
-// references.
+// What happens while the settings panel is used: the live preview of the Style sliders on the
+// editor, deferred saves, the feedback timers of the panel's buttons, and keeping the open tab
+// and the scroll positions through a change. Dependencies are injected; the document and window
+// are the only browser objects it uses.
 
 import { formatStyleRangeValue, styleRangeGroupTouchesSyntax } from './settingsRange.js';
 import { uiAccentVarsFromSettings } from './codeboxStyle.js';
@@ -73,7 +72,6 @@ export function createSettingsInteractionRuntime(ctx = {}) {
     return names.size ? names : null;
   }
 
-
   function isCodeMirrorInlineStyleTarget(el) {
     try { return !!el?.matches?.('.cm-editor, .cm-scroller, .cm-content'); } catch { return false; }
   }
@@ -88,9 +86,8 @@ export function createSettingsInteractionRuntime(ctx = {}) {
       targets.push(el);
     };
 
-    // Do not write codebox variables to document/body/home-assistant during
-    // dashboard-only runtime. These tokens are editor-owned and should never
-    // affect normal Lovelace card roots.
+    // Without an editor nothing is written: the codebox variables must not reach the document,
+    // the body or the dashboard's cards.
     if (!editor) return targets;
 
     add(editor);
@@ -194,9 +191,8 @@ export function createSettingsInteractionRuntime(ctx = {}) {
   function applyCodeboxStyleLivePreview(reason = 'settings-style-live-preview', options = {}) {
     return measurePerformanceEvent('codebox-style-live-preview', reason, () => {
       const settings = effectiveStyleSettings();
-      // Live-track the shared UI accent: the settings panel + suggestion popup follow the
-      // codebox accent (border color) as the user drags the color bars. Inline tokens on
-      // the panel root / popup box only (the byte-frozen stylesheet is untouched). Fail-dark.
+      // The settings panel and the suggestion popup follow the codebox accent while a color bar
+      // is dragged (inline tokens on their roots; see uiAccentVarsFromSettings).
       try {
         const accent = uiAccentVarsFromSettings(settings);
         for (const el of [state.settingsPanel, state.overlay]) {
@@ -263,7 +259,7 @@ export function createSettingsInteractionRuntime(ctx = {}) {
     });
   }
 
-  function scheduleTimer(setName, fn, delay, reason, scope, clearTimerRef = null) {
+  function scheduleTimer(setName, fn, delay, reason, scope) {
     const delayMs = Math.max(0, Math.round(Number(delay) || 0));
     const timer = setTimeout(() => {
       state[setName]?.delete?.(timer);
@@ -274,7 +270,6 @@ export function createSettingsInteractionRuntime(ctx = {}) {
       }
     }, delayMs);
     state[setName]?.add?.(timer);
-    if (clearTimerRef) state[clearTimerRef] = timer;
     return timer;
   }
 

@@ -80,8 +80,8 @@ test('a key in the bound editor does not bind the view again or check it for a p
 });
 
 // The style target can be lost while the bound editor is hidden (a style pass that finds no
-// editor). A key in that editor then has to bring the styling back; before this it waited for
-// the first typed character or a click.
+// editor). A key in that editor must bring the styling back, without waiting for the first typed
+// character or a click.
 test('a key in the bound editor asks for a style apply only while that editor is not the style target', () => {
   const { state, dom, calls, key } = harness();
   state.activeEditorCache = { editor: dom };
@@ -120,7 +120,7 @@ test('Ctrl+Space still checks the view, and opens only when it is allowed', asyn
   assert.equal(state.overlay.style.display, 'block', 'the list opens');
 });
 
-test('a key from any other place binds the view as before', () => {
+test('a key from any other place binds the view', () => {
   const other = { isConnected: true };
 
   const anotherEditor = harness();

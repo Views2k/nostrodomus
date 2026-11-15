@@ -19,7 +19,7 @@ function makeRuntime({ editor = null, stableSkip = false } = {}) {
     editorSentinelObservers: new Map(),
     activeEditorCache: { key: '', stableSkips: 0 },
   };
-  // The same wiring as main.legacy.js: the companion layer ends with the warning reconcile, and
+  // The same wiring as app.js: the companion layer ends with the warning reconcile, and
   // remembering an editor applies the companion layer once.
   const applyEditorWarningHide = () => { calls.warningHide += 1; };
   const applyCompanionEditorLayer = () => { calls.companionLayer += 1; applyEditorWarningHide(); };
@@ -78,9 +78,9 @@ test('a probe in a dialog without a code editor still reconciles the warnings it
 });
 
 test('main wires the warning reconcile into the companion layer the probe relies on', () => {
-  const main = readFileSync(new URL('../../src/main.legacy.js', import.meta.url), 'utf8');
+  const main = readFileSync(new URL('../../src/app.js', import.meta.url), 'utf8');
   const layer = main.slice(main.indexOf('const applyCompanionEditorLayer = (editor) => {'));
   const body = layer.slice(0, layer.indexOf('};'));
-  assert.ok(body.includes('companionScrollbarRuntime.applyForEditor(editor);'));
+  assert.ok(body.includes('companionStyleRuntime.applyForEditor(editor);'));
   assert.ok(body.includes('applyEditorWarningHide();'), 'the companion layer reconciles the warnings');
 });

@@ -6,14 +6,13 @@
 // automation, and so on), plus a small set of LSP-shaped channels (region/jinjaPosition,
 // replaceRange, signatureTarget).
 //
-// Contract (load-bearing):
+// Rules:
 //   * Pure: no DOM, window, storage, timers, or runtime state.
-//   * When the engine flag is off (the default), resolveContext returns the base descriptor
-//     by reference, unchanged, so the live completion path is byte-identical until the flag
-//     is flipped.
-//   * It only adds fields. It never mutates the legacy enum fields (lang/valueKind/yamlRole),
-//     so the descriptor stays valid against contextDescriptorValidationErrors. `expectedKind`
-//     is an alias of the existing `valueKind`, never a replacement.
+//   * With the engineV2 flag off (the default), resolveContext returns the base descriptor
+//     itself, unchanged.
+//   * It only adds fields and never changes lang, valueKind or yamlRole, so the descriptor
+//     stays valid against contextDescriptorValidationErrors. `expectedKind` is a copy of
+//     `valueKind`, not a replacement.
 
 export const RESOLVED_DESCRIPTOR_VERSION = 2;
 
@@ -46,8 +45,8 @@ const PANEL_SURFACE_MAP = Object.freeze({
 
 /**
  * Resolve the editor surface from a host descriptor (populated by the DOM-side detection).
- * Fail-dark: no host info at all yields 'card-editor' (the only wired surface, and the safe
- * default); a host present but unrecognizable yields 'unknown'.
+ * No host info gives 'card-editor', the default surface; a host that is not recognized gives
+ * 'unknown'.
  * @param {{surface?: string, isCardDialog?: boolean, panel?: string}|null|undefined} hostInfo
  * @returns {string} one of SURFACES
  */
@@ -62,10 +61,8 @@ export function resolveSurface(hostInfo) {
 }
 
 /**
- * The richer "expected kind" channel. Today it is a strict alias of the descriptor's existing
- * `valueKind`, so every context yields the identical string; it can widen later
- * (jinja-global/jinja-filter/area/device, and so on) without breaking the alias for the cases
- * that already have a valueKind.
+ * The "expected kind" channel. It is the descriptor's `valueKind` (or '' when that is not a
+ * string).
  * @param {{valueKind?: unknown}|null|undefined} ctx
  * @returns {string}
  */
@@ -75,22 +72,21 @@ export function resolveExpectedKind(ctx) {
 }
 
 /**
- * Wrap the legacy descriptor with the surface-aware superset. A no-op (returns the input by
- * reference) unless engineEnabled is explicitly true.
+ * Adds the surface-aware fields to the base descriptor. Returns the input itself unless
+ * engineEnabled is true.
  * @param {{baseDescriptor?: object, surface?: string, hostInfo?: object, engineEnabled?: boolean}} [opts]
  * @returns {object}
  */
 export function resolveContext(opts = {}) {
   const { baseDescriptor, surface, hostInfo, engineEnabled } = opts;
   if (!baseDescriptor || typeof baseDescriptor !== 'object') return baseDescriptor;
-  // Default path: byte-identical legacy descriptor (same reference, no allocation).
   if (engineEnabled !== true) return baseDescriptor;
 
   const resolvedSurface = SURFACES.includes(surface) ? surface : resolveSurface(hostInfo);
   const replaceTo = baseDescriptor.wordTo != null ? baseDescriptor.wordTo : baseDescriptor.to;
   return {
     ...baseDescriptor,
-    // Added channels — never overwrite a legacy enum field.
+    // Added fields only; the base fields stay as they are.
     surface: resolvedSurface,
     expectedKind: resolveExpectedKind(baseDescriptor),
     language: baseDescriptor.lang,

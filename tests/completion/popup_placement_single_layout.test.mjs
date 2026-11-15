@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 
 import { placeCompletionPopupAtCursor, renderCompletionPopup, updateCompletionPopupSelection } from '../../src/completion/popupRuntime.js';
 
-// A placement read the box rectangle, wrote the position, and read the rectangle
-// again to cancel a containing-block offset: two forced layouts per keystroke and per scroll
-// frame. The first read already shows the offset when the box has been placed before and is not
-// scaled, so the second read is left out then. The position must be the same either way.
+// A placement reads the box rectangle, writes the position, and may read the rectangle again to
+// cancel a containing-block offset: two forced layouts per keystroke and per scroll frame. When
+// the box has been placed before and is not scaled, the first read already shows the offset, so
+// the second read is skipped. The position must be the same either way.
 
 // A box that lands where its style says plus the offset of its containing block. `layoutSize`
 // false leaves out offsetWidth/offsetHeight, which sends the placement down the two-read path.
@@ -179,7 +179,7 @@ test('an arrow key in a list without a details pane does not place the list agai
   assert.equal(box.querySelector('.nostrodomus-intelli-row[data-i="2"]').attributes['aria-selected'], 'true');
 });
 
-test('an arrow key in a list with a details pane places the list once, as before', () => {
+test('an arrow key in a list with a details pane places the list once', () => {
   const { state, deps, placements } = renderedList({ showDetailsPane: true });
   state.selected = 1;
   assert.equal(updateCompletionPopupSelection(state, 0, deps), true);

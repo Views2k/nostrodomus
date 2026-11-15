@@ -1,5 +1,5 @@
-// Settings panel DOM helper seam.
-// Portal ownership, drag/resize, tab state, persistence, and styling live elsewhere.
+// Element builders and the position and size limits of the settings panel. The panel itself is
+// built in src/ui/settings/settingsPanelShell.js.
 
 function documentFor(doc) {
   const candidate = doc || globalThis.document;
@@ -90,4 +90,3 @@ export function clampSettingsSize(size, viewport = globalThis.window) {
     h: Math.max(minH, Math.min(Math.round(raw.h), maxH)),
   };
 }
-

@@ -3,8 +3,8 @@ import { LOG_PREFIX, PROJECT_VERSION, VERSION } from './version.js';
 /** @param {{ W?: any, health?: () => any, startupBadgeStatusFromHealth?: (readHealth: any) => string, debugModeEnabled?: () => boolean }} [deps] */
 export function createLoggingRuntime({ W, health, startupBadgeStatusFromHealth, debugModeEnabled } = {}) {
   const logOnceKeys = new Set();
-  // FIFO-bound the once-log dedup set so a pathological spread of distinct keys (e.g. a message
-  // keyed on variable data) can't grow it without limit over a long session.
+  // The set of once-logged keys is capped and drops its oldest key first: a key can contain
+  // variable data.
   const MAX_ONCE_KEYS = 500;
   let cachedPerfMode = 'on';
   let cachedPerfModeCheckedAt = 0;
@@ -66,9 +66,8 @@ export function createLoggingRuntime({ W, health, startupBadgeStatusFromHealth, 
   }
 
   function logInfoOnce(key, ...args) {
-    // A key that starts with "user:" is output the user asked for (a Copy or Log button whose
-    // clipboard path is not available): it is printed every time, with or without debug logging.
-    // The buttons said "Logged" while nothing reached the console.
+    // A key that starts with "user:" is output the user asked for (a Copy or Log button without a
+    // clipboard): it is printed every time, with or without debug logging.
     if (String(key || '').startsWith('user:')) {
       console.info(LOG_PREFIX, ...args);
       return;

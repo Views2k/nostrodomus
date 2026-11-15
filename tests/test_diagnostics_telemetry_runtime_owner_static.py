@@ -3,10 +3,10 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-LEGACY = (ROOT / 'src' / 'main.legacy.js').read_text(encoding='utf-8', errors='replace')
-MODULE_PATH = ROOT / 'src' / 'diagnostics' / 'telemetryRuntime.js'
+APP = (ROOT / 'src' / 'app.js').read_text(encoding='utf-8', errors='replace')
+MODULE_PATH = ROOT / 'src' / 'diagnostics' / 'diagnosticsRuntime.js'
 MODULE = MODULE_PATH.read_text(encoding='utf-8', errors='replace') if MODULE_PATH.exists() else ''
-RUNTIME_OWNER = LEGACY + '\n' + MODULE
+RUNTIME_OWNER = APP + '\n' + MODULE
 REPORT = ROOT / 'reports' / 'DIAGNOSTICS_TELEMETRY_RUNTIME_OWNER_STATIC_REPORT.txt'
 
 errors = []
@@ -20,8 +20,8 @@ def require(ok, message):
 
 require(MODULE_PATH.exists(), 'diagnostics telemetry runtime owner module exists')
 require('export function createDiagnosticsRuntime(ctx = {})' in MODULE, 'diagnostics runtime exports factory')
-require("import { createDiagnosticsRuntime } from './diagnostics/telemetryRuntime.js';" in LEGACY, 'legacy imports diagnostics runtime owner')
-require('diagnosticsRuntime = createDiagnosticsRuntime({' in LEGACY, 'legacy creates injected diagnostics runtime')
+require("import { createDiagnosticsRuntime } from './diagnostics/diagnosticsRuntime.js';" in APP, 'legacy imports diagnostics runtime owner')
+require('diagnosticsRuntime = createDiagnosticsRuntime({' in APP, 'legacy creates injected diagnostics runtime')
 
 for token in [
     'function providerSummary() {',
@@ -32,18 +32,18 @@ for token in [
     'function diagnosticsMarkup() {',
     'function debug() {',
 ]:
-    require(token in MODULE, f'diagnostics runtime owns moved body: {token}')
+    require(token in MODULE, f'diagnostics runtime owns body: {token}')
 
 for token in [
     'createDiagnosticsRuntimeDelegates(() => diagnosticsRuntime)',
-    'const { providerSummaryLegacy, providerSummary, itemSummary, debugSnapshot, health, styleCssModuleStatus',
+    'const { providerSummaryLegacy, providerSummary, itemSummary, debugSnapshot, health, embeddedLanguageDiagnostics',
     'exportDiagnostics, copyDiagnosticsToClipboard',
     'stopContextInspectorHeartbeat, startContextInspectorHeartbeat',
     'providerControlsMarkup, contextInspectorMarkup, changelogSummaryText, diagnosticsMarkup',
     'function debug() {',
     'return diagnosticsRuntime.debug();',
 ]:
-    require(token in LEGACY, f'legacy keeps diagnostics delegate bridge/wrapper: {token}')
+    require(token in APP, f'legacy keeps diagnostics delegate bridge/wrapper: {token}')
 
 for token in [
     'runtimeErrors: runtimeErrorReadout()',
@@ -52,7 +52,7 @@ for token in [
     'ctx.providerSummary(state, {',
     'return providerSummaryLegacy();',
 ]:
-    require(token in RUNTIME_OWNER, f'diagnostics runtime owner preserves static contract token: {token}')
+    require(token in RUNTIME_OWNER, f'diagnostics runtime owner has contract token: {token}')
 
 for forbidden in [
     'function exportDiagnostics(options = {}) {\n    const redact = options?.redact !== false;',
@@ -60,7 +60,7 @@ for forbidden in [
     'function diagnosticsMarkup() {\n    const ctx = safeContextSummary(state.context);',
     'function debug() {\n    return {\n      productName: PRODUCT_NAME,',
 ]:
-    require(forbidden not in LEGACY, f'legacy no longer owns diagnostics body: {forbidden[:72]}')
+    require(forbidden not in APP, f'app.js does not own diagnostics body: {forbidden[:72]}')
 
 REPORT.parent.mkdir(parents=True, exist_ok=True)
 REPORT.write_text(

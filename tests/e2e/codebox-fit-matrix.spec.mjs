@@ -96,7 +96,7 @@ function expectFit(m, width, height) {
   expect(m.codebox.top, `the codebox starts above the dialog. ${where}`).toBeGreaterThanOrEqual(m.dialog.top - 1);
   // In the stacked layout the dialog body scrolls under the Save row, so this holds side by side only.
   if (!m.stacked) expect(m.codebox.bottom, `the codebox runs under the Save row. ${where}`).toBeLessThanOrEqual(m.footer.top + 1);
-  // The code area fills the codebox; it used to be capped at about half of it in some layouts.
+  // The code area fills the codebox, not about half of it.
   expect(m.code.w, `the code area is ${m.code.w}px in a ${m.codebox.w}px codebox. ${where}`).toBeGreaterThan(m.codebox.w * 0.9);
 
   if (m.stacked) {
@@ -116,9 +116,9 @@ function expectFit(m, width, height) {
 }
 
 for (const [width, height] of [...WIDE, ...STACKED]) {
-  test(`codebox fit at ${width}x${height}`, async ({ page }) => {
+  test(`codebox fit at ${width}x${height}`, async ({ page }, testInfo) => {
     const m = await openAt(page, width, height);
-    console.log(`[fit-matrix ${width}x${height}]`, JSON.stringify({ stacked: m.stacked, dialog: [m.dialog.w, m.dialog.h], codebox: [m.codebox.w, m.codebox.h], gapToSaveRow: m.footer.top - m.codebox.bottom }));
+    await testInfo.attach('fit.json', { body: JSON.stringify(m, null, 2), contentType: 'application/json' });
     expectFit(m, width, height);
   });
 }
@@ -126,9 +126,9 @@ for (const [width, height] of [...WIDE, ...STACKED]) {
 for (const [ratio, width, height] of SCALED) {
   test.describe(`device pixel ratio ${ratio}`, () => {
     test.use({ deviceScaleFactor: ratio });
-    test(`codebox fit at ${width}x${height}, ratio ${ratio}`, async ({ page }) => {
+    test(`codebox fit at ${width}x${height}, ratio ${ratio}`, async ({ page }, testInfo) => {
       const m = await openAt(page, width, height);
-      console.log(`[fit-matrix ${width}x${height}@${ratio}]`, JSON.stringify({ ratio: m.ratio, dialog: [m.dialog.w, m.dialog.h], codebox: [m.codebox.w, m.codebox.h], gapToSaveRow: m.footer.top - m.codebox.bottom }));
+      await testInfo.attach('fit.json', { body: JSON.stringify(m, null, 2), contentType: 'application/json' });
       expect(m.ratio, 'the device pixel ratio is the one under test').toBe(ratio);
       expectFit(m, width, height);
     });

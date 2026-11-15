@@ -64,14 +64,12 @@ export function clearSmartSyntaxKind(node, line = false) {
   }
 }
 
-// Class-lifecycle guard: a CodeMirror re-render (e.g. the Ctrl+Space autocomplete) resets a
-// .cm-line / token span's className, dropping our nostrodomus-syntax-line-* / nostrodomus-syntax-kind-* class to
-// bare for a frame before the debounced painter reclassifies, so bracket/punctuation washes out to the
-// native CM color (white). Given the element and its previous className (the MutationObserver oldValue),
-// restore the dropped semantic class synchronously only when it is a full dropout: the element had a
-// class of that family and now has none. A legitimate kind replacement (setSmartSyntaxKind swaps old
-// kind to new kind) leaves a class of that family present and is left untouched (current className is
-// read live). Pure DOM helper: no observers/timers/repaint here; returns true if it restored a class.
+// A CodeMirror re-render (the Ctrl+Space popup, for one) can reset the className of a .cm-line or
+// token span and drop its nostrodomus-syntax-line-* or nostrodomus-syntax-kind-* class until the
+// next pass. Given the element and its previous className (a MutationObserver oldValue), this puts
+// the dropped class back when the element now has no class of that family. A kind change by
+// setSmartSyntaxKind leaves a class of the family in place and is left alone. Returns true when a
+// class was restored.
 export function restoreDroppedSmartSyntaxClass(target, oldClassValue) {
   if (!target?.classList) return false;
   const isLine = typeof target.matches === "function" && target.matches(".cm-line");
@@ -93,8 +91,6 @@ export function restoreDroppedSmartSyntaxClass(target, oldClassValue) {
   }
   return restored;
 }
-
-
 
 export function smartSyntaxRangeHighlightSupported(runtimeWindow = globalThis, doc = globalThis?.document) {
   try {
@@ -119,7 +115,6 @@ export function smartSyntaxClearRangeHighlights(
     for (const kind of order) highlights.delete(highlightName(kind));
   } catch { /* polyfilled highlights API */ }
 }
-
 
 export function smartSyntaxCommitRangeHighlights(
   runtimeWindow = globalThis,
@@ -147,9 +142,10 @@ export function smartSyntaxCommitRangeHighlights(
 // anywhere in the page then has to visit every live range to adjust its boundaries. With a few
 // thousand syntax ranges alive, each rebuild of the card preview that Home Assistant does per
 // keystroke cost about 75ms (measured: 2.2s of blocked main thread for 30 keystrokes with the
-// ranges, none without them). A StaticRange is plain data and costs nothing on mutation; the
-// painter rebuilds its ranges after every edit, so it never needs them to track the DOM.
-export function smartSyntaxCreateHighlightRange(node, startOffset, endOffset, doc = globalThis?.document) {
+// ranges, none without them). A StaticRange is plain data and costs nothing on mutation. The
+// painter never needs its ranges to follow the DOM: it builds new ones for a line whose text
+// nodes changed.
+function smartSyntaxCreateHighlightRange(node, startOffset, endOffset, doc = globalThis?.document) {
   const StaticRangeCtor = doc?.defaultView?.StaticRange || globalThis?.StaticRange;
   if (typeof StaticRangeCtor === "function") {
     return new StaticRangeCtor({ startContainer: node, startOffset, endContainer: node, endOffset });
@@ -211,8 +207,8 @@ export function smartSyntaxAddHighlightRange(
 }
 
 // Same as smartSyntaxAddHighlightRange, for a line whose text-node slices were already
-// collected. A line has many tokens; walking its text nodes once per token was the largest
-// part of a paint pass.
+// collected. A line has many tokens, and walking its text nodes once per token would be the
+// largest part of a paint pass.
 export function smartSyntaxAddHighlightRangeFromSlices(
   slices,
   start,
@@ -263,7 +259,6 @@ export function smartSyntaxTextOffset(
   return offset;
 }
 
-
 export function sourceClassSyntaxContentPainted(
   content,
   version = "",
@@ -282,27 +277,17 @@ export function sourceClassSyntaxContentPainted(
   return spans.some((span) => String(span.className || "").trim());
 }
 
-// important-override registry — smart-syntax token color classes.
-// external rules overridden: CodeMirror's per-editor injected theme stylesheet (sets
-//   span colors with its own class specificity, later in document order) and HA theme
-//   text/transition rules.
-// owner: smart-syntax stable stylesheet (the range/source syntax baseline).
-// reason: token classes are annotations; their colors must beat the CM theme defaults
-//   or mixed YAML/card_mod/CSS lines lose highlighting.
-// removal condition: native-highlight extension becoming the only syntax path (the
-//   source-class fallback retiring).
-// verification: tokenizer corpus gate; range-highlight/darkplus static baselines;
-//   browser smoke item on mixed-syntax coloring.
+// The token colors use !important: CodeMirror injects its theme stylesheet into each editor
+// later in document order with the same specificity, and Home Assistant themes set text rules.
+// Without it, lines that mix YAML, card_mod and CSS lose their colors.
 export function buildSmartSyntaxClassCss(
   syntax,
   order = SMART_SYNTAX_KIND_ORDER,
   darkPlusColor = /** @type {(kind: string, syntax?: any) => string} */ (() => "inherit"),
 ) {
-  // "fg" is the default/fallback kind (smartSyntaxKind normalizes unrecognized tokens to "fg"), so a
-  // token/line classified fg renders darkPlusColor("fg"): the active theme palette fg, which is white
-  // (#ffffff x opacity = rgba(255,255,255,0.67)) on white-fg presets and flashes white on a Ctrl+Space
-  // repaint. Resolve the fg kind/line to the neutral codebox fg var instead; every other kind keeps its
-  // palette color (no flattening). Fill follows the element's own color (currentColor) for fg.
+  // "fg" is the kind of every unrecognized token. The palette fg is white on some presets and
+  // flashes during a Ctrl+Space repaint, so fg uses the neutral codebox fg variable and its fill
+  // follows the element's color. Every other kind keeps its palette color.
   const NEUTRAL_FG = "var(--nostrodomus-codebox-syntax-fg, #d4d4d4)";
   const colorForKind = (kind) => (kind === "fg" ? NEUTRAL_FG : darkPlusColor(kind, syntax));
   const fillForKind = (kind) => (kind === "fg" ? "currentColor" : colorForKind(kind));
@@ -340,9 +325,8 @@ export function buildSmartSyntaxClassCss(
     const extra = kind === "comment" ? "font-style: italic !important;" : "font-style: inherit;";
     const lineCls = smartSyntaxLineClassName(kind, order);
     rules.push(`
-        /* Line classes are fallback only. When the CSS Custom Highlight range
-           layer is active, data-nostrodomus-range-highlighted prevents
-           whole-line color from fighting selector/property/value ranges. */
+        /* Line classes are a fallback for browsers without CSS Custom
+           Highlights; range mode does not write them. */
         .cm-content .cm-line.${lineCls}:not([data-nostrodomus-range-highlighted="1"]),
         .cm-line.${lineCls}:not([data-nostrodomus-range-highlighted="1"]) {
           color: ${color} !important;
@@ -366,10 +350,9 @@ export function buildSmartSyntaxClassCss(
         }
       `);
   }
-  // The normal-specificity neutral "fg" rules above can still be overridden white on white-fg themes
-  // when a higher-specificity or later rule wins. Re-assert the fallback "fg" kind/line at boosted
-  // specificity by repeating the Nostrodomus fg class (registry-safe: no doubled .cm-* class), so the
-  // neutral fg always beats the override. Only fg; semantic kinds untouched.
+  // A more specific or later rule can still turn the fg rules above white. The fg kind and line
+  // rules are repeated with the Nostrodomus class tripled, which raises their specificity without
+  // repeating a .cm-* class.
   if (order.includes("fg")) {
     const kindFg = smartSyntaxClassName("fg", order);
     const lineFg = smartSyntaxLineClassName("fg", order);

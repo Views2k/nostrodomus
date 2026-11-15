@@ -12,9 +12,9 @@ import {
   normalizeLanguageLaneId,
 } from '../../src/languages/languageLanes.js';
 
-test('language lane registry exposes the six Priority 10 lanes without runtime behavior', () => {
+test('language lane registry exposes the six language lanes without runtime behavior', () => {
   assert.equal(LANGUAGE_ENGINE_DESIGN_VERSION, 1);
-  assert.equal(LANGUAGE_ENGINE_STAGE, 'priority10-language-engine-start-gate');
+  assert.equal(LANGUAGE_ENGINE_STAGE, 'language-lanes');
   assert.deepEqual(LANGUAGE_LANE_IDS, ['yaml', 'jinja2', 'css', 'javascript', 'json', 'markdown-html']);
   assert.equal(LANGUAGE_LANES.length, 6);
   assert.equal(LANGUAGE_LANES[0].role, 'host');
@@ -34,7 +34,7 @@ test('language lane helpers normalize ids and avoid fallback guessing', () => {
 test('language lane registry status is explicit about observe-only behavior', () => {
   const status = languageLaneRegistryStatus();
   assert.equal(status.ok, true);
-  assert.equal(status.stage, 'priority10-language-engine-start-gate');
+  assert.equal(status.stage, 'language-lanes');
   assert.equal(status.laneCount, 6);
   assert.deepEqual(status.laneIds, LANGUAGE_LANE_IDS);
   assert.equal(status.runtimeBehavior, 'unchanged');

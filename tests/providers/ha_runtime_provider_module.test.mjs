@@ -106,7 +106,7 @@ test('runtimeRowsForKind builds normalized Home Assistant runtime value rows', (
   assert.deepEqual(runtimeRowsForKind('unknown-kind', { runtimeData }), []);
 });
 
-test('haRuntimeValueProvider delegates value suggestions through runtimeRowsForKind seam', () => {
+test('haRuntimeValueProvider answers entity and boolean value keys from runtimeRowsForKind and skips other keys', () => {
   const runtimeData = () => ({
     entities: ['light.kitchen'],
     entityNames: { 'light.kitchen': 'Kitchen Light' },

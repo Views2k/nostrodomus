@@ -2,11 +2,12 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAIN = ROOT / "src" / "main.legacy.js"
+MAIN = ROOT / "src" / "app.js"
 TEXT = MAIN.read_text(encoding="utf-8")
-ADAPTERS = (ROOT / "src" / "composition" / "mainLegacyAdapters.js").read_text(encoding="utf-8")
+ADAPTERS = (ROOT / "src" / "composition" / "appAdapters.js").read_text(encoding="utf-8")
 
-REMOVED_SHIMS = [
+# app.js has no hand-written one-line shims for these syntax runtime methods.
+SHIMS_NOT_IN_MAIN = [
     "darkPlusColor",
     "darkPlusCssDepthDelta",
     "darkPlusCommitCssDepth",
@@ -32,9 +33,9 @@ REMOVED_SHIMS = [
     "observeInitialSyntaxPaintGateRoot",
 ]
 
-for name in REMOVED_SHIMS:
+for name in SHIMS_NOT_IN_MAIN:
     token = f"function {name}(...args) {{ return syntaxRuntime.{name}(...args); }}"
-    assert token not in TEXT, f"delegation shim still present: {name}"
+    assert token not in TEXT, f"delegation shim in app.js: {name}"
 
 assert ("return syntaxRuntime.applyDarkPlusSyntaxColoring(editor, settings);" in TEXT) or ("applyDarkPlusSyntaxColoring?.(editor, settings)" in ADAPTERS)
 assert "createSyntaxRuntimeDelegates(() => syntaxRuntime)" in TEXT

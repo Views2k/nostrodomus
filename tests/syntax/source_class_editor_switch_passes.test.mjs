@@ -132,7 +132,7 @@ test('a switch to another editor paints the new editor once and keeps the first 
     for (const line of second.lines) assert.ok(nodes.has(line.textNode), 'the new editor is colored');
     for (const line of first.lines) assert.ok(nodes.has(line.textNode), 'the first editor is still connected and keeps its ranges');
 
-    // Later installs on the same editor take the skip path as before.
+    // Later installs on the same editor take the skip path.
     const again = fx.runtime.installCodeMirrorSourceClassSyntax(second.editor, {}, 'pointer');
     assert.equal(again.skipped, true);
     assert.equal(fx.keyCommits(), before + 1);

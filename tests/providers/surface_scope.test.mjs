@@ -5,7 +5,7 @@ import { scopeContextRows, lovelaceContextProvider } from '../../src/providers/l
 
 const ALL_SURFACES = ['card-editor', 'raw-dashboard', 'devtools-template', 'devtools-action', 'automation', 'script', 'condition-field', 'template-field', 'unknown'];
 
-test('surfaceAllows: gate OFF (or absent) always allows — byte-identical default', () => {
+test('surfaceAllows: with the gate off or absent every surface is allowed', () => {
   for (const surface of ALL_SURFACES) {
     assert.equal(surfaceAllows({ surface }, 'lovelace'), true, `gate absent, ${surface}`);
     assert.equal(surfaceAllows({ surface, surfaceScopeEnabled: false }, 'automation'), true, `gate false, ${surface}`);
@@ -13,7 +13,7 @@ test('surfaceAllows: gate OFF (or absent) always allows — byte-identical defau
   assert.equal(surfaceAllows(null, 'lovelace'), true);
 });
 
-test('surfaceAllows: gate ON — lovelace pack allowed only on card/dashboard surfaces', () => {
+test('surfaceAllows: with the gate on the lovelace pack is allowed only on card and dashboard surfaces', () => {
   const on = (surface) => surfaceAllows({ surface, surfaceScopeEnabled: true }, 'lovelace');
   for (const s of LOVELACE_SURFACES) assert.equal(on(s), true, `lovelace allowed on ${s}`);
   assert.equal(on('automation'), false, 'lovelace suppressed on automation');
@@ -21,14 +21,14 @@ test('surfaceAllows: gate ON — lovelace pack allowed only on card/dashboard su
   assert.equal(on('devtools-template'), false, 'lovelace suppressed on devtools-template');
 });
 
-test('surfaceAllows: gate ON — automation pack allowed only on automation/script/raw-dashboard', () => {
+test('surfaceAllows: with the gate on the automation pack is allowed only on automation, script and raw-dashboard', () => {
   const on = (surface) => surfaceAllows({ surface, surfaceScopeEnabled: true }, 'automation');
   for (const s of AUTOMATION_SURFACES) assert.equal(on(s), true, `automation allowed on ${s}`);
   assert.equal(on('card-editor'), false, 'automation suppressed on card-editor');
   assert.equal(on('devtools-action'), false, 'automation suppressed on devtools-action');
 });
 
-test('surfaceAllows: gate ON — FAIL-OPEN on unknown/absent surface (never over-suppress)', () => {
+test('surfaceAllows: with the gate on an unknown or absent surface or pack is allowed', () => {
   assert.equal(surfaceAllows({ surface: 'unknown', surfaceScopeEnabled: true }, 'lovelace'), true);
   assert.equal(surfaceAllows({ surfaceScopeEnabled: true }, 'automation'), true, 'no surface → allow');
   assert.equal(surfaceAllows({ surface: 'card-editor', surfaceScopeEnabled: true }, 'mystery-pack'), true, 'unknown pack → allow');
@@ -38,24 +38,24 @@ test('surfaceAllows: gate ON — FAIL-OPEN on unknown/absent surface (never over
 const ROW = (contextKind) => ({ label: contextKind, meta: { contextKind } });
 const MIXED = [ROW('lovelace'), ROW('cards'), ROW('action'), ROW('trigger'), ROW('automation-action'), ROW('ha-root'), ROW('condition'), ROW('target'), ROW('data')];
 
-test('scopeContextRows: OFF leaves every row (byte-identical)', () => {
+test('scopeContextRows: with the gate off every row is kept', () => {
   assert.deepEqual(scopeContextRows(MIXED, { surface: 'automation' }), MIXED);
   assert.deepEqual(scopeContextRows(MIXED, { surface: 'card-editor', surfaceScopeEnabled: false }), MIXED);
 });
 
-test('scopeContextRows: ON on a CARD surface drops automation-only kinds, keeps lovelace + shared', () => {
+test('scopeContextRows: with the gate on a card surface drops the automation-only kinds and keeps lovelace and shared ones', () => {
   const kept = scopeContextRows(MIXED, { surface: 'card-editor', surfaceScopeEnabled: true }).map(r => r.meta.contextKind);
   assert.deepEqual(kept, ['lovelace', 'cards', 'action', 'condition', 'target', 'data']);
   assert.ok(!kept.includes('trigger') && !kept.includes('automation-action') && !kept.includes('ha-root'));
 });
 
-test('scopeContextRows: ON on an AUTOMATION surface drops lovelace-only kinds, keeps automation + shared (incl. condition)', () => {
+test('scopeContextRows: with the gate on an automation surface drops the lovelace-only kinds and keeps automation and shared ones, condition included', () => {
   const kept = scopeContextRows(MIXED, { surface: 'automation', surfaceScopeEnabled: true }).map(r => r.meta.contextKind);
   assert.deepEqual(kept, ['trigger', 'automation-action', 'ha-root', 'condition', 'target', 'data']);
   assert.ok(kept.includes('condition'), 'condition is shared (dashboard visibility) — never dropped');
 });
 
-test('scopeContextRows: ON on an UNKNOWN surface keeps everything (fail-open)', () => {
+test('scopeContextRows: with the gate on an unknown surface keeps every row', () => {
   assert.equal(scopeContextRows(MIXED, { surface: 'unknown', surfaceScopeEnabled: true }).length, MIXED.length);
 });
 
@@ -64,10 +64,10 @@ function ctxFallback(extra = {}) {
   return { lang: 'yaml', yamlRole: 'blank', yamlKey: '', yamlPath: [], focusKind: '', ...extra };
 }
 
-test('provider provide(): default-OFF returns the full mixed fallback set; ON scopes it by surface', () => {
+test('provider provide(): off by default it returns the full mixed fallback set; on, it scopes the set by surface', () => {
   const provider = lovelaceContextProvider();
   const off = provider.provide(ctxFallback({ surface: 'automation' })).map(r => r.meta?.contextKind);
-  assert.ok(off.includes('lovelace') && off.includes('ha-root'), 'OFF: both card vocab + root keys present (unchanged)');
+  assert.ok(off.includes('lovelace') && off.includes('ha-root'), 'off: both card vocab + root keys present');
 
   const onAuto = provider.provide(ctxFallback({ surface: 'automation', surfaceScopeEnabled: true })).map(r => r.meta?.contextKind);
   assert.ok(onAuto.includes('ha-root'), 'automation surface keeps root keys');

@@ -1,28 +1,27 @@
 // DP fuzzy match score (fzy/fzf-style).
 //
-// Finds the optimal alignment of `needle` within `haystack` (a dynamic-programming search,
-// not the greedy first-match the legacy scorer uses), then scores it. The point is within-tier
-// ordering quality: among many candidates that all "match", the one whose match sits on word
-// boundaries / runs consecutively should rank first: `lk` → `light.kitchen` and `ltn` →
-// `light.turn_on` lead. HA ids are dot/underscore segmented, so `.` `_` `-` `/` and space are
-// first-class word boundaries here (a match right after one earns the boundary bonus).
+// Finds the optimal alignment of `needle` within `haystack` (a dynamic-programming search, where
+// orderedSubsequenceMatch in scoring.js takes the first match), then scores it. It orders rows
+// within a match tier: among candidates that all match, the one whose match sits on word
+// boundaries or in consecutive runs ranks first, so `lk` puts `light.kitchen` and `ltn`
+// `light.turn_on` first. Home Assistant ids are segmented by dots and underscores, so `.` `_` `-`
+// `/` and space are word boundaries (a match right after one earns the boundary bonus).
 //
-// Integer + deterministic (no floats, no Math.random, no Date) so results are stable and the
-// scoring purity/parity tests can pin them. Pure: no DOM, window, storage, timers, or globals.
-// Returns 0 when `needle` is not an (ordered subsequence) match of `haystack`, or on degenerate
-// input — callers treat 0 as "no fuzzy signal", never an exception.
+// Integer arithmetic only, so results are stable across runs. Pure: no DOM, window, storage,
+// timers, or globals. Returns 0 when `needle` is not an ordered subsequence of `haystack`, or for
+// empty or oversized input; callers treat 0 as no fuzzy signal.
 
 const SCORE_MIN = -1e7;
 
-// Tuned so a boundary/consecutive match dominates a gappy mid-word one, while gaps cost little
-// (we want ordering, not hard rejection — tier assignment already gates membership).
+// A boundary or consecutive match outweighs a gappy mid-word one, while gaps cost little: the
+// score orders rows, and the match tier already decides which rows are in the list.
 const BONUS_BOUNDARY = 80;     // first char, or immediately after . _ - / or whitespace
 const BONUS_CAMEL = 70;        // lower→Upper, or letter→digit (camel / segment) boundary
 const BONUS_CONSECUTIVE = 100; // directly follows the previously matched char (a run)
 const GAP_LEADING = -1;        // per haystack char skipped before the first match
 const GAP_INNER = -2;          // per char skipped between matches
 const GAP_TRAILING = -1;       // per char after the last match
-const MAX_LEN = 120;           // matches the legacy scorer's haystack cap (bounds the DP)
+const MAX_LEN = 120;           // the length cap of orderedSubsequenceMatch; bounds the table
 
 function isSeparator(ch) {
   return ch === '' || ch === '.' || ch === '_' || ch === '-' || ch === '/' || /\s/.test(ch);

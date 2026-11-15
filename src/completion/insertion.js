@@ -32,7 +32,7 @@ export function leadingWhitespace(line) {
 
 // The indentation of the first key on a line. A list dash counts as indentation: in `  - key:`
 // the key starts in column 4, and its siblings and its block are measured from there.
-export function keyIndentOfLine(line) {
+function keyIndentOfLine(line) {
   const match = /^([ \t]*)((?:-[ \t]+)*)/.exec(String(line || ''));
   return match[1] + ' '.repeat(match[2].length);
 }
@@ -101,7 +101,7 @@ export function continuationForAcceptedItem(ctx, item, options = {}) {
 }
 
 // Keys whose value is a list of cards, triggers, conditions or action steps. A row accepted right
-// after their colon is a list item; inserted as a plain child it made the value a mapping.
+// after their colon becomes a list item; as a plain child it would make the value a mapping.
 // `default` is left out: under `choose` it is a list of steps, but a blueprint input and many
 // integration options use the same key for a plain value.
 const LIST_VALUED_BLOCK_KEYS = new Set(['cards', 'triggers', 'conditions', 'actions', 'sequence', 'then', 'else', 'choose', 'parallel', 'if']);
@@ -149,7 +149,7 @@ export function prepareInsertText(rawInsert, ctx, item) {
       return '\n' + childIndent + listItem.replace(/\n/g, '\n' + childIndent);
     }
     // A list-item snippet keeps its own dash: under a sequence key (triggers:, actions:,
-    // conditions:) the dash-less text became a mapping, which Home Assistant rejects.
+    // conditions:) the text without it would be a mapping, which Home Assistant rejects.
     if (item?.type !== 'snippet') insert = insert.replace(/^\s*-\s*/, '');
     return '\n' + childIndent + insert.replace(/\n/g, '\n' + childIndent);
   }
@@ -185,7 +185,6 @@ function defaultLooksLikeView(view) {
   return !!view && typeof view.dispatch === 'function';
 }
 
-
 function snippetPlaceholderSelection(from, parsed, index = 0) {
   const placeholder = parsed?.placeholders?.[index];
   if (!placeholder) return null;
@@ -196,13 +195,10 @@ function snippetPlaceholderSelection(from, parsed, index = 0) {
   };
 }
 
-function createSnippetSession(runtimeState, view, from, parsed, index = 0) {
-  if (!runtimeState || !parsed?.placeholders?.length || !defaultLooksLikeView(view)) {
-    clearSnippetSession(runtimeState);
-    return false;
-  }
-
-  runtimeState.snippetSession = {
+// A snippet session over a parsed template inserted at `from`. The placeholder objects are
+// copies: the session moves them as the text changes.
+function newSnippetSession(view, from, parsed, index) {
+  return {
     view,
     from,
     index,
@@ -211,6 +207,15 @@ function createSnippetSession(runtimeState, view, from, parsed, index = 0) {
     finalCursor: parsed.finalCursor ? { ...parsed.finalCursor } : null,
     choices: (parsed.choices || []).map(choice => ({ ...choice, choices: Array.isArray(choice.choices) ? choice.choices.slice() : [] })),
   };
+}
+
+// Starts a session for a snippet whose insert already selected the first placeholder.
+function createSnippetSession(runtimeState, view, from, parsed, index = 0) {
+  if (!runtimeState || !parsed?.placeholders?.length || !defaultLooksLikeView(view)) {
+    clearSnippetSession(runtimeState);
+    return false;
+  }
+  runtimeState.snippetSession = newSnippetSession(view, from, parsed, index);
   return true;
 }
 
@@ -249,15 +254,7 @@ export function startSnippetSession(runtimeState, view, from, parsed, options = 
     return false;
   }
 
-  runtimeState.snippetSession = {
-    view,
-    from,
-    index: 0,
-    placeholders: parsed.placeholders.map(placeholder => ({ ...placeholder })),
-    allPlaceholders: (parsed.allPlaceholders || parsed.placeholders || []).map(placeholder => ({ ...placeholder })),
-    finalCursor: parsed.finalCursor ? { ...parsed.finalCursor } : null,
-    choices: (parsed.choices || []).map(choice => ({ ...choice, choices: Array.isArray(choice.choices) ? choice.choices.slice() : [] })),
-  };
+  runtimeState.snippetSession = newSnippetSession(view, from, parsed, 0);
 
   return selectSnippetPlaceholder(runtimeState.snippetSession, 0, {
     looksLikeView,
@@ -266,19 +263,14 @@ export function startSnippetSession(runtimeState, view, from, parsed, options = 
   });
 }
 
-
 function snippetDocText(view) {
   const doc = view?.state?.doc;
   if (doc && typeof doc.sliceString === 'function') return doc.sliceString(0, doc.length);
   return String(doc || '');
 }
 
-function selectionRange(view) {
-  const sel = view?.state?.selection?.main || view?.state?.selection || null;
-  if (sel && Number.isFinite(sel.from) && Number.isFinite(sel.to)) return { from: sel.from, to: sel.to };
-  return null;
-}
-
+// Copies the text of the current placeholder into its mirrors (the other stops with the same
+// index, `$1` after `${1:Room}`).
 function replicateSnippetMirrors(session, options = {}) {
   if (!session || !session.allPlaceholders?.length) return false;
   const current = session.placeholders?.[session.index];
@@ -288,23 +280,16 @@ function replicateSnippetMirrors(session, options = {}) {
   const view = session.view;
   const doc = snippetDocText(view);
   const base = Number(session.from) || 0;
-  const sel = selectionRange(view);
-  const absStart = base + current.start;
-  const absEnd = base + current.end;
-  const typed = sel && sel.from >= absStart && sel.to <= absEnd
-    ? doc.slice(absStart, absEnd)
-    : doc.slice(absStart, absEnd);
+  const typed = doc.slice(base + current.start, base + current.end);
   const changes = mirrors
     .slice()
     .sort((a, b) => b.start - a.start)
     .map(placeholder => ({ from: base + placeholder.start, to: base + placeholder.end, insert: typed }));
   if (!changes.length) return false;
   try {
-    // This function shifts every placeholder itself (below). On a hooked view the dispatch also
-    // fires updateSnippetSessionAfterDispatch, whose single-edit-at-the-selection model mis-attributes
-    // this multi-range mirror edit and shifts a SECOND time — offsetting later placeholders (e.g. the
-    // button-card ${3:detail} mirror pushes the ${4} inside states['...'] off by the rename delta). The
-    // reentrancy flag makes the hook skip its bookkeeping so this function stays the sole authority.
+    // This function shifts the placeholders itself (below). On a hooked view the dispatch also
+    // runs updateSnippetSessionAfterDispatch, which models one edit at the selection and would
+    // shift them a second time for this multi-range edit; the flag makes it skip.
     session.replicatingMirrors = true;
     view.dispatch({ changes });
   } catch (err) {
@@ -357,7 +342,7 @@ export function currentSnippetChoiceRows(session) {
 }
 
 // The session owns Tab and Escape only while the selection is still inside the range its
-// placeholders span. An unreadable selection keeps the session (the previous behavior).
+// placeholders span. An unreadable selection keeps the session.
 // activeView is the editor the key was pressed in, when known: the selection of the session's own
 // editor does not move when the user goes on to another editor, so a session there has no caret.
 export function snippetSessionHasCaret(session, activeView = null) {
@@ -396,9 +381,7 @@ export function moveSnippetPlaceholder(runtimeState, direction = 1, options = {}
     });
   }
 
-  // Shift-Tab (backward) at the FIRST placeholder must not fall through to the exit path below —
-  // that cleared the session and jumped the caret FORWARD to the last placeholder's end. A backward
-  // gesture at the start stays on the first field instead. Only a forward Tab past the last field exits.
+  // Shift+Tab at the first placeholder stays there; only Tab past the last one ends the session.
   if (next < 0) {
     return selectSnippetPlaceholder(session, 0, {
       looksLikeView,
@@ -408,10 +391,8 @@ export function moveSnippetPlaceholder(runtimeState, direction = 1, options = {}
   }
 
   const last = session.placeholders[session.placeholders.length - 1];
-  // Land the caret at the explicit $0 if the snippet defines one; otherwise AFTER the last
-  // placeholder's value (last.end), not at its start. The old `finalCursor || last` fell back to the
-  // last placeholder object, whose numeric .start short-circuited the intended `?? last.end`, so
-  // every no-$0 snippet (all shipped ones) parked the caret at the START of the last field.
+  // The caret goes to the snippet's $0 when it has one, otherwise to the end of the last
+  // placeholder's text.
   const final = session.finalCursor;
   const end = session.from + (final ? (final.start ?? final.end ?? 0) : (last?.end ?? 0));
   const view = session.view;
@@ -450,23 +431,17 @@ export function updateSnippetSessionAfterDispatch(runtimeState, view, oldDocLeng
   const current = session.placeholders[session.index];
   if (!current) return false;
 
-  // Track the CURRENT placeholder against the edit [localFrom, localTo] with `delta`. The old test
-  // (localFrom <= end && localTo >= start) was too coarse: it mis-SHRANK the placeholder on a delete
-  // just PAST its end (a boundary delete outside the span) and never SHIFTED it for an edit entirely
-  // BEFORE it (a click+type earlier, or a backspace to its left) — so returning to it selected a
-  // stale range. Model insert vs delete/replace explicitly:
+  // The current placeholder against the edit [localFrom, localTo]: an insertion before it moves
+  // it and one at or inside it grows it; a deletion or replacement before it moves it, one that
+  // overlaps it changes its end, and one at or after its end leaves it alone.
   const curStart = current.start;
   const trackSpan = (span) => {
     if (localFrom === localTo) {
-      // pure insertion at a point: shift when strictly before the span; grow when at/inside it.
       if (localFrom < span.start) { span.start += delta; span.end += delta; }
       else if (localFrom <= span.end) { span.end += delta; }
     } else if (localTo <= span.start) {
-      // deletion/replacement entirely before the span: shift the whole span.
       span.start += delta; span.end += delta;
     } else if (localFrom < span.end) {
-      // overlaps the span interior: keep the start, adjust the end. (A delete at/after the end has
-      // localFrom >= end and falls through untouched.)
       span.end = Math.max(span.start, span.end + delta);
     }
   };
@@ -565,7 +540,7 @@ export function insertItem(runtimeState, item, options = {}) {
       selection,
       scrollIntoView: true,
       // CodeMirror's history joins a change without a user event to the typing before it, so one
-      // undo removed the accepted text and the typed prefix together. This is the event
+      // undo would remove the accepted text and the typed prefix together. This is the event
       // CodeMirror's own completion uses; the history starts a new undo step for it.
       userEvent: 'input.complete',
     });

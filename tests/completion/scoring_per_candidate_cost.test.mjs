@@ -49,7 +49,7 @@ test('word rows that stay in the list are scored like any other row', () => {
   assert.deepEqual(items.map((item) => item.label), ['Kitchen']);
   assert.equal(items[0].labelLower, 'kitchen');
   assert.equal(items[0].haystack, 'kitchen kitchen');
-  // Three other rows match: the word rows are dropped, as before.
+  // Three other rows match, so the word rows are dropped.
   const crowded = scoreItems({ ...ctx, prefix: 'ent' }, {
     candidates: [{ ...word, label: 'entrance', insert: 'entrance', id: 'word-fallback.entrance' }, ...rows(4)],
     settings: { enabledLangs: { yaml: true } },

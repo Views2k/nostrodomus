@@ -3,12 +3,12 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-LEGACY = ROOT / 'src/main.legacy.js'
-FACTORY = ROOT / 'src/composition/mainLegacyCompletionRuntimeFactory.js'
+APP = ROOT / 'src/app.js'
+FACTORY = ROOT / 'src/composition/appCompletionRuntimeFactory.js'
 MODULE = ROOT / 'src/completion/completionRuntime.js'
 REPORT = ROOT / 'reports/COMPLETION_SESSION_RUNTIME_OWNER_STATIC_REPORT.txt'
 
-legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
+app = APP.read_text(encoding='utf-8', errors='replace')
 factory = FACTORY.read_text(encoding='utf-8', errors='replace')
 module = MODULE.read_text(encoding='utf-8', errors='replace')
 errors = []
@@ -41,14 +41,14 @@ for token in required_module_tokens:
         notes.append(f'PASS module token: {token}')
 
 required_legacy_tokens = [
-    "import { createMainLegacyCompletionRuntimeGroup } from './composition/mainLegacyCompletionRuntimeFactory.js';",
-    '} = createMainLegacyCompletionRuntimeGroup({',
+    "import { createAppCompletionRuntimeGroup } from './composition/appCompletionRuntimeFactory.js';",
+    '} = createAppCompletionRuntimeGroup({',
     'scoreItems,',
     'insertItem,',
 ]
 
 for token in required_legacy_tokens:
-    if token not in legacy:
+    if token not in app:
         errors.append(f'missing legacy completion factory token: {token}')
     else:
         notes.append(f'PASS legacy completion factory: {token.splitlines()[0]}')
@@ -68,17 +68,17 @@ for token in required_factory_tokens:
     else:
         notes.append(f'PASS completion factory owner: {token.splitlines()[0]}')
 
-for stale in [
+for local_copy in [
     'state.completionRepeatPressureLiveUpdateQuieted = (state.completionRepeatPressureLiveUpdateQuieted || 0) + 1;',
     'recordRuntimeError("completion:compute", err',
     'if (ev.ctrlKey && ev.code === "Space")',
     'insertItem(state.items[state.selected]);',
     'requestAnimationFrame(() => open(false));',
 ]:
-    if stale in legacy:
-        errors.append(f'stale completion session implementation remains in main runtime: {stale}')
+    if local_copy in app:
+        errors.append(f'app.js has its own completion session code: {local_copy}')
     else:
-        notes.append(f'PASS stale implementation absent: {stale}')
+        notes.append(f'PASS app.js has no copy of: {local_copy}')
 
 for forbidden in [
     'querySelectorAll("*")',

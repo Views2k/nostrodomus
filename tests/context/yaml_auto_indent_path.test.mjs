@@ -9,14 +9,14 @@ import { cloneDefaultSettings } from '../../src/core/settings.js';
 import { makeHassFixture } from '../fixtures/hassFixture.mjs';
 import { isServiceDataFieldKeyContext } from '../../src/completion/scoring.js';
 
-// Auto-indent hole: a CodeMirror editor lands a new line at the previous line's OWN
+// Auto-indent hole: a CodeMirror editor lands a new line at the previous line's own
 // column, not one level deeper. So pressing Enter after `target:` (col 4) puts the
 // cursor at col 4 -- the key's own column. The sibling-pop treated that as a dedent
 // to a sibling and dropped `target` from the path, defeating every downstream lane
 // at the exact position real editing produces. These matrices exercise the realistic
 // auto-indent column, never only a hand-typed deeper indent.
 //
-// Rule: completion/context tests MUST include the CM-auto-indent position.
+// Rule: completion/context tests must include the CM-auto-indent position.
 function path(doc) {
   return currentYamlPath(doc, doc.length);
 }
@@ -47,14 +47,14 @@ test('a partial key typed at the auto-indent column still opens the block', () =
 test('the service-field lane and ranking predicate recover at the auto-indent column', () => {
   const ctx = detectRuntimeContext(`${AUTOMATION_DATA}    `, `${AUTOMATION_DATA}    `.length, { triggerKind: 'explicit' });
   assert.deepEqual(ctx.yamlPath, ['actions', 'action', 'data']);
-  assert.equal(isServiceDataFieldContext(ctx), true, '0.1.260 lane must fire at auto-indent');
-  assert.equal(isServiceDataFieldKeyContext(ctx), true, '0.1.261 ranking privilege must fire at auto-indent');
+  assert.equal(isServiceDataFieldContext(ctx), true, 'the service-data field lane must fire at auto-indent');
+  assert.equal(isServiceDataFieldKeyContext(ctx), true, 'the service-data field key ranking must apply at auto-indent');
 
   const target = detectRuntimeContext(`${DASHBOARD_TARGET}  `, `${DASHBOARD_TARGET}  `.length, { triggerKind: 'explicit' });
   assert.equal(target.yamlPath[target.yamlPath.length - 1], 'target', 'target leaf must survive auto-indent');
 });
 
-test('keep-green: a filled sibling above still pops (the phantom-leaf fix)', () => {
+test('a filled sibling above the cursor is popped from the path', () => {
   // The line above the cursor carries a value, so it is a completed sibling, not an
   // open block -- it must still be popped.
   assert.deepEqual(path('data:\n  brightness: 120\n  tr'), ['data']);
@@ -63,9 +63,9 @@ test('keep-green: a filled sibling above still pops (the phantom-leaf fix)', () 
   assert.deepEqual(path('actions:\n  - action: light.turn_on\n    data:\n      transition: 1\n    '), ['actions', 'action']);
 });
 
-test('an empty SCALAR field pops at the auto-indent column (moving to a sibling field)', () => {
+test('an empty scalar field pops at the auto-indent column (moving to a sibling field)', () => {
   // Typing a field, leaving its value empty, and pressing Enter lands the cursor at the
-  // field's own column -- but the user is adding a SIBLING field, not descending into a
+  // field's own column -- but the user is adding a sibling field, not descending into a
   // scalar. Only block-container keys (data/target/...) are descended; a scalar field
   // (transition/brightness_pct/name/...) must pop, or the whole data-field lane dies.
   assert.deepEqual(path('actions:\n  - action: light.turn_on\n    data:\n      transition:\n      '), ['actions', 'action', 'data']);
@@ -92,7 +92,7 @@ test('the service-field lane and its rows survive an empty scalar sibling at the
   assert.ok(!labels.includes('wait_for_trigger:') && !labels.includes('choose:'), 'no automation action-step hijack');
 });
 
-test('keep-green: block scalars and dash lists are unchanged', () => {
+test('block scalars and dash lists keep their paths', () => {
   // an empty line inside an open style scalar stays anchored to its opener
   const scalar = 'card_mod:\n  style: |\n    ha-card { }\n';
   assert.deepEqual(currentYamlPath(scalar, scalar.length), ['card_mod', 'style']);

@@ -3,11 +3,10 @@ import assert from 'node:assert/strict';
 
 import { createSourceClassBridgeRuntime } from '../../src/syntax/sourceClassBridgeRuntime.js';
 
-// cm was acquired only as host?._loadedCodeMirror || editor._loadedCodeMirror ||
-// bridgeCodeEditor?._loadedCodeMirror -- three reads of the SAME private field, so one HA/CM rename
-// of _loadedCodeMirror zeroes all three at once and syntax coloring is lost. probeCodeMirrorModule
-// keeps the convention field as the fast path but adds a field-name-independent fallback that finds
-// the module by its CodeMirror 6 highlight-API shape.
+// The CodeMirror module sits on one private field, _loadedCodeMirror, read from the host, the editor
+// or the bridge code editor. A rename of that field in HA or CodeMirror would lose syntax coloring,
+// so probeCodeMirrorModule keeps the field as the fast path and falls back to finding the module by
+// its CodeMirror 6 highlight-API shape.
 const fakeCm = () => ({
   tags: {},
   HighlightStyle: { define() {} },
@@ -22,7 +21,7 @@ test('probeCodeMirrorModule finds the module under the conventional field (fast 
   assert.equal(rt.probeCodeMirrorModule({ _loadedCodeMirror: cm }), cm);
 });
 
-test('probeCodeMirrorModule finds the module under a RENAMED field by its API shape (2B-1)', () => {
+test('probeCodeMirrorModule finds the module under a renamed field by its API shape', () => {
   const rt = createSourceClassBridgeRuntime();
   const cm = fakeCm();
   // _loadedCodeMirror is absent on all sources; the module hides under a different property name.

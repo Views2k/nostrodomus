@@ -55,7 +55,7 @@ test('the cursor inside the last 20,000 characters gives the readout it gave bef
   const pos = head.length + MARKER.length;
   const { snapshot } = collectContextSnapshotDryRun({ doc, pos });
   assert.equal(snapshot.cursor.line, MARKER);
-  // Positions in the readout are counted from the start of the scanned tail, as before.
+  // Positions in the readout are counted from the start of the scanned tail.
   assert.equal(snapshot.cursor.pos, pos - (doc.length - 20000));
   assert.equal(snapshot.suggestion.from, snapshot.cursor.pos);
 

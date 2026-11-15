@@ -19,9 +19,8 @@ export function sourceClassSmartSyntaxReasonIsUrgent(
   reason = "",
   urgentTokens = SOURCE_CLASS_SMART_SYNTAX_URGENT_REASON_TOKENS,
 ) {
-  // "preset" contains "reset". The routine reason "apply-text-color-preset" was therefore
-  // treated as urgent, so every syntax repaint skipped the throttle. The word is removed before
-  // the substring match; the other tokens keep matching as before.
+  // "preset" contains "reset", so the word is removed before the substring match; otherwise the
+  // routine reason "apply-text-color-preset" would be urgent and skip the throttle.
   const text = String(reason || "").toLowerCase().replace(/preset/g, "");
   const tokens = Array.isArray(urgentTokens)
     ? urgentTokens
@@ -80,11 +79,8 @@ export function sourceClassSmartSyntaxWaitMs(
   return Math.max(0, minInterval - elapsed);
 }
 
-export function sourceClassSmartSyntaxPendingReasonUpdate(
-  existingReason = "",
-  reason = "smart-source-syntax",
-  fallbackReason = "smart-source-syntax",
-) {
+// Adds a reason to a "+"-joined list of pending reasons unless it is already there.
+function pendingReasonUpdate(existingReason, reason, fallbackReason) {
   const clean = String(reason || fallbackReason);
   const parts = String(existingReason || "")
     .split("+")
@@ -100,24 +96,20 @@ export function sourceClassSmartSyntaxPendingReasonUpdate(
   };
 }
 
+export function sourceClassSmartSyntaxPendingReasonUpdate(
+  existingReason = "",
+  reason = "smart-source-syntax",
+  fallbackReason = "smart-source-syntax",
+) {
+  return pendingReasonUpdate(existingReason, reason, fallbackReason);
+}
+
 export function sourceClassSyntaxRefreshReasonUpdate(
   existingReason = "",
   reason = "source-class-refresh",
   fallbackReason = "source-class-refresh",
 ) {
-  const clean = String(reason || fallbackReason);
-  const parts = String(existingReason || "")
-    .split("+")
-    .filter(Boolean);
-  const duplicate = parts.includes(clean);
-  if (!duplicate) parts.push(clean);
-  return {
-    clean,
-    duplicate,
-    parts,
-    pendingReason: parts.join("+"),
-    count: parts.length,
-  };
+  return pendingReasonUpdate(existingReason, reason, fallbackReason);
 }
 
 export function sourceClassSmartSyntaxObserverReady(

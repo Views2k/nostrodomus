@@ -1,8 +1,5 @@
-// Shared plumbing for the E2E harness scripts (see tools/e2e/README.md).
-// Host-side only: never imported from src/.
-//
-// Node >= 22 is required on the host for the global WebSocket client (the repo
-// runtime floor stays Node 20).
+// Shared code of the e2e harness scripts (see tools/e2e/README.md). Runs on the host and is never
+// imported from src/. Needs Node 22 or newer for the global WebSocket client.
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -37,7 +34,7 @@ export function statePaths() {
   };
 }
 
-/** Redaction rule (contract): never print a secret — first 6 chars + length. */
+/** A secret as it may be logged: its first six characters and its length. */
 export function redact(secret) {
   const s = String(secret ?? '');
   return s ? `${s.slice(0, 6)}…(${s.length})` : '(empty)';
@@ -54,7 +51,7 @@ export function log(message) {
 
 export function requireGlobalWebSocket() {
   if (typeof WebSocket === 'undefined') {
-    fail('global WebSocket missing — the e2e tooling needs Node >= 22 on the host (repo runtime floor stays 20).');
+    fail('global WebSocket missing: the e2e scripts need Node 22 or newer.');
   }
 }
 

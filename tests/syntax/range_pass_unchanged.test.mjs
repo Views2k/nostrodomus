@@ -5,9 +5,9 @@ import { createRuntimeState } from '../../src/core/state.js';
 import { createSyntaxRuntime } from '../../src/syntax/syntaxRuntime.js';
 
 // A key press that changes nothing in the editor (an arrow key in the suggestion list, a click
-// in the dialog) still scheduled a syntax pass, and the pass rebuilt every range of the
-// viewport. A pass now returns early when the document, the rendered lines and the text nodes
-// under the ranges are the ones it painted last time.
+// in the dialog) can still schedule a syntax pass. The pass returns early when the document, the
+// rendered lines and the text nodes under the ranges are the ones it painted last time, instead
+// of rebuilding every range of the viewport.
 
 function rangeRuntime(highlights, view) {
   class FakeHighlight { constructor(...ranges) { this.ranges = ranges; } }

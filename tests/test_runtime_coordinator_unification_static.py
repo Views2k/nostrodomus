@@ -3,7 +3,7 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-MAIN = (ROOT / 'src' / 'main.legacy.js').read_text(encoding='utf-8', errors='replace')
+MAIN = (ROOT / 'src' / 'app.js').read_text(encoding='utf-8', errors='replace')
 PUBLIC_API_RUNTIME = (ROOT / 'src' / 'core' / 'publicApiRuntime.js').read_text(encoding='utf-8', errors='replace')
 DISPATCH_RUNTIME = (ROOT / 'src' / 'editor' / 'editorDispatchRuntime.js').read_text(encoding='utf-8', errors='replace')
 MODULE = (ROOT / 'src' / 'core' / 'runtimeCoordinator.js').read_text(encoding='utf-8', errors='replace')

@@ -66,7 +66,7 @@ The runtime descriptor has no `descriptorVersion` field. Its fields:
 | `yamlPath`, `pathText` | The keys above the cursor as an array and as a lower-case dotted string |
 | `yamlRole` | `blank`, `comment`, `key`, `list-key` or `value` for YAML; `code` for other languages |
 | `yamlKey` | The key on the cursor line |
-| `valueKind` | The base value kinds, plus `area`, `device`, `floor` and `label` when the registry lane is enabled |
+| `valueKind` | The base value kinds, plus `area`, `device`, `floor` and `label` when `completions.engineV2` and `completions.registryLane` are on |
 | `focusKind` | `valueKind` when one is set, otherwise `target-block`, `action-block`, `style-block`, `trigger-block`, `condition-block`, `automation-action`, `entity-list` or empty |
 | `branchState` | See below |
 | `scalarValueContext` | True when the value position expects a number, duration or plain string |
@@ -82,7 +82,7 @@ Fields that appear only in some contexts:
 - `surface` and, in templates, `jinjaArg` when the surface-aware engine is enabled (`completions.engineV2`).
 - With the engine enabled, `resolveContext` in `src/context/contextResolver.js` adds `expectedKind` (an alias of `valueKind`), `language` (an alias of `lang`), `replaceRange`, `region` and `signatureTarget`, and the context runtime sets the gate flags `jinjaLaneEnabled`, `registryLaneEnabled`, `schemaValuesEnabled` and `surfaceScopeEnabled`. With the engine off, `resolveContext` returns the descriptor unchanged.
 
-`valueKind` is computed in two places that must agree: `yamlValueKind` in `src/yaml/runtimeContextAdapter.js` (detection) and `yamlValueKind` in `src/yaml/yamlContextClassifier.js` (used by the providers). `tests/context/yaml_value_kind_parity.test.mjs` keeps them equal. `inferYamlValueKind` in `src/yaml/yamlCompletionContext.js` feeds only the base descriptor and is not on the live path; a new value lane has to be added to the two live copies.
+`valueKind` is computed in two places that must agree: `yamlValueKind` in `src/yaml/runtimeContextAdapter.js` (detection) and `yamlValueKind` in `src/yaml/yamlContextClassifier.js` (used by the providers). `tests/context/yaml_value_kind_parity.test.mjs` keeps them equal. `inferYamlValueKind` in `src/yaml/yamlCompletionContext.js` feeds only the base descriptor and is not on the live path; a new value kind has to be added to the two live copies.
 
 ## branchState
 

@@ -1,6 +1,6 @@
-// Nostrodomus editor overlay-root module
-// Invariant: mount inside the active ha-code-editor / CodeMirror root.
-// Do not replace this with a document-body-only or browser-top-layer popup model.
+// Where the suggestion popup mounts: inside the root of the active ha-code-editor or CodeMirror
+// editor, or the open card dialog, and only without either in the document body. A popup in the
+// body can paint behind a modal editor whatever its z-index.
 
 import {
   CM_CONTENT,
@@ -82,13 +82,12 @@ const OVERLAY_ROOT_TARGETED_SHADOW_HOSTS = [
   HUI_CARD_ELEMENT_EDITOR,
   HUI_CARD_OPTIONS_EDITOR,
   HUI_CARD_EDITOR,
-  // Stack/grid card editors nest their sub-card editors one boundary deeper through this host; without
-  // it the bounded targeted walk dead-ends here and a stack sub-card codebox only styles after a click.
-  // The shadow-host chain is hui-dialog-edit-card > hui-card-element-editor > hui-stack-card-editor >
-  // hui-card-element-editor > ha-yaml-editor > ha-code-editor. A card-dialog host (like the other
-  // hui-card-* hosts), so it lives in the base list and works regardless of the universalCodebox kill
-  // switch. The form-field reject guard (editorInsideVisualFormField) is separate, so this only enables
-  // descent; sub-field editors reached deeper are still rejected (never enlarged).
+  // Stack and grid card editors nest their sub-card editors one boundary deeper through this host:
+  // hui-dialog-edit-card > hui-card-element-editor > hui-stack-card-editor > hui-card-element-editor >
+  // ha-yaml-editor > ha-code-editor. Without it the targeted walk stops here and a sub-card codebox is
+  // styled only after a click. It is a card dialog host like the other hui-card-* hosts, so it is in
+  // the base list and does not depend on universalCodebox. Form-field editors reached through it are
+  // still rejected by editorInsideVisualFormField.
   HUI_STACK_CARD_EDITOR,
   HA_DIALOG,
   HA_MD_DIALOG,
@@ -102,13 +101,10 @@ const OVERLAY_ROOT_TARGETED_SHADOW_HOSTS = [
 
 export const OVERLAY_ROOT_TARGETED_SHADOW_HOST_SELECTOR = OVERLAY_ROOT_TARGETED_SHADOW_HOSTS.join(",");
 
-// The base targeted hosts plus the non-card-dialog editor panel hosts (Dev
-// Tools, dashboard raw config, automation/script YAML). Used when
-// universalEditorHosts is on so the bounded walk descends through these panels
-// to reach their ha-code-editor, the editors the base selector stops short of.
-// Adding non-shadow-host or absent tag names is harmless: they simply never
-// match querySelectorAll, so this only ever enables descent, never costs a
-// wildcard walk.
+// The base hosts plus the panel editor hosts outside the card dialog (Developer Tools, the
+// dashboard raw configuration editor, automation and script YAML), used with universalEditorHosts
+// so the walk reaches their ha-code-editor. A name that is not a shadow host on a given page simply
+// matches nothing.
 const OVERLAY_ROOT_UNIVERSAL_SHADOW_HOST_SELECTOR = [
   ...OVERLAY_ROOT_TARGETED_SHADOW_HOSTS,
   HUI_EDITOR,
@@ -214,11 +210,9 @@ export function nostrodomusCodeEditorOverlayRoot(options = {}) {
   const activeDialogRoot = rootFromActiveDialogOptions(options);
   let root = activeViewRoot || nostrodomusFindActiveCodeEditorRoot(options) || null;
 
-  // HA card editors can live inside custom dialog/top-layer shells. If a modal
-  // editor is active, document.body is not a safe overlay target: body-mounted
-  // popups can paint behind the dashboard/editor regardless of z-index. Prefer
-  // the already-hooked CodeMirror shadow root, then the active edit dialog, and
-  // only use body when no active editor dialog exists.
+  // Card editors can sit inside dialog or top-layer shells; with a modal editor open, a popup in
+  // document.body can paint behind it whatever its z-index. The order is the bound view's root, then
+  // the open card dialog, and the body only when there is no card dialog.
   if ((!root || isDocumentFallbackRoot(root, doc)) && activeDialogRoot) root = activeDialogRoot;
   if (!root) root = doc?.body;
   if (!root) return null;

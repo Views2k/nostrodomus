@@ -1,28 +1,23 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import json
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 DIST = ROOT / "dist/nostrodomus.js"
-PROJECT = ROOT / "PROJECT.json"
 REPORT = ROOT / "reports/LIFECYCLE_OBSERVER_PRUNING_STATIC_TEST_REPORT.txt"
 
-# The monolith was decomposed into src modules, so the lifecycle/observer-pruning and
-# persistent-listener invariants that used to live inline in src/main.legacy.js now live in
-# their extracted owner modules. The SAME facts are checked, just at their current locations:
-#   - style-root observer pruning   -> src/ui/styleRootRuntime.js
-#   - persistent listener lifecycle -> src/core/persistentListenersRuntime.js
-#   - observer/listener diagnostics  -> src/diagnostics/telemetryRuntime.js
-#   - state counters                 -> src/core/state.js
-#   - public api wiring + teardown   -> src/core/publicApiRuntime.js
-# The bundled dist still carries every fact in minified form (double-quoted, no spacing,
-# true -> !0), so the dist side asserts the minified literal.
+# Style-root observers are pruned and persistent listeners are tracked and removed together:
+#   - style-root observer pruning: src/ui/styleRootRuntime.js
+#   - persistent listener lifecycle: src/core/persistentListenersRuntime.js
+#   - observer and listener diagnostics: src/diagnostics/diagnosticsRuntime.js
+#   - state counters: src/core/state.js
+#   - public API wiring and teardown: src/core/publicApiRuntime.js
+# dist writes double quotes, no spaces and !0 for true, so it is checked in that form.
 SRC_OWNERS = [
     ROOT / "src/ui/styleRootRuntime.js",
     ROOT / "src/core/persistentListenersRuntime.js",
     ROOT / "src/core/state.js",
-    ROOT / "src/diagnostics/telemetryRuntime.js",
+    ROOT / "src/diagnostics/diagnosticsRuntime.js",
     ROOT / "src/core/publicApiRuntime.js",
 ]
 
@@ -35,15 +30,10 @@ def require(ok, msg):
     else:
         errors.append(msg)
 
-project = json.loads(PROJECT.read_text(encoding="utf-8"))
-
-# Combined current source text across the extracted owner modules.
 src_text = "\n".join(p.read_text(encoding="utf-8", errors="replace") for p in SRC_OWNERS)
 dist_text = DIST.read_text(encoding="utf-8", errors="replace")
 
-# (label, source-form token, dist minified-form token). src uses single quotes + spacing;
-# dist normalizes to double quotes and strips spacing (and true -> !0). Both forms encode the
-# same lifecycle/observer fact.
+# (label, source form, dist form)
 checks = [
     ("function pruneStyleRootObservers",
      "function pruneStyleRootObservers(reason = 'style-root-prune')",
@@ -110,22 +100,6 @@ require("document.removeEventListener('pointerdown', onPointer, true)" not in sr
 require('removeEventListener("pointerdown",onPointer,!0)' not in dist_text and
         "removeEventListener('pointerdown',onPointer,!0)" not in dist_text,
         "dist uses persistent-listener teardown instead of one-off pointerdown removal")
-
-# Version pin un-pinned: the original v31.6.41 literal pin carried forward across the 31.6.x ->
-# 0.1.x SemVer reset. The invariant is the lifecycle/observer ownership above, not a frozen
-# version literal, so floor at the version where all extracted owners (style-root prune owner
-# 0.1.19, persistent-listener owner 0.1.35) coexisted. Mirrors the dynamic-floor pattern in
-# tests/test_visual_layer_baseline_contract_static.py and
-# tests/test_codemirror_observer_containment_static.py.
-version = str(project.get("version") or "")
-internal = str(project.get("internal_version") or "")
-version_tuple = tuple(int(part) for part in version.split(".") if part.isdigit())
-require(version_tuple >= (0, 1, 35), "PROJECT.json remains at or beyond the lifecycle/observer owner baseline (SemVer line)")
-# The legacy "editor-blur-preview-prepaint" identifier was an old-era (v31.x) internal_version
-# name retired at the SemVer reset; accept either that legacy id OR any version advanced past
-# the floor.
-require("editor-blur-preview-prepaint" in internal or version_tuple > (0, 1, 35),
-        "PROJECT.json internal_version records the lifecycle/observer owner (or version advanced past the baseline)")
 
 REPORT.parent.mkdir(parents=True, exist_ok=True)
 REPORT.write_text(

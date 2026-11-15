@@ -20,7 +20,7 @@ function documentWordIndex(text) {
   const words = [];
   const seen = new Set();
   let resumeAt = -1;
-  WORD_RX.lastIndex = 0; // module-scoped /g regex: reset so a prior capped call's stranded lastIndex never zeroes this scan
+  WORD_RX.lastIndex = 0; // the /g regex is shared; an earlier scan may have stopped midway
   let match;
   while ((match = WORD_RX.exec(text))) {
     const word = String(match[0] || '');
@@ -57,8 +57,7 @@ export function tokenizeDocumentWords(documentText = '', prefix = '', options = 
   const text = String(documentText || '');
   let match;
   // Only words that can match what is typed become rows: the scorer accepts a word when the
-  // typed letters and digits occur in it in order. Without this every keystroke built a row
-  // object for each of up to 500 words and discarded nearly all of them.
+  // typed letters and digits occur in it in order. The others would be built and then dropped.
   const needle = current.replace(/[^a-z0-9]/g, '');
   const canMatch = (lower) => {
     if (!needle) return true;
@@ -75,7 +74,7 @@ export function tokenizeDocumentWords(documentText = '', prefix = '', options = 
     rows.push(wordRow(word, lower));
   }
   if (indexedResumeAt < 0 || rows.length >= maxWords) return rows;
-  // A document with more distinct words than the index keeps: scan the rest as before.
+  // A document with more distinct words than the index keeps: the rest is scanned here.
   for (const entry of indexedWords) seen.add(entry.lower);
   WORD_RX.lastIndex = indexedResumeAt;
   while ((match = WORD_RX.exec(text)) && rows.length < maxWords) {

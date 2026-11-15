@@ -22,7 +22,7 @@ test('editor completion: prefix + Ctrl+Space suggests, Escape closes, reopen, ac
 
   // Type a fresh key prefix on its own line, then Ctrl+Space to open. 'the'
   // should surface the entities-card 'theme' key suggestion. Each input step
-  // asserts the dialog survived it (2026.6 vanish investigation).
+  // asserts the dialog survived it, so a failure names the step that closed it.
   await page.keyboard.press('Enter');
   await expectDialogAlive(page, 'after pressing Enter on a fresh line');
   await typeInYaml(page, 'the');
@@ -39,7 +39,7 @@ test('editor completion: prefix + Ctrl+Space suggests, Escape closes, reopen, ac
   await expectPopupWithSuggestions(page, 'Ctrl+Space did not reopen the completion popup');
 
   // Accepting inserts the suggestion text into the CodeMirror document. The
-  // product's true behavior is INSERTION; the popup may stay open afterwards
+  // product's true behavior is insertion; the popup may stay open afterwards
   // (it re-computes value/next-key suggestions for the accepted key — e.g.
   // `theme:` then offers theme values), so we assert the document content,
   // not an instant hide.

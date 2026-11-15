@@ -1,17 +1,17 @@
 // Console allowlist for the E2E console-capture policy (tools/e2e/README.md):
 // console.error fails unless allowlisted here; console.warn fails only when
 // Nostrodomus-origin and not allowlisted; a pageerror fails unless an entry is
-// `appliesTo: 'pageerror'` AND its `source` regex matches the error stack.
+// `appliesTo: 'pageerror'` and its `source` regex matches the error stack.
 //
 // Entry rules:
-// - `pattern` is an EXACT string match or an ANCHORED RegExp (starts with ^).
-// - `appliesTo: 'pageerror'` entries MUST also carry a `source` RegExp; the
+// - `pattern` is an exact string match or an anchored RegExp (starts with ^).
+// - `appliesTo: 'pageerror'` entries must also carry a `source` RegExp; the
 //   message alone can never suppress an uncaught exception (a stray match
 //   must not swallow a real crash from our own code).
 // - Every entry carries `owner` and `reason` — an allowlist entry without a
 //   justification is a policy violation, not a convenience.
 // - HA / third-party noise is recorded in the report, never failed on, so it
-//   does NOT belong here; this list is for known, justified exceptions only.
+//   does not belong here; this list is for known, justified exceptions only.
 
 export const CONSOLE_ALLOWLIST = [
   {
@@ -21,7 +21,7 @@ export const CONSOLE_ALLOWLIST = [
     // satisfied. The throw is entirely inside HA's own frontend_latest bundle
     // — never our /local/ resource — and harmless to the features under test
     // (the dialog, keystrokes, and styling all work with it
-    // present). Scoped to the exact message AND a frontend_latest source so
+    // present). Scoped to the exact message and a frontend_latest source so
     // it can never mask a Nostrodomus-origin crash. Remove if HA stops throwing
     // or the harness stops blocking SWs.
     appliesTo: 'pageerror',

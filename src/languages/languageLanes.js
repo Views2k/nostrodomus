@@ -5,7 +5,7 @@
 // and no provider registration. Live completion behavior does not depend on these lanes.
 
 export const LANGUAGE_ENGINE_DESIGN_VERSION = 1;
-export const LANGUAGE_ENGINE_STAGE = "priority10-language-engine-start-gate";
+export const LANGUAGE_ENGINE_STAGE = "language-lanes";
 
 export const LANGUAGE_LANES = Object.freeze([
   Object.freeze({

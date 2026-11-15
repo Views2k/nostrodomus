@@ -1,15 +1,13 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-text = (ROOT / "src" / "main.legacy.js").read_text(encoding="utf-8")
-# The panel shell mounts Settings through the portal root; main.legacy only delegates to it.
+text = (ROOT / "src" / "app.js").read_text(encoding="utf-8")
+# The panel shell mounts Settings through the portal root; app.js only delegates to it.
 shell = (ROOT / "src" / "ui" / "settings" / "settingsPanelShell.js").read_text(encoding="utf-8")
 dist = (ROOT / "dist" / "nostrodomus.js").read_text(encoding="utf-8")
 
-# Historical regression guard:
-# The document-level settings overlay was a failed workaround for the codebox-height
-# glitch. The accepted fix is in the v17 editor layout resource, not in Nostrodomus
-# Assist settings overlay placement.
+# Settings must not mount through a separate overlay host on the document element
+# (docs/contracts/SETTINGS_PORTAL_CONTRACT.md lists it under "Ruled out").
 for forbidden in [
     "function settingsDocumentOverlayRoot()",
     "nostrodomus-settings-document-host",
@@ -18,8 +16,8 @@ for forbidden in [
     "return host.shadowRoot",
     "function removeLegacySettingsMounts()",
 ]:
-    assert forbidden not in text, f"failed settings overlay workaround still in source: {forbidden}"
-    assert forbidden not in dist, f"failed settings overlay workaround still in dist: {forbidden}"
+    assert forbidden not in text, f"document-level settings overlay token in source: {forbidden}"
+    assert forbidden not in dist, f"document-level settings overlay token in dist: {forbidden}"
 
 required = [
     "function openSettings()",
@@ -44,4 +42,4 @@ for token in required:
         dist_ok = dist_ok or "settingsPortalRoot()" in dist
     assert dist_ok, f"missing dist token: {token}"
 
-print("SETTINGS OVERLAY CLEANUP STATIC TEST OK")
+print("SETTINGS OUT-OF-BAND OVERLAY STATIC TEST OK")

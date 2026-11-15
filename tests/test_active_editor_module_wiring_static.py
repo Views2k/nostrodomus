@@ -5,17 +5,17 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / 'src/editor/activeEditor.js'
-LEGACY = ROOT / 'src/main.legacy.js'
+APP = ROOT / 'src/app.js'
 CONTEXT_RUNTIME = ROOT / 'src/diagnostics/contextDiagnosticsRuntime.js'
 DISPATCH_RUNTIME = ROOT / 'src/editor/editorDispatchRuntime.js'
 ALLOWLIST = ROOT / 'docs/contracts/MODULE_WIRING_ALLOWLIST.json'
 REPORT = ROOT / 'reports/ACTIVE_EDITOR_MODULE_WIRING_STATIC_REPORT.txt'
 
 module = MODULE.read_text(encoding='utf-8', errors='replace')
-legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
+app = APP.read_text(encoding='utf-8', errors='replace')
 context_runtime = CONTEXT_RUNTIME.read_text(encoding='utf-8', errors='replace')
 dispatch_runtime = DISPATCH_RUNTIME.read_text(encoding='utf-8', errors='replace')
-runtime_owner = legacy + '\n' + context_runtime + '\n' + dispatch_runtime
+runtime_owner = app + '\n' + context_runtime + '\n' + dispatch_runtime
 allowlist = json.loads(ALLOWLIST.read_text(encoding='utf-8'))
 allowed = allowlist.get('allowed_unwired_modules', {})
 errors = []
@@ -27,11 +27,9 @@ def require(ok, message):
     else:
         errors.append(message)
 
-require("from './editor/activeEditor.js'" in legacy, 'runtime imports active editor module')
-# The activeEditor helpers are now wired into the runtime via direct named imports (not the
-# old *FromActiveEditorModule aliases): the snapshot readout + traversal callbacks moved into
-# src/diagnostics/contextDiagnosticsRuntime.js, while homeRoot/activeEditDialog/isScopedEditorEvent
-# are called by name from main.legacy.js. Same delegation invariant, current call form.
+require("from './editor/activeEditor.js'" in app, 'runtime imports active editor module')
+# The snapshot readout and traversal callbacks are wired in contextDiagnosticsRuntime.js;
+# homeRoot, activeEditDialog and isScopedEditorEvent are called by name from app.js.
 for token in [
     'createActiveEditorContextSnapshotReadout({',
     'traversalScoped: () => activeEditorReadoutTraversalScopedEnabled()',
@@ -43,9 +41,7 @@ for token in [
 ]:
     require(token in runtime_owner, f'runtime delegates helper directly through main, context diagnostics, or editor dispatch runtime: {token}')
 
-# editorDispatchRuntime delegates the scope/view helpers to the activeEditor module via a
-# namespace import (activeEditor.*) plus a direct named import for looksLikeView. Same delegation
-# invariant — the dispatch runtime owns no copy of these helpers, it calls activeEditor's.
+# editorDispatchRuntime keeps no copy of the scope and view helpers; it calls activeEditor's.
 for token in [
     'activeEditor.isNostrodomusUiEvent(ev, { state })',
     'activeEditor.isViewAllowed(view, { state, window: windowRef })',
@@ -54,7 +50,6 @@ for token in [
     'looksLikeView(view)',
 ]:
     require(token in dispatch_runtime, f'editor dispatch runtime delegates active-editor helper: {token}')
-# Confirm the delegation targets are real imports from the activeEditor module (not local copies).
 require("import * as activeEditor from './activeEditor.js'" in dispatch_runtime, 'editor dispatch runtime imports activeEditor namespace')
 require("import { looksLikeView } from './activeEditor.js'" in dispatch_runtime, 'editor dispatch runtime imports looksLikeView from activeEditor')
 
@@ -84,7 +79,7 @@ for removed in [
     'function activeEditorReadoutTraversalScopedEnabled()',
     'function recordActiveEditorReadoutTraversal(summary = {})',
 ]:
-    require(removed not in legacy, f'runtime prunes active-editor pass-through wrapper: {removed}')
+    require(removed not in app, f'app.js has no active-editor pass-through wrapper: {removed}')
 
 for token in [
     'export function visible',
@@ -106,8 +101,8 @@ for token in [
 ]:
     require(token in module, f'module export present: {token}')
 
-# Stateful view memory and dispatch-hook ownership moved into editorDispatchRuntime.
-require("from './editor/editorDispatchRuntime.js'" in legacy, 'main imports editor dispatch runtime owner')
+# editorDispatchRuntime owns the remembered view and the dispatch hook.
+require("from './editor/editorDispatchRuntime.js'" in app, 'main imports editor dispatch runtime owner')
 for token in [
     'export function createEditorDispatchRuntime',
     'function isNostrodomusUiEvent(ev)',
@@ -118,24 +113,19 @@ for token in [
     'hookDispatch(view);',
 ]:
     require(token in dispatch_runtime, f'editor dispatch runtime owns editor lifecycle token: {token}')
-# Main keeps thin editor-dispatch delegates, now produced by the shared delegate bridge
-# (createEditorDispatchRuntimeDelegates over () => editorDispatchRuntime) instead of hand-written
-# `editorDispatchRuntime?.X(...) || false` wrappers. The bridge proxies to the live runtime and
-# returns the false fallback when it is not yet ready (same lazy/fail-dark semantics), and main
-# destructures isNostrodomusUiEvent/rememberView from it. Assert that current wiring.
-require('createEditorDispatchRuntimeDelegates(() => editorDispatchRuntime)' in legacy, 'main wires the editor dispatch delegate bridge over the dispatch runtime')
-# The bridge-produced delegates are destructured off editorDispatchDelegates; require both the
-# isNostrodomusUiEvent and rememberView delegates plus the destructure source on one statement so the
-# thin pass-through (proxy to runtime, false fallback) is provably what main exposes.
+# app.js gets isNostrodomusUiEvent and rememberView from
+# createEditorDispatchRuntimeDelegates, which calls the live dispatch runtime and returns false
+# until it exists. Both names must come from that one destructuring statement.
+require('createEditorDispatchRuntimeDelegates(() => editorDispatchRuntime)' in app, 'main wires the editor dispatch delegates over the dispatch runtime')
 editor_dispatch_delegate_destructure = next(
-    (line for line in legacy.splitlines() if '= editorDispatchDelegates;' in line),
+    (line for line in app.splitlines() if '= editorDispatchDelegates;' in line),
     '',
 )
 for token in [
     'isNostrodomusUiEvent',
     'rememberView',
 ]:
-    require(token in editor_dispatch_delegate_destructure, f'main keeps thin editor dispatch delegate via the bridge: {token}')
+    require(token in editor_dispatch_delegate_destructure, f'main destructures the editor dispatch delegate: {token}')
 
 for forbidden in [
     'showPopover',

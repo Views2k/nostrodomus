@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""Static guard for v31.6.389 performance telemetry runtime owner extraction."""
+"""The performance telemetry runtime owns the telemetry functions; app.js only delegates."""
 from __future__ import annotations
 
 from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-MAIN = (ROOT / "src" / "main.legacy.js").read_text(encoding="utf-8", errors="replace")
+MAIN = (ROOT / "src" / "app.js").read_text(encoding="utf-8", errors="replace")
 RUNTIME_PATH = ROOT / "src" / "diagnostics" / "performanceTelemetryRuntime.js"
 RUNTIME = RUNTIME_PATH.read_text(encoding="utf-8", errors="replace") if RUNTIME_PATH.exists() else ""
-VERSION = (ROOT / "src" / "core" / "version.js").read_text(encoding="utf-8", errors="replace")
 REPORT = ROOT / "reports" / "PERFORMANCE_TELEMETRY_RUNTIME_OWNER_STATIC_REPORT.txt"
 
 errors: list[str] = []
@@ -38,14 +37,14 @@ for token in [
     "function resetPerformanceTelemetry() {",
     "function performanceStatsSnapshot() {",
 ]:
-    require(token in RUNTIME, f"runtime owns moved body: {token}")
+    require(token in RUNTIME, f"runtime owns body: {token}")
 
 for token in [
     "createPerformanceTelemetryRuntimeDelegates(() => performanceTelemetryRuntime)",
     "const { performanceTelemetryDiagnosticsActive, shouldRecordPerformanceTelemetry, noteSuppressedPerformanceEvent, recordPerformanceEvent",
     "measurePerformanceEvent, performanceTelemetrySnapshot, resetPerformanceTelemetry, performanceStatsSnapshot } = performanceTelemetryDelegates",
 ]:
-    require(token in MAIN, f"main keeps performance telemetry delegate bridge: {token}")
+    require(token in MAIN, f"main keeps performance telemetry delegates: {token}")
 
 for token in [
     "shouldQuietEditorDispatchTelemetryEvent,",
@@ -62,12 +61,7 @@ for token in [
     "function resetPerformanceTelemetry() {",
     "function recordPerformanceEvent(name, durationMs = 0, detail",
 ]:
-    require(token not in MAIN, f"main no longer owns performance telemetry body: {token[:72]}")
-
-require("nostrodomus-v0.1." in VERSION,
-        "version uses current short v0.1 runtime identity")
-require("Performance telemetry owner compatibility tokens retained" not in MAIN,
-        "main no longer preserves performance telemetry lineage comment archaeology")
+    require(token not in MAIN, f"main does not own performance telemetry body: {token[:72]}")
 
 REPORT.parent.mkdir(parents=True, exist_ok=True)
 REPORT.write_text(

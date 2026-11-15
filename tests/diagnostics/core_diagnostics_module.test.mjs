@@ -6,7 +6,7 @@ import {
   safeRuntimeErrorDetail,
 } from '../../src/core/diagnostics.js';
 
-test('boundedRuntimeErrorString preserves existing runtime truncation behavior', () => {
+test('boundedRuntimeErrorString truncates to the limit, ellipsis included, and turns nullish values into an empty string', () => {
   assert.equal(boundedRuntimeErrorString(null), '');
   assert.equal(boundedRuntimeErrorString(undefined), '');
   assert.equal(boundedRuntimeErrorString('abcdef', 4), 'abc…');
@@ -14,7 +14,7 @@ test('boundedRuntimeErrorString preserves existing runtime truncation behavior',
   assert.equal(boundedRuntimeErrorString(12345, 4), '123…');
 });
 
-test('safeRuntimeErrorDetail preserves safe primitive and bounded array/object detail shape', () => {
+test('safeRuntimeErrorDetail keeps primitives, turns array items into strings and other objects into their type name', () => {
   const input = {
     a: 'alpha',
     b: 7,

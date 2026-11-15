@@ -6,11 +6,13 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/providers/haRuntimeProvider.js"
-LEGACY = ROOT / "src/main.legacy.js"
+CLASSIFIER = ROOT / "src/yaml/yamlContextClassifier.js"
+APP = ROOT / "src/app.js"
 REPORT = ROOT / "reports/HA_RUNTIME_PROVIDER_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+classifier = CLASSIFIER.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 
 errors = []
 notes = []
@@ -41,8 +43,6 @@ required_behavior_tokens = [
     "provider",
     "row",
     "yamlFocusKind",
-    "target-block",
-    "style-block",
 ]
 
 for token in required_behavior_tokens:
@@ -51,6 +51,13 @@ for token in required_behavior_tokens:
     else:
         notes.append(f"PASS behavior token: {token}")
 
+# The provider delegates focus kinds to the YAML context classifier, which names them.
+for token in ["target-block", "style-block"]:
+    if token not in classifier:
+        errors.append(f"Expected focus kind missing from YAML context classifier: {token}")
+    else:
+        notes.append(f"PASS classifier focus kind: {token}")
+
 for token in [
     "findHass",
     "runtimeData",
@@ -58,8 +65,8 @@ for token in [
     "haRuntimeValueProvider",
     "runtimeSummary",
 ]:
-    if token not in legacy:
-        errors.append(f"Legacy lost HA runtime provider token: {token}")
+    if token not in app:
+        errors.append(f"app.js is missing HA runtime provider token: {token}")
 
 # document access is allowed in this module only for findHass.
 m = re.search(r'export function findHass\s*\([^)]*\)\s*\{[\s\S]*?\n  \}', module)
@@ -98,9 +105,9 @@ for token in [
     "perform_action",
 ]:
     if token not in module:
-        errors.append(f"Expected v31.2 coverage token missing: {token}")
+        errors.append(f"Expected context coverage token missing: {token}")
     else:
-        notes.append(f"PASS v31.2 token: {token}")
+        notes.append(f"PASS context token: {token}")
 
 REPORT.write_text(
     "HA runtime provider static test report\n\n"

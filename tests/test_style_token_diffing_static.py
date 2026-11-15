@@ -1,28 +1,22 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import json
 
 ROOT = Path(__file__).resolve().parents[1]
-MAIN = ROOT / "src/main.legacy.js"
+MAIN = ROOT / "src/app.js"
 STYLE_RUNTIME = ROOT / "src/ui/codeboxStyleRuntime.js"
 CODEBOX_STYLE = ROOT / "src/ui/codeboxStyle.js"
 FRAME_RUNTIME = ROOT / "src/ui/codeboxFrameRuntime.js"
 SETTINGS_RUNTIME = ROOT / "src/ui/settingsPanelRuntime.js"
-# Modularization (monolith -> modules) moved several style-token-diffing facts
-# out of main.legacy.js into focused owner modules. Re-pointed to their CURRENT homes:
-#   codeboxEditorCacheKey()            -> src/editor/activeEditorCacheRuntime.js
-#   style-cache invalidation + forced  -> src/editor/editorLifecycleSentinel.js
-#     structural root scan
-#   live slider commit reapply default -> src/ui/codebox/codeboxStyleSettle.js
-#     reason "style-range-change"
-#   live slider/option call sites       -> src/ui/settings/settingsPanelShell.js
+# A style apply compares token signatures and takes a cheap path when nothing changed.
+#   codeboxEditorCacheKey(): src/editor/activeEditorCacheRuntime.js
+#   cache invalidation and the forced structural root scan: src/editor/editorLifecycleSentinel.js
+#   the slider commit reapply ("style-range-change"): src/ui/codebox/codeboxStyleSettle.js
+#   the slider and option call sites: src/ui/settings/settingsPanelShell.js
 ACTIVE_EDITOR_CACHE_RUNTIME = ROOT / "src/editor/activeEditorCacheRuntime.js"
 EDITOR_LIFECYCLE_SENTINEL = ROOT / "src/editor/editorLifecycleSentinel.js"
 CODEBOX_STYLE_SETTLE = ROOT / "src/ui/codebox/codeboxStyleSettle.js"
 SETTINGS_PANEL_SHELL = ROOT / "src/ui/settings/settingsPanelShell.js"
 DIST = ROOT / "dist/nostrodomus.js"
-VERSION_SRC = ROOT / "src/core/version.js"
-PROJECT = ROOT / "PROJECT.json"
 REPORT = ROOT / "reports/STYLE_TOKEN_DIFFING_STATIC_TEST_REPORT.txt"
 
 errors = []
@@ -35,20 +29,13 @@ def require(ok, msg):
         errors.append(msg)
 
 def any_in(text, *needles):
-    # Same invariant, two spellings: the readable SOURCE form and the minified DIST
-    # form (esbuild strips spaces, rewrites `true`->`!0`, collapses single-statement
-    # blocks, and chains consecutive `const` into a comma list). Matching either
-    # preserves the checked fact across both the source-owner concat and the bundle.
+    # Accepts the source form or the dist form (esbuild removes spaces, writes `true` as `!0`,
+    # drops braces around single statements and joins consecutive consts).
     return any(n in text for n in needles)
 
-project = json.loads(PROJECT.read_text(encoding="utf-8"))
-version = str(project.get("version"))
-internal = str(project.get("internal_version"))
-source_owner = "\n".join(p.read_text(encoding="utf-8", errors="replace") for p in (MAIN, STYLE_RUNTIME, CODEBOX_STYLE, FRAME_RUNTIME, SETTINGS_RUNTIME, ACTIVE_EDITOR_CACHE_RUNTIME, EDITOR_LIFECYCLE_SENTINEL, CODEBOX_STYLE_SETTLE, SETTINGS_PANEL_SHELL, VERSION_SRC))
+source_owner = "\n".join(p.read_text(encoding="utf-8", errors="replace") for p in (MAIN, STYLE_RUNTIME, CODEBOX_STYLE, FRAME_RUNTIME, SETTINGS_RUNTIME, ACTIVE_EDITOR_CACHE_RUNTIME, EDITOR_LIFECYCLE_SENTINEL, CODEBOX_STYLE_SETTLE, SETTINGS_PANEL_SHELL))
 
 for label, text in (("source-owner", source_owner), ("dist", DIST.read_text(encoding="utf-8", errors="replace"))):
-    require(any_in(text, f'PROJECT_VERSION = "{version}"', f'PROJECT_VERSION="{version}"'), f"{label} PROJECT_VERSION matches PROJECT.json")
-    require(any_in(text, f'VERSION = "{internal}"', f'VERSION="{internal}"'), f"{label} VERSION matches PROJECT.json internal_version")
     require(any_in(text,
                    'function codeboxStyleSignature({ settings, tokens, size, syntaxFilter, thumbBorder, frameEnabled, syntax })',
                    'function codeboxStyleSignature({settings,tokens,size,syntaxFilter,thumbBorder,frameEnabled,syntax})'),
@@ -74,12 +61,8 @@ for label, text in (("source-owner", source_owner), ("dist", DIST.read_text(enco
     require(any_in(text,
                    'scheduleStyleRangeCommitReapply(group = "style-range-change")',
                    'scheduleStyleRangeCommitReapply(group="style-range-change")'),
-            f"{label} preserves live slider update call site")
-    require('scheduleCodeboxStyleReapply("style-option-change")' in text, f"{label} preserves live option update call site")
-
-version_tuple = tuple(int(part) for part in version.split(".") if part.isdigit())
-require(version_tuple >= (0, 1, 13), "PROJECT.json remains at or beyond the 0.1.13 codebox frame owner baseline")
-require("codebox-frame-owner" in internal or version_tuple > (0, 1, 13), "PROJECT.json internal_version records codebox frame owner (or version advanced beyond the baseline that introduced it)")
+            f"{label} has the live slider update call site")
+    require('scheduleCodeboxStyleReapply("style-option-change")' in text, f"{label} has the live option update call site")
 
 REPORT.parent.mkdir(parents=True, exist_ok=True)
 REPORT.write_text(

@@ -1,9 +1,9 @@
-// APPLY-ON-OPEN: the no-editor recovery heartbeat. On 2026.6 the wa-dialog opens 0-sized, so the
-// codebox fails the visible-candidate gate at open-time and discovery returns null; the recovery loop used
-// to dead-end (no reschedule, no reapply) so the chrome only landed on the first CLICK. The runtime keeps the
-// discovery loop alive across the dialog's async settle (a bounded 120ms heartbeat) so the instant the
-// editor sizes to a candidate it is found → chrome applies ON OPEN. CM-gated (no chrome with no editor),
-// form-field skip untouched (it lives upstream in activeCodeboxStyleEditor), wall-clock ceiling (no spin).
+// Apply on open: the no-editor recovery heartbeat. On Home Assistant 2026.6 the wa-dialog opens
+// 0-sized, so the codebox fails the visible-candidate gate at open time and discovery returns null.
+// The runtime keeps the discovery loop alive across the dialog's async settle (a bounded 120ms
+// heartbeat), so the editor is found as soon as it has a size and the chrome is applied on open,
+// not on the first click. No chrome without a CodeMirror editor; the form-field skip lives upstream
+// in activeCodeboxStyleEditor; a wall-clock ceiling stops the loop.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -41,23 +41,23 @@ function makeRuntime({ editor = null, dialogCandidates = [], activeDialog = null
 
 const editorStub = () => ({ querySelector: () => null });
 
-test('no editor while a card dialog is opening: arms a bounded heartbeat + wall-clock deadline, applies NO chrome (CM-gated)', () => {
+test('no editor while a card dialog is opening: arms a bounded heartbeat and a wall-clock deadline, applies no chrome', () => {
   const { rt, state, scheduledDelays, reapplyReasons } = makeRuntime({ editor: null, dialogCandidates: [{}] });
   const before = Date.now();
   assert.equal(rt.runEditorPresenceProbe('open'), false, 'no editor yet → false');
   assert.ok(scheduledDelays.includes(120), 'reschedules the 120ms discovery heartbeat across the settle');
   assert.ok(state.editorSentinelOpeningRetryDeadline >= before + 3900, 'armed a ~4s wall-clock ceiling');
   assert.ok(state.editorSentinelOpeningRetryDeadline <= Date.now() + 4000, 'ceiling is bounded, not unbounded');
-  assert.equal(reapplyReasons.length, 0, 'NO chrome applied while there is no codebox editor (CM-gated)');
+  assert.equal(reapplyReasons.length, 0, 'no chrome applied while there is no codebox editor (CM-gated)');
 });
 
-test('the heartbeat finds the now-settled editor and applies chrome ON OPEN — no pointer event', () => {
+test('the heartbeat finds the settled editor and applies the chrome on open, with no pointer event', () => {
   const { rt, state, reapplyReasons, setEditor } = makeRuntime({ editor: null, dialogCandidates: [{}] });
   rt.runEditorPresenceProbe('open');           // 0-sized phase: no editor
   assert.equal(reapplyReasons.length, 0);
   setEditor(editorStub());                       // wa-dialog settles → editor becomes a candidate
   assert.equal(rt.runEditorPresenceProbe('no-editor-opening-retry'), true, 'editor found on a heartbeat tick');
-  assert.ok(reapplyReasons.some((r) => /editor-sentinel-new/.test(r)), 'chrome applied via the detection path, with NO click');
+  assert.ok(reapplyReasons.some((r) => /editor-sentinel-new/.test(r)), 'chrome applied via the detection path, with no click');
   assert.equal(state.editorSentinelOpeningRetryDeadline, 0, 'deadline cleared once the editor is found');
 });
 
@@ -127,7 +127,7 @@ test('a ceiling that ran out in an earlier opening is re-armed when a dialog or 
   const { rt, state, scheduledDelays, observer, runFrames, resetSchedule } = makeObservedRuntime();
   state.editorSentinelOpeningRetryDeadline = Date.now() - 5000; // left over from the previous opening
   rt.runEditorPresenceProbe('stale');
-  assert.ok(!scheduledDelays.includes(120), 'the old ceiling still bounds a probe that nothing announced');
+  assert.ok(!scheduledDelays.includes(120), 'the 120ms ceiling bounds a probe that nothing announced');
   resetSchedule();
 
   observer.cb(dialogAdded());   // the dialog opens again

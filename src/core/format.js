@@ -37,7 +37,6 @@ export function syntaxHsl(theme, offset, lightnessShift = 0, saturationShift = 0
   return `hsl(${h} ${s}% ${l}%)`;
 }
 
-
 export function rgbToHsl(r, g, b) {
   r /= 255;
   g /= 255;
@@ -59,7 +58,6 @@ export function rgbToHsl(r, g, b) {
   }
   return [Math.round(h * 360), s, l];
 }
-
 
 // HSL -> RGB. hue 0..360 (wrapped), saturation/lightness 0..1. Returns [r,g,b] 0..255
 // integers. Pure inverse of rgbToHsl; used to render an accent color into the
@@ -89,7 +87,6 @@ export function hslToRgb(hue, saturation, lightness) {
     Math.round(channel(h - 1 / 3) * 255),
   ];
 }
-
 
 export function syntaxColorWithOpacity(color, opacity = 1, fallbackColor = '#d4d4d4') {
   const raw = String(color || fallbackColor).trim();

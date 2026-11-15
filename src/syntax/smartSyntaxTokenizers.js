@@ -26,13 +26,8 @@ export const SMART_SYNTAX_KIND_ORDER = Object.freeze([
 
 export function smartSyntaxKind(kind, order = SMART_SYNTAX_KIND_ORDER) {
   const raw = String(kind || "fg");
-  return Array.isArray(order) || typeof order?.includes === "function"
-    ? order.includes(raw)
-      ? raw
-      : "fg"
-    : SMART_SYNTAX_KIND_ORDER.includes(raw)
-      ? raw
-      : "fg";
+  const known = typeof order?.includes === "function" ? order : SMART_SYNTAX_KIND_ORDER;
+  return known.includes(raw) ? raw : "fg";
 }
 
 export function smartSyntaxPushRange(tokens, start, end, kind, order = SMART_SYNTAX_KIND_ORDER) {
@@ -83,9 +78,8 @@ export function smartSyntaxYamlLineInfo(lineText) {
   const raw = String(lineText || "");
   const lead = smartSyntaxLeadingSpaces(raw);
   const rest = raw.slice(lead);
-  // A YAML mapping key ends in a colon followed by whitespace or the end of the line.
-  // Without that, `- https://example.com/a` parsed as the key `https` with the value
-  // `//example.com/a`, which was then painted as a comment.
+  // A YAML mapping key ends in a colon followed by whitespace or the end of the line, so
+  // `- https://example.com/a` is a list item, not the key `https`.
   const m = rest.match(/^(-\s*)?((?:[A-Za-z_][\w$.-]*)|(?:"[^"]+")|(?:'[^']+'))\s*:(?=\s|$)/);
   if (!m) return null;
   const listPrefix = m[1] || "";
@@ -142,8 +136,8 @@ export function smartSyntaxOffsetInQuotedString(text, offset) {
 //
 // A colon counts only where it ends a key: followed by a space, a tab or the end of the text, or
 // inside a flow collection directly after a closing quote or bracket (`{"a":"b"}`). The colon in
-// `Light "Hall:" # main` is a character of the plain scalar; counting it let the quote after it
-// open a string that never closed, which hid the comment.
+// `Light "Hall:" # main` is a character of the plain scalar, so the quote after it opens nothing
+// and the comment is still found.
 function smartSyntaxOffsetInYamlQuotedScalar(text, offset) {
   const raw = String(text || "");
   let quote = "";
@@ -154,6 +148,8 @@ function smartSyntaxOffsetInYamlQuotedScalar(text, offset) {
     const ch = raw[i];
     if (quote) {
       if (quote === '"' && ch === "\\") i += 1;
+      // `''` is an escaped quote inside a single-quoted scalar.
+      else if (quote === "'" && ch === "'" && raw[i + 1] === "'") i += 1;
       else if (ch === quote) { quote = ""; closedAt = i; }
       continue;
     }
@@ -195,7 +191,7 @@ export function smartSyntaxCssBlockScalarStart(info) {
 }
 
 // Any other block scalar (`content: |`, `value_template: >`): its lines are literal text.
-export function smartSyntaxTextBlockScalarStart(info) {
+function smartSyntaxTextBlockScalarStart(info) {
   if (!info || smartSyntaxCssBlockScalarStart(info)) return false;
   return /^[>|][+-]?\d*[+-]?\s*(?:#.*)?$/.test(String(info.valueText || "").trim());
 }
@@ -213,12 +209,10 @@ function smartSyntaxLineIsComment(raw, lineKind, pattern) {
   return (!lineKind || lineKind === "fg") && pattern.test(raw);
 }
 
-// Block-scalar close bound for a scalar opener: for a dash-prefixed opener
-// (`- style: |`) sibling keys of the same list item sit at the KEY'S column, deeper
-// than the whitespace lead, so the bound must include the dash segment. The dash
-// counts as a list indicator only with trailing space/tab (`-style:` is a plain
-// key at its own lead), and only the matched space/tab run is measured -- both
-// mirror the completion lane's yamlKeyColumn semantics exactly.
+// The column at or below which a line closes the block scalar opened by this key line. For
+// `- style: |` the sibling keys of the list item sit at the key's column, after the dash, so the
+// bound includes the dash and the blanks after it. `-style:` is a plain key at its own column.
+// The completion context measures the same way (yamlKeyColumn in yamlCompletionContext.js).
 function smartSyntaxBlockScalarBound(info) {
   const dash = /^(-[ \t]+)/.exec(String(info.listPrefix || ""));
   return dash ? info.lead + dash[1].length : info.lead;
@@ -236,7 +230,7 @@ function smartSyntaxCssMapStart(info) {
 // The key is taken as the text up to the colon in front of the block indicator, because a
 // selector path is often not a plain YAML word and smartSyntaxYamlLineInfo does not read it.
 function smartSyntaxCssMapBlockScalarBound(raw) {
-  const m = /^(\s*)(-[ \t]+)?\S.*?:[ \t]+[>|][+-]?\d*[+-]?\s*$/.exec(String(raw || ""));
+  const m = /^(\s*)(-[ \t]+)?\S.*?:[ \t]+[>|][+-]?\d*[+-]?\s*(?:#.*)?$/.exec(String(raw || ""));
   return m ? m[1].length + (m[2] ? m[2].length : 0) : -1;
 }
 
@@ -256,7 +250,7 @@ export function smartSyntaxDocLinesFromEditor(editor, codeMirrorSourceClassParts
     const known = typeof doc === "object" ? docLinesByDocument.get(doc) : null;
     if (known && known.length === doc.lines) return known;
     // Every edit makes a new document object, so this copy runs once per edit. The editor's own
-    // line export is one call; the loop asked for each line by number.
+    // line export is one call; reading each line by number is the fallback.
     let lines = null;
     if (typeof doc.toJSON === "function") {
       const exported = doc.toJSON();
@@ -313,10 +307,9 @@ export function smartSyntaxBestDocumentStartIndex(docLines, domLines) {
 // out of view, and a folded range leaves a hole. The list is used when it is one index per
 // rendered line, in rising order, and the first and last lines carry the text of their
 // document lines. A line with a fold placeholder or another widget carries more than its own
-// text, so when an edge line does not settle it, any line with text that carries the text of
-// its document line does. Without that, a fold on the first or last rendered line threw the
-// list away and the lines were taken as one block again.
-export function smartSyntaxLineIndexesMatch(docLines, domLines, lineIndexes) {
+// text, so when an edge line does not settle it, any line with text that starts with the text
+// of its document line does. A fold on the first or last rendered line then keeps the list.
+function smartSyntaxLineIndexesMatch(docLines, domLines, lineIndexes) {
   if (!Array.isArray(lineIndexes) || lineIndexes.length !== domLines.length || !lineIndexes.length) return false;
   let previous = -1;
   for (const index of lineIndexes) {
@@ -447,9 +440,8 @@ export function smartSyntaxTokenizeJinjaInsideCss(
   return finalEnd;
 }
 
-// The CSS tokenizer matches at the current position of the line with sticky patterns. It used to
-// cut the rest of the line off for each token and lower-case it, and searched the line start
-// again for each identifier, so the time for a line grew with the square of its length.
+// The CSS tokenizer matches at the current position of the line with sticky patterns, so the
+// time for a line grows with its length, not with the square of it.
 const CSS_HEX_AT = /#[0-9a-f]{3,8}\b/iy;
 const CSS_NUMBER_AT =
   /-?(?:\d*\.\d+|\d+)(?:%|px|em|rem|vh|vw|vmin|vmax|fr|s|ms|deg|turn|rad|dpi|dppx)?\b/iy;
@@ -635,8 +627,6 @@ export function smartSyntaxScalarKind(token, lineKind = "fg", lineInfo = null) {
     )
   )
     return "filter";
-  if (/^#[0-9a-f]{3,8}\b/i.test(t))
-    return lineKind && lineKind.startsWith("css") ? "cssValue" : "string";
   if (
     /^(var|env|rgb|rgba|hsl|hsla|calc|min|max|clamp|color-mix|linear-gradient|radial-gradient|conic-gradient|url|drop-shadow|blur|brightness|contrast|saturate|translate|translatex|translatey|translatez|scale|rotate)\b/i.test(
       t,
@@ -646,7 +636,7 @@ export function smartSyntaxScalarKind(token, lineKind = "fg", lineInfo = null) {
   if (/^--[A-Za-z0-9_-]+/.test(t)) return "cssProp";
   if (/^[\][:{}(),.;[]+$/.test(t)) return "punct";
   if (/^[-|>=<~!+*/%]+$/.test(t)) return "op";
-  if (/^\|?[A-Za-z_][\w-]*$/.test(t) && t.startsWith("|")) return "filter";
+  if (/^\|[A-Za-z_][\w-]*$/.test(t)) return "filter";
   return lineKind && lineKind !== "fg" ? lineKind : "string";
 }
 
@@ -691,10 +681,10 @@ export function smartSyntaxCssTokenKind(tokenText, lineText, lineKind, tokenStar
   if (/^(\/\*|\*|\*\/|\/\/)/.test(t)) return "comment";
   if (/^[\][:{}(),.;[]+$/.test(t)) return "punct";
   if (/^[-|>=<~+*/%]+$/.test(t)) return "op";
-  if (/^!important$/i.test(t) || /!important/i.test(t)) return "cssGlow";
+  if (/!important/i.test(t)) return "cssGlow";
   if (smartSyntaxCssNumericToken(t)) return "number";
   if (/^#[0-9a-f]{3,8}\b/i.test(t)) return "cssValue";
-  if (/^['"].*['"]$/.test(t) || /^['"]/.test(t)) return "string";
+  if (/^['"]/.test(t)) return "string";
   if (smartSyntaxCssFunctionName(t)) return "filter";
 
   const selectorEnd = raw.indexOf("{");
@@ -713,7 +703,7 @@ export function smartSyntaxCssTokenKind(tokenText, lineText, lineKind, tokenStar
     if (tokenStart > bounds.colon) {
       if (/^--[A-Za-z0-9_-]+$/.test(t)) return "cssValue";
       if (
-        /^(inherit|initial|unset|revert|auto|none|solid|dashed|hidden|transparent|currentColor|visible|hidden|relative|absolute|fixed|sticky|block|inline|flex|grid|center|left|right|top|bottom|cover|contain)$/i.test(
+        /^(inherit|initial|unset|revert|auto|none|solid|dashed|hidden|transparent|currentColor|visible|relative|absolute|fixed|sticky|block|inline|flex|grid|center|left|right|top|bottom|cover|contain)$/i.test(
           t,
         )
       )
@@ -730,26 +720,41 @@ export function smartSyntaxCssTokenKind(tokenText, lineText, lineKind, tokenStar
   return smartSyntaxScalarKind(t, lineKind || "cssValue");
 }
 
-// Tokens for the scalar part of a YAML line starting at valueStart: flow punctuation, scalars by
-// kind, and a trailing comment that is not inside a quoted scalar.
-function smartSyntaxPushYamlScalarTokens(tokens, raw, valueStart, lineInfo, order) {
-  const value = raw.slice(valueStart);
-  let commentIndex = -1;
-  let commentHashAt = -1;
+// The offset in a YAML value of the `#` that starts its trailing comment: the first `#` after
+// whitespace that is not inside a quoted scalar. -1 when the value has no comment.
+function smartSyntaxYamlCommentOffset(value) {
   for (const candidate of value.matchAll(/\s+#/g)) {
     const hashAt = candidate.index + candidate[0].length - 1;
-    if (!smartSyntaxOffsetInYamlQuotedScalar(value, hashAt)) { commentIndex = candidate.index; commentHashAt = hashAt; break; }
+    if (!smartSyntaxOffsetInYamlQuotedScalar(value, hashAt)) return hashAt;
   }
-  const valueEnd = commentIndex >= 0 ? valueStart + commentIndex : raw.length;
-  for (const match of raw.slice(valueStart, valueEnd).matchAll(/[^\s,[\]{}]+|[\][{},]/g)) {
+  return -1;
+}
+
+// Tokens for the scalar part of a YAML line starting at valueStart: flow punctuation, scalars by
+// kind, and the trailing comment.
+function smartSyntaxPushYamlScalarTokens(tokens, raw, valueStart, lineInfo, order) {
+  const value = raw.slice(valueStart);
+  const commentAt = smartSyntaxYamlCommentOffset(value);
+  const scalarText = commentAt >= 0 ? value.slice(0, commentAt) : value;
+  for (const match of scalarText.matchAll(/[^\s,[\]{}]+|[\][{},]/g)) {
     const token = match[0];
     const start = valueStart + match.index;
     const end = start + token.length;
     if (/^[\][{},]$/.test(token)) smartSyntaxPushRange(tokens, start, end, "punct", order);
+    // A word of a quoted scalar with spaces: `"Room #1"` is one string, not a string and a comment.
     else if (smartSyntaxOffsetInYamlQuotedScalar(value, match.index)) smartSyntaxPushRange(tokens, start, end, "string", order);
     else smartSyntaxPushRange(tokens, start, end, smartSyntaxScalarKind(token, "string", lineInfo), order);
   }
-  if (commentHashAt >= 0) smartSyntaxPushRange(tokens, valueStart + commentHashAt, raw.length, "comment", order);
+  if (commentAt >= 0) smartSyntaxPushRange(tokens, valueStart + commentAt, raw.length, "comment", order);
+  return tokens;
+}
+
+// The list dash, the key and the colon of a `key: value` line.
+function smartSyntaxPushYamlKeyTokens(tokens, lineInfo, order) {
+  if (lineInfo.listPrefix)
+    smartSyntaxPushRange(tokens, lineInfo.lead, lineInfo.lead + lineInfo.listPrefix.length, "yamlList", order);
+  smartSyntaxPushRange(tokens, lineInfo.keyStart, lineInfo.keyEnd, "key", order);
+  smartSyntaxPushRange(tokens, lineInfo.colonIndex, lineInfo.colonIndex + 1, "punct", order);
   return tokens;
 }
 
@@ -771,46 +776,28 @@ export function smartSyntaxTokenizeYamlLine(
     smartSyntaxPushRange(tokens, item[1].length, item[1].length + 1, "yamlList", order);
     return smartSyntaxPushYamlScalarTokens(tokens, raw, item[0].length, null, order);
   }
-  if (lineInfo.listPrefix)
-    smartSyntaxPushRange(
-      tokens,
-      lineInfo.lead,
-      lineInfo.lead + lineInfo.listPrefix.length,
-      "yamlList",
-      order,
-    );
-  smartSyntaxPushRange(tokens, lineInfo.keyStart, lineInfo.keyEnd, "key", order);
-  smartSyntaxPushRange(tokens, lineInfo.colonIndex, lineInfo.colonIndex + 1, "punct", order);
-  const valueStart = lineInfo.valueStart;
+  smartSyntaxPushYamlKeyTokens(tokens, lineInfo, order);
+  return smartSyntaxPushYamlScalarTokens(tokens, raw, lineInfo.valueStart, lineInfo, order);
+}
+
+// A YAML line whose value holds a template: the list dash, the key, the colon and a trailing
+// comment are YAML, the value is a template. A line without a key or a dash is all template.
+function smartSyntaxTokenizeYamlTemplateLine(raw, lineInfo, order) {
+  const tokens = [];
+  let valueStart = 0;
+  if (lineInfo) {
+    smartSyntaxPushYamlKeyTokens(tokens, lineInfo, order);
+    valueStart = lineInfo.valueStart;
+  } else {
+    const item = /^(\s*)-(\s+)(?=\S)/.exec(raw);
+    if (!item) return smartSyntaxTokenizeJinjaSegment(raw, 0, tokens, order);
+    smartSyntaxPushRange(tokens, item[1].length, item[1].length + 1, "yamlList", order);
+    valueStart = item[0].length;
+  }
   const value = raw.slice(valueStart);
-  // The first ` #` that is not inside a quoted string starts the trailing comment.
-  let commentIndex = -1;
-  for (const candidate of value.matchAll(/\s+#/g)) {
-    const hashAt = candidate.index + candidate[0].length - 1;
-    if (!smartSyntaxOffsetInYamlQuotedScalar(value, hashAt)) { commentIndex = candidate.index; break; }
-  }
-  const valueEnd = commentIndex >= 0 ? valueStart + commentIndex : raw.length;
-  const commentStart = commentIndex >= 0 ? valueStart + commentIndex + 1 : -1;
-  const chunks = raw.slice(valueStart, valueEnd).matchAll(/[^\s,[\]{}]+|[\][{},]/g);
-  for (const match of chunks) {
-    const token = match[0];
-    const start = valueStart + match.index;
-    const end = start + token.length;
-    if (/^[\][{},]$/.test(token)) smartSyntaxPushRange(tokens, start, end, "punct", order);
-    else if (smartSyntaxOffsetInYamlQuotedScalar(value, match.index))
-      // Part of a quoted string that contains spaces: `"Room #1"` is one string, not a string
-      // followed by a comment.
-      smartSyntaxPushRange(tokens, start, end, "string", order);
-    else
-      smartSyntaxPushRange(
-        tokens,
-        start,
-        end,
-        smartSyntaxScalarKind(token, "string", lineInfo),
-        order,
-      );
-  }
-  if (commentStart >= 0) smartSyntaxPushRange(tokens, commentStart, raw.length, "comment", order);
+  const commentAt = smartSyntaxYamlCommentOffset(value);
+  smartSyntaxTokenizeJinjaSegment(commentAt >= 0 ? value.slice(0, commentAt) : value, valueStart, tokens, order);
+  if (commentAt >= 0) smartSyntaxPushRange(tokens, valueStart + commentAt, raw.length, "comment", order);
   return tokens;
 }
 
@@ -818,9 +805,9 @@ const SMART_SYNTAX_CSS_FUNCTION_VALUE = /^\s*(?:-\s+)?[\w-]+\s*:\s+.*\b(?:rgba?|
 
 // Keeps the tokens of lines already tokenized. The tokens of a line are decided by its text, its
 // line kind, the block scalar it sits in and whether it is read as a `key: value` line (the key
-// information itself is derived from the text). Each pass tokenized every rendered line again,
-// about a hundred per keystroke, of which one had changed. Only the tokens are kept here; the
-// ranges built from them belong to the elements on the page and are kept by the range pass.
+// information itself is derived from the text). A pass covers every rendered line, about a
+// hundred, while an edit changes one. Only the tokens are kept here; the ranges built from them
+// belong to the elements on the page and are kept by the range pass.
 // The same key returns the same array, which that pass uses to tell that a line is unchanged.
 // `tokenize(lineText, lineKind, lineInfo, blockScalarKind)` is the tokenizer to remember.
 export function createSmartSyntaxLineTokenCache(tokenize, limit = 3000, maxLineLength = 600) {
@@ -856,17 +843,16 @@ export function smartSyntaxRangeTokensForLine(
     return [{ start: 0, end: raw.length, kind: "comment" }];
   // When the caller knows where the line sits (the document pass does), that decides the
   // tokenizer. Outside a block scalar the line is YAML structure: its keys, values, booleans,
-  // entity ids and trailing comments are YAML, whatever the text looks like. The CSS guess below
-  // (a `key:` at line start, a card name, a brace) sent nearly every such line to the CSS
-  // tokenizer. Inside a text block scalar the line is text or Jinja. Only a CSS block scalar
-  // (card_mod style and the like) is CSS.
+  // entity ids and trailing comments are YAML, whatever the text looks like. Inside a text block
+  // scalar the line is text or a template. Only a CSS block scalar (card_mod style and the like)
+  // is CSS. The guess from the text further down is for callers that do not know.
   if (blockScalarKind === "" || blockScalarKind === "text") {
-    if (darkPlusIsJinjaLine(raw) || lineKind === "jinja")
-      return smartSyntaxTokenizeJinjaSegment(raw, 0, [], order);
+    if (darkPlusIsJinjaLine(raw) || lineKind === "jinja") {
+      return blockScalarKind === ""
+        ? smartSyntaxTokenizeYamlTemplateLine(raw, lineInfo, order)
+        : smartSyntaxTokenizeJinjaSegment(raw, 0, [], order);
+    }
     if (blockScalarKind === "text") {
-      // Text with an inline template keeps the YAML tokenizer, which colors the template; plain
-      // text is one string.
-      if (/\{\{|\{%|\{#/.test(raw)) return smartSyntaxTokenizeYamlLine(raw, null, "fg", order);
       const start = smartSyntaxLeadingSpaces(raw);
       return [{ start, end: raw.trimEnd().length, kind: "string" }];
     }
@@ -889,11 +875,10 @@ export function smartSyntaxRangeTokensForLine(
   return smartSyntaxTokenizeYamlLine(raw, lineInfo, lineKind, order);
 }
 
-
 // The line modes of the last document and the classifier state before each line. The mode of
 // a line depends only on the lines above it, so a pass on the same document continues where
-// the last one stopped, and a pass after an edit continues from the first line that differs.
-// Without this every pass classified the document from line 1 down to the viewport.
+// the last one stopped, and a pass after an edit continues from the first line that differs,
+// instead of classifying the document from line 1 down to the viewport each time.
 let lineModeCache = null;
 
 function smartSyntaxLineModeCacheFor(docLines, darkPlusIsJinjaLine, darkPlusLineKind, order) {
@@ -1097,7 +1082,10 @@ export function smartSyntaxTokenKind(
     return "string";
   }
 
-  if (darkPlusIsJinjaLine(raw) || lineKind === "jinja") {
+  // On a `key: value` line the list dash, key and colon keep their YAML kinds when the value
+  // holds a template.
+  const inKeyPart = !!lineInfo && tokenStart < lineInfo.valueStart;
+  if ((darkPlusIsJinjaLine(raw) || lineKind === "jinja") && !inKeyPart) {
     return darkPlusTokenKind({ textContent: tokenText }, raw, "jinja");
   }
 

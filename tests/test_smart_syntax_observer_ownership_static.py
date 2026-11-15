@@ -2,10 +2,11 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MAIN = ROOT / "src" / "main.legacy.js"
+MAIN = ROOT / "src" / "app.js"
 TEXT = MAIN.read_text(encoding="utf-8")
 
-REMOVED_SHIMS = [
+# app.js has no hand-written one-line shims for these syntax runtime methods.
+SHIMS_NOT_IN_MAIN = [
     "installCodeMirrorSyntaxContentObserver",
     "smartSyntaxUpdateBlockContext",
     "smartSyntaxLineKindForMode",
@@ -23,13 +24,11 @@ REMOVED_SHIMS = [
     "appendSourceClassSyntaxRefreshReason",
 ]
 
-for name in REMOVED_SHIMS:
+for name in SHIMS_NOT_IN_MAIN:
     token = f"function {name}(...args) {{ return syntaxRuntime.{name}(...args); }}"
-    assert token not in TEXT, f"delegation shim still present: {name}"
+    assert token not in TEXT, f"delegation shim in app.js: {name}"
 
-# Current HA full verify still protects these seams in main. Keep them until the
-# corresponding static gates are intentionally retired in their own patch.
-# Current full verify protects these syntax seams through the v0.1.49 delegate bundle.
+# These syntax methods reach app.js through the syntax runtime delegate list.
 for token in [
     "scheduleInitialSyntaxPaintGate",
     "primeInitialSyntaxPaintGateForEditor",

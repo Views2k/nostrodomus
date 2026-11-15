@@ -1,17 +1,16 @@
 // Scrollbar CSS byte-identity golden baseline.
 //
-// The absorbed scrollbar module must regenerate v17's injected scrollbar stylesheets BYTE-FOR-BYTE — same variable
-// names, same !important, same whitespace. This test pins the two CSS template
-// strings v17 emits, read verbatim from the FROZEN source file (never hand-copied),
-// and freezes their SHA256. The same test asserts that
-// src/companion/scrollbarStyleRuntime.js reproduces those exact bytes. If it fails,
-// fix the module, not the pin.
+// The built-in scrollbar module must produce v17's injected scrollbar stylesheets byte for byte:
+// the same variable names, the same !important, the same whitespace. This test reads the two CSS
+// template strings from the frozen v17 file, freezes their SHA256, and checks that
+// src/companion/companionStyleRuntime.js produces exactly those bytes. If it fails, fix the
+// module, not the pin.
 //
 // The two stylesheets:
-//   CODEBOX     — id "nostrodomus-editor-v17-2-learned-style" (injectCodeCss): the styled
+//   codebox     — id "nostrodomus-editor-v17-2-learned-style" (injectCodeCss): the styled
 //                 --nostrodomus-codebox-scrollbar-* scrollbar (::-webkit-scrollbar* +
 //                 scrollbar-color) and the codebox chrome it ships with.
-//   DIALOG-ROOT — id "nostrodomus-editor-v17-2-learned-style-dialog-root" (injectStyle):
+//   dialog-root — id "nostrodomus-editor-v17-2-learned-style-dialog-root" (injectStyle):
 //                 native scrollbar suppression on .element-editor/.element-preview.
 
 import test from 'node:test';
@@ -23,8 +22,8 @@ import {
   V17_PATH,
   extractCodeboxCss,
   extractDialogRootCss,
-  absorbedModuleExists,
-  absorbedModulePath,
+  companionModuleExists,
+  companionModuleUrl,
 } from './_fixtures/companionSource.mjs';
 
 // Golden hashes — computed from the frozen v17 source. These are the contract.
@@ -35,7 +34,7 @@ const GOLDEN = Object.freeze({
   dialogRoot: 'a658116bcab71a68277c7112a7932ef13993f69adad6d2baf420cf521857fb01',
 });
 
-const SCROLLBAR_MODULE = 'scrollbarStyleRuntime.js';
+const SCROLLBAR_MODULE = 'companionStyleRuntime.js';
 
 test('v17 codebox CSS template hashes to the frozen golden value', () => {
   const css = extractCodeboxCss(readCompanion(V17_PATH));
@@ -52,13 +51,12 @@ test('v17 dialog-root CSS template hashes to the frozen golden value', () => {
   assert.equal(sha256(css), GOLDEN.dialogRoot);
 });
 
-// --- Absorbed-module byte-identity ---
-// CONTRACT for src/companion/scrollbarStyleRuntime.js: export a pure
-// `buildCompanionScrollbarCss()` returning { codebox: string, dialogRoot: string }
-// whose values hash IDENTICALLY to the golden values above.
-test('absorbed scrollbar module regenerates both stylesheets byte-identically', async () => {
-  assert.ok(absorbedModuleExists(SCROLLBAR_MODULE), `src/companion/${SCROLLBAR_MODULE} is missing; this module is required, fix the move or rename`);
-  const mod = await import(absorbedModulePath(SCROLLBAR_MODULE));
+// --- Built-in module byte identity ---
+// src/companion/companionStyleRuntime.js must export a pure `buildCompanionScrollbarCss()` that
+// returns { codebox: string, dialogRoot: string } with the golden hashes above.
+test('the built-in scrollbar module produces both stylesheets byte for byte', async () => {
+  assert.ok(companionModuleExists(SCROLLBAR_MODULE), `src/companion/${SCROLLBAR_MODULE} is missing`);
+  const mod = await import(companionModuleUrl(SCROLLBAR_MODULE));
   assert.equal(typeof mod.buildCompanionScrollbarCss, 'function', 'module must export buildCompanionScrollbarCss()');
   const built = mod.buildCompanionScrollbarCss();
   assert.equal(sha256(built.codebox), GOLDEN.codebox, 'codebox CSS must be byte-identical to v17');

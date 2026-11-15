@@ -17,9 +17,9 @@ export function parseSnippetTemplate(template) {
   let finalCursor = null;
   let text = '';
   let last = 0;
-  // The placeholder default allows balanced braces up to two levels deep so card_mod CSS blocks
-  // (`${1:.card { }}`) and Jinja expressions (`${1:{{ states('x') }}}`) aren't truncated at the first
-  // inner `}`. A plain `[^}]*` stopped at that brace, leaking the rest as literal text.
+  // A placeholder default may hold balanced braces up to two levels deep, so card_mod CSS blocks
+  // (`${1:.card { }}`) and Jinja expressions (`${1:{{ states('x') }}}`) do not end at the first
+  // inner `}`.
   const rx = /\$\{(\d+)\|([^}]*)\|\}|\$\{(\d+)(?::((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*))?\}|\$(\d+)/g;
   let match;
   while ((match = rx.exec(source))) {

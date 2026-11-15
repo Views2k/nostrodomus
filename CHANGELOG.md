@@ -4,6 +4,32 @@ Versions before 0.1.266 are not listed.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Nostrodomus is in beta, with versions numbered `0.1.x`.
 
+## [0.1.281] - 2026-11-15
+
+### Fixed
+
+- Pressing Tab to reach a snippet placeholder with choices, while the suggestion list was open, showed the choices for one frame and then replaced them with ordinary suggestions or "No suggestions". The choices now stay.
+- In a single-quoted string with a doubled quote, such as `'Bob''s # 1'`, the text after the doubled quote was colored as a comment.
+- With more than one space before a trailing `#`, the comment color started at a space instead of at the `#`.
+- On a key line whose value holds a template (`{{`, `{%` or `{#`), the key, the colon and a trailing comment took template colors. Only the value is colored as a template now, also in browsers without the CSS Custom Highlight API.
+- In a `card_mod` style map, a selector with a comment after its block indicator (`.: |  # note`) did not start a CSS block, so its CSS was colored as YAML.
+- In a dashboard with several cards that have a tap, hold or double tap action, a later card could pick up the action of an earlier card, and with it that action's fields and service suggestions.
+- A key followed only by a comment, such as `action: # pick one`, was read as if the comment were its value.
+- Reset to default in the settings panel, `resetSettings()` in the browser console and a settings change synced from another tab now apply the "Hide editor warnings" and "Glass editor dialog" settings at once. Before, the card editor dialog kept the old look until the editor was found again.
+- A settings reset in another browser tab was undone by the next save of this tab.
+- Work deferred while you type could be lost when the companion layer was turned off during typing.
+- After `disable()` or `uninstall()`, a selector check and three timers could still run and style the editor again.
+- In Settings, Style, two descriptions were shown under the wrong controls.
+- Diagnostics: the "Budget status" row always said OK, the count of dropped runtime errors stayed 0, and the observer summary always reported 0 pending records.
+- The navigate snippets used `/lovelace/default`, which opens the built-in Overview since Home Assistant 2026.6. They now use the placeholder `/my-dashboard/home`.
+
+### Changed
+
+- Snippet labels: the `card_mod` snippets start with `card_mod:`, and "action: service call" is now "action: perform action".
+- Descriptions in the settings panel and in Diagnostics are plain text, and the Stage values in Diagnostics name what each readout is.
+- A window resize listener and a scroll listener that did nothing on every scroll are gone.
+- Code: the runtime entry `src/main.legacy.js` is now `src/app.js`, and modules whose names described past work are renamed. Unused code is removed, comments and test names describe the code instead of its history, nine static checks that never ran their assertions now do, the repository has a `.gitattributes`, and CI runs with read-only permissions.
+
 ## [0.1.280] - 2026-11-14
 
 ### Fixed

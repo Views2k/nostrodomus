@@ -1,20 +1,14 @@
-// Runtime owner for Nostrodomus codebox frame and keyboard containment behavior.
-//
-// Dependencies are injected so this module owns the live frame/keyboard behavior
-// without importing browser-global singleton state.
+// The codebox frame host and the keyboard containment of the editor. The frame is drawn by the
+// host's own stylesheet (codeboxStyle.js). A separate, measured frame element is not used (see
+// docs/contracts/STYLE_OWNERSHIP_CONTRACT.md), so the functions named "external frame" only
+// mark the frame host and remove any such element. Dependencies are injected.
 
 export function createCodeboxFrameRuntime(ctx = {}) {
   const {
-    window = globalThis.window,
-    document = globalThis.document,
     state,
     cancelAnimationFrame = globalThis.cancelAnimationFrame?.bind?.(globalThis),
     setTimeout = globalThis.setTimeout?.bind?.(globalThis),
     clearTimeout = globalThis.clearTimeout?.bind?.(globalThis),
-    activeTopLayerDialog,
-    activeEditDialog,
-    homeRoot,
-    integrationDocumentStyleRoot,
     applyCodeboxStyleTokensToElement,
     activeCodeboxStyleEditor,
     codeboxStyleTokensFromSettings,
@@ -25,16 +19,15 @@ export function createCodeboxFrameRuntime(ctx = {}) {
     composedContains,
     isNostrodomusUiEvent,
     codeboxEditorCacheKey,
-    addPersistentListener,
   } = ctx;
 
   function codeboxFrameHostForEditor(editor) {
     if (!editor) return null;
-    // The visible frame must track the actual CodeMirror editor box, not the
-    // broader HA wrapper that v17 may continue resizing during open settle.
+    // The frame follows CodeMirror's own box, not the wider Home Assistant wrapper, which the
+    // companion layer resizes while the dialog opens.
     if (editor.matches?.(".cm-editor")) return editor;
     const root = editor.getRootNode?.();
-    if (root?.host?.localName === "ha-code-editor" && !editor.matches?.(".cm-editor")) return root.host;
+    if (root?.host?.localName === "ha-code-editor") return root.host;
     try {
       const closest = editor.closest?.("ha-code-editor");
       if (closest) return closest;
@@ -56,58 +49,6 @@ export function createCodeboxFrameRuntime(ctx = {}) {
     return null;
   }
 
-  function activeCodeboxFramePortalRoot() {
-    const topLayerDialog = activeTopLayerDialog?.();
-    if (topLayerDialog?.appendChild) return topLayerDialog;
-
-    const dialog = activeEditDialog?.();
-    if (dialog?.shadowRoot?.appendChild) return dialog.shadowRoot;
-    if (dialog?.appendChild) return dialog;
-
-    const haRoot = homeRoot?.();
-    if (haRoot?.appendChild) return haRoot;
-
-    return document?.body || document?.documentElement || integrationDocumentStyleRoot?.();
-  }
-
-  function ensureCodeboxExternalFrameHost() {
-    const root = activeCodeboxFramePortalRoot();
-    const fallback = document?.body || document?.documentElement;
-    if (!root?.appendChild) return fallback;
-
-    const rootIsTopLayerDialog = root?.localName === "dialog" && !!root.open;
-    let host = null;
-    try { host = root.querySelector?.("#nostrodomus-codebox-frame-portal-host-v1") || null; } catch { host = null; }
-
-    if (!host) {
-      host = document.createElement("div");
-      host.id = "nostrodomus-codebox-frame-portal-host-v1";
-      host.dataset.nostrodomusPurpose = "codebox-external-frame-portal";
-    }
-
-    host.dataset.nostrodomusPortalRootKind = rootIsTopLayerDialog ? "top-layer-dialog" : "root-portal";
-    host.style.setProperty("position", "fixed", "important");
-    host.style.setProperty("inset", "0", "important");
-    host.style.setProperty("width", "100vw", "important");
-    host.style.setProperty("height", "100vh", "important");
-    host.style.setProperty("overflow", "visible", "important");
-    host.style.setProperty("contain", "none", "important");
-    host.style.setProperty("isolation", "isolate", "important");
-    host.style.setProperty("z-index", "2147483000", "important");
-    host.style.setProperty("pointer-events", "none", "important");
-
-    try {
-      if (host.parentNode !== root) root.appendChild(host);
-      else root.appendChild(host);
-    } catch {
-      try { fallback.appendChild(host); } catch { /* detached node */ }
-    }
-
-    state.codeboxFramePortalHost = host;
-    state.codeboxFramePortalRootKind = host.dataset.nostrodomusPortalRootKind || "unknown";
-    return host;
-  }
-
   function removeCodeboxExternalFrame() {
     if (state.codeboxFrameRaf) {
       cancelAnimationFrame(state.codeboxFrameRaf);
@@ -117,50 +58,7 @@ export function createCodeboxFrameRuntime(ctx = {}) {
     state.codeboxFrameLastTokenKey = "";
     state.codeboxFramePendingRectKey = "";
     state.codeboxFrameStableFrames = 0;
-    if (state.codeboxFrameOverlay?.parentNode) {
-      try { state.codeboxFrameOverlay.parentNode.removeChild(state.codeboxFrameOverlay); } catch { /* detached node */ }
-    }
-    state.codeboxFrameOverlay = null;
     state.codeboxFrameEditor = null;
-  }
-
-  function ensureCodeboxExternalFrame(tokens) {
-    const host = ensureCodeboxExternalFrameHost();
-    if (!host?.appendChild) return null;
-
-    let frame = state.codeboxFrameOverlay;
-    if (!frame || frame.parentNode !== host) {
-      if (frame?.parentNode) {
-        try { frame.parentNode.removeChild(frame); } catch { /* detached node */ }
-      }
-      frame = document.createElement("div");
-      frame.dataset.nostrodomusCodeboxExternalFrame = "1";
-      frame.setAttribute("aria-hidden", "true");
-      host.appendChild(frame);
-      state.codeboxFrameOverlay = frame;
-    }
-
-    frame.style.setProperty("position", "absolute", "important");
-    frame.style.setProperty("box-sizing", "border-box", "important");
-    frame.style.setProperty("pointer-events", "none", "important");
-    frame.style.setProperty("border-radius", "24px", "important");
-    frame.style.setProperty("border", "1px solid var(--nostrodomus-codebox-frame-border)", "important");
-    frame.style.setProperty("background", "transparent", "important");
-    frame.style.setProperty("z-index", "1", "important");
-    frame.style.setProperty("contain", "none", "important");
-    frame.style.setProperty("overflow", "visible", "important");
-    frame.style.setProperty("box-shadow", "0 20px 64px rgba(0,0,0,.32), 0 0 0 1px var(--nostrodomus-codebox-frame-border), 0 0 28px var(--nostrodomus-codebox-frame-glow), 0 0 52px var(--nostrodomus-codebox-frame-glow-soft)", "important");
-    if (!frame.dataset.nostrodomusFrameReady) {
-      frame.style.setProperty("visibility", "hidden", "important");
-      frame.style.setProperty("opacity", "0", "important");
-    }
-    applyCodeboxStyleTokensToElement?.(frame, tokens);
-    return frame;
-  }
-
-  function codeboxFrameTokenKey(tokens) {
-    if (!tokens) return "";
-    return [tokens.frameBorder, tokens.frameGlow, tokens.frameGlowSoft, tokens.editorSurface].map(value => String(value || "")).join("|");
   }
 
   function scheduleCodeboxExternalFrameSettleSync(editor, tokens, delay = 140, reason = "codebox-frame-settle") {
@@ -187,35 +85,29 @@ export function createCodeboxFrameRuntime(ctx = {}) {
     return timers.length;
   }
 
+  // Marks the frame host of `editor` as framed and gives it the color tokens.
+  function markCodeboxFrameHost(editor, tokens) {
+    const frameHost = codeboxFrameHostForEditor(editor);
+    if (!frameHost) return;
+    if (frameHost.dataset.nostrodomusCodeboxFrameHost !== "1") frameHost.dataset.nostrodomusCodeboxFrameHost = "1";
+    if (frameHost.dataset.nostrodomusCodeboxFrameReady !== "1") frameHost.dataset.nostrodomusCodeboxFrameReady = "1";
+    if (frameHost.dataset.nostrodomusCodeboxFrameVisible !== "1") frameHost.dataset.nostrodomusCodeboxFrameVisible = "1";
+    try {
+      applyCodeboxStyleTokensToElement?.(frameHost, tokens || codeboxStyleTokensFromSettings?.(effectiveStyleSettings?.()));
+    } catch { /* the host keeps the tokens it had */ }
+  }
+
   function syncCodeboxExternalFrame(editor, tokens, reason = "external-frame-disabled") {
     return measurePerformanceEvent?.("codebox-frame-sync-disabled", reason, () => {
       removeCodeboxExternalFrame();
-      const frameHost = codeboxFrameHostForEditor(editor);
-      if (frameHost) {
-        if (frameHost.dataset.nostrodomusCodeboxFrameHost !== "1") frameHost.dataset.nostrodomusCodeboxFrameHost = "1";
-        if (frameHost.dataset.nostrodomusCodeboxFrameReady !== "1") frameHost.dataset.nostrodomusCodeboxFrameReady = "1";
-        if (frameHost.dataset.nostrodomusCodeboxFrameVisible !== "1") frameHost.dataset.nostrodomusCodeboxFrameVisible = "1";
-        try {
-          applyCodeboxStyleTokensToElement?.(frameHost, tokens || codeboxStyleTokensFromSettings?.(effectiveStyleSettings?.()));
-        } catch {
-        }
-      }
+      markCodeboxFrameHost(editor, tokens);
       return false;
     });
   }
 
   function scheduleCodeboxExternalFrameSync(editor = state.codeboxFrameEditor, tokens = null, _reason = "external-frame-sync-disabled") {
     removeCodeboxExternalFrame();
-    const frameHost = codeboxFrameHostForEditor(activeCodeboxStyleEditor?.() || editor);
-    if (frameHost) {
-      if (frameHost.dataset.nostrodomusCodeboxFrameHost !== "1") frameHost.dataset.nostrodomusCodeboxFrameHost = "1";
-      if (frameHost.dataset.nostrodomusCodeboxFrameReady !== "1") frameHost.dataset.nostrodomusCodeboxFrameReady = "1";
-      if (frameHost.dataset.nostrodomusCodeboxFrameVisible !== "1") frameHost.dataset.nostrodomusCodeboxFrameVisible = "1";
-      try {
-        applyCodeboxStyleTokensToElement?.(frameHost, tokens || codeboxStyleTokensFromSettings?.(effectiveStyleSettings?.()));
-      } catch {
-      }
-    }
+    markCodeboxFrameHost(activeCodeboxStyleEditor?.() || editor, tokens);
     return false;
   }
 
@@ -262,7 +154,8 @@ export function createCodeboxFrameRuntime(ctx = {}) {
     const handler = (ev) => {
       if (!shouldContainCodeboxKeyEvent(ev, editor)) return;
       try { ev.__nostrodomusCodeboxKeyContained = true; } catch { /* foreign event object */ }
-      // Bubble-phase only: CodeMirror already receives the event/default action, but HA preview/dialog shortcuts do not.
+      // Bubble-phase only: CodeMirror already receives the event/default action, and Home
+      // Assistant's dialog and preview shortcuts do not get it.
       try { ev.stopPropagation(); } catch { /* foreign event object */ }
       state.lastCodeboxKeyContained = {
         at: new Date().toISOString(),
@@ -297,29 +190,10 @@ export function createCodeboxFrameRuntime(ctx = {}) {
     return targets.length > 0;
   }
 
-  function installCodeboxExternalFrameEventGuards() {
-    if (state.codeboxFrameEventsInstalled) return;
-    state.codeboxFrameEventsInstalled = true;
-    // The frame overlay is the only thing a scroll or a resize would have to reposition, and
-    // nothing creates it while the external frame is disabled. Without this check every scroll
-    // event, including each scroll of the code, ran editor discovery (a layout read, or a walk
-    // of the page when no editor is known) and built the style tokens, to write nothing.
-    const handler = () => {
-      if (!state.codeboxFrameOverlay) return;
-      scheduleCodeboxExternalFrameSync(state.codeboxFrameEditor, null, "viewport-event");
-    };
-    addPersistentListener?.(window, "resize", handler, { passive: true }, "codebox-frame-resize");
-    addPersistentListener?.(window, "scroll", handler, { passive: true, capture: true }, "codebox-frame-scroll");
-  }
-
   return {
     codeboxFrameHostForEditor,
     codeboxComposedParent,
-    activeCodeboxFramePortalRoot,
-    ensureCodeboxExternalFrameHost,
     removeCodeboxExternalFrame,
-    ensureCodeboxExternalFrame,
-    codeboxFrameTokenKey,
     scheduleCodeboxExternalFrameSettleSync,
     clearCodeboxExternalFrameSettleTimers,
     syncCodeboxExternalFrame,
@@ -328,6 +202,5 @@ export function createCodeboxFrameRuntime(ctx = {}) {
     eventPathHasCodeboxEditor,
     shouldContainCodeboxKeyEvent,
     installCodeboxKeyboardContainment,
-    installCodeboxExternalFrameEventGuards,
   };
 }

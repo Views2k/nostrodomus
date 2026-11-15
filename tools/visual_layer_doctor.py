@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Read-only visual layer audit for Nostrodomus.
+"""Read-only check of the Nostrodomus codebox visual layers.
 
-This catches regressions like the missing frosted CodeMirror surface from the
-v31.6.88/v31.6.89 sequence before a patch is packaged or applied.
+Fails when the source modules or the bundle lose a rule of the layer model in
+docs/contracts/VISUAL_LAYER_BASELINE_CONTRACT.md, for example the frosted surface
+behind the CodeMirror text.
 """
 from __future__ import annotations
 
@@ -13,14 +14,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 PROJECT = ROOT / "PROJECT.json"
 RUNTIME_FILES = [
-    ROOT / "src" / "main.legacy.js",
+    ROOT / "src" / "app.js",
     ROOT / "dist" / "nostrodomus.js",
 ]
-# The codebox visual layer (host ::before/::after frame + frosted surface + surface-blur
-# token + backdrop-filters + `isolation: isolate` + the external-frame-disable block + the
-# .cm-editor/.cm-scroller/.cm-content transparency) was extracted out of main.legacy.js into
-# src/ui/codeboxStyle.js during the module decomposition; the `hostSurfaceSelector` token and
-# the `isolation: isolate ${bangPriority};` template form live in src/ui/codebox/codeboxPreflight.js.
+# The codebox visual layer (host ::before/::after frame, frosted surface, blur token, backdrop
+# filters, `isolation: isolate`, the hidden external frame, the transparent CodeMirror panes) is
+# built in src/ui/codeboxStyle.js. hostSurfaceSelector and the `isolation: isolate ${bangPriority};`
+# template are in src/ui/codebox/codeboxPreflight.js.
 SOURCE_VISUAL_OWNER_FILES = [
     ROOT / "src" / "ui" / "codeboxStyle.js",
     ROOT / "src" / "ui" / "codebox" / "codeboxPreflight.js",

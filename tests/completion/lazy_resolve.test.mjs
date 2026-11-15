@@ -50,7 +50,7 @@ test('resolveItemDetail dispatches by type and returns null for unknown/no-data'
   assert.equal(resolveItemDetail({ type: 'service', label: 'foo.bar' }, SNAPSHOT), null);
 });
 
-test('fail-dark: hostile/partial/missing input never throws and returns null', () => {
+test('hostile, partial or missing input never throws and returns null', () => {
   assert.equal(resolveItemDetail(null, SNAPSHOT), null);
   assert.equal(resolveItemDetail({ type: 'service', label: 'light.turn_on' }, null), null);
   assert.equal(resolveItemDetail({ type: 'entity', label: 'light.kitchen' }, {}), null);

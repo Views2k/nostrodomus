@@ -38,8 +38,8 @@ test('a capped scan does not strand the regex for the next document', () => {
     tokenizeDocumentWords('aaa bbb ccc ddd eee fff', '', { maxWords: 3 }).map(row => row.label),
     ['aaa', 'bbb', 'ccc'],
   );
-  // The next call on a SHORTER document must still find its words (returned [] before the fix,
-  // because exec started from the stranded offset past the end of the short text).
+  // The next call on a shorter document must find its words: exec must not start from an offset
+  // left past the end of the short text.
   assert.deepEqual(tokenizeDocumentWords('zzz', '').map(row => row.label), ['zzz']);
 });
 

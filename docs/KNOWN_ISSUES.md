@@ -36,7 +36,6 @@ Limitations:
 
 - The action snippets (for example "perform-action + target") are offered directly after `action:`. Once you have typed part of a value there, they are no longer offered.
 - Inside a nested block of a community card from the bundled catalog (for example `filter:` of auto-entities), the keys of that block are listed first, and the card's top-level keys follow in the same list.
-- In a dashboard with several cards, a deeply indented line can in some cases still get the keys of an action block (`tap_action:` and similar) that belongs to an earlier card.
 
 ## Card editor dialog
 

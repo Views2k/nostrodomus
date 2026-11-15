@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
-"""Guard against new unwired src modules during Priority 7 extraction.
+"""Check that every src module is part of the bundle.
 
-This is intentionally conservative: it does not claim every historical module is
-wired today. Instead, it computes the import graph from src/main.js and fails if
-any src/**/*.js file is outside that graph and not listed in the temporary
-Priority 7 allowlist.
+Computes the import graph from src/main.js and fails when a src/**/*.js file is
+outside it and not listed in docs/contracts/MODULE_WIRING_ALLOWLIST.json. Also
+fails when a module under src/core/ imports a src module outside src/core/.
 """
 from __future__ import annotations
 
 import json
 import re
-import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,12 +18,9 @@ ALLOWLIST = ROOT / "docs" / "contracts" / "MODULE_WIRING_ALLOWLIST.json"
 REPORT = ROOT / "reports" / "MODULE_WIRING_LAST.txt"
 IMPORT_RE = re.compile(r"(?:import|export)\s+(?:[^'\"]*?from\s*)?[\"'](\.[^\"']+)[\"']")
 
-# Layer rule: src/core/** is the pure-utility layer and must not import UP
-# from a feature layer. Composition glue that wires features together lives in
-# src/composition/. No exceptions: loggingRuntime does not import diagnostics;
-# src/main.legacy.js injects startupBadgeStatusFromHealth into its factory.
-FEATURE_LAYERS = ("ui", "editor", "providers", "completion", "diagnostics", "companion", "syntax", "yaml")
-CORE_LAYER_EXCEPTIONS = set()
+# Layer rule: src/core/** is the pure-utility layer and imports only from src/core/.
+# Code that wires features together lives in src/composition/.
+CORE_LAYER = "core"
 
 
 def rel(path: Path) -> str:
@@ -77,7 +72,7 @@ def walk_import_graph(path: Path, seen: set[str]) -> None:
 
 
 def check_core_layer_purity() -> list[str]:
-    """Layer rule: no src/core/** file may import from a feature layer."""
+    """Layer rule: a src/core/** file may import only other src/core/** files."""
     violations: list[str] = []
     for path in sorted((SRC / "core").rglob("*.js")):
         if not path.is_file():
@@ -90,12 +85,10 @@ def check_core_layer_purity() -> list[str]:
                 continue
             target = rel(resolved)
             parts = target.split("/")
-            if len(parts) >= 2 and parts[0] == "src" and parts[1] in FEATURE_LAYERS:
-                if (src_rel, target) in CORE_LAYER_EXCEPTIONS:
-                    continue
+            if len(parts) >= 2 and parts[0] == "src" and parts[1] != CORE_LAYER:
                 violations.append(
-                    f"core layer violation: {src_rel} imports feature module {target} "
-                    "(src/core/** must stay pure; composition glue lives in src/composition/)"
+                    f"core layer violation: {src_rel} imports {target} "
+                    "(src/core/** imports only src/core/**; code that wires features together lives in src/composition/)"
                 )
     return violations
 
@@ -117,7 +110,7 @@ def main() -> int:
     for p in unexpected:
         errors.append(f"unwired src module is not allowlisted: {p}")
     for p in stale_allowed:
-        warnings.append(f"allowlist entry is now wired; remove it after confirming migration: {p}")
+        warnings.append(f"allowlist entry is wired; remove it: {p}")
     for p in missing_allowed:
         errors.append(f"allowlist entry does not exist: {p}")
     for p, reason in allowed.items():

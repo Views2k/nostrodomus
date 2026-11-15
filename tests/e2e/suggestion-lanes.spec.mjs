@@ -1,7 +1,7 @@
 // The YAML key suggestions follow the block the cursor is in. A conditional card's conditions:
-// block earlier in a stack used to turn every later card's key list into condition keys
-// (condition:, above:, below:, the condition snippets), because any block opener in the text
-// before the cursor outranked the cursor's own YAML path. The same routing serves automation
+// block earlier in a stack must not turn every later card's key list into condition keys
+// (condition:, above:, below:, the condition snippets); a block opener in the text before the
+// cursor does not outrank the cursor's own YAML path. The same routing serves automation
 // YAML, which this suite does not type into (Home Assistant's automation editor throws on
 // half-typed YAML).
 import { test, expect, readStamp } from './session.mjs';

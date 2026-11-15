@@ -8,10 +8,9 @@ import {
 } from '../../src/syntax/smartSyntaxTokenizers.js';
 import { createDarkPlusBridge } from '../../src/syntax/darkPlusBridge.js';
 
-// A syntax pass used to search the whole document for the rendered lines and then classify the
-// document from line 1 down to the viewport, on every pass. The editor now supplies the document
-// line of each rendered line, and the line modes continue from the last pass or from the first
-// edited line.
+// A syntax pass does not search the whole document for the rendered lines or classify it from
+// line 1 down to the viewport. The editor supplies the document line of each rendered line, and
+// the line modes continue from the last pass or from the first edited line.
 
 const bridge = createDarkPlusBridge({ DARKPLUS_SYNTAX_COLORS: {}, syntaxColorWithOpacity: (color) => color, api: {} });
 

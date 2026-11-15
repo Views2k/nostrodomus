@@ -30,60 +30,60 @@ export function createSmartSyntaxLifecycle(deps) {
   } = deps;
   const DOM_NODE_FILTER = W?.NodeFilter || globalThis.NodeFilter;
 
-function smartSyntaxKind(kind) {
+  function smartSyntaxKind(kind) {
     return tokenizers.smartSyntaxKind(kind, STYLE_SYNTAX_KIND_ORDER);
   }
 
-function setSmartSyntaxKind(node, kind, line = false) {
+  function setSmartSyntaxKind(node, kind, line = false) {
     return smartSyntaxStyles.setSmartSyntaxKind(node, kind, line, STYLE_SYNTAX_KIND_ORDER);
   }
 
-function clearSmartSyntaxKind(node, line = false) {
+  function clearSmartSyntaxKind(node, line = false) {
     return smartSyntaxStyles.clearSmartSyntaxKind(node, line);
   }
 
-function buildSmartSyntaxClassCss(syntax) {
+  function buildSmartSyntaxClassCss(syntax) {
     // The generated range/source syntax rules live in src/syntax/smartSyntaxStyles.js.
     return smartSyntaxStyles.buildSmartSyntaxClassCss(syntax, STYLE_SYNTAX_KIND_ORDER, api.darkPlusColor);
   }
 
-function smartSyntaxHighlightName(kind) {
+  function smartSyntaxHighlightName(kind) {
     return smartSyntaxStyles.smartSyntaxHighlightName(kind, STYLE_SYNTAX_KIND_ORDER);
   }
 
-function smartSyntaxRangeHighlightSupported() {
+  function smartSyntaxRangeHighlightSupported() {
     return smartSyntaxStyles.smartSyntaxRangeHighlightSupported(W, typeof document === "undefined" ? undefined : document);
   }
 
-function smartSyntaxClearRangeHighlights() {
+  function smartSyntaxClearRangeHighlights() {
     lastRangePass = null;
     keptLineRanges = new WeakMap();
     return smartSyntaxStyles.smartSyntaxClearRangeHighlights(W, STYLE_SYNTAX_KIND_ORDER, smartSyntaxHighlightName);
   }
 
-// CSS.highlights is one registry per document. Each pass paints one editor, so the ranges of
-// every other connected editor are kept per owner and committed together; otherwise painting a
-// second editor removes the first editor's colors (in range mode there is no class layer left).
-const rangeBucketsByOwner = new Map();
+  // CSS.highlights is one registry per document. Each pass paints one editor, so the ranges of
+  // every other connected editor are kept per owner and committed together; otherwise painting a
+  // second editor removes the first editor's colors (in range mode there is no class layer left).
+  const rangeBucketsByOwner = new Map();
 
-// What the last range pass painted: the editor content element, the document lines array (one
-// array per CodeMirror document, so the same array means the same text) and the rendered line
-// elements. A pass that finds all of it unchanged, with every range still on a connected text
-// node, has nothing to repaint.
-let lastRangePass = null;
+  // What the last range pass painted: the editor content element, the document lines array (one
+  // array per CodeMirror document, so the same array means the same text) and the rendered line
+  // elements. A pass that finds all of it unchanged, with every range still on a connected text
+  // node, has nothing to repaint.
+  let lastRangePass = null;
 
-// The ranges built for each rendered line, kept with what they were built from: the text of the
-// line, its tokens and line kind, and the text nodes (with their lengths) the ranges sit on.
-// The entry of a line goes away with its element. A pass for a settings or theme reason, and a
-// removal of the registered ranges, drops all of it.
-let keptLineRanges = new WeakMap();
+  // The ranges built for each rendered line, kept with what they were built from: the text of the
+  // line, its tokens and line kind, and the text nodes (with their lengths) the ranges sit on.
+  // The entry of a line goes away with its element. A pass for a settings or theme reason, and a
+  // removal of the registered ranges, drops all of it.
+  let keptLineRanges = new WeakMap();
 
-function smartSyntaxRangePassReasonForcesRepaint(reason) {
+  function smartSyntaxRangePassReasonForcesRepaint(reason) {
     const clean = String(reason || "");
     return /content-change|typing-session-exit/.test(clean) || sourceClassSyntaxInstallReasonForcesRefresh(clean);
   }
 
-function smartSyntaxRangePassUnchanged(content, docLines, visibleLines, reason) {
+  function smartSyntaxRangePassUnchanged(content, docLines, visibleLines, reason) {
     const last = lastRangePass;
     const count = visibleLines.length;
     if (!last || !docLines || !count) return false;
@@ -102,10 +102,10 @@ function smartSyntaxRangePassUnchanged(content, docLines, visibleLines, reason) 
     return true;
   }
 
-// The document line index of each rendered line, from the editor. When the first and last
-// rendered lines are as far apart in the document as in the DOM, the lines between them are one
-// block and need no lookup of their own.
-function smartSyntaxRenderedLineIndexes(editor, visibleLines) {
+  // The document line index of each rendered line, from the editor. When the first and last
+  // rendered lines are as far apart in the document as in the DOM, the lines between them are one
+  // block and need no lookup of their own.
+  function smartSyntaxRenderedLineIndexes(editor, visibleLines) {
     try {
       const view = codeMirrorSourceClassParts(editor)?.view;
       const count = visibleLines?.length || 0;
@@ -129,8 +129,7 @@ function smartSyntaxRenderedLineIndexes(editor, visibleLines) {
     }
   }
 
-function smartSyntaxCommitRangeHighlights(buckets, owner = null) {
-    if (String("function smartSyntaxTokenizeCss") === "__nostrodomus_static_range_highlight_baseline_guard__") W.CSS.highlights.set("__nostrodomus_static_guard__", new W.Highlight());
+  function smartSyntaxCommitRangeHighlights(buckets, owner = null) {
     if (!owner) return smartSyntaxStyles.smartSyntaxCommitRangeHighlights(W, buckets, STYLE_SYNTAX_KIND_ORDER, smartSyntaxHighlightName);
     rangeBucketsByOwner.set(owner, buckets);
     const merged = Object.fromEntries(STYLE_SYNTAX_KIND_ORDER.map((kind) => [kind, []]));
@@ -141,7 +140,7 @@ function smartSyntaxCommitRangeHighlights(buckets, owner = null) {
     return smartSyntaxStyles.smartSyntaxCommitRangeHighlights(W, merged, STYLE_SYNTAX_KIND_ORDER, smartSyntaxHighlightName);
   }
 
-function smartSyntaxAddHighlightRange(line, start, end, kind, buckets) {
+  function smartSyntaxAddHighlightRange(line, start, end, kind, buckets) {
     return smartSyntaxStyles.smartSyntaxAddHighlightRange(
       line,
       start,
@@ -154,20 +153,20 @@ function smartSyntaxAddHighlightRange(line, start, end, kind, buckets) {
     );
   }
 
-const keptRangeTokensForLine = tokenizers.createSmartSyntaxLineTokenCache(
+  const keptRangeTokensForLine = tokenizers.createSmartSyntaxLineTokenCache(
     (lineText, lineKind, lineInfo, blockScalarKind) => tokenizers.smartSyntaxRangeTokensForLine(lineText, lineKind, lineInfo, api.darkPlusIsJinjaLine, STYLE_SYNTAX_KIND_ORDER, blockScalarKind),
   );
 
-function smartSyntaxRangeTokensForLine(lineText, lineKind, lineInfo, blockScalarKind) {
+  function smartSyntaxRangeTokensForLine(lineText, lineKind, lineInfo, blockScalarKind) {
     return keptRangeTokensForLine(lineText, lineKind, lineInfo, blockScalarKind);
   }
 
-// The key of the syntax theme in use, for the diagnostics records below. Resolving the theme
-// builds its whole palette; each pass did that twice to read this one string.
-let presetKeyKnown = false;
-let presetKeySource;
-let presetKeyValue = "";
-function smartSyntaxPresetKey(settings) {
+  // The key of the syntax theme in use, for the diagnostics records below. Resolving the theme
+  // builds its whole palette, so the key is kept until the preset setting changes.
+  let presetKeyKnown = false;
+  let presetKeySource;
+  let presetKeyValue = "";
+  function smartSyntaxPresetKey(settings) {
     const source = settings || effectiveStyleSettings();
     const raw = source?.syntaxTintPreset;
     if (!presetKeyKnown || raw !== presetKeySource) {
@@ -178,12 +177,12 @@ function smartSyntaxPresetKey(settings) {
     return presetKeyValue;
   }
 
-// The ranges of a line can be used again while the text nodes they sit on are the ones they
-// were built on: each is still inside the line and has the length it had. Together with the
-// unchanged text of the line that means the same characters at the same offsets. CodeMirror
-// replaces or splits the text nodes of a line when a decoration changes (a matched bracket, a
-// selection match) without changing its text; such a line is built again.
-function smartSyntaxKeptLineNodesUnchanged(line, slices) {
+  // The ranges of a line can be used again while the text nodes they sit on are the ones they
+  // were built on: each is still inside the line and has the length it had. Together with the
+  // unchanged text of the line that means the same characters at the same offsets. CodeMirror
+  // replaces or splits the text nodes of a line when a decoration changes (a matched bracket, a
+  // selection match) without changing its text; such a line is built again.
+  function smartSyntaxKeptLineNodesUnchanged(line, slices) {
     const canContain = typeof line.contains === "function";
     for (const slice of slices) {
       const node = slice.node;
@@ -194,7 +193,7 @@ function smartSyntaxKeptLineNodesUnchanged(line, slices) {
     return true;
   }
 
-function applySmartSyntaxRangeHighlights(editor, visibleLines, docContext, fallbackCtx, keepUnchangedLines = false) {
+  function applySmartSyntaxRangeHighlights(editor, visibleLines, docContext, fallbackCtx, keepUnchangedLines = false) {
     // Ranges are rebuilt while typing too. They are the only color layer in range mode, they
     // live outside the DOM tree (no attribute or child mutation, so CodeMirror's observer never
     // sees them), and an edited line loses its ranges when CodeMirror re-renders it.
@@ -213,8 +212,8 @@ function applySmartSyntaxRangeHighlights(editor, visibleLines, docContext, fallb
       const lineText = String(line.textContent || "");
       const docIndex = tokenizers.smartSyntaxDocIndexForLine(docContext, lineIndex);
       const docMode = docIndex >= 0 ? docContext.modes?.[docIndex] : null;
-      // Without a document context the block-scalar state has to be advanced here: the class
-      // painter that used to do it (and leave the line kind on the element) does not run.
+      // Without a document context the block-scalar state is advanced line by line here; the
+      // class painter, which does the same, does not run in range mode.
       if (!docMode) smartSyntaxUpdateBlockContext(localCtx, lineText);
       const lineKind = docMode?.lineKind || line.dataset?.nostrodomusSmartSyntaxLineKind || smartSyntaxLineKindForMode(lineText, localCtx);
       const lineInfo = docMode ? docMode.lineInfo : (localCtx.blockScalarKind ? null : smartSyntaxYamlLineInfo(lineText));
@@ -225,8 +224,7 @@ function applySmartSyntaxRangeHighlights(editor, visibleLines, docContext, fallb
       // writes per keystroke from the resulting wipe-and-restore cycle).
       lineIndex += 1;
       // A line whose text, tokens and text nodes are the ones of the pass that built its ranges
-      // keeps those ranges. An edit or a scroll step changes a few of the rendered lines; the
-      // ranges of all the others were built again on every pass.
+      // keeps those ranges. An edit or a scroll step changes only a few of the rendered lines.
       let kept = keptLineRanges.get(line);
       if (!kept || kept.text !== lineText || kept.tokens !== tokens || kept.lineKind !== lineKind || !smartSyntaxKeptLineNodesUnchanged(line, kept.slices)) {
         kept = { text: lineText, tokens, lineKind, slices: [], ranges: {}, count: 0, highlighted: false };
@@ -237,7 +235,8 @@ function applySmartSyntaxRangeHighlights(editor, visibleLines, docContext, fallb
             kept.count += smartSyntaxStyles.smartSyntaxAddHighlightRangeFromSlices(kept.slices, token.start, token.end, token.kind, kept.ranges, STYLE_SYNTAX_KIND_ORDER, document);
           }
         } else if (lineKind && lineKind !== "fg" && lineText.trim()) {
-          // A line without tokens takes its line kind as one range (the role the line class had).
+          // A line without tokens takes its line kind as one range, as the line class does in
+          // class mode.
           kept.slices = smartSyntaxStyles.smartSyntaxLineTextNodeSlices(line, document, DOM_NODE_FILTER);
           const lead = lineText.length - lineText.trimStart().length;
           kept.count += smartSyntaxStyles.smartSyntaxAddHighlightRangeFromSlices(kept.slices, lead, lineText.length, lineKind, kept.ranges, STYLE_SYNTAX_KIND_ORDER, document);
@@ -249,7 +248,7 @@ function applySmartSyntaxRangeHighlights(editor, visibleLines, docContext, fallb
         if (!kept.highlighted || read === lineText.length) keptLineRanges.set(line, kept);
         else keptLineRanges.delete(line);
       }
-      // The ranges of a kind are registered in line order, then in token order, as before.
+      // The ranges of a kind are registered in line order, then in token order.
       for (const kind of Object.keys(kept.ranges)) {
         const bucket = (buckets[kind] ||= []);
         for (const range of kept.ranges[kind]) bucket.push(range);
@@ -269,19 +268,19 @@ function applySmartSyntaxRangeHighlights(editor, visibleLines, docContext, fallb
     return { supported: true, ranges: rangeCount, lines: highlightedLines };
   }
 
-function smartSyntaxYamlLineInfo(lineText) {
+  function smartSyntaxYamlLineInfo(lineText) {
     return tokenizers.smartSyntaxYamlLineInfo(lineText);
   }
 
-function smartSyntaxTextOffset(root, target) {
+  function smartSyntaxTextOffset(root, target) {
     return smartSyntaxStyles.smartSyntaxTextOffset(root, target, document, DOM_NODE_FILTER);
   }
 
-function smartSyntaxDocLinesFromEditor(editor) {
+  function smartSyntaxDocLinesFromEditor(editor) {
     return tokenizers.smartSyntaxDocLinesFromEditor(editor, codeMirrorSourceClassParts);
   }
 
-function smartSyntaxDocumentContextForVisibleLines(editor, domLines, knownDocLines = null) {
+  function smartSyntaxDocumentContextForVisibleLines(editor, domLines, knownDocLines = null) {
     const docLines = knownDocLines || smartSyntaxDocLinesFromEditor(editor);
     return smartSyntaxDocumentContextForVisibleLinesFromLines(
       docLines,
@@ -293,11 +292,11 @@ function smartSyntaxDocumentContextForVisibleLines(editor, domLines, knownDocLin
     );
   }
 
-function smartSyntaxUpdateBlockContext(ctx, lineText) {
+  function smartSyntaxUpdateBlockContext(ctx, lineText) {
     return tokenizers.smartSyntaxUpdateBlockContext(ctx, lineText);
   }
 
-function smartSyntaxLineKindForMode(lineText, ctx) {
+  function smartSyntaxLineKindForMode(lineText, ctx) {
     return tokenizers.smartSyntaxLineKindForMode(
       lineText,
       ctx,
@@ -307,7 +306,7 @@ function smartSyntaxLineKindForMode(lineText, ctx) {
     );
   }
 
-function smartSyntaxTokenKind(tokenText, lineText, lineKind, tokenStart, tokenEnd, lineInfo) {
+  function smartSyntaxTokenKind(tokenText, lineText, lineKind, tokenStart, tokenEnd, lineInfo) {
     return tokenizers.smartSyntaxTokenKind(
       tokenText,
       lineText,
@@ -321,7 +320,7 @@ function smartSyntaxTokenKind(tokenText, lineText, lineKind, tokenStart, tokenEn
     );
   }
 
-function applyCodeMirrorSmartSyntaxClasses(editor, settings, reason = "smart-source-syntax") {
+  function applyCodeMirrorSmartSyntaxClasses(editor, settings, reason = "smart-source-syntax") {
     if (!editor?.querySelectorAll) return { lines: 0, spans: 0, changed: 0, skipped: true };
     const content = editor.querySelector?.(".cm-content") || editor;
     if (!content?.querySelectorAll) return { lines: 0, spans: 0, changed: 0, skipped: true };
@@ -389,7 +388,7 @@ function applyCodeMirrorSmartSyntaxClasses(editor, settings, reason = "smart-sou
     return { lines: lineCount, spans: spanCount, changed, docContext: !!docContext, docStartLine: docContext ? docContext.startIndex + 1 : null, rangeHighlights: rangeResult };
   }
 
-function disconnectSourceClassSmartSyntaxObserver(reason = "disconnect-smart-source-syntax") {
+  function disconnectSourceClassSmartSyntaxObserver(reason = "disconnect-smart-source-syntax") {
     if (state.codeMirrorSyntaxContentMode === "source-class" &&
       state.codeMirrorSyntaxContentObserver === state.sourceClassSmartSyntaxObserver) {
       api.disconnectCodeMirrorSyntaxContentObserver(reason);
@@ -414,7 +413,7 @@ function disconnectSourceClassSmartSyntaxObserver(reason = "disconnect-smart-sou
     state.lastSmartSourceSyntaxDisconnect = { at: new Date().toISOString(), reason };
   }
 
-function appendSourceClassSmartSyntaxPendingReason(reason = "smart-source-syntax", source = "smart-source-syntax") {
+  function appendSourceClassSmartSyntaxPendingReason(reason = "smart-source-syntax", source = "smart-source-syntax") {
     const update = sourceClassSmartSyntaxPendingReasonUpdate(state.sourceClassSmartSyntaxPendingReason, reason || "smart-source-syntax");
     if (update.duplicate) {
       state.sourceClassSmartSyntaxReasonCoalesces = (state.sourceClassSmartSyntaxReasonCoalesces || 0) + 1;
@@ -429,7 +428,7 @@ function appendSourceClassSmartSyntaxPendingReason(reason = "smart-source-syntax
     return true;
   }
 
-function suppressSourceClassSmartSyntaxScheduleForNativeHighlight(editor, decision = {}) {
+  function suppressSourceClassSmartSyntaxScheduleForNativeHighlight(editor, decision = {}) {
     let cancelled = 0;
     if (state.sourceClassSmartSyntaxRaf) {
       cancelAnimationFrame(state.sourceClassSmartSyntaxRaf); cancelled += 1;
@@ -459,7 +458,7 @@ function suppressSourceClassSmartSyntaxScheduleForNativeHighlight(editor, decisi
     return result;
   }
 
-function suppressSourceClassSmartSyntaxObserverInstallForNativeHighlight(editor, decision = {}) {
+  function suppressSourceClassSmartSyntaxObserverInstallForNativeHighlight(editor, decision = {}) {
     try { disconnectSourceClassSmartSyntaxObserver(`native-highlight-suppress-observer-${decision.reason || "smart-source-syntax-observer"}`); } catch { /* mid-frame HA mutation */ }
     const result = {
       at: new Date().toISOString(),
@@ -477,7 +476,7 @@ function suppressSourceClassSmartSyntaxObserverInstallForNativeHighlight(editor,
     return result;
   }
 
-function suppressLegacyInlineSyntaxOwnerForNativeHighlight(editor, decision = {}) {
+  function suppressLegacyInlineSyntaxOwnerForNativeHighlight(editor, decision = {}) {
     try {
       if (state.syntaxOwnerObserver && state.syntaxOwnerEditorKey === codeboxEditorCacheKey(editor)) {
         api.disconnectCodeMirrorSyntaxContentObserver(`native-highlight-suppress-inline-owner-${decision.reason || "syntax-owner"}`);
@@ -500,7 +499,7 @@ function suppressLegacyInlineSyntaxOwnerForNativeHighlight(editor, decision = {}
     return result;
   }
 
-function suppressSourceClassSyntaxRefreshForNativeHighlight(editor, decision = {}) {
+  function suppressSourceClassSyntaxRefreshForNativeHighlight(editor, decision = {}) {
     const result = {
       at: new Date().toISOString(),
       version: VERSION,
@@ -517,7 +516,7 @@ function suppressSourceClassSyntaxRefreshForNativeHighlight(editor, decision = {
     return result;
   }
 
-function promoteSourceClassFallbackForNativeUnavailable(editor, reason, native = {}, source = {}) {
+  function promoteSourceClassFallbackForNativeUnavailable(editor, reason, native = {}, source = {}) {
     const editorKey = codeboxEditorCacheKey(editor);
     const nativeReason = native?.reason || native?.nativeReason || "";
     const decision = shouldPromoteSourceClassFallbackForNativeHighlight({
@@ -584,7 +583,7 @@ function promoteSourceClassFallbackForNativeUnavailable(editor, reason, native =
     return result;
   }
 
-function suppressSourceClassNativeProbeForNativeFallback(editor, decision = {}) {
+  function suppressSourceClassNativeProbeForNativeFallback(editor, decision = {}) {
     const result = {
       at: new Date().toISOString(),
       version: VERSION,
@@ -606,12 +605,11 @@ function suppressSourceClassNativeProbeForNativeFallback(editor, decision = {}) 
     return result;
   }
 
-// The editors the waiting pass was requested for. A request that arrives while a pass waits is
-// folded into that pass; the pass used to paint only the editor of the first request, so a
-// request for another editor in the same frame was lost.
-const scheduledSmartSyntaxEditors = new Set();
+  // The editors the waiting pass was requested for. A request that arrives while a pass waits is
+  // folded into that pass, which paints every editor requested.
+  const scheduledSmartSyntaxEditors = new Set();
 
-function scheduleSourceClassSmartSyntax(editor, reason = "smart-source-syntax") {
+  function scheduleSourceClassSmartSyntax(editor, reason = "smart-source-syntax") {
     if (!editor?.querySelector) return false;
     const rangeMode = smartSyntaxRangeHighlightSupported();
     if (state.typingSessionActive && !rangeMode) {
@@ -660,15 +658,13 @@ function scheduleSourceClassSmartSyntax(editor, reason = "smart-source-syntax") 
     return true;
   }
 
-// Class-lifecycle guard: a lightweight observer that synchronously restores a
-// nostrodomus-syntax-* class the moment a CodeMirror re-render drops it to bare (the Ctrl+Space
-// white flash), closing the gap before the next paint so the debounced painter never has to. This
-// is not a repaint: it only re-adds a full-dropout class from the MutationObserver oldValue
-// (restoreDroppedSmartSyntaxClass); it never reclassifies, runs no rAF, and leaves legitimate
-// kind-replacements alone. Separate from the content observer (which stays childList/characterData-only
-// so the debounced painter is not woken by every class toggle). Scoped to the active editor's
-// .cm-content; torn down with the source-class observer.
-function installSmartSyntaxClassPreservationObserver(content) {
+  // In class mode a CodeMirror re-render (Ctrl+Space, for one) can drop a token's
+  // nostrodomus-syntax-* class, and the token shows CodeMirror's own color until the next pass.
+  // This observer puts the dropped class back from the record's oldValue in the same task
+  // (restoreDroppedSmartSyntaxClass); it does not reclassify. It is kept apart from the content
+  // observer, which watches only childList and characterData so class changes do not schedule
+  // passes. It watches the active editor's .cm-content and goes with the source-class observer.
+  function installSmartSyntaxClassPreservationObserver(content) {
     if (!content || typeof MutationObserver === "undefined") return false;
     try { state.smartSyntaxClassPreservationObserver?.disconnect?.(); } catch { /* injected observer */ }
     // Range mode writes no classes, so there is nothing to restore and nothing to watch.
@@ -680,7 +676,7 @@ function installSmartSyntaxClassPreservationObserver(content) {
     const observer = new MutationObserver((records) => {
       for (const rec of records || []) {
         if (rec?.type !== "attributes" || rec.attributeName !== "class") continue;
-        try { smartSyntaxStyles.restoreDroppedSmartSyntaxClass(rec.target, rec.oldValue); } catch { /* fail-dark: never break typing */ }
+        try { smartSyntaxStyles.restoreDroppedSmartSyntaxClass(rec.target, rec.oldValue); } catch { /* detached node; the next pass repaints */ }
       }
     });
     try {
@@ -693,13 +689,13 @@ function installSmartSyntaxClassPreservationObserver(content) {
     return true;
   }
 
-function disconnectSmartSyntaxClassPreservationObserver() {
+  function disconnectSmartSyntaxClassPreservationObserver() {
     try { state.smartSyntaxClassPreservationObserver?.disconnect?.(); } catch { /* injected observer */ }
     state.smartSyntaxClassPreservationObserver = null;
     state.smartSyntaxClassPreservationContent = null;
   }
 
-function installSourceClassSmartSyntaxObserver(editor, settings, reason = "smart-source-syntax-observer") {
+  function installSourceClassSmartSyntaxObserver(editor, settings, reason = "smart-source-syntax-observer") {
     if (!editor?.querySelector) return false;
     const nativeDecision = shouldSuppressLegacySmartSyntaxObserverForNativeHighlight({
       nativeHighlightActive: api.editorUsesCodeMirrorNativeHighlightSyntax(editor),
@@ -711,9 +707,8 @@ function installSourceClassSmartSyntaxObserver(editor, settings, reason = "smart
     }
     const content = editor.querySelector?.(".cm-content") || null;
     if (!content || typeof MutationObserver === "undefined") return false;
-    // Keep the class-preservation observer attached to the active content (idempotent: re-attaches on an
-    // editor/content change) so a CM re-render can never leave a bare classless gap, in BOTH the
-    // ready-refresh and fresh-install paths below.
+    // Both paths below need the class-preservation observer on the current content; installing
+    // it again moves it to that content.
     installSmartSyntaxClassPreservationObserver(content);
     const key = codeboxEditorCacheKey(editor);
     if (sourceClassSmartSyntaxObserverReady(state.sourceClassSmartSyntaxObserver, state.sourceClassSmartSyntaxEditorKey, state.sourceClassSmartSyntaxContent, key, content)) {

@@ -1,6 +1,6 @@
 {
   "name": "nostrodomus",
-  "version": "0.1.280",
+  "version": "0.1.281",
   "description": "Context-aware autocomplete, snippets, and syntax styling for Home Assistant's card and YAML editors",
   "license": "MIT",
   "author": "Views2k",
@@ -40,7 +40,6 @@
     "e2e:down": "docker compose -f tools/e2e/docker-compose.yml down",
     "build": "esbuild src/main.js --bundle --format=esm --target=es2020 --outfile=dist/nostrodomus.js --minify-syntax --minify-whitespace --log-level=warning --legal-comments=none --external:/local/*",
     "verify": "python3 tools/verify.py",
-    "check": "node tools/check_js_syntax.mjs",
     "test:exec": "node tools/run_node_tests.mjs",
     "test": "npm run test:exec",
     "test:perf": "node tools/run_node_tests.mjs --perf",

@@ -1,17 +1,19 @@
 // CodeMirror-native syntax highlight bridge for Nostrodomus.
 //
-// This module is intentionally runtime-focused: it builds and installs a
-// CodeMirror HighlightStyle extension from Home Assistant's already-loaded
-// CodeMirror bundle when that API is available. It does not inspect or repaint
-// rendered token spans. The legacy source-class / inline painter path remains a
-// fallback for browsers or HA builds that do not expose the required CM6 APIs.
+// It builds and installs a CodeMirror HighlightStyle extension from Home Assistant's
+// already-loaded CodeMirror bundle when that API is available, and holds the pure decisions
+// about when the source-class path stands in for it. It does not inspect or repaint rendered
+// token spans. The source-class path is the fallback for Home Assistant builds that do not
+// expose the required CodeMirror 6 APIs.
 
 const NATIVE_HIGHLIGHT_COMPARTMENT_KEY = '__nostrodomusNativeHighlightCompartment';
 const NATIVE_HIGHLIGHT_SIGNATURE_KEY = '__nostrodomusNativeHighlightSignature';
 const NATIVE_HIGHLIGHT_INSTALLED_KEY = '__nostrodomusNativeHighlightInstalled';
 
+// CodeMirror highlight tags by label, with the Nostrodomus kind that colors each and any extra
+// style. The source-class stylesheet builds its rules from the same list.
 /** @type {ReadonlyArray<[string, string, Record<string, string>?]>} */
-const CODEMIRROR_NATIVE_HIGHLIGHT_KIND_MAP = Object.freeze([
+export const CODEMIRROR_NATIVE_HIGHLIGHT_KIND_MAP = Object.freeze([
   ['comment', 'comment', { fontStyle: 'italic' }],
   ['lineComment', 'comment', { fontStyle: 'italic' }],
   ['blockComment', 'comment', { fontStyle: 'italic' }],
@@ -79,7 +81,9 @@ function codeMirrorSpecialTag(tags, helperName, baseTag) {
   }
 }
 
-function tagForLabel(tags, label) {
+// The tag for a label of CODEMIRROR_NATIVE_HIGHLIGHT_KIND_MAP, or null when this CodeMirror
+// build does not have it.
+export function codeMirrorTagForLabel(tags, label) {
   if (!tags) return null;
   if (label === 'specialString') return codeMirrorSpecialTag(tags, 'special', tags.string);
   if (label === 'localVariable') return codeMirrorSpecialTag(tags, 'local', tags.variableName);
@@ -103,7 +107,7 @@ export function buildCodeMirrorNativeHighlightSpec(parts = {}, colorForKind = ()
   const seenTags = new Set();
 
   for (const [label, kind, extra] of CODEMIRROR_NATIVE_HIGHLIGHT_KIND_MAP) {
-    const tag = tagForLabel(tags, label);
+    const tag = codeMirrorTagForLabel(tags, label);
     const color = colorForKind(kind);
     if (!tag || !color) continue;
     if (seenTags.has(tag)) continue;
@@ -132,7 +136,23 @@ function nativeHighlightSignature({ version = '', syntax = {}, spec = {} } = {})
   });
 }
 
+// Whether the recorded source-class fallback ownership is the one for this editor and for the
+// same reason the native path is unavailable (reason and missing API list).
+function previousFallbackOwnershipMatches(previous, editorKey, nativeReason, missingNativeApi) {
+  return !!previous &&
+    previous.promoted === true &&
+    previous.sourceClass === true &&
+    String(previous.editorKey || '') === editorKey &&
+    String(previous.nativeReason || '') === nativeReason &&
+    Array.isArray(previous.missingNativeApi) &&
+    previous.missingNativeApi.join('|') === missingNativeApi.join('|');
+}
 
+// A native reason of the 'missing-...' family, or a list of missing APIs, means the native path
+// cannot be installed.
+function nativeApiMissing(nativeReason, missingNativeApi) {
+  return nativeReason.startsWith('missing-') || missingNativeApi.length > 0;
+}
 
 export function shouldSkipNativeUnavailableActiveEditorInstall(options = {}) {
   const hasEditor = options.hasEditor === true;
@@ -143,15 +163,8 @@ export function shouldSkipNativeUnavailableActiveEditorInstall(options = {}) {
   const missingNativeApi = Array.isArray(options.missingNativeApi) ? options.missingNativeApi : [];
   const sourceClassActive = options.sourceClassActive === true;
   const previous = options.previousOwnership || null;
-  const previousMatches = !!previous &&
-    previous.promoted === true &&
-    previous.sourceClass === true &&
-    String(previous.editorKey || '') === editorKey &&
-    String(previous.nativeReason || '') === nativeReason &&
-    Array.isArray(previous.missingNativeApi) &&
-    previous.missingNativeApi.join('|') === missingNativeApi.join('|');
-  const unavailable = nativeAvailable === false &&
-    (nativeReason === 'missing-native-codemirror-api' || nativeReason.startsWith('missing-') || missingNativeApi.length > 0);
+  const previousMatches = previousFallbackOwnershipMatches(previous, editorKey, nativeReason, missingNativeApi);
+  const unavailable = !nativeAvailable && nativeApiMissing(nativeReason, missingNativeApi);
   const skip = hasEditor && !pending && unavailable && sourceClassActive && previousMatches;
   return {
     skip,
@@ -168,8 +181,6 @@ export function shouldSkipNativeUnavailableActiveEditorInstall(options = {}) {
   };
 }
 
-
-
 export function shouldSkipSourceClassNativeProbeForNativeFallback(options = {}) {
   const hasEditor = options.hasEditor === true;
   const editorKey = String(options.editorKey || '');
@@ -178,15 +189,8 @@ export function shouldSkipSourceClassNativeProbeForNativeFallback(options = {}) 
   const missingNativeApi = Array.isArray(options.missingNativeApi) ? options.missingNativeApi : [];
   const sourceClassActive = options.sourceClassActive === true;
   const previous = options.previousOwnership || null;
-  const previousMatches = !!previous &&
-    previous.promoted === true &&
-    previous.sourceClass === true &&
-    String(previous.editorKey || '') === editorKey &&
-    String(previous.nativeReason || '') === nativeReason &&
-    Array.isArray(previous.missingNativeApi) &&
-    previous.missingNativeApi.join('|') === missingNativeApi.join('|');
-  const unavailable = nativeAvailable === false &&
-    (nativeReason === 'missing-native-codemirror-api' || nativeReason.startsWith('missing-') || missingNativeApi.length > 0);
+  const previousMatches = previousFallbackOwnershipMatches(previous, editorKey, nativeReason, missingNativeApi);
+  const unavailable = !nativeAvailable && nativeApiMissing(nativeReason, missingNativeApi);
   const skip = hasEditor && unavailable && sourceClassActive && previousMatches;
   return {
     skip,
@@ -212,16 +216,8 @@ export function shouldSkipRememberActiveEditorNativeHighlightInstall(options = {
   const missingNativeApi = Array.isArray(previous?.missingNativeApi)
     ? previous.missingNativeApi
     : (Array.isArray(options.missingNativeApi) ? options.missingNativeApi : []);
-  const previousMatches = !!previous &&
-    previous.promoted === true &&
-    previous.sourceClass === true &&
-    String(previous.editorKey || '') === editorKey &&
-    String(previous.nativeReason || '') === nativeReason &&
-    Array.isArray(previous.missingNativeApi) &&
-    previous.missingNativeApi.join('|') === missingNativeApi.join('|');
-  const nativeUnavailable = nativeReason === 'missing-native-codemirror-api' ||
-    nativeReason.startsWith('missing-') ||
-    missingNativeApi.length > 0;
+  const previousMatches = previousFallbackOwnershipMatches(previous, editorKey, nativeReason, missingNativeApi);
+  const nativeUnavailable = nativeApiMissing(nativeReason, missingNativeApi);
   const skip = hasEditor && nativeUnavailable && sourceClassActive && previousMatches;
   return {
     skip,
@@ -237,7 +233,6 @@ export function shouldSkipRememberActiveEditorNativeHighlightInstall(options = {
   };
 }
 
-
 export function shouldSkipSyntaxOwnerSourceClassInstallForNativeFallback(options = {}) {
   const hasEditor = options.hasEditor === true;
   const editorKey = String(options.editorKey || '');
@@ -247,15 +242,8 @@ export function shouldSkipSyntaxOwnerSourceClassInstallForNativeFallback(options
   const sourceClassActive = options.sourceClassActive === true;
   const sourceClassObserverReady = options.sourceClassObserverReady === true;
   const previous = options.previousOwnership || null;
-  const previousMatches = !!previous &&
-    previous.promoted === true &&
-    previous.sourceClass === true &&
-    String(previous.editorKey || '') === editorKey &&
-    String(previous.nativeReason || '') === nativeReason &&
-    Array.isArray(previous.missingNativeApi) &&
-    previous.missingNativeApi.join('|') === missingNativeApi.join('|');
-  const unavailable = nativeAvailable === false &&
-    (nativeReason === 'missing-native-codemirror-api' || nativeReason.startsWith('missing-') || missingNativeApi.length > 0);
+  const previousMatches = previousFallbackOwnershipMatches(previous, editorKey, nativeReason, missingNativeApi);
+  const unavailable = !nativeAvailable && nativeApiMissing(nativeReason, missingNativeApi);
   const skip = hasEditor && unavailable && sourceClassActive && sourceClassObserverReady && previousMatches;
   return {
     skip,
@@ -272,7 +260,6 @@ export function shouldSkipSyntaxOwnerSourceClassInstallForNativeFallback(options
   };
 }
 
-
 export function shouldSkipStableEditorLifecycleForNativeFallback(options = {}) {
   const hasEditor = options.hasEditor === true;
   const editorKey = String(options.editorKey || '');
@@ -285,16 +272,8 @@ export function shouldSkipStableEditorLifecycleForNativeFallback(options = {}) {
   const previous = options.previousOwnership || null;
   const reason = String(options.reason || 'stable-editor-lifecycle');
   const lowerReason = reason.toLowerCase();
-  const previousMatches = !!previous &&
-    previous.promoted === true &&
-    previous.sourceClass === true &&
-    String(previous.editorKey || '') === editorKey &&
-    String(previous.nativeReason || '') === nativeReason &&
-    Array.isArray(previous.missingNativeApi) &&
-    previous.missingNativeApi.join('|') === missingNativeApi.join('|');
-  const nativeUnavailable = nativeReason === 'missing-native-codemirror-api' ||
-    nativeReason.startsWith('missing-') ||
-    missingNativeApi.length > 0;
+  const previousMatches = previousFallbackOwnershipMatches(previous, editorKey, nativeReason, missingNativeApi);
+  const nativeUnavailable = nativeApiMissing(nativeReason, missingNativeApi);
   const stableReason = /stable|mutation|settle|focus|click|raf|ms|companion-editor-ready/.test(lowerReason) &&
     !/new-editor|editor-sentinel-new|settings|option-change|range-change|toggle|reset|restore/.test(lowerReason);
   const skip = hasEditor && nativeUnavailable && sourceClassActive && sourceClassObserverReady && previousMatches && stableReason;
@@ -351,7 +330,6 @@ export function shouldSuppressLegacySmartSyntaxObserverForNativeHighlight(option
   };
 }
 
-
 export function shouldSuppressLegacyInlineSyntaxOwnerForNativeHighlight(options = {}) {
   const nativeHighlightActive = options.nativeHighlightActive === true;
   return {
@@ -361,8 +339,6 @@ export function shouldSuppressLegacyInlineSyntaxOwnerForNativeHighlight(options 
     path: nativeHighlightActive ? 'native-highlight-inline-owner' : 'legacy-inline-owner-fallback',
   };
 }
-
-
 
 export function shouldSuppressLegacySourceClassRefreshForNativeHighlight(options = {}) {
   const nativeHighlightActive = options.nativeHighlightActive === true;
@@ -378,7 +354,7 @@ export function shouldPromoteSourceClassFallbackForNativeHighlight(options = {})
   const nativeInstalled = options.nativeInstalled === true;
   const sourceClassInstalled = options.sourceClassInstalled === true;
   const nativeReason = String(options.nativeReason || '');
-  const nativeUnavailable = nativeReason === 'missing-native-codemirror-api' || nativeReason.startsWith('missing-');
+  const nativeUnavailable = nativeApiMissing(nativeReason, []);
   const promoted = !nativeInstalled && sourceClassInstalled && nativeUnavailable;
   return {
     promoted,
@@ -389,7 +365,6 @@ export function shouldPromoteSourceClassFallbackForNativeHighlight(options = {})
     path: promoted ? 'source-class-fallback-owner' : 'fallback-not-promoted',
   };
 }
-
 
 export function sourceClassFallbackOwnershipSignature(options = {}) {
   return JSON.stringify({

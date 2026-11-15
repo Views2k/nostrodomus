@@ -32,7 +32,6 @@ export function completionNavigationIndex(selected = 0, count = 0, key = '', pag
   return current;
 }
 
-
 function completionCommitCharacterAction(key = '', state = {}) {
   const settings = state?.settings || {};
   if (settings.commitCharacters === false) return null;
@@ -95,10 +94,9 @@ export function completionKeyAction(event = {}, state = {}, options = {}) {
   if (state?.escapeSuppressUntilBoundary && scoped && !popupOpen) return { type: 'none' };
 
   if (key === 'Escape') {
-    // Popup OPEN: Escape closes it and must not also reach the HA dialog (prevent+stop). Popup already
-    // CLOSED (only reachable here in keepOpen mode): Escape must pass THROUGH to the dialog — swallowing
-    // it was a keyboard hijack that ate the first Escape and left the dialog open — while still
-    // suppressing keepOpen's re-open so the popup doesn't pop back on the next keystroke.
+    // With the list open, Escape closes it and does not reach the Home Assistant dialog. With the
+    // list closed (only possible here in keepOpen mode) Escape goes on to the dialog, and the
+    // suppression keeps keepOpen from opening the list again on the next key.
     return popupOpen
       ? { type: 'close-escape', prevent: true, stop: true, suppressUntilBoundary: true }
       : { type: 'close-escape', prevent: false, stop: false, suppressUntilBoundary: true };

@@ -73,10 +73,8 @@ export default [
       "reports/**",
       "data/**",
       "reference/companions/**",
-      "coverage/**",
       "tools/e2e/.ha-state*/**",
       "tests/e2e/.playwright/**",
-      "*.zip",
     ],
   },
   js.configs.recommended,
@@ -90,9 +88,10 @@ export default [
     rules: commonRules,
   },
   {
-    // Composition root: its unused import/destructure bindings are pinned by the
-    // static grep gates (tests/test_*_static.py); advisory here, error everywhere else.
-    files: ["src/main.legacy.js"],
+    // The static tests (tests/test_*_static.py) look for some imports and destructured names in
+    // the composition root that it does not use, so an unused variable is a warning here and an
+    // error everywhere else.
+    files: ["src/app.js"],
     rules: {
       "no-unused-vars": [
         "warn",
@@ -115,8 +114,8 @@ export default [
     rules: commonRules,
   },
   {
-    // E2E specs run on Node but pass callbacks into the real browser via
-    // page.evaluate / addInitScript — those bodies see browser globals.
+    // The e2e specs run on Node but pass callbacks to the browser through page.evaluate and
+    // addInitScript, and those callbacks use browser globals.
     files: ["tests/e2e/**/*.mjs"],
     languageOptions: {
       ecmaVersion: "latest",

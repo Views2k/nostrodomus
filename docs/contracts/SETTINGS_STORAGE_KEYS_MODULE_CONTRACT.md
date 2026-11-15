@@ -45,7 +45,7 @@ No Home Assistant runtime reads
 No network calls
 ```
 
-`tools/verify.py` and `tools/check_runtime_contracts.py` check this. `src/core/settingsRuntime.js` does not touch `localStorage` directly either; it receives the storage object from `src/main.legacy.js`, which lets the tests run it against a fake.
+`tools/verify.py` and `tools/check_runtime_contracts.py` check this. `src/core/settingsRuntime.js` does not touch `localStorage` directly either; it receives the storage object from `src/app.js`, which lets the tests run it against a fake.
 
 ## Tests
 

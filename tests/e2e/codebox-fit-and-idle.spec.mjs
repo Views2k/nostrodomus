@@ -1,12 +1,13 @@
-// Two regressions measured on a live Home Assistant 2026.11 instance:
+// Two problems measured on a live Home Assistant 2026.11 instance:
 //
-// 1. Idle loop. With a card editor open and no input, the runtime re-applied its styles about
-//    31 times per second, re-inserting a <style> in the editor shadow root 62 times per second
-//    and writing 216 attributes per second. Once the open has settled there must be no applies.
+// 1. Idle loop. With a card editor open and no input, a runtime that keeps re-applying its styles
+//    measured about 31 applies per second: a <style> re-inserted in the editor shadow root 62
+//    times per second and 216 attribute writes per second. Once the open has settled there must be
+//    no applies.
 //
-// 2. Codebox fit. The editor height was a viewport formula, so it ran below the dialog and the
-//    window whenever the space above it differed from the one measured case. The box must end
-//    above the dialog footer and inside the window at every window size.
+// 2. Codebox fit. An editor height given by a viewport formula runs below the dialog and the
+//    window whenever the space above the editor differs from the one measured case. The box must
+//    end above the dialog footer and inside the window at every window size.
 
 import { test, expect, readStamp } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';
@@ -70,7 +71,6 @@ test('idle: no style applies, <style> re-insertions or attribute writes once the
 
   const idle = await page.evaluate(measureIdle, 3000);
   await testInfo.attach('idle.json', { body: JSON.stringify(idle, null, 2), contentType: 'application/json' });
-  console.log('[idle]', JSON.stringify(idle));
 
   expect(idle.hasEditor, 'a code editor is open').toBe(true);
   expect(idle.styleInserts, 'no <style> may be re-inserted in the editor root while idle').toBe(0);
@@ -91,7 +91,6 @@ test('fit: the codebox ends above the dialog footer and inside the window at eve
     results.push(await page.evaluate(measureFit));
   }
   await testInfo.attach('fit.json', { body: JSON.stringify(results, null, 2), contentType: 'application/json' });
-  console.log('[fit]', JSON.stringify(results));
 
   for (const fit of results) {
     const label = `${fit.viewport[0]}x${fit.viewport[1]}`;
@@ -154,7 +153,6 @@ test('fit: content above the editor shortens the box instead of pushing it off s
     results.push(await page.evaluate(measureFit));
   }
   await testInfo.attach('fit-tabbed.json', { body: JSON.stringify(results, null, 2), contentType: 'application/json' });
-  console.log('[fit-tabbed]', JSON.stringify(results));
 
   expect(results[0].hostTop, 'the editor starts 235px lower than the plain 116px').toBeGreaterThan(300);
   for (const fit of results) {
@@ -167,9 +165,9 @@ test('fit: content above the editor shortens the box instead of pushing it off s
   }
 });
 
-// Click cost. Measured live before the fix: one click with a dialog element in the page armed
-// three 13-rung ladders, and Home Assistant keeps the closed dialog element attached, so that
-// held on every dashboard afterwards.
+// Click cost. A click fires pointerdown, mousedown and click, and Home Assistant keeps a closed
+// dialog element attached on every dashboard afterwards; one click must not arm three 13-rung
+// ladders (as measured on a live instance when this was not handled).
 const settleCounters = () => {
   try {
     const settle = window.__nostrodomus.debug().companionSettle;
@@ -217,7 +215,6 @@ test('clicks: one ladder per click while the editor is open, none after it close
     reopened,
   };
   await testInfo.attach('clicks.json', { body: JSON.stringify(result, null, 2), contentType: 'application/json' });
-  console.log('[clicks]', JSON.stringify(result));
 
   expect(result.openClick.ladders, 'one click arms one ladder').toBe(1);
   expect(result.openClick.applies, `applies after one click, got ${result.openClick.applies}`).toBeLessThanOrEqual(16);
@@ -227,10 +224,11 @@ test('clicks: one ladder per click while the editor is open, none after it close
   expect(reopened.inlineHeight, `the reopened editor is fitted, got "${reopened.inlineHeight}"`).toMatch(/^\d+px$/);
 });
 
-// Typing cost. Measured before the fix on a 708-line card: about 930 attribute writes per
-// keystroke inside .cm-content (the painter's classes being wiped by CodeMirror and restored),
-// live Range objects that every DOM mutation on the page had to visit, and script listeners for
-// the input events that pulled Home Assistant's preview rebuild into each keystroke.
+// Typing cost on a 708-line card. Each of these costs something on every keystroke, as measured
+// on a live instance: attribute writes inside .cm-content (about 930 when CodeMirror wipes the
+// painter's classes and they are restored), live Range objects that every DOM mutation on the page
+// has to visit, and script listeners for the input events, which pull Home Assistant's preview
+// rebuild into each keystroke.
 test('typing: nothing is written on CodeMirror elements, ranges are static, no input listeners', async ({ page }, testInfo) => {
   await page.addInitScript(() => {
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* opaque origin */ }
@@ -278,13 +276,12 @@ test('typing: nothing is written on CodeMirror elements, ranges are static, no i
     return { ...window.__typingProbe.counts, ranges, liveRanges: live, inputListeners: window.__inputListeners };
   });
   await testInfo.attach('typing.json', { body: JSON.stringify(result, null, 2), contentType: 'application/json' });
-  console.log('[typing]', JSON.stringify(result));
 
   expect(result.inputListeners, 'no input-event listeners on document or window').toEqual([]);
   expect(result.ranges, 'the editor is colored by highlight ranges').toBeGreaterThan(0);
   expect(result.liveRanges, 'none of them is a live Range').toBe(0);
-  // The painter used to write one data attribute per visible line per pass (hundreds here). A
-  // handful of one-off markers on the content element itself is not that.
+  // One data attribute per visible line per pass would be hundreds here; a handful of one-off
+  // markers on the content element itself is fine.
   expect(result.dataWrites, `painter data-attribute writes for 22 keystrokes, got ${result.dataWrites}`).toBeLessThan(10);
   // CodeMirror itself toggles a few classes while typing (active line, focus); the painter's
   // wipe-and-restore cycle produced about 800 per keystroke.

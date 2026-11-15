@@ -2,7 +2,7 @@
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
-main = (root / 'src/main.legacy.js').read_text(encoding='utf-8')
+main = (root / 'src/app.js').read_text(encoding='utf-8')
 runtime = (root / 'src/ui/settingsPanelRuntime.js').read_text(encoding='utf-8')
 
 main_expected = 'function saveSettings(reason = "settings-save") {\n    return settingsPanelRuntime.saveSettings(reason);\n  }'

@@ -5,12 +5,10 @@ import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 import { serviceIdFromContext } from '../../src/providers/haRuntimeProvider.js';
 import { lovelaceContextProvider } from '../../src/providers/lovelaceContextProvider.js';
 
-// branchState shape parity: dashboardActionBranchState emits a `kind` for dashboard
-// tap_action shapes but its automation/script fallback returned a kind-less shape, so
-// any consumer dispatching on branchState.kind was structurally dead in the automation
-// lane. This unifies the shape (kind always present) WITHOUT changing the rows either
-// lane serves -- the dual-path rule: the kind limb is mutation-covered in BOTH lanes.
-// Cursors sit at the CM auto-indent column (blank line at the opener's own column).
+// branchState has the same shape in dashboards and automations: dashboardActionBranchState gives a
+// `kind` for dashboard tap_action shapes and for the automation and script fallback, so code that
+// reads branchState.kind works in both. The rows each lane serves must not change. Cursors sit at
+// the column CodeMirror's auto-indent produces (a blank line at the opener's own column).
 function ctxAt(doc) {
   return detectRuntimeContext(doc, doc.length, { triggerKind: 'explicit' });
 }
@@ -21,7 +19,7 @@ function rowsAt(doc) {
   return provider.provide(ctx).map(row => row?.label ?? String(row));
 }
 
-// dashboard tap_action (kind present today) and automation action step (kindless today).
+// A dashboard tap_action and an automation action step.
 const DASH_ACTION = 'type: button\ntap_action:\n  action: light.turn_on\n  ';
 const DASH_TARGET = 'type: button\ntap_action:\n  action: light.turn_on\n  target:\n    ';
 const AUTO_ACTION = 'actions:\n  - action: light.turn_on\n    ';
@@ -37,14 +35,14 @@ test('target-block kind is present in both lanes', () => {
   assert.equal(ctxAt(AUTO_TARGET).branchState?.kind, 'target-block', 'automation target');
 });
 
-test('the preserved fields keep serviceIdFromContext working across the unification', () => {
+test('the branch state fields keep serviceIdFromContext working in both lanes', () => {
   for (const doc of [DASH_ACTION, DASH_TARGET, AUTO_ACTION, AUTO_TARGET]) {
     assert.equal(serviceIdFromContext(ctxAt(doc)), 'light.turn_on', `serviceId for ${JSON.stringify(doc)}`);
   }
 });
 
-test('dual-lane row parity: the kind unification does not change the rows either lane serves', () => {
-  // automation action step keeps its automation vocab, NOT dashboard action keys --
+test('each lane keeps its own rows: automation keys in the step, dashboard action keys in tap_action', () => {
+  // automation action step keeps its automation vocab, not dashboard action keys --
   // the consumer guard must require the dashboard-only missingKeys array.
   const auto = rowsAt(AUTO_ACTION);
   assert.ok(auto.includes('choose:'), `automation step keeps automation vocab, got ${JSON.stringify(auto)}`);

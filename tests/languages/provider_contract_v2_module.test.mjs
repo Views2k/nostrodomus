@@ -13,7 +13,7 @@ import {
 
 test('Provider Contract v2 is a read-only lane-aware contract with all language lanes', () => {
   assert.equal(PROVIDER_CONTRACT_V2_VERSION, 1);
-  assert.equal(PROVIDER_CONTRACT_V2_STAGE, 'priority10-provider-contract-v2-main-provider-engineering');
+  assert.equal(PROVIDER_CONTRACT_V2_STAGE, 'provider-contract-v2');
   assert.deepEqual(PROVIDER_CONTRACT_V2_LANES.map((lane) => lane.laneId), ['yaml', 'jinja2', 'css', 'javascript', 'json', 'markdown-html']);
 
   const status = providerContractV2Readiness();
@@ -28,7 +28,7 @@ test('Provider Contract v2 is a read-only lane-aware contract with all language 
   assert.equal(status.mutatesScoring, false);
 });
 
-test('Provider Contract v2 includes main HACS/custom-card engineering surfaces', () => {
+test('Provider Contract v2 includes the main HACS and custom card surfaces', () => {
   for (const id of [
     'card-mod',
     'mushroom',

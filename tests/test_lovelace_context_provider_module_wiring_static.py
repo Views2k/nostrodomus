@@ -5,14 +5,11 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / 'src/providers/lovelaceContextProvider.js'
-# The monolith was decomposed: the runtime wiring that used to live in src/main.legacy.js
-# (importing the lovelace module, computing its deps, delegating each helper, and registering
-# the provider) now lives in the extracted provider-runtime owner src/providers/providerRuntime.js,
-# and the registerProvider(...) call moved into the buildIndex wiring in staticLibraryProvider.js.
-# Same invariant, current location.
+# providerRuntime.js imports the Lovelace module, builds its dependencies and delegates each
+# helper; staticLibraryProvider.js registers the provider in buildIndex.
 RUNTIME = ROOT / 'src/providers/providerRuntime.js'
 INDEX_WIRING = ROOT / 'src/providers/staticLibraryProvider.js'
-LEGACY = ROOT / 'src/main.legacy.js'
+APP = ROOT / 'src/app.js'
 ALLOWLIST = ROOT / 'docs/contracts/MODULE_WIRING_ALLOWLIST.json'
 DIST = ROOT / 'dist/nostrodomus.js'
 REPORT = ROOT / 'reports/LOVELACE_CONTEXT_PROVIDER_MODULE_WIRING_STATIC_REPORT.txt'
@@ -20,7 +17,7 @@ REPORT = ROOT / 'reports/LOVELACE_CONTEXT_PROVIDER_MODULE_WIRING_STATIC_REPORT.t
 module = MODULE.read_text(encoding='utf-8', errors='replace')
 runtime = RUNTIME.read_text(encoding='utf-8', errors='replace')
 index_wiring = INDEX_WIRING.read_text(encoding='utf-8', errors='replace')
-legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
+app = APP.read_text(encoding='utf-8', errors='replace')
 dist = DIST.read_text(encoding='utf-8', errors='replace') if DIST.exists() else ''
 allowed = json.loads(ALLOWLIST.read_text(encoding='utf-8')).get('allowed_unwired_modules', {})
 errors = []
@@ -51,12 +48,10 @@ for token in [
     'providerId: LOVELACE_CONTEXT_PROVIDER_ID',
     'yamlBranchState',
 ]:
-    require(token in runtime, f'runtime-owned dependency/provider token preserved: {token}')
+    require(token in runtime, f'runtime owns dependency/provider token: {token}')
 
-# registerProvider(lovelaceContextProvider()) moved out of the monolith into the buildIndex
-# wiring: the provider runtime hands its lovelaceContextProvider factory into
-# staticLibraryProvider.buildIndex as `lovelaceContextProvider`, which registers it as
-# `createLovelaceProvider`. Same invariant (the Lovelace provider is registered), current owner.
+# The provider runtime passes its lovelaceContextProvider factory to buildIndex, which registers
+# it as createLovelaceProvider.
 require('lovelaceContextProvider,' in runtime, 'runtime hands Lovelace provider factory into buildIndex wiring')
 require('registerProvider(createLovelaceProvider())' in index_wiring, 'buildIndex registers the Lovelace context provider')
 
@@ -76,7 +71,7 @@ for token in [
 ]:
     require(token in module, f'module Lovelace context invariant present: {token}')
 
-require('src/providers/lovelaceContextProvider.js' not in allowed, 'Lovelace context provider removed from unwired allowlist')
+require('src/providers/lovelaceContextProvider.js' not in allowed, 'Lovelace context provider is not on the unwired allowlist')
 
 for token in [
     'const rootYaml = [',
@@ -86,7 +81,7 @@ for token in [
     'const buttonCard = [',
     'const stylesBlock = [',
 ]:
-    require(token not in legacy, f'legacy no longer owns old Lovelace row table token: {token}')
+    require(token not in app, f'app.js has no Lovelace row table: {token}')
 
 for token in [
     'function lovelaceContextRows(ctx',

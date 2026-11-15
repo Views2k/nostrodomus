@@ -47,7 +47,7 @@ function harness(overrides = {}) {
   return { state, reasons, runtime, recordApply, pointer };
 }
 
-test('without the page check every outside pointerdown asks for the apply, as before', () => {
+test('without a pageMayHaveEditor check every outside pointerdown asks for the apply', () => {
   const { reasons, pointer, recordApply } = harness();
   pointer();
   recordApply(false);

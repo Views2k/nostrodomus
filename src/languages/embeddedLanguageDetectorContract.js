@@ -8,7 +8,7 @@ import { LANGUAGE_LANE_IDS, getLanguageLane } from './languageLanes.js';
 import { CURSOR_MARKER, LANGUAGE_FIXTURES, languageFixtureCursorOffset, languageFixtureTextWithoutCursor } from './languageFixtures.js';
 
 export const EMBEDDED_LANGUAGE_DETECTOR_CONTRACT_VERSION = 1;
-export const EMBEDDED_LANGUAGE_DETECTOR_STAGE = "priority10-fixture-detector-contract";
+export const EMBEDDED_LANGUAGE_DETECTOR_STAGE = "fixture-detector-contract";
 
 export const EMBEDDED_LANGUAGE_EVIDENCE_ORDER = Object.freeze([
   "yaml-structural-host",
@@ -70,7 +70,7 @@ function result(laneId, confidence, reason, evidence) {
     confidence,
     reason,
     evidence,
-    source: "priority10-contract-only",
+    source: "contract-classifier",
     drivesAutocomplete: false,
   });
 }

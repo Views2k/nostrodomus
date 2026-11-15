@@ -5,16 +5,13 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/yaml/yamlScanner.js"
-LEGACY = ROOT / "src/main.legacy.js"
-# The monolith was decomposed: the active runtime's YAML-scanner consumption moved out of
-# src/main.legacy.js into the extracted src/yaml/runtimeContextAdapter.js (the pure detectContext
-# adapter, which imports the scanner functions from yamlScanner.js). The invariant — the runtime
-# wires the YAML scanner machinery — now lives there, so this test checks the current owner.
+APP = ROOT / "src/app.js"
+# The detectContext adapter, which imports the scanner functions from yamlScanner.js.
 ADAPTER = ROOT / "src/yaml/runtimeContextAdapter.js"
 REPORT = ROOT / "reports/YAML_SCANNER_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 adapter = ADAPTER.read_text(errors="replace")
 
 errors = []
@@ -39,8 +36,7 @@ for token in required:
     else:
         notes.append(f"PASS token: {token}")
 
-# Tokens the legacy composition root still references directly (provider-delegate surface +
-# detectContext wiring): the runtime still consumes these YAML scanner symbols here.
+# Scanner names that app.js uses itself (provider delegates and detectContext wiring).
 legacy_tokens = [
     "yamlPathText",
     "recentYamlText",
@@ -49,60 +45,47 @@ legacy_tokens = [
 ]
 
 for token in legacy_tokens:
-    if token not in legacy:
-        errors.append(f"Legacy lost YAML scanner token: {token}")
+    if token not in app:
+        errors.append(f"app.js is missing YAML scanner token: {token}")
     else:
-        notes.append(f"PASS legacy YAML scanner token: {token}")
+        notes.append(f"PASS app.js YAML scanner token: {token}")
 
-# Decomposition: yamlCursorRole/yamlCurrentKey/isCommentContext are no longer consumed inline in
-# main.legacy.js — the active runtime's per-keystroke YAML role/key/comment classification moved
-# into the extracted detectContext adapter (src/yaml/runtimeContextAdapter.js), which imports them
-# from the scanner and calls them. Same invariant (the runtime wires these scanner helpers),
-# current location.
+# The detectContext adapter classifies the role, key and comment state of each keystroke with
+# these scanner helpers.
 for token in [
     "yamlCursorRole",
     "yamlCurrentKey",
     "isCommentContext",
 ]:
     if token not in adapter:
-        errors.append(f"Runtime context adapter lost YAML scanner token: {token}")
+        errors.append(f"Runtime context adapter is missing YAML scanner token: {token}")
     else:
         notes.append(f"PASS adapter YAML scanner token: {token}")
 
-# v31.6.370: currentYamlPath/yamlBranchState are no longer runtime-local bodies; the runtime calls
-# the extracted scanner/runtime-context helpers directly. The "...FromYamlScannerModule" /
-# "...FromRuntimeContextAdapterModule" import aliases were the original wiring form;
-# they are plain identifiers now. The wiring invariant
-# is unchanged — only the alias spelling moved — so check the current real wiring:
-#   * currentYamlPath: imported from the scanner into the runtime-context adapter, which the legacy
-#     runtime drives (the extracted YAML-path helper is wired through runtimeContextAdapter.js).
-#   * dashboardActionBranchState: imported by main.legacy.js from runtimeContextAdapter.js and wired
-#     as the runtime's yamlBranchState.
+# The runtime context adapter uses currentYamlPath from the scanner; app.js imports
+# dashboardActionBranchState from the adapter and uses it as the runtime's yamlBranchState.
 wiring_checks = [
-    (adapter, "currentYamlPath", "src/yaml/runtimeContextAdapter.js wires extracted scanner YAML-path helper (currentYamlPath)"),
-    (legacy, "import { dashboardActionBranchState } from './yaml/runtimeContextAdapter.js';",
-     "legacy imports extracted runtime-context branch-state helper (dashboardActionBranchState)"),
-    (legacy, "yamlBranchState: dashboardActionBranchState",
-     "legacy wires dashboardActionBranchState as the runtime yamlBranchState"),
+    (adapter, "currentYamlPath", "src/yaml/runtimeContextAdapter.js uses the scanner YAML-path helper (currentYamlPath)"),
+    (app, "import { dashboardActionBranchState } from './yaml/runtimeContextAdapter.js';",
+     "app.js imports the runtime-context branch-state helper (dashboardActionBranchState)"),
+    (app, "yamlBranchState: dashboardActionBranchState",
+     "app.js wires dashboardActionBranchState as the runtime yamlBranchState"),
 ]
 for haystack, token, label in wiring_checks:
     if token not in haystack:
-        errors.append(f"Lost extracted YAML helper wiring: {label}")
+        errors.append(f"Missing YAML helper wiring: {label}")
     else:
-        notes.append(f"PASS extracted YAML helper wiring: {label}")
+        notes.append(f"PASS YAML helper wiring: {label}")
 
-# v31.1 context-shape tokens: the detectContext result carries focusKind + pathText. The scanner
-# module owns the result shape (yamlScanner.js builds {..., pathText, focusKind}); the runtime
-# consumption of that shape moved out of main.legacy.js into the extracted detectContext adapter
-# (runtimeContextAdapter.js, which derives focusKind/pathText per request). Same invariant — the
-# context object exposes focusKind + pathText — checked at both current owners.
+# The detectContext result carries focusKind and pathText: yamlScanner.js builds that shape and
+# the runtime context adapter fills it for each request.
 for token in ["focusKind", "pathText"]:
     if token not in module:
-        errors.append(f"Expected v31.1 context token missing from YAML scanner module: {token}")
+        errors.append(f"Expected context token missing from YAML scanner module: {token}")
     elif token not in adapter:
-        errors.append(f"Expected v31.1 context token missing from runtime context adapter: {token}")
+        errors.append(f"Expected context token missing from runtime context adapter: {token}")
     else:
-        notes.append(f"PASS v31.1 context token: {token}")
+        notes.append(f"PASS context token: {token}")
 
 for forbidden in [
     "showPopover",

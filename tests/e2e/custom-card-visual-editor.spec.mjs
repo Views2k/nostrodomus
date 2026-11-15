@@ -285,7 +285,6 @@ for (const [label, cardType] of EDITORS) {
     await openFixtureVisualEditor(page, cardType);
     const m = await measure(page, cardType);
     await testInfo.attach('visual-editor.json', { body: JSON.stringify(m, null, 2), contentType: 'application/json' });
-    console.log(`[custom-card-editor ${cardType}]`, JSON.stringify(m));
     const where = JSON.stringify(m);
 
     expect(m.hasEditor, 'the card\'s own editor is shown').toBe(true);
@@ -303,11 +302,11 @@ for (const [label, cardType] of EDITORS) {
     expect(visible(m.preview), 'the preview is shown').toBe(true);
   });
 
-  test(`custom card visual editor ${label}: the controls and the embedded code box still work`, async ({ page }) => {
+  test(`custom card visual editor ${label}: the controls and the embedded code box still work`, async ({ page }, testInfo) => {
     await openFixtureVisualEditor(page, cardType);
     const before = await measure(page, cardType);
     const m = await workInTheEditor(page, cardType);
-    console.log(`[custom-card-editor ${cardType} after typing]`, JSON.stringify({ code: m.code, codeFramed: m.codeFramed, codeStyled: m.codeStyled, codeOurSheets: m.codeOurSheets, note: m.note, pane: m.pane }));
+    await testInfo.attach('after-typing.json', { body: JSON.stringify(m, null, 2), contentType: 'application/json' });
 
     // Working in the embedded code box did not change the editor around it.
     expectNoteAsBuilt(m, 'after typing in the embedded code box');
@@ -334,7 +333,7 @@ for (const [label, cardType] of EDITORS) {
       .toEqual({ paneScrollSheet: false, dialogUnclipped: true, paneOverflow: 'visible' });
   });
 
-  test(`custom card visual editor ${label}: "Hide editor warnings" leaves the card's own note`, async ({ page }) => {
+  test(`custom card visual editor ${label}: "Hide editor warnings" leaves the card's own note`, async ({ page }, testInfo) => {
     // The setting is in place before the visual editor is shown, as it is for someone who turned
     // it on in Settings earlier. It is changed in memory only, so it ends with this page.
     await openFixtureVisualEditor(page, cardType, {
@@ -346,13 +345,13 @@ for (const [label, cardType] of EDITORS) {
       .toBeGreaterThan(0);
     await page.waitForTimeout(600);
     const m = await measure(page, cardType);
-    console.log(`[custom-card-editor ${cardType} hide on]`, JSON.stringify({ hideSheets: m.hideSheets, note: m.note }));
+    await testInfo.attach('hide-on.json', { body: JSON.stringify(m, null, 2), contentType: 'application/json' });
     expectNoteAsBuilt(m, 'with Hide editor warnings on');
   });
 
   // The usual way in: the card is on the dashboard and its Edit button opens the visual editor
   // first. Nostrodomus has nothing to do in that dialog until the code editor is shown.
-  test(`custom card visual editor ${label}: a saved card opens with the dialog as Home Assistant drew it, and working in its code box keeps it so`, async ({ page }) => {
+  test(`custom card visual editor ${label}: a saved card opens with the dialog as Home Assistant drew it, and working in its code box keeps it so`, async ({ page }, testInfo) => {
     await page.addInitScript(defineFixtureCards);
     const stamp = await openDashboard(page);
     const urlPath = stamp.dashboardPath.split('/').filter(Boolean)[0];
@@ -367,13 +366,13 @@ for (const [label, cardType] of EDITORS) {
       await page.waitForTimeout(3000);
 
       const before = await measure(page, cardType);
-      console.log(`[custom-card-editor ${cardType} saved card, before]`, JSON.stringify({ dialog: before.dialog, sheets: before.ourDialogSheets, blur: before.dialogBlur }));
+      await testInfo.attach('saved-card-before.json', { body: JSON.stringify(before, null, 2), contentType: 'application/json' });
       expect(before.ourDialogSheets, 'Nostrodomus styled a dialog that only shows a card\'s visual editor').toEqual([]);
       expectNoteAsBuilt(before, 'saved card, after opening');
       expectCodeBoxAsBuilt(before, 'saved card, after opening');
 
       const after = await workInTheEditor(page, cardType);
-      console.log(`[custom-card-editor ${cardType} saved card, after]`, JSON.stringify({ dialog: after.dialog, sheets: after.ourDialogSheets, blur: after.dialogBlur, codeFramed: after.codeFramed }));
+      await testInfo.attach('saved-card-after.json', { body: JSON.stringify(after, null, 2), contentType: 'application/json' });
       expect(after.ourDialogSheets, 'working in the card\'s code box made Nostrodomus style the dialog').toEqual([]);
       expect(after.dialog.w, 'the dialog changed width').toBe(before.dialog.w);
       expect(after.dialog.left, 'the dialog moved').toBe(before.dialog.left);
@@ -396,7 +395,7 @@ for (const [label, cardType] of EDITORS) {
 // that). Once the code editor has been shown, the dialog has the size and layout Nostrodomus
 // gives it; the card's editor must still scroll, so that its last control can be reached.
 for (const [width, height] of [[1280, 720], [1920, 1080], [900, 800]]) {
-  test(`custom card visual editor, taller than the dialog, at ${width}x${height}: every control can be reached after the code editor was shown`, async ({ page }) => {
+  test(`custom card visual editor, taller than the dialog, at ${width}x${height}: every control can be reached after the code editor was shown`, async ({ page }, testInfo) => {
     await page.setViewportSize({ width, height });
     await openFixtureVisualEditor(page, 'e2e-tall-card');
     const editor = page.locator(`${HUI_DIALOG_EDIT_CARD} e2e-tall-card-editor`).first();
@@ -412,14 +411,14 @@ for (const [width, height] of [[1280, 720], [1920, 1080], [900, 800]]) {
     });
 
     const start = await facts();
-    console.log(`[custom-card-editor tall ${width}x${height} start]`, JSON.stringify(start));
+    await testInfo.attach('tall-start.json', { body: JSON.stringify(start, null, 2), contentType: 'application/json' });
     expect(start.editor.h, 'the test editor is taller than the window').toBeGreaterThan(height);
 
     // The last control: scrolled to, in view above the Save row, and it works.
     const last = editor.locator('#last');
     await last.scrollIntoViewIfNeeded({ timeout: 10000 });
     const atEnd = await facts();
-    console.log(`[custom-card-editor tall ${width}x${height} at the end]`, JSON.stringify(atEnd));
+    await testInfo.attach('tall-at-end.json', { body: JSON.stringify(atEnd, null, 2), contentType: 'application/json' });
     expect(atEnd.last.bottom, `the last control is below the window. ${JSON.stringify(atEnd)}`).toBeLessThanOrEqual(height);
     expect(atEnd.last.top, `the last control is above the window. ${JSON.stringify(atEnd)}`).toBeGreaterThanOrEqual(0);
     await last.click({ timeout: 10000 });
@@ -427,7 +426,7 @@ for (const [width, height] of [[1280, 720], [1920, 1080], [900, 800]]) {
     // The Save and Cancel row is in the window, or the dialog scrolls to it (stacked layout).
     await page.getByRole('button', { name: /^save$/i }).first().scrollIntoViewIfNeeded({ timeout: 10000 });
     const withSave = await facts();
-    console.log(`[custom-card-editor tall ${width}x${height} save row]`, JSON.stringify(withSave.footer));
+    await testInfo.attach('tall-save-row.json', { body: JSON.stringify(withSave, null, 2), contentType: 'application/json' });
     expect(withSave.footer.bottom, `the Save row is below the window. ${JSON.stringify(withSave)}`).toBeLessThanOrEqual(height + 1);
 
     // And back to the first one.
@@ -440,7 +439,7 @@ for (const [width, height] of [[1280, 720], [1920, 1080], [900, 800]]) {
 
 // The window is narrowed below the stacking width while the visual editor is shown (a snapped
 // browser window, a rotated tablet), after the code editor had been shown in the wide layout.
-test('custom card visual editor, taller than the dialog: the window is narrowed while it is shown, and the last control and the Save row can still be reached', async ({ page }) => {
+test('custom card visual editor, taller than the dialog: the window is narrowed while it is shown, and the last control and the Save row can still be reached', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await openFixtureVisualEditor(page, 'e2e-tall-card');
   await page.setViewportSize({ width: 900, height: 800 });
@@ -453,7 +452,7 @@ test('custom card visual editor, taller than the dialog: the window is narrowed 
   const save = page.getByRole('button', { name: /^save$/i }).first();
   await save.scrollIntoViewIfNeeded({ timeout: 10000 });
   const box = await save.boundingBox();
-  console.log('[custom-card-editor tall narrowed save button]', JSON.stringify(box));
+  await testInfo.attach('save-button.json', { body: JSON.stringify(box, null, 2), contentType: 'application/json' });
   expect(box.y + box.height, `the Save button is below the window: ${JSON.stringify(box)}`).toBeLessThanOrEqual(800);
   expect(box.y, 'the Save button is above the window').toBeGreaterThanOrEqual(0);
 });

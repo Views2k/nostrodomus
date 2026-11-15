@@ -8,7 +8,7 @@ import {
   runtimeSummary,
 } from '../../src/diagnostics/diagnosticsHealth.js';
 
-test('runtimeSummary preserves bounded runtime cache counts and age behavior', () => {
+test('runtimeSummary counts each runtime cache list and reports the cache age', () => {
   const summary = runtimeSummary({
     runtimeCache: {
       hasHass: true,
@@ -36,7 +36,7 @@ test('runtimeSummary preserves bounded runtime cache counts and age behavior', (
   });
 });
 
-test('providerSummary preserves basic provider stats shape without browser globals', () => {
+test('providerSummary lists the calls, last count and last time of each provider, with 0 for missing stats', () => {
   const summary = providerSummary({
     providers: [{ id: 'snippet' }, { id: 'runtime' }],
     providerStats: {
@@ -116,7 +116,7 @@ test('health counts a missing critical selector-seam as a contextual warning', (
   const opts = { apiInstalled: true, editorDetected: true, editDialogActive: true, editorScoped: true, maxCacheEntries: 10 };
   // No seam probe yet -> the contextual check is deferred-ok.
   const noProbe = health({ ...base, selectorSeamStatus: { probeCount: 0, missingCritical: [] } }, opts);
-  // A probe that found a missing critical seam -> the check fails and MUST be counted in the aggregate.
+  // A probe that found a missing critical seam -> the check fails and must be counted in the aggregate.
   const degraded = health({ ...base, selectorSeamStatus: { probeCount: 3, coverage: 80, missingCritical: ['ha-code-editor'] } }, opts);
   const seam = degraded.checks.find(c => c.name === 'selector-seam-coverage');
   assert.equal(seam.severity, 'contextual');

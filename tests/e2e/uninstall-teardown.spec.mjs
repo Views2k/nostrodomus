@@ -1,7 +1,7 @@
 // uninstall-teardown.spec — a hard teardown assertion on the style nodes boot-cost only reports.
 // The contract uninstall() guarantees (as in the public-API teardown unit tests):
 // opening an editor injects companion/editor style nodes; uninstall() tears the bulk of them
-// down; and — the key user guarantee — NOTHING re-injects when HA later mutates the DOM (observers/listeners
+// down; and — the key user guarantee — nothing re-injects when HA later mutates the DOM (observers/listeners
 // are truly disconnected). A small inert residual (e.g. a document-level syntax/base node uninstall does not
 // target) is reported, not failed on — the meaningful properties are "editor styling removed" and "no
 // re-injection".

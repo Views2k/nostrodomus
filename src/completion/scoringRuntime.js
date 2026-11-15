@@ -50,8 +50,7 @@ export function createScoringRuntime(options = {}) {
   // The Home Assistant data snapshot (entities, services, registries). A cached list is valid
   // only for the snapshot it was scored with, so the cache key carries a number that changes
   // when the snapshot object is replaced. Asking for the snapshot here also lets it refresh when
-  // it is due: a cache hit does not call the providers, so before this a list that was cached
-  // once kept its old entities until something else cleared the cache.
+  // it is due, which a cache hit alone would not do, since it does not call the providers.
   const runtimeData = typeof options.runtimeData === 'function' ? options.runtimeData : null;
   const snapshotNumbers = new WeakMap();
   let lastSnapshotNumber = 0;
@@ -129,5 +128,3 @@ export function createScoringRuntime(options = {}) {
     },
   };
 }
-
-export default createScoringRuntime;

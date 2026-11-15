@@ -1,14 +1,15 @@
-# Nostrodomus E2E test instance (see tools/e2e/README.md).
+# Nostrodomus e2e test instance (see tools/e2e/README.md).
 #
-# - HA_TAG selects the image tag: stable (default) or beta (the canary).
-# - HA_STATE selects the gitignored state dir: .ha-state (default) or
-#   .ha-state-beta — the beta canary never migrates the stable state forward.
-# - Host port 8124 -> container 8123. Never 8123 on the host: a real Home
-#   Assistant instance on the same machine uses that port.
-# - `npm run e2e:up` pre-creates the state dir host-owned (ensure_state.mjs)
-#   before this file runs, so Docker never creates the bind source as root and
-#   config/www exists at first HA boot (HA only registers /local/ if www/
-#   exists at startup).
+# - HA_TAG selects the image tag: stable (default), beta or a version.
+# - HA_STATE selects the git-ignored state directory: .ha-state (default) or
+#   .ha-state-<name>. Use one per image: a newer Home Assistant migrates the
+#   state, and an older one may not start from it afterwards.
+# - Host port 8124 maps to the container's 8123. 8123 is left free for a Home
+#   Assistant that runs on the same machine.
+# - `npm run e2e:up` creates the state directory (ensure_state.mjs) before this
+#   file is used, so that Docker does not create the bind source as root and
+#   config/www exists when Home Assistant first starts; Home Assistant serves
+#   /local/ only if config/www exists at startup.
 name: nostrodomus-e2e
 
 services:

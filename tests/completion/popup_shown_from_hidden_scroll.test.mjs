@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import { createCompletionRuntime } from '../../src/completion/completionRuntime.js';
 import { renderCompletionPopup } from '../../src/completion/popupRuntime.js';
 
-// The rows of a hidden box have no size, so the render cannot scroll a kept selection
-// into view; the list was then shown with the selected row below its visible part.
+// The rows of a hidden box have no size, so the render cannot scroll a kept selection into view;
+// the selected row must be scrolled into view once the box is shown.
 
 const ROW_HEIGHT = 20;
 const LIST_HEIGHT = 100;
@@ -131,7 +131,7 @@ test('a list shown from hidden with the first row selected stays at its top', ()
   assert.equal(list().scrollTop, 0);
 });
 
-test('a list that is already shown scrolls the kept selection into view in the render, as before', () => {
+test('a list that is already shown scrolls the kept selection into view in the render', () => {
   const { box, runtime, list } = harness(9);
   box.style.display = 'block';
   runtime.refresh('typing');

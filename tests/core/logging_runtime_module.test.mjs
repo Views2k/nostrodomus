@@ -66,7 +66,7 @@ function captureConsole(run) {
 }
 
 test('startup badge reports degraded when the health reader says so', async () => {
-  const { startupBadgeStatusFromHealth } = await import('../../src/diagnostics/diagnosticsFastLaneHelpers.js');
+  const { startupBadgeStatusFromHealth } = await import('../../src/diagnostics/diagnosticsReadoutHelpers.js');
   let reads = 0;
   const degraded = captureConsole(() => {
     createLoggingRuntime({ W: {}, health: () => { reads += 1; return { ok: false, requiredOk: false }; }, startupBadgeStatusFromHealth }).emitStartupBadge();

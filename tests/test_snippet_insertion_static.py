@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
-main = (ROOT / "src" / "main.legacy.js").read_text(encoding="utf-8")
-completion_factory = (ROOT / "src" / "composition" / "mainLegacyCompletionRuntimeFactory.js").read_text(encoding="utf-8")
+main = (ROOT / "src" / "app.js").read_text(encoding="utf-8")
+completion_factory = (ROOT / "src" / "composition" / "appCompletionRuntimeFactory.js").read_text(encoding="utf-8")
 insertion_runtime = (ROOT / "src" / "completion" / "insertionRuntime.js").read_text(encoding="utf-8")
 insertion = (ROOT / "src" / "completion" / "insertion.js").read_text(encoding="utf-8")
 snippets = (ROOT / "src" / "completion" / "snippets.js").read_text(encoding="utf-8")

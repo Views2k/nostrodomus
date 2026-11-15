@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # HACS and the Home Assistant Marketplace install the plugin from hacs.json and show the README.
 #
-# 0.1.279 named the plugin file with its path and set content_in_root, so both installers
-# downloaded nothing. On the repository page they also do not rewrite relative paths inside HTML
-# or in the link target of a linked badge, so those showed as broken. This test keeps both fixed.
+# They download the file that hacs.json names from dist/; a path in "filename" or
+# "content_in_root" makes them download nothing. On the repository page they do not rewrite
+# relative paths inside HTML or in the link target of a linked badge, so those must be absolute.
 
 from pathlib import Path
 import json

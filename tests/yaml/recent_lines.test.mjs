@@ -1,5 +1,6 @@
-// One completion refresh used to split the text before the cursor into lines seven or eight
-// times (twice without a bound) and to copy the whole document three or four times.
+// One context detection splits the text before the cursor into lines once, and the text of a
+// CodeMirror document object is built once; the helpers share one remembered line window per text
+// and cursor.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -22,7 +23,7 @@ function longCard(lines = 700) {
 
 const reference = (text, pos) => text.slice(Math.max(0, pos - SECURITY_LIMITS.maxDocScanChars), pos).split('\n').slice(-SECURITY_LIMITS.maxYamlPathLines);
 
-test('the line window is the same lines as before, kept for the same text and cursor', () => {
+test('the line window matches a plain split and is kept for the same text and cursor', () => {
   const text = longCard();
   for (const pos of [0, 1, 57, 2400, 24001, text.length - 9, text.length]) {
     assert.deepEqual([...recentLinesBeforeCursor(text, pos)], reference(text, pos), `pos ${pos}`);
@@ -34,7 +35,7 @@ test('the line window is the same lines as before, kept for the same text and cu
   assert.ok(Object.isFrozen(first));
 });
 
-test('the line number is counted the way the split counted it', () => {
+test('the line number matches the count of a plain split', () => {
   const text = 'a\nbb\n\nccc\n';
   for (let pos = 0; pos <= text.length; pos += 1) {
     assert.equal(lineNumberAt(text, pos), text.slice(0, pos).split('\n').length, `pos ${pos}`);

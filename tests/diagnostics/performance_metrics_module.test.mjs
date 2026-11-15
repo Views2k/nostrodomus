@@ -9,7 +9,7 @@ import {
   roundPerformanceMetric,
 } from '../../src/diagnostics/performanceMetrics.js';
 
-test('performance metric helpers preserve legacy rounding and event shape', () => {
+test('performance metric helpers round and shape events', () => {
   assert.equal(roundPerformanceMetric(1.23456, 3), 1.235);
   assert.equal(roundPerformanceMetric(Number.NaN, 3), 0);
   assert.deepEqual(diagnosticEventMetric({ compute: { count: 2, perMinute: 12.345, totalMs: 8.7654, avgMs: 4.3827, maxMs: 5.5555, lastMs: 1.1111, lastDetail: 'typed' } }, 'compute'), {
@@ -23,7 +23,7 @@ test('performance metric helpers preserve legacy rounding and event shape', () =
   });
 });
 
-test('performance budget evaluation preserves warning and mutation-noise semantics', () => {
+test('performance budget evaluation lists each exceeded budget and marks ignored mutation records as noise', () => {
   const rules = performanceBudgetRules();
   assert.equal(rules.compute.owner, 'Completion engine');
   assert.equal(rules['observer-callback'].maxPerMinute, 5000);
@@ -63,7 +63,7 @@ test('performance budget average warnings require enough samples', () => {
 
 test('the completion-compute diagnostics metric reads the writer event key (compute)', () => {
   // The compute timing is recorded under the bare event key 'compute' (completionRuntime.js); the
-  // diagnostics reader must source 'completion.compute.ms' from that SAME key, not from a
+  // diagnostics reader must source 'completion.compute.ms' from that same key, not from a
   // non-existent 'completion-compute' (which read empty and blanked the diagnostics row).
   const writer = readFileSync(new URL('../../src/completion/completionRuntime.js', import.meta.url), 'utf8');
   const reader = readFileSync(new URL('../../src/diagnostics/performanceTelemetryRuntime.js', import.meta.url), 'utf8');

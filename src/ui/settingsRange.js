@@ -1,7 +1,5 @@
-// Nostrodomus Settings range helper seams.
-//
-// Keep these helpers pure: no DOM access, no browser storage, no events, no
-// timers, no styling, and no Home Assistant runtime reads.
+// The value labels of the Style range controls in Settings. Pure functions: no DOM, storage,
+// events, timers or Home Assistant reads.
 
 import { hueLabel, percentLabel, sliderNumberLabel } from '../core/string.js';
 import { glowSizeLabel } from './settingsLabels.js';

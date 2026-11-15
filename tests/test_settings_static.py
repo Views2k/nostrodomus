@@ -6,25 +6,21 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/core/settings.js"
-LEGACY = ROOT / "src/main.legacy.js"
+APP = ROOT / "src/app.js"
 VERSION_MODULE = ROOT / "src/core/version.js"
 SETTINGS_KEYS_MODULE = ROOT / "src/core/settingsStorageKeys.js"
 REPORT = ROOT / "reports/SETTINGS_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 version_module = VERSION_MODULE.read_text(errors="replace") if VERSION_MODULE.exists() else ""
 settings_keys_module = SETTINGS_KEYS_MODULE.read_text(errors="replace") if SETTINGS_KEYS_MODULE.exists() else ""
 
 errors = []
 notes = []
 
-# Tokens still owned by src/core/settings.js. The legacy-key registry was renamed and
-# moved (see SETTINGS_MIGRATION_LEGACY_KEYS check below): SETTINGS_READ_KEYS /
-# SETTINGS_LEGACY_KEYS are gone and the key list is in the data-only migration table
-# src/core/settingsStorageKeys.js. The invariant —
-# an exported, complete, v30f-bearing registry of legacy settings storage keys — is
-# re-pointed to its current owner module rather than weakened.
+# Tokens owned by src/core/settings.js. The legacy storage keys are listed in
+# src/core/settingsStorageKeys.js (SETTINGS_MIGRATION_LEGACY_KEYS).
 required = [
     "export { SECURITY_LIMITS };",
     "export const DEFAULT_SETTINGS",
@@ -39,8 +35,6 @@ for token in required:
     else:
         notes.append(f"PASS token: {token}")
 
-# Re-pointed: the legacy-key registry export (was `export const SETTINGS_READ_KEYS` in the
-# settings module) now lives in src/core/settingsStorageKeys.js as the migration table.
 if "export const SETTINGS_MIGRATION_LEGACY_KEYS" not in settings_keys_module:
     errors.append("Missing required token: export const SETTINGS_MIGRATION_LEGACY_KEYS (settingsStorageKeys.js)")
 else:
@@ -64,17 +58,11 @@ for forbidden in [
 
 if 'export const SETTINGS_WRITE_KEY = "nostrodomus.settings";' not in module:
     errors.append("SETTINGS_WRITE_KEY must use the public Nostrodomus storage key")
-# Clean-break: the legacy-key migration table is now empty (no pre-launch installs to migrate),
-# so there are no specific legacy keys to preserve — only the empty registry remains.
 
-# Completeness/authority invariant (unchanged in spirit): the legacy-key registry must
-# exactly account for every settings storage key referenced across the owner files — no key
-# referenced anywhere that the registry omits, and no stale key in the registry referenced
-# nowhere. The registry simply moved: the canonical key declarations now live in
-# settingsStorageKeys.js (the migration table) + version.js (the write key), no longer in
-# settings.js. So compare the union of all references against the canonical declaration set.
+# Every older settings storage key referenced in these files must be declared in
+# settingsStorageKeys.js or version.js, and every declared key must be referenced.
 referenced_keys = []
-for k in re.findall(r'"(?:nostrodomus\.assist|nostrodomus\.completions\.v[0-9a-z]+)\.settings"', legacy + "\n" + version_module + "\n" + settings_keys_module + "\n" + module):
+for k in re.findall(r'"(?:nostrodomus\.assist|nostrodomus\.completions\.v[0-9a-z]+)\.settings"', app + "\n" + version_module + "\n" + settings_keys_module + "\n" + module):
     if k not in referenced_keys:
         referenced_keys.append(k)
 

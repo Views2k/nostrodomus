@@ -9,7 +9,7 @@ import { MAIN_PROVIDER_SURFACES, hacsProviderCatalogStatus, providerSurfacesForL
 import { LANE_RANKING_FIXTURES, laneRankingFixtureStatus } from './laneRankingFixtures.js';
 
 export const PROVIDER_CONTRACT_V2_VERSION = 1;
-export const PROVIDER_CONTRACT_V2_STAGE = "priority10-provider-contract-v2-main-provider-engineering";
+export const PROVIDER_CONTRACT_V2_STAGE = "provider-contract-v2";
 
 function freezeLaneContract(contract) {
   return Object.freeze({

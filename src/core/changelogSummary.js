@@ -6,6 +6,15 @@
 
 export const CHANGELOG_SUMMARY = Object.freeze([
   {
+    version: "0.1.281",
+    title: "Fixes in coloring, snippets and settings",
+    bullets: [
+      "Syntax coloring handles doubled quotes in single-quoted strings, comments after several spaces, key lines whose value is a template, and card_mod selectors with a comment.",
+      "Reset to default and settings synced from another tab apply the editor dialog settings at once, and a reset in another tab is no longer undone.",
+      "Snippet choices stay open after Tab, the navigate snippets no longer point at the built-in Overview, and a later card no longer picks up the action of an earlier one.",
+    ],
+  },
+  {
     version: "0.1.280",
     title: "Installs through HACS and the Marketplace",
     bullets: [
@@ -40,15 +49,6 @@ export const CHANGELOG_SUMMARY = Object.freeze([
       "Suggestions by place: style: and class: inside card_mod, action choices for a tile card's icon actions, action snippets after action:, template rows without doubled braces, and no card types at type: keys that are not cards. On large instances, ids that start with what you typed come first and the fields of every service are found.",
       "Syntax colors: CSS under nested card_mod style keys, YAML aliases, comments after words with apostrophes or quoted parts, and steady colors with a folded block at the edge of the view. A pass rebuilds only the lines that changed, and very long CSS lines no longer slow the editor.",
       "Settings: the Context, General and Help tabs are built when first shown, Refresh and Copy context work, a failed save is shown, the panel fits small screens and its tabs answer the arrow keys. Pages without an editor do less background work, and uninstall leaves nothing behind.",
-    ],
-  },
-  {
-    version: "0.1.276",
-    title: "Lighter suggestions while typing, faster settings panel",
-    bullets: [
-      "Each refresh of the suggestion list reads the text before the cursor once instead of seven or eight times, ranks the candidates in about half the time, and reuses the entity rows and the syntax tokens it already built. The suggestions and their order are unchanged.",
-      "The settings panel opens without building the Diagnostics tab; that tab is built when you select it.",
-      "On a light Home Assistant theme the dark codebox no longer flashes before the adjusted colors arrive, and the surface is drawn even when it is switched off if the text could not be read without it. Below 1000 pixels the editor, its code and the preview use the full width of the card dialog.",
     ],
   },
 ]);

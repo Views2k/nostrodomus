@@ -2,10 +2,10 @@
 // Shapes are copied structurally from real HA payloads (states entries carry
 // attributes.friendly_name; services carry fields keyed by field name with
 // selector/description/advanced/required/example; themes nest under
-// hass.themes.themes). Includes deliberately hostile entries so fail-dark
-// behavior is provable: an entity id that fails the identifier regex, an
-// over-long friendly_name, a state object with no attributes, a field whose
-// name fails the identifier regex, and a selector-absent field.
+// hass.themes.themes). Includes hostile entries on purpose, so the tests can check that bad data
+// is filtered: an entity id that fails the identifier regex, an over-long friendly_name, a state
+// object with no attributes, a field whose name fails the identifier regex, and a field without a
+// selector.
 
 function stateEntry(entityId, state, attributes) {
   const entry = { entity_id: entityId, state };
@@ -173,7 +173,7 @@ const BASE_THEMES = {
 
 // Registry collections — objects keyed by id (real HA frontend shape). Areas/floors/labels
 // carry readable slug ids; devices carry opaque ids and prefer name_by_user over name. Includes a
-// hostile id (fails the identifier regex) so fail-dark filtering is provable.
+// hostile id (fails the identifier regex) so the filtering of bad data can be checked.
 const BASE_AREAS = {
   living_room: { area_id: 'living_room', name: 'Living Room', floor_id: 'ground' },
   kitchen: { area_id: 'kitchen', name: 'Kitchen', floor_id: 'ground' },

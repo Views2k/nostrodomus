@@ -26,7 +26,7 @@ function rt({ active = true, universalCodeboxEnabled = () => true } = {}) {
 
 // --- learned memory (the named asset): truth table ---
 
-test('learns simple once and yields the taller SIMPLE height set', () => {
+test('learns simple once and yields the taller simple height set', () => {
   const r = rt();
   const dialog = { id: 'd1' };
   const h = r.learnedHeights(dialog, { detectedSimple: true, settingsOpen: false });
@@ -44,7 +44,7 @@ test('a first-measurement tabbed editor stays tabbed (shorter height set)', () =
   assert.equal(h.scroller, SCROLLER_HEIGHT);
 });
 
-test('never-downgrade: a learned-simple dialog is NOT downgraded while settings is open', () => {
+test('a learned-simple dialog is not downgraded while settings is open', () => {
   const r = rt();
   const dialog = { id: 'd1' };
   r.learnedHeights(dialog, { detectedSimple: true, settingsOpen: false }); // learn simple
@@ -53,7 +53,7 @@ test('never-downgrade: a learned-simple dialog is NOT downgraded while settings 
   assert.equal(h.cm, SIMPLE_CM_HEIGHT);
 });
 
-test('runoff repair: a learned-simple dialog DOES downgrade when real tabs render (no settings open)', () => {
+test('runoff repair: a learned-simple dialog does downgrade when real tabs render (no settings open)', () => {
   const r = rt();
   const dialog = { id: 'd1' };
   r.learnedHeights(dialog, { detectedSimple: true, settingsOpen: false }); // learn simple
@@ -62,14 +62,14 @@ test('runoff repair: a learned-simple dialog DOES downgrade when real tabs rende
   assert.equal(h.cm, CM_HEIGHT);
 });
 
-test('runoff repair is PERSISTED so opening settings keeps tabbed heights', () => {
-  // Regression: the 0-sized settle ladder mis-learns a genuinely tabbed editor as simple; the runoff
-  // repair fixed the returned value but not the cache, so opening Nostrodomus settings resurrected the
-  // stale simple mode and made the codebox 249px too tall.
+test('the runoff repair is stored, so opening settings keeps the tabbed heights', () => {
+  // A settle rung that measures a 0-sized dialog can learn a tabbed editor as simple. If the repair
+  // changed only the returned value and not the stored one, opening Nostrodomus settings would bring
+  // the simple mode back and make the codebox 249px too tall.
   const r = rt();
   const dialog = { id: 'd1' };
-  r.learnedHeights(dialog, { detectedSimple: true, settingsOpen: false });  // pre-render mis-learn
-  r.learnedHeights(dialog, { detectedSimple: false, settingsOpen: false }); // tabs render -> runoff repair (now persisted)
+  r.learnedHeights(dialog, { detectedSimple: true, settingsOpen: false });  // learned before the tabs render
+  r.learnedHeights(dialog, { detectedSimple: false, settingsOpen: false }); // tabs render: runoff repair, stored
   const open = r.learnedHeights(dialog, { detectedSimple: false, settingsOpen: true }); // user opens settings
   assert.equal(open.simple, false, 'settingsOpen reads the repaired (tabbed) verdict, not the stale simple one');
   assert.equal(open.cm, CM_HEIGHT);
@@ -83,16 +83,16 @@ test('a learned-simple dialog stays simple when still detected simple', () => {
   assert.equal(h.simple, true);
 });
 
-test('sticky tabbed: a learned-tabbed dialog is NOT poisoned by a transient no-tabs measurement', () => {
-  // Symmetric to the runoff repair: a genuinely TABBED dialog that measures no-tabs for one apply
-  // (a 0-sized / mid-rebuild moment) must not flip to simple and then ride the settingsOpen guard
-  // (which oversized the codebox 249px over its tab row for the whole settings-open session).
+test('a learned-tabbed dialog stays tabbed after a transient no-tabs measurement', () => {
+  // The mirror case of the runoff repair: a tabbed dialog that measures no tabs for one apply
+  // (0-sized or in the middle of a rebuild) must not turn simple and then be held there by the
+  // settingsOpen guard, which would make the codebox 249px too tall for as long as settings is open.
   const r = rt();
   const dialog = { id: 'd1' };
   assert.equal(r.learnedHeights(dialog, { detectedSimple: false, settingsOpen: false }).simple, false, 'learned tabbed');
-  assert.equal(r.learnedHeights(dialog, { detectedSimple: true, settingsOpen: false }).simple, false, 'a transient no-tabs measurement does NOT flip it to simple');
+  assert.equal(r.learnedHeights(dialog, { detectedSimple: true, settingsOpen: false }).simple, false, 'a transient no-tabs measurement does not flip it to simple');
   assert.equal(r.learnedHeights(dialog, { detectedSimple: false, settingsOpen: true }).simple, false, 'settingsOpen reads the sticky tabbed verdict, not a poisoned simple one');
-  // A dialog that was NEVER tabbed still learns simple normally.
+  // A dialog that was never tabbed still learns simple normally.
   const s = { id: 's1' };
   assert.equal(r.learnedHeights(s, { detectedSimple: true, settingsOpen: false }).simple, true);
 });
@@ -171,14 +171,14 @@ test('applyForEditor is a strict no-op while dormant (no inline height written)'
   assert.equal(writes.length, 0, 'no DOM writes while dormant');
 });
 
-test('applyForEditor writes the SIMPLE height set on cm internals when active + simple, IN the card dialog', () => {
+test('applyForEditor writes the simple height set on cm internals when active + simple, in the card dialog', () => {
   const r = rt({ active: true });
   const heights = {};
   const mk = (name) => ({ style: { setProperty: (k, v) => { heights[`${name}.${k}`] = v; } } });
   const cmEditor = mk('cmEditor');
   const cmScroller = mk('cmScroller');
-  // A real card-edit editor ALWAYS has a hui-dialog-edit-card ancestor; the dialog has no option
-  // tabs here -> detectedSimple true. (Models the dialog context the SIMPLE heights are tuned for.)
+  // A real card-edit editor always has a hui-dialog-edit-card ancestor; the dialog has no option
+  // tabs here -> detectedSimple true. (Models the dialog context the simple heights are tuned for.)
   const dialog = { matches: (s) => s === 'hui-dialog-edit-card', shadowRoot: rootWith({}) };
   // The real main codebox is ha-yaml-editor-wrapped; the enlarge only applies to it.
   const yamlHost = { matches: (s) => s === 'ha-yaml-editor', getRootNode: () => ({ host: dialog }) };
@@ -194,7 +194,7 @@ test('applyForEditor writes the SIMPLE height set on cm internals when active + 
   assert.equal(heights['cmScroller.height'], SIMPLE_SCROLLER_HEIGHT);
 });
 
-// In a card dialog, only the MAIN codebox (ha-yaml-editor-wrapped) gets the
+// In a card dialog, only the main codebox (ha-yaml-editor-wrapped) gets the
 // dialog-scale enlarge; a combo/custom card's embedded editor (a raw ha-code-editor
 // with no ha-yaml-editor ancestor) must keep native sizing or it inherits the 94vh
 // heights and blows off-screen. Structural DOM stubs -- no YAML indentation, so the
@@ -259,12 +259,11 @@ function panelEditorStub(writes) {
   };
 }
 
-test('applyForEditor gives a panel editor ALL-SIDE glow room (max-width + side/top margins) + a bottom max-height cap', () => {
-  // UNIVERSAL (mirrors the card editor, where ha-code-editor is smaller than its overflow:visible pane):
-  // the panel host gets room on every side so the host-owned glow halo + frame show all around — side
-  // room via max-width + L/R margins, top room via margin-top, bottom room via the max-height gap. NOT the
-  // card-dialog calc(94vh - …) fixed heights (those squished panels). max-height only → short scripts keep
-  // their natural size.
+test('applyForEditor gives a panel editor glow room on all sides (max-width, side and top margins) and a bottom max-height cap', () => {
+  // As in the card editor, the panel host gets room on every side so the frame and glow show all
+  // around: max-width and side margins, margin-top, and the gap below max-height. Panels do not get
+  // the card dialog's fixed calc(94vh - …) heights, which would squash them, and with max-height only
+  // a short script keeps its natural size.
   const writes = [];
   const { editor } = panelEditorStub(writes);
   const out = rt({ active: true }).applyForEditor(editor);
@@ -282,7 +281,7 @@ test('applyForEditor gives a panel editor ALL-SIDE glow room (max-width + side/t
 
 test('applyForEditor clears the frame rounded bottom corners: card-editor scroller + content padding on a panel', () => {
   // The frame's 22px rounded bottom corners clip the last gutter line number (bottom-left) and the
-  // scrollbar end (bottom-right) when content runs square to the bottom edge. Panels get the SAME frame
+  // scrollbar end (bottom-right) when content runs square to the bottom edge. Panels get the same frame
   // but not the card's CODEBOX_CSS clearance, so we apply the card's exact scroller/content padding here.
   const writes = [];
   const { editor } = panelEditorStub(writes);
@@ -296,7 +295,7 @@ test('applyForEditor clears the frame rounded bottom corners: card-editor scroll
   assert.ok(content.some(([k, v]) => k === 'padding' && v === PANEL_CONTENT_PADDING), 'content corner-clearance padding');
 });
 
-test('applyForEditor is a no-op on a panel editor when universalCodebox is OFF', () => {
+test('applyForEditor is a no-op on a panel editor when universalCodebox is off', () => {
   const writes = [];
   const { editor } = panelEditorStub(writes);
   assert.equal(rt({ active: true, universalCodeboxEnabled: () => false }).applyForEditor(editor), null, 'no-op when the flag is off');
@@ -304,8 +303,8 @@ test('applyForEditor is a no-op on a panel editor when universalCodebox is OFF',
 });
 
 
-// Any editor outside the card dialog got the full-panel margins and height cap, including the
-// YAML editor of a single row in the visual automation editor.
+// The YAML editor of a single row in the visual automation editor is outside the card dialog but
+// is not a panel editor; it must not get the panel margins and height cap.
 test('a row editor of the visual automation editor does not get the panel treatment', () => {
   const writes = [];
   const { editor } = panelEditorStub(writes);

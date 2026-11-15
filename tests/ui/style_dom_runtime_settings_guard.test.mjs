@@ -3,11 +3,10 @@ import assert from 'node:assert/strict';
 
 import { createStyleDomRuntime } from '../../src/ui/styleDomRuntime.js';
 
-// The containment sweep's settings guard was doubly dead (it
-// checked state.settingsOpen, which nothing writes, against a portal-host id that was
-// not in the removal list) while #nostrodomus-settings-root WAS in the list -- so the
-// no-active-editor cleanup silently deleted an OPEN settings panel, and the portal
-// host was never swept when orphaned. Stubs mirror tests/ui/style_dom_runtime_module.test.mjs.
+// The no-active-editor containment sweep removes #nostrodomus-settings-root and the settings portal
+// host among other nodes. Its guard skips state.settingsPanel, and skips state.settingsPortalHost
+// while the panel is connected, so an open settings panel survives the sweep and an orphaned
+// portal host is swept. Stubs mirror tests/ui/style_dom_runtime_module.test.mjs.
 function makeStyle() {
   const values = new Map();
   const priorities = new Map();
@@ -87,7 +86,6 @@ function makeRuntime(documentRef, state) {
       takeRecords() { return []; }
     },
     state,
-    STYLE_TEXT_SIZE_PRESETS: { base: { fontSize: 14, lineHeight: 1.5 } },
     DARKPLUS_SYNTAX_COLORS: { fg: '#eee' },
     DARKPLUS_STYLE_ID: 'darkplus-style',
     codeboxStyleTokenMap: tokens => tokens,

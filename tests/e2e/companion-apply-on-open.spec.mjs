@@ -1,27 +1,25 @@
-// Apply on open: the companion layer must apply when the editor DIALOG settles, not only
+// Apply on open: the companion layer must apply when the editor dialog settles, not only
 // after the user clicks inside the codebox.
 //
-// On a real 2026.6 wa-dialog the codebox
-// stayed unstyled until ANY click on the page. Root cause: the wa-dialog opens 0-sized and
-// async-settles; at open the editor failed the ≥200×80 visible-candidate gate (mis-classed
-// as no-editor), and the no-editor re-probe loop's "opening" window expired mid-settle
-// (activeEditDialog() is null while the surface is 0-sized), so nothing re-ran discovery
-// until the next click (onPointer → scheduleCodeboxStyleReapply re-discovered the
-// now-settled editor). editorLikelyOpeningWithoutMountedCodebox() therefore also stays true
-// while an edit-card dialog candidate is present (settling), keeping the loop alive so the
-// companion converges on settle.
+// A real 2026.6 wa-dialog opens 0-sized and settles asynchronously. At open the editor fails
+// the ≥200×80 visible-candidate gate and reads as no editor, and activeEditDialog() is null
+// while the surface is 0-sized, so the no-editor re-probe loop's "opening" window could run out
+// before the dialog settles; then only the next click (onPointer → scheduleCodeboxStyleReapply)
+// would find the settled editor. editorLikelyOpeningWithoutMountedCodebox() therefore also
+// stays true while an edit-card dialog candidate is present, which keeps the loop alive until
+// the companion converges on the settled dialog.
 //
-// This spec opens the editor and NEVER clicks the codebox (skipEditorClick), then asserts:
+// This spec opens the editor and never clicks the codebox (skipEditorClick), then asserts:
 //   (1) the companion stylesheet node reaches the editor's CodeMirror root on its own, and
 //   (2) that node carries the horizontal-scrollbar suppression rule
-//       (`::-webkit-scrollbar:horizontal { height: 0 }`). NOTE: the frozen sheet hides the
-//       horizontal bar via that webkit pseudo, NOT via overflow-x — the scroller's computed
-//       overflow-x stays "auto", and getComputedStyle cannot read a ::-webkit-scrollbar
-//       pseudo, so whether a bar is VISUALLY gone is not asserted here.
+//       (`::-webkit-scrollbar:horizontal { height: 0 }`). The frozen sheet hides the
+//       horizontal bar through that webkit pseudo, not through overflow-x: the scroller's
+//       computed overflow-x stays "auto", and getComputedStyle cannot read a
+//       ::-webkit-scrollbar pseudo, so whether a bar is visibly gone is not asserted here.
 //
-// NOTE: the Edit / "code editor" chrome clicks during open are unavoidable and DO fire the
-// outside-pointer reapply — but while the editor is still 0-sized, so they don't converge.
-// This proves apply-on-settle without a CODEBOX interaction.
+// The Edit and "code editor" clicks during open cannot be avoided, and they do fire the
+// outside-pointer reapply, but while the editor is still 0-sized, so they do not converge.
+// The spec shows the apply on settle without a codebox interaction.
 
 import { test, expect, openDashboard } from './session.mjs';
 import { openSeededCardCodeEditor } from './editor-helpers.mjs';
@@ -29,7 +27,7 @@ import { CM_SCROLLER, HA_CODE_EDITOR, HUI_BUTTON_CARD } from './selectors.mjs';
 
 const COMPANION_CODEBOX_STYLE_ID = 'nostrodomus-editor-v17-2-learned-style';
 
-test('companion apply-on-open: a button-card editor receives the companion on dialog settle WITHOUT a codebox click (apply-on-open regression)', async ({ page }, testInfo) => {
+test('companion apply-on-open: a button-card editor receives the companion when the dialog settles, without a codebox click', async ({ page }, testInfo) => {
   await page.addInitScript(() => {
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* opaque origin */ }
   });
@@ -38,7 +36,7 @@ test('companion apply-on-open: a button-card editor receives the companion on di
     try { window.localStorage.setItem('nostrodomusCompanion', 'active'); } catch { /* ignore */ }
   });
 
-  // Open the SIMPLE button card's code editor — but DO NOT click into the codebox.
+  // Open the simple button card's code editor, but do not click into the codebox.
   const { dialog } = await openSeededCardCodeEditor(page, stamp, {
     cardSelector: HUI_BUTTON_CARD,
     cardText: 'E2E Button',
@@ -57,14 +55,14 @@ test('companion apply-on-open: a button-card editor receives the companion on di
       ),
       {
         timeout: 10000,
-        message: `companion stylesheet #${COMPANION_CODEBOX_STYLE_ID} never reached the button-card editor WITHOUT a codebox click — the layer is still applying only on interaction, not on dialog settle (apply-on-open regression)`,
+        message: `companion stylesheet #${COMPANION_CODEBOX_STYLE_ID} never reached the button-card editor without a codebox click — the layer is still applying only on interaction, not on dialog settle (apply-on-open regression)`,
       },
     )
     .toBe(true);
 
   // (2) Codebox behaves like a normal code editor: the no-wrap override sheet is applied,
-  //     the scroller is overflow-x:auto (long lines extend + scroll, NOT wrap), and on this
-  //     SHORT button-card content there is no spurious horizontal overflow (a bar only appears
+  //     the scroller is overflow-x:auto (long lines extend + scroll, not wrap), and on this
+  //     short button-card content there is no spurious horizontal overflow (a bar only appears
   //     when a line is actually long).
   const styleInfo = await scroller.evaluate((el) => {
     const root = el.getRootNode();
@@ -79,7 +77,6 @@ test('companion apply-on-open: a button-card editor receives the companion on di
       clientW: el.clientWidth,
     };
   });
-  console.log('[apply-on-open]', JSON.stringify(styleInfo));
   await testInfo.attach('apply-on-open.json', { body: JSON.stringify(styleInfo, null, 2), contentType: 'application/json' });
   expect(styleInfo.noWrapNode, 'the no-wrap override sheet did not reach the editor').toBe(true);
   expect(styleInfo.overflowX, `scroller overflow-x is "${styleInfo.overflowX}" — long lines must extend + scroll (expected "auto", not "hidden"/wrap)`).toBe('auto');

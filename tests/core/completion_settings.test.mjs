@@ -1,5 +1,5 @@
-// Universal-completions flag home. Locks: defaults all OFF (so the engine is a no-op
-// out of the box), boolean-only override merge, and fail-dark to defaults on missing/hostile
+// Universal-completions flag home. Locks: defaults all off (so the engine is a no-op
+// out of the box), boolean-only override merge, and the defaults on missing or hostile
 // input. These flags gate the completion-engine superset; if any default flips to true by
 // accident, behavior would change silently — this test is the fence.
 
@@ -14,7 +14,7 @@ import {
 
 const FLAG_KEYS = ['engineV2', 'lazyResolve', 'jinjaLane', 'registryLane', 'schemaValues', 'surfaceScope', 'dpRanking', 'frecency', 'signatureHelp'];
 
-test('every default flag is OFF (the engine ships as a no-op)', () => {
+test('every completion flag defaults to false', () => {
   assert.deepEqual(Object.keys(DEFAULT_COMPLETION_SETTINGS).sort(), [...FLAG_KEYS].sort());
   for (const key of FLAG_KEYS) {
     assert.equal(DEFAULT_COMPLETION_SETTINGS[key], false, `${key} must default false`);
@@ -25,7 +25,7 @@ test('defaults object is frozen (cannot be mutated in place)', () => {
   assert.ok(Object.isFrozen(DEFAULT_COMPLETION_SETTINGS));
 });
 
-test('completionSettings fails dark to defaults on missing / hostile input', () => {
+test('completionSettings returns the defaults on missing or hostile input', () => {
   for (const bad of [undefined, null, 0, 'x', [], { completions: null }, { completions: 'nope' }, { completions: 5 }]) {
     assert.deepEqual(completionSettings(bad), { ...DEFAULT_COMPLETION_SETTINGS }, `bad input ${JSON.stringify(bad)}`);
   }
@@ -56,5 +56,5 @@ test('engineV2Enabled reflects the merged engineV2 flag', () => {
   assert.equal(engineV2Enabled({ completions: {} }), false);
   assert.equal(engineV2Enabled({ completions: { engineV2: false } }), false);
   assert.equal(engineV2Enabled({ completions: { engineV2: true } }), true);
-  assert.equal(engineV2Enabled({ completions: { engineV2: 'true' } }), false, 'truthy non-boolean does NOT enable');
+  assert.equal(engineV2Enabled({ completions: { engineV2: 'true' } }), false, 'truthy non-boolean does not enable');
 });

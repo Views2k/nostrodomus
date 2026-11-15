@@ -36,14 +36,13 @@ export function darkPlusLooksCssContinuation(text) {
   const t = String(text || '').trim();
   if (!t) return false;
   if (/^(!important|;|,|\}|\)|\]|")/.test(t)) return true;
-  if (/^(var\(|rgb\(|rgba\(|hsl\(|hsla\(|calc\(|linear-gradient\(|url\(|#[0-9a-f]{3,8}\b)/i.test(t)) return true;
   if (/(!important|;|\}|var\(|rgb\(|rgba\(|hsl\(|hsla\(|calc\(|linear-gradient\(|url\(|#[0-9a-f]{3,8}\b)/i.test(t)) return true;
   return false;
 }
 
 export function darkPlusIsJinjaLine(text) {
   const raw = String(text || '');
-  return /\{[{%#]|[#%}]\}|\{%-?|-%\}/.test(raw);
+  return /\{[{%#]|[#%}]\}/.test(raw);
 }
 
 export function darkPlusIsJinjaKeyword(token) {

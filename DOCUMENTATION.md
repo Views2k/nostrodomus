@@ -1,6 +1,6 @@
 # Nostrodomus Documentation
 
-Reference for Nostrodomus, a local-only autocomplete, snippets, and syntax-styling plugin for Home Assistant's code editors. This reference describes version 0.1.280 (beta).
+Reference for Nostrodomus, a local-only autocomplete, snippets, and syntax-styling plugin for Home Assistant's code editors. This reference describes version 0.1.281 (beta).
 
 - Product: Nostrodomus. Channel: beta. License: MIT.
 - Requires: Home Assistant 2026.6.0+. Installed through the Marketplace built into Home Assistant 2026.11 and later, HACS 2.0.0+ on earlier versions, or by hand.
@@ -29,7 +29,7 @@ Reference for Nostrodomus, a local-only autocomplete, snippets, and syntax-styli
 
 ## How it works
 
-Nostrodomus attaches to Home Assistant's built-in CodeMirror editors. As you type or move the cursor, a context engine reads the surrounding YAML to work out where you are: a card `type:`, an `action:` or `service:`, a service `data:` field, an `entity_id:`, a `card_mod` CSS block, a Jinja template, a trigger or condition, and so on. It then asks a set of providers for completions that fit that spot, ranks them, and shows them in a popup.
+Nostrodomus attaches to Home Assistant's built-in CodeMirror editors. As you type or move the cursor, a context engine reads the surrounding YAML to work out where you are: a card `type:`, an `action:` or `service:`, a service `data:` field, an `entity_id:`, a `card_mod` CSS block, a Jinja template, a trigger or condition, and so on. It then asks a set of providers for completions that fit that spot, ranks them, and shows them in a suggestion list.
 
 Two rules shape everything:
 
@@ -46,7 +46,7 @@ Two rules shape everything:
 | Automation and script editors in YAML mode | Completion, including modern `action:` steps, and styling. Editor warnings stay as Home Assistant draws them |
 | Developer Tools: the Template editor | Completion and styling. Editor warnings stay as Home Assistant draws them |
 | Composite cards with an embedded secondary editor | The main editor is sized. The embedded editor is left at native size |
-| A custom card's own visual editor | Not changed: controls, notes and layout stay as the card built them, a code box inside it keeps its size, its look and its own suggestions, and the dialog is not enlarged or restyled on its account |
+| A custom card's own visual editor | Not changed: controls, notes and layout stay as the card built them, a codebox inside it keeps its size, its look and its own suggestions, and the dialog is not enlarged or restyled on its account |
 
 The YAML editors of the Actions and Events tools in Developer Tools are admitted by the same rule as the Template editor. The automated browser tests cover the card-edit dialog, the automation and script editors and the Template editor.
 
@@ -60,7 +60,7 @@ Home Assistant loads custom dashboard resources when a dashboard that you create
 
 ### Triggering suggestions
 - Press `Ctrl+Space` to open or close the list at the cursor. With the default settings this is how the list opens.
-- With Keep Nostrodomus armed (`keepOpen`, Settings, General, off by default) the list also opens as you type, controlled by Trigger mode:
+- With Keep Nostrodomus armed (`keepOpen`, Settings, General, off by default) the list also opens as you type, controlled by Trigger behavior:
   - Smart (default): after the minimum number of typed characters, or after a trigger character.
   - Manual only: nothing appears until you press `Ctrl+Space`.
   - Aggressive: one typed character sooner than Smart.
@@ -77,27 +77,27 @@ Home Assistant loads custom dashboard resources when a dashboard that you create
   - Insert at cursor: inserts only at the caret.
 - After you accept a block key such as `data:` or `target:`, Nostrodomus can re-open so you can keep filling the block (chained completion).
 
-### Reading the popup
+### Reading the suggestion list
 - Each row shows the suggestion and its kind (Entity, Service, Key, Snippet, and so on). The header shows the language the list was built for and the gear that opens Settings.
 - An optional details pane (off by default) shows the highlighted suggestion with its source and, where there is one, its description. The Context tab of the settings panel always shows the selected suggestion and its source.
-- Popup size (Compact, Comfort, Large) controls density. Suggestion count is the separate Max suggestions setting.
+- The size buttons under Ctrl+Space popup in the Style tab (Compact, Comfort, Large) control density. Suggestion count is the separate Maximum suggestions setting.
 
 ## Keyboard shortcuts
 
-### Completion popup
+### Suggestion list
 
 | Key | When | Action |
 |---|---|---|
-| `Ctrl+Space` | popup closed | Open suggestions (manual trigger) |
-| `Ctrl+Space` | popup open | Close it, or toggle the details pane if it is enabled and there are items |
-| `Down` / `Up` | popup open | Move selection down or up (wraps around) |
-| `Page Down` / `Page Up` | popup open | Jump 5 items down or up |
-| `Home` / `End` | popup open | Jump to first or last item |
-| `Enter` | popup open | Accept highlighted item (if Enter accepts is on) |
-| `Tab` | popup open (no snippet session) | Accept highlighted item (if Tab accepts is on) |
-| `:` | popup open, YAML key context, highlighted key starts with the typed text | Commit the key and type the colon |
-| `Esc` | popup open | Close the popup (and suppress re-open until a word boundary) |
-| `Ctrl+,` | popup open | Open Settings |
+| `Ctrl+Space` | list closed | Open suggestions (manual trigger) |
+| `Ctrl+Space` | list open | Close it, or toggle the details pane if it is enabled and there are items |
+| `Down` / `Up` | list open | Move selection down or up (wraps around) |
+| `Page Down` / `Page Up` | list open | Jump 5 items down or up |
+| `Home` / `End` | list open | Jump to first or last item |
+| `Enter` | list open | Accept highlighted item (if Enter accepts suggestion is on) |
+| `Tab` | list open (no snippet session) | Accept highlighted item (if Tab accepts suggestion is on) |
+| `:` | list open, YAML key context, highlighted key starts with the typed text | Commit the key and type the colon |
+| `Esc` | list open | Close the list (and suppress re-open until a word boundary) |
+| `Ctrl+,` | list open | Open Settings |
 
 Keys pressed together with `Ctrl`, `Shift`, `Alt` or `Meta` (other than the shortcuts above) go to the editor. Keys pressed while an input method is composing text are left to the input method.
 
@@ -122,7 +122,7 @@ Keys pressed together with `Ctrl`, `Shift`, `Alt` or `Meta` (other than the shor
 | Focus the header, then arrow keys | Move the panel (10 px per step, 32 px with Shift) |
 | Focus the resize handle, then arrow keys | Resize the panel (10 px per step, 32 px with Shift) |
 
-The completion popup keeps DOM focus in the editor and announces the active option to screen readers through a polite live region, for example "light.turn_on, service, 2 of 20", wiring the ARIA combobox pattern onto the editor. `Ctrl+,` opens Settings only while the suggestion list is open, so from a closed list press `Ctrl+Space` first.
+The suggestion list keeps DOM focus in the editor and announces the active option to screen readers through a polite live region, for example "light.turn_on, service, 2 of 20", wiring the ARIA combobox pattern onto the editor. `Ctrl+,` opens Settings only while the suggestion list is open, so from a closed list press `Ctrl+Space` first.
 
 ## Providers and the context engine
 
@@ -145,11 +145,11 @@ Live versus bundled versus never-network: entities, services, service-field sche
 
 ## Language support
 
-Completion lanes can be toggled per language in Settings, General, Language packs:
+Completion can be turned off per language in Settings, General, Language packs:
 
 YAML, CSS, Jinja, JSON, HTML, JavaScript, Python.
 
-Each lane activates from context. A `card_mod:` `style: |` block switches to CSS, `{{ }}` and `{% %}` switch to Jinja, and a `[[[ ]]]` button-card block switches to JavaScript. Syntax coloring spans mixed YAML, Jinja, CSS in `card_mod`, and embedded JSON in one document.
+The language at the cursor is detected from context. A `card_mod:` `style: |` block switches to CSS, `{{ }}` and `{% %}` switch to Jinja, and a `[[[ ]]]` button-card block switches to JavaScript. Syntax coloring spans mixed YAML, Jinja, CSS in `card_mod`, and embedded JSON in one document.
 
 ## Snippets
 
@@ -168,19 +168,19 @@ Navigate with `Tab` and `Shift+Tab`, and press `Esc` to leave the session. Categ
 Open the panel from the gear in the header of the suggestion list, with `Ctrl+,` while the list is open, or with `window.__nostrodomus.settings()` in the browser console. There are five tabs. Ordinary changes apply in place, and the panel keeps its tab, scroll, and position.
 
 ### General tab
-- Keep Nostrodomus armed (`keepOpen`, default off): the list opens as you type, by the rules of Trigger mode, without forcing a popup in spots where it does not apply. With it off the list opens on `Ctrl+Space`.
+- Keep Nostrodomus armed (`keepOpen`, default off): the list opens as you type, by the rules of Trigger behavior, and stays closed in spots where suggestions do not apply. With it off the list opens on `Ctrl+Space`.
 - Arm when editor is focused (`autoOpenOnFocus`, default off): the list opens when you click into the editor, if there are suggestions at the cursor.
 - Show "No suggestions" for explicit Ctrl+Space (`idlePaneText`, default on).
-- Trigger mode (`triggerMode`, default Smart): Smart, Manual only, Aggressive. It applies when one of the two arming options above is on. With both off the list opens only on `Ctrl+Space`.
+- Trigger behavior (`triggerMode`, default Smart): Smart, Manual only, Aggressive. It applies when one of the two arming options above is on. With both off the list opens only on `Ctrl+Space`.
 - Minimum typed characters (`minChars`, default 1): 0 to 4.
 - Completion mode (`mode`, default Both): Keys, Snippets, Both. See [Snippets](#snippets).
-- Max suggestions (`maxItems`, default 12): 6, 8, 12, 16, 20, 32, 40.
+- Maximum suggestions (`maxItems`, default 12): 6, 8, 12, 16, 20, 32, 40.
 - Enter accepts suggestion (`enterCompletes`, default on).
 - Tab accepts suggestion (`tabCompletes`, default on).
-- Fuzzy and alias matching (`fuzzy`, default on).
-- Search across all languages (`globalSearch`, default off).
-- Replace native autocomplete (`replaceNativeAutocomplete`, default on): suppresses Home Assistant's built-in entity and icon dropdowns where Nostrodomus has parity. Restored automatically when off.
-- Suggest inside comments (`suggestInComments`, default off).
+- Fuzzy / alias matching (`fuzzy`, default on).
+- Search all enabled language packs (`globalSearch`, default off).
+- Replace Home Assistant native autocomplete (`replaceNativeAutocomplete`, default on): turns off Home Assistant's own entity and icon suggestions in the code editor, so only one suggestion list responds to Enter and Tab. Turning the setting off brings them back.
+- Enable suggestions inside comments (`suggestInComments`, default off).
 - Language packs (`enabledLangs`, all on): YAML, CSS, JavaScript, Jinja, HTML, JSON, Python.
 - Providers: an Enabled toggle for each registered provider, with its status. See [Providers and the context engine](#providers-and-the-context-engine).
 - Smart completion (experimental): nine options, all off by default, stored under `completions.*`:
@@ -197,22 +197,22 @@ Open the panel from the gear in the header of the suggestion list, with `Ctrl+,`
 ### Context tab
 Live inspection, no settings:
 - Context Inspector: YAML path, role and key, focus and value kind, provider route, detected language lane and confidence, suggestion gate, comment context, prefix length, cursor position, suggestion count, provider order, and selected suggestion source. Auto-refreshes. There is a Copy inspector button (redacted, local-only).
-- Suggestion Quality Dashboard: visible suggestion count versus max, top and selected suggestion, provider mix, disabled providers, context route, and, if empty, why.
+- Suggestion Quality Dashboard: visible suggestion count versus max, top and selected suggestion, provider mix, disabled providers, context route, and, if empty, why. There is a Copy quality report button.
 
 ### Diagnostics tab
-Local-only, redacted by default, never sent anywhere. Seven cards: System Status (versions, channel beta, editor detection, storage status, companion layer state), Performance Stats (local budget, timings, cache hit and miss, client CPU, RAM, GPU, browser), Runtime (health, enabled, popup state, last error), Editor, ContextSnapshot, Current Legacy Context, and Providers plus Runtime (per-provider calls, candidates, and ms, live HA entity and service counts, cache and index counts). Buttons: Refresh, Copy full report, Copy context, Log health, plus a Debug console messages toggle.
+Local-only, redacted by default, never sent anywhere. Seven cards: System Status (versions, channel beta, editor detection, storage status, companion layer state), Performance Stats (local budget, timings, cache hit and miss, client CPU, RAM, GPU, browser), Runtime (health, enabled, popup state, last error), Editor, ContextSnapshot, Current Context, and Providers plus Runtime (per-provider calls, candidates, and ms, live HA entity and service counts, cache and index counts). Buttons: Refresh, Copy full report, Copy context, Log health, plus a Debug console messages toggle.
 
 ### Style tab
-Local visual controls. Every color control is a real hue bar with its own enable switch, opacity, and, where useful, saturation. See [Styling and themes](#styling-and-themes).
+Local visual controls for the codebox, the card editor dialog and the suggestion list. The scrollbar, border and glow, surface, and syntax theme each have their own on/off switch, opacity, and saturation. See [Styling and themes](#styling-and-themes).
 - Codebox text size: Compact (12.5 px), Normal (13.5 px), Large (15 px), XL (16.5 px).
-- Scrollbar: enable, color, opacity (default 0.78), saturation.
-- Border and glow: enable, border color, opacity, and saturation, glow color, opacity, and saturation, and glow size (-100 fully inside to +100 fully outside, 0 is off, default -100).
-- Frosted surface: enable, color, opacity (default 0.35), saturation. The surface takes the brightness the text needs: dark under the light-text themes, light under Parchment and Mist. Where that is the opposite of the Home Assistant theme (a light Home Assistant theme with a light-text syntax theme, or a dark one with Parchment or Mist) it is drawn at 0.92 opacity or more, so the page behind it does not wash the text out. In those two cases the surface is drawn even when it is switched off, because the text could not be read without it.
+- Codebox scrollbar: enable, color, opacity (default 0.78), saturation.
+- Codebox border + glow: enable, border color, opacity, and saturation, glow color, opacity, and saturation, and glow size (-100 fully inside to +100 fully outside, 0 is off, default -100).
+- Codebox surface: enable, color, opacity (default 0.35), saturation. The surface takes the brightness the text needs: dark under the light-text themes, light under Parchment and Mist. Where that is the opposite of the Home Assistant theme (a light Home Assistant theme with a light-text syntax theme, or a dark one with Parchment or Mist) it is drawn at 0.92 opacity or more, so the page behind it does not wash the text out. In those two cases the surface is drawn even when it is switched off, because the text could not be read without it.
 - Glass editor dialog (`style.glassDialog`, default on). The card editor dialog is translucent and blurs the dashboard behind it, and the card preview has no background of its own, so the dashboard shows through, softened. A Home Assistant theme that sets its own dialog surface or dialog blur keeps it. The blur costs graphics work while the dialog is open; turn the setting off on slow computers. A change applies at once.
 - Syntax theme: enable, theme dropdown (37 themes), opacity, saturation.
 - Hide editor warnings (`style.hideEditorWarnings`, default off). In the card-edit dialog an editor warning from Home Assistant (for example "Visual editor is not supported") is drawn as a small badge that shows the message on hover. With this setting on, those warnings are hidden. A note that a card shows in its own visual editor is not an editor warning: it stays as the card draws it, with the setting on or off.
-- Hide active-line highlight (`style.hideActiveLineHighlight`, default on).
-- Ctrl+Space popup: size (Compact, Comfort, Large), Show details pane (default off), plus Commit keys on `:`, Offer buffer words, and Accept mode (Replace word tail, Insert at cursor).
+- Hide active line highlight (`style.hideActiveLineHighlight`, default on).
+- Ctrl+Space popup: the size of the suggestion list (Compact, Comfort, Large), Show details pane in suggestion popup (default off), Commit prefix-matched YAML keys when typing `:` (default on), Offer buffer words when real providers have few matches (default on), and Completion accept mode (Replace word tail, Insert at cursor).
 
 ### Help tab
 Four console commands that are copied when you click them (open settings, health check, redacted diagnostics export, active editor readout), and a Reset to default button that restores every setting, the provider toggles and the panel size and position after a confirmation.
@@ -283,7 +283,7 @@ One integrated frame. It does not stack a second glow.
 | Syntax theme opacity | `style.syntaxThemeOpacity` | 1 | 0.35 to 1 |
 | Syntax theme saturation | `style.syntaxThemeSaturation` | 1 | 0.35 to 1.85 |
 | Hide editor warnings | `style.hideEditorWarnings` | off | boolean |
-| Hide active-line highlight | `style.hideActiveLineHighlight` | on | boolean |
+| Hide active line highlight | `style.hideActiveLineHighlight` | on | boolean |
 
 ### The 37 syntax themes
 Classic (`vscodeDarkPlus`) is the default, a hand-tuned VS Code Dark+ palette. Every other theme is a single hue family. Two are light themes: Parchment and Mist. They paint dark text, so the codebox surface is drawn light for them.
@@ -296,7 +296,7 @@ Each theme gives a distinct color to 18 token kinds: foreground, dim, comments, 
 
 ### 1. Card type completion
 ```yaml
-type: cus          # popup: custom:mushroom-template-card, custom:button-card, custom:mini-graph-card, ...
+type: cus          # suggests custom:mushroom-template-card, custom:button-card, custom:mini-graph-card, ...
 ```
 Your installed custom cards (from the live registry) appear with their readable names, next to common community cards from the bundled catalog.
 
@@ -304,7 +304,7 @@ Your installed custom cards (from the live registry) appear with their readable 
 ```yaml
 action: light.turn_on
 data:
-                   # popup reads light.turn_on's real schema: brightness_pct, rgb_color, transition, color_name, flash, ...
+                   # suggests the fields of light.turn_on's real schema: brightness_pct, rgb_color, transition, color_name, flash, ...
 ```
 Fields come straight from your instance's service schema, with type, description, and required and advanced flags. Press `Enter` after `data:` and Nostrodomus re-opens so you can keep filling the block.
 
@@ -320,22 +320,22 @@ target:
 card_mod:
   style: |
     ha-card {
-      border-rad   # CSS lane: border-radius, and card_mod value hints
+      border-rad   # CSS: border-radius, and card_mod value hints
     }
 ```
-Inside the `style: |` block the lane switches to CSS. Outside it, you are back to YAML. Completion follows the block boundary.
+Inside the `style: |` block the suggestions switch to CSS. Outside it, you are back to YAML. Completion follows the block boundary.
 
 ### 5. A snippet with tab-through placeholders
 ```yaml
 tap_action:
-  action: ${1|toggle,more-info,call-service,navigate|}   # choose
+  action: ${1|toggle,more-info,perform-action,navigate|} # choose
   entity: ${2:light.example}                             # Tab, then type to overwrite
 $0                                                       # final caret
 ```
 
 ### 6. Jinja template
 ```jinja
-{{ states('sensor.') }}   # Jinja lane: template functions and filters
+{{ states('sensor.') }}   # Jinja: template functions and filters
 ```
 Inside `{{ }}` and `{% %}` the list offers Jinja functions, filters and keywords. Entity ids inside a call such as `states('...')` are offered when the experimental options Smart completion engine and Live entities inside templates are on (General tab).
 
@@ -346,12 +346,12 @@ Everything below is local-only and reads live state in your browser. The stable 
 ### Common console commands
 
 ```js
-window.__nostrodomus.version                 // for example "nostrodomus-v0.1.280-hacs-install"
+window.__nostrodomus.version                 // for example "nostrodomus-v0.1.281-cleanup"
 window.__nostrodomus.health()                // { ok, status, warningCount, checks[], ... }
 window.__nostrodomus.runtimeErrors()         // { ok:true, localOnly:true, stats, items[] }  (last 40)
 window.__nostrodomus.exportDiagnostics()     // full, redacted diagnostics object (redact:true by default)
 window.__nostrodomus.open() / .close() / .toggle() / .refresh()
-window.__nostrodomus.settings()              // open the settings dialog
+window.__nostrodomus.settings()              // open the settings panel
 window.__nostrodomus.resetSettings()         // restore defaults and remove the stored settings
 window.__nostrodomus.uninstall()             // full teardown (alias: .disable())
 ```
@@ -370,7 +370,7 @@ window.__nostrodomus.uninstall()             // full teardown (alias: .disable()
 | `performanceTelemetry()` / `performanceStats()` | local performance telemetry and budget (`localOnly:true, networkReporting:false`) |
 | `clientCapabilities()` | coarse, local-only browser, CPU, RAM, and GPU snapshot |
 | `copyDiagnosticsToClipboard()` | the Copy full report flow (redacted), returns `Promise<boolean>` |
-| `open` / `close` / `toggle` / `refresh` | control the completion popup |
+| `open` / `close` / `toggle` / `refresh` | control the suggestion list |
 | `settings()` / `resetSettings()` | open settings, reset to defaults (removes `nostrodomus.settings` from local storage and restyles the editor) |
 | `registerProvider(provider)` / `rebuildIndex()` | register a provider (an object with an `id` and a `provide(ctx)` function, see [docs/PROVIDER_CONTRACT.md](docs/PROVIDER_CONTRACT.md)), rebuild the completion index |
 | `contextDiagnostics.readActiveEditor()` | read-only snapshot of the active editor context |
@@ -401,7 +401,7 @@ Use Diagnostics, Copy full report (or `exportDiagnostics()`), which produces a r
   - `nostrodomus.settings.activeCategory`: the settings tab that was open last.
   - `nostrodomus.frecency`: a small history of the suggestions you accepted most, used to rank suggestions. It is written only while Remember your favorites (General tab, experimental, off by default) is on.
 
-  Nostrodomus also reads a few keys that exist only if you set them yourself in the browser console: `nostrodomusDebug` (`"1"` turns on verbose logging), `nostrodomusPerf` (`"legacy"` records performance telemetry all the time instead of only while it is shown), and `nostrodomusCompanion` (`"dormant"` switches off the dialog sizing, glass editor dialog, scrollbar styling and warning badge layer; a change made in the same tab takes up to a second to apply). None of these hold personal data.
+  Nostrodomus also reads keys that exist only if you set them yourself in the browser console, for debugging: `nostrodomusDebug` (`"1"` turns on verbose logging), `nostrodomusPerf` (`"legacy"` records performance telemetry all the time instead of only while it is shown, and makes the page scans walk every element instead of only the Home Assistant elements they look for, which is slower), `nostrodomusProviderTimeoutMs` (the default time budget of a provider in milliseconds, see [docs/PROVIDER_CONTRACT.md](docs/PROVIDER_CONTRACT.md)), and `nostrodomusCompanion` (`"dormant"` switches off the dialog sizing, glass editor dialog, scrollbar styling and warning badge layer; a change made in the same tab takes up to a second to apply). None of these hold personal data.
 
   If the browser blocks site data, Nostrodomus still starts and runs with the default settings. Changes cannot be saved then, and the header of the settings panel says so.
 
@@ -411,8 +411,8 @@ Security policy and reporting: [SECURITY.md](SECURITY.md).
 
 - Minimum Home Assistant version: 2026.6.0 (per `hacs.json`).
 - Tested Home Assistant versions (automated browser tests, Chromium):
-  - 2026.11.1 with Nostrodomus 0.1.280.
-  - 2026.6.4 with Nostrodomus 0.1.280.
+  - 2026.11.1 with Nostrodomus 0.1.281.
+  - 2026.6.4 with Nostrodomus 0.1.281.
 - Browsers: Chromium-based browsers are supported. Firefox is not supported yet (see [Known issues](docs/KNOWN_ISSUES.md)).
 - Installers: the Marketplace built into Home Assistant 2026.11 and later, or HACS 2.0.0+ on earlier versions. Both download the file `nostrodomus.js` attached to the GitHub release (see [docs/HACS_INSTALL.md](docs/HACS_INSTALL.md)).
 - Details and the Home Assistant behaviors to know are in [docs/COMPAT.md](docs/COMPAT.md).
@@ -429,7 +429,7 @@ A short list. The full list is in [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). 
 - Browsers: only Chromium-based browsers are covered by the automated browser tests.
 - Syntax coloring: comments are not italic, because colors are applied through highlight ranges, which cannot set a font style. Lines that come into view during fast scrolling can show Home Assistant's colors for a few frames.
 - Composite card editors: the main dialog editor is sized. An embedded secondary editor is left at native size.
-- Custom card visual editors: Nostrodomus does not complete, color or style a code box inside a custom card's own visual editor; that box works the way the card set it up. Switch to the dialog's code editor for Nostrodomus. The rule goes by position (anything inside the editor element a custom card supplies), so it needs no list of cards. The browser tests check it with two test editors built from Home Assistant's own elements (a note, fields, a button, an expandable section and an embedded code box with entity and icon suggestions); third-party cards are not downloaded for the tests.
+- Custom card visual editors: Nostrodomus does not complete, color or style a codebox inside a custom card's own visual editor; that codebox works the way the card set it up. Switch to the dialog's code editor for Nostrodomus. The rule goes by position (anything inside the editor element a custom card supplies), so it needs no list of cards. The browser tests check it with two test editors built from Home Assistant's own elements (a note, fields, a button, an expandable section and an embedded codebox with entity and icon suggestions); third-party cards are not downloaded for the tests.
 - Editor warnings: the warning badge and the Hide editor warnings setting work in the card-edit dialog. In the automation, script, and Developer Tools editors the warnings stay as Home Assistant draws them.
 - Scrollbar: current Chromium-based browsers show their standard thin scrollbar in the color you set, not the custom thumb shape.
 - Settings are per browser. There is no sync between browsers or devices.
@@ -442,7 +442,7 @@ A short list. The full list is in [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). 
 | Plugin does not seem loaded | You may be on a built-in dashboard, which does not load custom resources. Open an editor on a dashboard you created. In an automation, script or Developer Tools editor after a page reload, open a dashboard you created once and go back. Confirm the resource is registered under Settings, Dashboards, Resources. |
 | Health check | `window.__nostrodomus.health()` returns `ok: true`. `window.__nostrodomus.runtimeErrors()` lists recorded errors. |
 | Stale version after update | Hard-reload (clear cache) or bump the resource URL `?v=` query string. Running version is in Diagnostics, System Status. |
-| Native HA dropdowns disappeared | That is Replace native autocomplete, on by default. Turn it off in General to restore them. |
+| Native HA dropdowns disappeared | That is Replace Home Assistant native autocomplete, on by default. Turn it off in General to restore them. |
 | Styling wrong with a custom theme | Adjust the frame controls in Style, or use Reset to default in Help. Styling is scoped to the active editor and its dialog. |
 | Settings are not kept | The header of the settings panel shows when a save failed. Check that the browser allows site data for your Home Assistant address. |
 | Want verbose logs | `localStorage.setItem("nostrodomusDebug","1"); location.reload();` or the Debug toggle in Diagnostics. |

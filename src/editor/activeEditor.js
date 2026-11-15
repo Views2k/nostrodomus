@@ -1,7 +1,8 @@
-// Nostrodomus active-editor scoping module
-// Pure scoping helpers; stateful editor lifecycle stays runtime-owned.
-// Invariant: completions only activate inside the active HA code editor surface.
-// This protects against dashboard/global Ctrl+Space leakage.
+// Which editor, and which events, completion may act on.
+//
+// Completion runs only inside a Home Assistant code editor: in the open card dialog, or in a panel
+// editor inside one of the UNIVERSAL_PANEL_HOSTS. A Ctrl+Space anywhere else on a dashboard is left
+// alone. The editor lifecycle and its state belong to the runtimes that call these helpers.
 
 import {
   CM_CONTENT,
@@ -33,33 +34,29 @@ import {
 } from "./haSelectors.js";
 import { insideCardOwnEditor } from "./cardOwnEditor.js";
 
-// Autocomplete on non-card-dialog editors.
+// Completion in panel editors outside the card dialog.
 //
-// The three completion scope gates below (isScopedEditorEvent / isViewAllowed / viewFromEvent)
-// funnel through activeEditDialog(). For the panel editors (Dev Tools Template, dashboard raw
-// config, automation / script YAML) the "no dashboard-wide Ctrl+Space leakage" invariant (file
-// header) is enforced by the conjunction of (1) containment and (2) editor-surface presence, not by
-// dialog identity. So the gates admit a panel keystroke/view only when it resolves to a real editor
-// surface inside an allowlisted HA-native panel host (UNIVERSAL_PANEL_HOSTS): a bare dashboard
-// keydown has no editor surface in its composedPath, and a third-party card editor is not inside an
-// allowlisted host, so both still hit the existing return false. Gated by style.universalCodebox +
-// style.universalAutocomplete.
+// The three scope checks below (isScopedEditorEvent, isViewAllowed, viewFromEvent) first look for
+// the open card dialog. Without one, a key or a view on a panel (Developer Tools Template, the
+// dashboard raw configuration editor, automation or script YAML) is in scope only when it belongs
+// to an editor surface inside one of the UNIVERSAL_PANEL_HOSTS. A key on a dashboard has no editor
+// surface in its composedPath, and a third-party card editor is not inside one of those hosts, so
+// both stay out of scope. Needs style.universalCodebox and style.universalAutocomplete.
 
 function universalAutocompleteEnabled(deps = {}) {
   const style = deps.state?.settings?.style;
   return style?.universalCodebox !== false && style?.universalAutocomplete !== false;
 }
 
-// True when the event composedPath is inside an allowlisted non-card-dialog editor surface:
-// it must carry a real editor surface (ha-code-editor / .cm-*) AND an allowlisted panel host.
+// True when the event path holds both an editor surface (ha-code-editor or a .cm-* element) and
+// one of the panel hosts.
 function pathInsideUniversalEditorSurface(path) {
   if (!pathHasEditorSurface(path)) return false;
   return (path || []).some((n) => { try { return !!n?.matches?.(UNIVERSAL_PANEL_HOSTS); } catch { return false; } });
 }
 
-// True when a node (a CM view's .dom) lives inside an allowlisted non-card-dialog panel host
-// (composed walk-up across shadow boundaries). The caller has already verified it is a real,
-// visible CM view, so host containment is the allowlist/leak guard.
+// True when a node (a CodeMirror view's .dom) is inside one of the panel hosts, across shadow
+// boundaries. The caller has already checked that the view is real and visible.
 function nodeInsideUniversalEditorSurface(node) {
   let n = node;
   let depth = 0;
@@ -71,9 +68,8 @@ function nodeInsideUniversalEditorSurface(node) {
   return false;
 }
 
-// Extract the first allowed CM view from an event composedPath (shared by the dialog and the
-// universal arms of viewFromEvent). Every candidate is filtered through the (universal-aware)
-// isViewAllowed, so this never returns a view outside an allowlisted surface.
+// The first CodeMirror view in an event path that isViewAllowed accepts, for both the dialog and
+// the panel case of viewFromEvent.
 function viewFromPathCandidates(path, deps = {}) {
   const candidates = [];
   for (const n of path || []) {
@@ -92,240 +88,221 @@ function viewFromPathCandidates(path, deps = {}) {
 }
 
 export function visible(el) {
-    if (!el || el.nodeType !== Node.ELEMENT_NODE) return false;
-    const r = el.getBoundingClientRect();
-    const s = getComputedStyle(el);
-    return r.width > 20 && r.height > 20 && s.display !== "none" && s.visibility !== "hidden";
-  }
+  if (!el || el.nodeType !== Node.ELEMENT_NODE) return false;
+  const r = el.getBoundingClientRect();
+  const s = getComputedStyle(el);
+  return r.width > 20 && r.height > 20 && s.display !== "none" && s.visibility !== "hidden";
+}
 
 export function closestFromPath(path, selector) {
-    for (const n of path || []) {
-      if (n?.matches?.(selector)) return n;
-      if (n?.closest) {
-        const hit = n.closest(selector);
-        if (hit) return hit;
-      }
+  for (const n of path || []) {
+    if (n?.matches?.(selector)) return n;
+    if (n?.closest) {
+      const hit = n.closest(selector);
+      if (hit) return hit;
     }
-    return null;
   }
+  return null;
+}
 
 export function composedContains(host, node) {
-    if (!host || !node) return false;
-    let n = node;
-    while (n) {
-      if (n === host) return true;
-      const root = n.getRootNode?.();
-      if (root?.host) n = root.host;
-      else n = n.parentElement;
-    }
-    return false;
+  if (!host || !node) return false;
+  let n = node;
+  while (n) {
+    if (n === host) return true;
+    const root = n.getRootNode?.();
+    if (root?.host) n = root.host;
+    else n = n.parentElement;
   }
+  return false;
+}
 
 export function homeRoot() {
-    return document.querySelector(HOME_ASSISTANT)?.shadowRoot || null;
-  }
+  return document.querySelector(HOME_ASSISTANT)?.shadowRoot || null;
+}
 
-// HA's edit-card dialog body surface across versions: pre-2026.6 exposes a
-// `.content` element directly in the dialog's shadow root; 2026.6 wraps the
-// body in `ha-dialog`, whose own shadow root carries `wa-dialog` and
-// `div.body` (the frozen v17 companion handles exactly this selector set).
-// Completion's typing gate (isScopedEditorEvent → pathInsideActiveDialog) rides
-// on this finder and has no companion-bridge fallback, so a `.content`-only
-// check meant silence on 2026.6 instances without the legacy companion files.
+// Whether the card dialog's body is visible. Before 2026.6 the dialog's shadow root holds a
+// `.content` element; from 2026.6 the body is wrapped in `ha-dialog`, whose shadow root holds
+// `wa-dialog` and `div.body`. activeEditDialog and so every completion scope check depend on it.
 export function visibleDialogSurface(dialog) {
-    const root = dialog?.shadowRoot;
-    if (!root) return false;
-    const legacyContent = root.querySelector(HUI_DIALOG_CONTENT);
-    if (legacyContent && visible(legacyContent)) return true;
-    const haDialog = root.querySelector(HA_DIALOG);
-    if (!haDialog) return false;
-    const body = haDialog.shadowRoot?.querySelector(HA_DIALOG_BODY);
-    if (body && visible(body)) return true;
-    const waDialog = haDialog.shadowRoot?.querySelector(WA_DIALOG);
-    if (waDialog && visible(waDialog)) return true;
-    return visible(haDialog);
-  }
+  const root = dialog?.shadowRoot;
+  if (!root) return false;
+  const legacyContent = root.querySelector(HUI_DIALOG_CONTENT);
+  if (legacyContent && visible(legacyContent)) return true;
+  const haDialog = root.querySelector(HA_DIALOG);
+  if (!haDialog) return false;
+  const body = haDialog.shadowRoot?.querySelector(HA_DIALOG_BODY);
+  if (body && visible(body)) return true;
+  const waDialog = haDialog.shadowRoot?.querySelector(WA_DIALOG);
+  if (waDialog && visible(waDialog)) return true;
+  return visible(haDialog);
+}
 
-// On 2026.6 the dialog element is still named hui-dialog-edit-card, but it no
-// longer mounts under home-assistant's shadow root (dialogCount is 0 there
-// while a shadow-piercing locator still finds the open dialog).
-// Candidate roots, cheapest first: document light DOM, the legacy
-// home-assistant shadow root, and that root's depth-1 child shadow roots
-// (e.g. a main/manager element hosting dialogs one level down). Bounded by
-// design: this runs on the typing hotpath, and wildcard deep shadow walks are
-// no-touch-listed. If a future HA build mounts the dialog deeper, add that
-// exact root to the registry rather than widening the walk.
+// From 2026.6 the hui-dialog-edit-card element no longer mounts under the home-assistant shadow
+// root. editCardDialogElements looks in these roots, cheapest first: the document's light DOM,
+// the home-assistant shadow root, and the shadow roots of that root's direct children (an element
+// that hosts dialogs one level down). It runs on every key in the editor, so it does not walk
+// deeper; if a Home Assistant release mounts the dialog deeper, add that exact root here.
 //
-// editCardDialogElements returns every hui-dialog-edit-card element, open or not.
-// Home Assistant keeps the element attached after the dialog closes, with an emptied shadow
-// root (measured on 2026.11: still in the DOM on another dashboard, shadow root with no
-// children). editCardDialogCandidates leaves those out, so "a dialog is present" stops being
-// true for the rest of the session after the first card edit.
+// editCardDialogElements returns every hui-dialog-edit-card element, open or not. Home Assistant
+// keeps the element attached after the dialog closes, with an emptied shadow root (measured on
+// 2026.11: still in the DOM on another dashboard, shadow root with no children).
+// editCardDialogCandidates leaves those out, so a dialog counts as present only while it has
+// content.
 function editCardDialogHasContent(dialog) {
-    try {
-      const root = dialog?.shadowRoot;
-      return !(root && root.childElementCount === 0);
-    } catch {
-      return true;
-    }
+  try {
+    const root = dialog?.shadowRoot;
+    return !(root && root.childElementCount === 0);
+  } catch {
+    return true;
   }
+}
 
 export function editCardDialogCandidates() {
-    return editCardDialogElements().filter(editCardDialogHasContent);
-  }
+  return editCardDialogElements().filter(editCardDialogHasContent);
+}
 
 export function editCardDialogElements() {
-    const results = [];
-    const push = (list) => {
-      for (const dialog of list || []) {
-        if (dialog && !results.includes(dialog)) results.push(dialog);
-      }
-    };
-    try { push(document.querySelectorAll(HUI_DIALOG_EDIT_CARD)); } catch { /* stubbed/absent document */ }
-    const hr = homeRoot();
-    if (hr) {
-      try { push(hr.querySelectorAll(HUI_DIALOG_EDIT_CARD)); } catch { /* stale root */ }
-      for (const child of hr.children || []) {
-        const root = child.shadowRoot;
-        if (!root) continue;
-        try { push(root.querySelectorAll(HUI_DIALOG_EDIT_CARD)); } catch { /* closed/hostile root */ }
-      }
+  const results = [];
+  const push = (list) => {
+    for (const dialog of list || []) {
+      if (dialog && !results.includes(dialog)) results.push(dialog);
     }
-    return results;
+  };
+  try { push(document.querySelectorAll(HUI_DIALOG_EDIT_CARD)); } catch { /* stubbed/absent document */ }
+  const hr = homeRoot();
+  if (hr) {
+    try { push(hr.querySelectorAll(HUI_DIALOG_EDIT_CARD)); } catch { /* stale root */ }
+    for (const child of hr.children || []) {
+      const root = child.shadowRoot;
+      if (!root) continue;
+      try { push(root.querySelectorAll(HUI_DIALOG_EDIT_CARD)); } catch { /* closed/hostile root */ }
+    }
   }
+  return results;
+}
 
-// The visible edit-card dialog: scan every candidate (editCardDialogCandidates
-// covers the 2026.6 mount point outside the home-assistant shadow root) and
-// return the first whose body surface is visible.
+// The first card dialog whose body is visible.
 export function activeEditDialog() {
-    return editCardDialogCandidates().find((dialog) => visibleDialogSurface(dialog)) || null;
-  }
+  return editCardDialogCandidates().find((dialog) => visibleDialogSurface(dialog)) || null;
+}
 
-// The surface to reconcile editor warnings on. Prefer the visible edit dialog, but fall
-// back to the most recent edit-card candidate when the visibility filter yields null:
-// HA can present the dialog (and its "visual editor not supported" alert) while its body
-// surface fails visibleDialogSurface (the 2026.6+ 0-sized/reshaped open phase), so the
-// badge would otherwise never apply. Scoped to edit-card candidates -- never dashboard-wide.
+// Where the editor warnings are badged or hidden: the visible card dialog, or else the newest
+// card dialog candidate. From 2026.6 Home Assistant can show the dialog and its "visual editor not
+// supported" alert while the body is still at zero size and fails visibleDialogSurface. Never
+// anything outside a card dialog.
 export function activeEditorWarningSurface() {
-    return activeEditDialog() || editCardDialogCandidates().slice(-1)[0] || null;
-  }
+  return activeEditDialog() || editCardDialogCandidates().slice(-1)[0] || null;
+}
 
 export function pathHasEditorSurface(path) {
-    return (path || []).some((n) => {
-      const tag = n?.tagName?.toLowerCase?.() || "";
-      return tag === HA_CODE_EDITOR || n?.matches?.(CM_EDITOR_SURFACE);
-    });
-  }
+  return (path || []).some((n) => {
+    const tag = n?.tagName?.toLowerCase?.() || "";
+    return tag === HA_CODE_EDITOR || n?.matches?.(CM_EDITOR_SURFACE);
+  });
+}
 
 export function pathInsideActiveDialog(path) {
-    const dialog = activeEditDialog();
-    if (!dialog) return false;
-    return (path || []).some((n) => n === dialog || composedContains(dialog, n));
-  }
+  const dialog = activeEditDialog();
+  if (!dialog) return false;
+  return (path || []).some((n) => n === dialog || composedContains(dialog, n));
+}
 
 export function isNostrodomusUiEvent(ev, deps = {}) {
-    const runtimeState = deps.state || {};
-    const path = ev?.composedPath?.() || [];
-    return path.some((n) => n === runtimeState.overlay || n === runtimeState.settingsPanel || n?.id === "nostrodomus-completions-root" || n?.classList?.contains?.("nostrodomus-settings-panel"));
-  }
+  const runtimeState = deps.state || {};
+  const path = ev?.composedPath?.() || [];
+  return path.some((n) => n === runtimeState.overlay || n === runtimeState.settingsPanel || n?.id === "nostrodomus-completions-root" || n?.classList?.contains?.("nostrodomus-settings-panel"));
+}
 
-// Shadow-piercing finder for the active edit-card dialog's ha-code-editor.
-// Styling already locates the editor by DOM walk (it works on 2026.6); this
-// is the same approach, used to bind the completion view authoritatively.
+// The ha-code-editor of a card dialog, found by walking its shadow roots, the way styling finds
+// the editor. Completion binds its view from it.
 export function dialogCodeEditorElement(dialog) {
-    if (!dialog) return null;
-    const seen = new Set();
-    const search = (root, depth = 0) => {
-      if (!root || depth > 12) return null;
-      let editors = [];
-      try { editors = Array.from(root.querySelectorAll?.(HA_CODE_EDITOR) || []); } catch { editors = []; }
-      // A code box inside a custom card's own visual editor is not the dialog's code editor.
-      editors = editors.filter((ed) => !insideCardOwnEditor(ed));
-      for (const ed of editors) {
-        const cm = ed?.shadowRoot?.querySelector?.(CM_EDITOR) || ed?.querySelector?.(CM_EDITOR);
-        if (visible(ed) || (cm && visible(cm))) return ed;
-      }
-      if (editors[0]) return editors[0];
-      let hosts = [];
-      try { hosts = Array.from(root.querySelectorAll?.("*") || []); } catch { hosts = []; }
-      for (const el of hosts) {
-        const sr = el.shadowRoot;
-        if (sr && !seen.has(sr)) { seen.add(sr); const hit = search(sr, depth + 1); if (hit) return hit; }
-      }
-      return null;
-    };
-    return search(dialog.shadowRoot) || search(dialog);
-  }
+  if (!dialog) return null;
+  const seen = new Set();
+  const search = (root, depth = 0) => {
+    if (!root || depth > 12) return null;
+    let editors = [];
+    try { editors = Array.from(root.querySelectorAll?.(HA_CODE_EDITOR) || []); } catch { editors = []; }
+    // A code box inside a custom card's own visual editor is not the dialog's code editor.
+    editors = editors.filter((ed) => !insideCardOwnEditor(ed));
+    for (const ed of editors) {
+      const cm = ed?.shadowRoot?.querySelector?.(CM_EDITOR) || ed?.querySelector?.(CM_EDITOR);
+      if (visible(ed) || (cm && visible(cm))) return ed;
+    }
+    if (editors[0]) return editors[0];
+    let hosts = [];
+    try { hosts = Array.from(root.querySelectorAll?.("*") || []); } catch { hosts = []; }
+    for (const el of hosts) {
+      const sr = el.shadowRoot;
+      if (sr && !seen.has(sr)) { seen.add(sr); const hit = search(sr, depth + 1); if (hit) return hit; }
+    }
+    return null;
+  };
+  return search(dialog.shadowRoot) || search(dialog);
+}
 
-// The active dialog editor's CodeMirror view, read straight off the element
-// (2026.6 and older expose it at `.codemirror`; the other property names are
-// kept for parity with viewFromEvent). DOM-based so it does not depend on the
-// keydown composedPath, which 2026.6 retargets at a shadow boundary — the
-// root cause of the engine binding a stale/off-dialog view.
+// The CodeMirror view of the open dialog's editor, read off the element (`.codemirror`; the other
+// property names are the ones viewFromEvent also accepts). From 2026.6 a keydown composedPath is
+// retargeted at a shadow boundary and may not reach the editor, so this does not rely on the event.
 export function dialogCodeEditorView(deps = {}) {
-    const getDialog = typeof deps.activeEditDialog === "function" ? deps.activeEditDialog : activeEditDialog;
-    const dialog = getDialog();
-    if (!dialog) return null;
-    const editor = dialogCodeEditorElement(dialog);
-    if (!editor) return null;
-    const view = [editor.codemirror, editor._codeEditor?.codemirror, editor.cmTile?.view, editor.view].find((v) => looksLikeView(v));
-    if (!view) return null;
-    return visible(view.dom) ? view : null;
-  }
+  const getDialog = typeof deps.activeEditDialog === "function" ? deps.activeEditDialog : activeEditDialog;
+  const dialog = getDialog();
+  if (!dialog) return null;
+  const editor = dialogCodeEditorElement(dialog);
+  if (!editor) return null;
+  const view = [editor.codemirror, editor._codeEditor?.codemirror, editor.cmTile?.view, editor.view].find((v) => looksLikeView(v));
+  if (!view) return null;
+  return visible(view.dom) ? view : null;
+}
 
 // Whether a card dialog hosts a code editor, remembered per dialog element. isScopedEditorEvent
-// asks for every key, click and focus change inside the dialog, and dialogCodeEditorElement
-// answers by reading every element of every shadow root in the dialog when there is no code
-// editor, which is the case in the visual editor: each key typed into a form field read the
-// whole form and the whole card preview. A found editor is trusted while it is still in the
-// dialog. "No editor" is trusted for DIALOG_NO_EDITOR_RECHECK_MS, so a burst of typing reads the
-// dialog at most once per interval; an event from the editor surface inside the dialog drops it
+// asks for every key, click and focus change inside the dialog, and when there is no code editor
+// (the visual editor) dialogCodeEditorElement reads every element of every shadow root in the
+// dialog, the form and the card preview included. A found editor is trusted while it is still in
+// the dialog. "No editor" is trusted for DIALOG_NO_EDITOR_RECHECK_MS, so a burst of typing reads
+// the dialog at most once per interval; an event from the editor surface inside the dialog drops it
 // at once, so the editor that appears when switching to the code editor is seen on the next event.
 const DIALOG_NO_EDITOR_RECHECK_MS = 1000;
 const dialogEditorPresence = new WeakMap();
 
 function dialogPresenceNow(deps) {
-    if (typeof deps.now === "function") return deps.now();
-    try { return globalThis.performance?.now?.() ?? Date.now(); } catch { return Date.now(); }
-  }
+  if (typeof deps.now === "function") return deps.now();
+  try { return globalThis.performance?.now?.() ?? Date.now(); } catch { return Date.now(); }
+}
 
 function dialogHostsCodeEditor(dialog, deps = {}) {
-    const now = dialogPresenceNow(deps);
-    const known = dialogEditorPresence.get(dialog);
-    if (known?.editor) {
-      if (known.editor.isConnected !== false && composedContains(dialog, known.editor)) return true;
-    } else if (known && now - known.at >= 0 && now - known.at < DIALOG_NO_EDITOR_RECHECK_MS) {
-      return false;
-    }
-    const editor = dialogCodeEditorElement(dialog);
-    dialogEditorPresence.set(dialog, { editor: editor || null, at: now });
-    return !!editor;
+  const now = dialogPresenceNow(deps);
+  const known = dialogEditorPresence.get(dialog);
+  if (known?.editor) {
+    if (known.editor.isConnected !== false && composedContains(dialog, known.editor)) return true;
+  } else if (known && now - known.at >= 0 && now - known.at < DIALOG_NO_EDITOR_RECHECK_MS) {
+    return false;
   }
+  const editor = dialogCodeEditorElement(dialog);
+  dialogEditorPresence.set(dialog, { editor: editor || null, at: now });
+  return !!editor;
+}
 
-// A 2026.6 keydown composedPath can be
-// retargeted at a shadow boundary, dropping the editor-surface nodes while
-// the dialog node survives. When the event is inside the active edit dialog
-// and that dialog hosts a code editor, it is still editor scope (the view
-// binds via dialogCodeEditorView in viewFromEvent). Still dialog-bounded —
-// dashboard events have no active edit dialog, so they stay out of scope.
+// From 2026.6 a keydown composedPath can be retargeted at a shadow boundary: the editor-surface
+// nodes are gone while the dialog node is still there. An event inside the open card dialog is in
+// scope when the dialog holds a code editor (viewFromEvent then binds its view through
+// dialogCodeEditorView). Without an open card dialog only panel editors can be in scope.
 export function isScopedEditorEvent(ev, deps = {}) {
-    const path = ev?.composedPath?.() || [];
-    // A key or click inside a custom card's own visual editor is that card's.
-    if (insideCardOwnEditor(path[0] || ev?.target)) return false;
-    const dialog = activeEditDialog();
-    if (dialog && pathHasEditorSurface(path) && path.some((n) => n === dialog || composedContains(dialog, n))) {
-      if (!dialogEditorPresence.get(dialog)?.editor) dialogEditorPresence.delete(dialog);
-      return true;
-    }
-    if (!dialog) {
-      // No card dialog open: admit the keystroke only when the event path is inside an allowlisted
-      // non-card-dialog editor surface (real editor surface + allowlisted panel host). A bare
-      // dashboard keydown has neither, so this stays false (no leakage).
-      return universalAutocompleteEnabled(deps) && pathInsideUniversalEditorSurface(path);
-    }
-    const inDialog = path.some((n) => n === dialog || composedContains(dialog, n)) || composedContains(dialog, ev?.target);
-    return inDialog && dialogHostsCodeEditor(dialog, deps);
+  const path = ev?.composedPath?.() || [];
+  // A key or click inside a custom card's own visual editor is that card's.
+  if (insideCardOwnEditor(path[0] || ev?.target)) return false;
+  const dialog = activeEditDialog();
+  if (dialog && pathHasEditorSurface(path) && path.some((n) => n === dialog || composedContains(dialog, n))) {
+    if (!dialogEditorPresence.get(dialog)?.editor) dialogEditorPresence.delete(dialog);
+    return true;
   }
+  if (!dialog) {
+    // No card dialog: in scope only inside a panel editor. A key on a dashboard is not.
+    return universalAutocompleteEnabled(deps) && pathInsideUniversalEditorSurface(path);
+  }
+  const inDialog = path.some((n) => n === dialog || composedContains(dialog, n)) || composedContains(dialog, ev?.target);
+  return inDialog && dialogHostsCodeEditor(dialog, deps);
+}
 
 // Whether the page can have a code editor: one the runtime already knows, one that is mounting,
 // or one that a style pass could still find. False only for a page like a plain dashboard: no
@@ -336,116 +313,106 @@ export function isScopedEditorEvent(ev, deps = {}) {
 const EDITOR_CONTAINER_IN_PATH = [UNIVERSAL_PANEL_HOSTS, HUI_DIALOG_EDIT_CARD, HA_DIALOG, HA_MD_DIALOG, "dialog"].join(", ");
 
 export function pageMayHaveEditor(ev, deps = {}) {
-    const runtimeState = deps.state || {};
-    if (runtimeState.activeEditorCache?.editor || runtimeState.view || runtimeState.hookedView) return true;
-    if (Date.now() < (Number(runtimeState.editorSentinelLikelyOpeningUntil) || 0)) return true;
-    const path = ev?.composedPath?.() || [];
-    if (pathHasEditorSurface(path)) return true;
-    if (path.some((n) => { try { return !!n?.matches?.(EDITOR_CONTAINER_IN_PATH); } catch { return false; } })) return true;
-    let pathname = "";
-    try { pathname = String((deps.window || globalThis.window || globalThis)?.location?.pathname || ""); } catch { /* sandboxed window */ }
-    if (isPanelEditorRoute(pathname)) return true;
-    try { return editCardDialogCandidates().length > 0; } catch { return true; }
-  }
+  const runtimeState = deps.state || {};
+  if (runtimeState.activeEditorCache?.editor || runtimeState.view || runtimeState.hookedView) return true;
+  if (Date.now() < (Number(runtimeState.editorSentinelLikelyOpeningUntil) || 0)) return true;
+  const path = ev?.composedPath?.() || [];
+  if (pathHasEditorSurface(path)) return true;
+  if (path.some((n) => { try { return !!n?.matches?.(EDITOR_CONTAINER_IN_PATH); } catch { return false; } })) return true;
+  let pathname = "";
+  try { pathname = String((deps.window || globalThis.window || globalThis)?.location?.pathname || ""); } catch { /* sandboxed window */ }
+  if (isPanelEditorRoute(pathname)) return true;
+  try { return editCardDialogCandidates().length > 0; } catch { return true; }
+}
 
 export function looksLikeView(v) {
-    return !!v &&
-      typeof v === "object" &&
-      !!v.state &&
-      typeof v.dispatch === "function" &&
-      !!v.dom &&
-      typeof v.coordsAtPos === "function";
-  }
+  return !!v &&
+    typeof v === "object" &&
+    !!v.state &&
+    typeof v.dispatch === "function" &&
+    !!v.dom &&
+    typeof v.coordsAtPos === "function";
+}
 
 export function isViewAllowed(view, deps = {}) {
-    const runtimeState = deps.state || {};
-    const runtimeWindow = deps.window || globalThis?.window || globalThis;
-    const candidateView = view || runtimeState.view;
-    if (!looksLikeView(candidateView) || !visible(candidateView.dom)) return false;
-    if (insideCardOwnEditor(candidateView.dom)) return false;
-    const dialog = activeEditDialog();
-    if (!dialog) {
-      // No card dialog: allow a real, visible CM view whose DOM lives inside an allowlisted
-      // non-card-dialog panel host. The looksLikeView + visible checks above are the editor-surface
-      // guard; host containment is the allowlist guard. Bare dashboard yields false.
-      return universalAutocompleteEnabled(deps) && nodeInsideUniversalEditorSurface(candidateView.dom);
-    }
-    if (composedContains(dialog, candidateView.dom)) return true;
-
-    const bridgeActive = runtimeWindow?.__nostrodomusEditorBridgeV1?.active?.();
-    if (bridgeActive?.cmEditor && composedContains(bridgeActive.cmEditor, candidateView.dom)) return true;
-    if (bridgeActive?.codeEditor && composedContains(bridgeActive.codeEditor, candidateView.dom)) return true;
-
-    return false;
+  const runtimeState = deps.state || {};
+  const runtimeWindow = deps.window || globalThis?.window || globalThis;
+  const candidateView = view || runtimeState.view;
+  if (!looksLikeView(candidateView) || !visible(candidateView.dom)) return false;
+  if (insideCardOwnEditor(candidateView.dom)) return false;
+  const dialog = activeEditDialog();
+  if (!dialog) {
+    // No card dialog: a real, visible view (checked above) is allowed inside a panel host only.
+    return universalAutocompleteEnabled(deps) && nodeInsideUniversalEditorSurface(candidateView.dom);
   }
+  if (composedContains(dialog, candidateView.dom)) return true;
+
+  const bridgeActive = runtimeWindow?.__nostrodomusEditorBridgeV1?.active?.();
+  if (bridgeActive?.cmEditor && composedContains(bridgeActive.cmEditor, candidateView.dom)) return true;
+  if (bridgeActive?.codeEditor && composedContains(bridgeActive.codeEditor, candidateView.dom)) return true;
+
+  return false;
+}
 
 export function viewFromEvent(ev, deps = {}) {
-    const path = ev?.composedPath?.() || [];
-    const dialog = activeEditDialog();
-    if (!dialog) {
-      // No card dialog: bind a panel editor's CM view from the event path when the path is inside
-      // an allowlisted non-card-dialog editor surface. Reuses the same candidate extraction as the
-      // dialog path; every candidate must still pass the universal-aware isViewAllowed (real visible
-      // CM view inside an allowlisted panel host).
-      if (!universalAutocompleteEnabled(deps) || !pathInsideUniversalEditorSurface(path)) return null;
-      return viewFromPathCandidates(path, deps);
-    }
-    const inDialog =
-      path.some((n) => n === dialog || composedContains(dialog, n)) || composedContains(dialog, ev?.target);
-    if (!inDialog) return null;
+  const path = ev?.composedPath?.() || [];
+  const dialog = activeEditDialog();
+  if (!dialog) {
+    // No card dialog: a panel editor's view from the event path, accepted by isViewAllowed.
+    if (!universalAutocompleteEnabled(deps) || !pathInsideUniversalEditorSurface(path)) return null;
+    return viewFromPathCandidates(path, deps);
+  }
+  const inDialog =
+    path.some((n) => n === dialog || composedContains(dialog, n)) || composedContains(dialog, ev?.target);
+  if (!inDialog) return null;
 
-    if (pathHasEditorSurface(path)) {
-      const pathView = viewFromPathCandidates(path, deps);
-      if (pathView) return pathView;
-    }
-
-    // DOM fallback: the composedPath did not carry an allowed view because
-    // 2026.6 retargets it at a shadow boundary. Bind the dialog's own
-    // ha-code-editor view directly; isViewAllowed re-checks containment.
-    const domView = dialogCodeEditorView({ ...deps, activeEditDialog: () => dialog });
-    if (domView && isViewAllowed(domView, deps)) return domView;
-
-    return null;
+  if (pathHasEditorSurface(path)) {
+    const pathView = viewFromPathCandidates(path, deps);
+    if (pathView) return pathView;
   }
 
-// Derive the editor surface from the event path, reusing the host the completion gate already
-// matches (no new DOM traversal beyond the composedPath). A card-edit dialog is always
-// 'card-editor'; otherwise the first allowlisted panel host in the path names the surface
-// (innermost wins: the specific developer-tools-* node precedes its ha-panel-developer-tools
-// wrapper in composedPath). Fail-dark to 'unknown'. Pure read of the event path only.
+  // The event path carried no allowed view (retargeted at a shadow boundary from 2026.6): bind
+  // the view of the dialog's own ha-code-editor; isViewAllowed checks it again.
+  const domView = dialogCodeEditorView({ ...deps, activeEditDialog: () => dialog });
+  if (domView && isViewAllowed(domView, deps)) return domView;
+
+  return null;
+}
+
+// The editor surface of an event: 'card-editor' while a card dialog is open, otherwise the surface
+// of the first panel host in the event path (the innermost: a developer-tools-* element comes
+// before its ha-panel-developer-tools wrapper), or 'unknown'. Reads only the event path.
 function surfaceFromEventPath(ev) {
-    try {
-      if (activeEditDialog()) return "card-editor";
-      const path = ev?.composedPath?.() || [];
-      for (const n of path) {
-        try {
-          if (n?.matches?.(UNIVERSAL_PANEL_HOSTS)) {
-            return surfaceFromHostTag(n.tagName ? n.tagName.toLowerCase() : "");
-          }
-        } catch { /* detached node */ }
-      }
-    } catch { /* fail-dark */ }
-    return "unknown";
-  }
+  try {
+    if (activeEditDialog()) return "card-editor";
+    const path = ev?.composedPath?.() || [];
+    for (const n of path) {
+      try {
+        if (n?.matches?.(UNIVERSAL_PANEL_HOSTS)) {
+          return surfaceFromHostTag(n.tagName ? n.tagName.toLowerCase() : "");
+        }
+      } catch { /* detached node */ }
+    }
+  } catch { /* no surface */ }
+  return "unknown";
+}
 
 export function rememberView(ev, deps = {}) {
-    const runtimeState = deps.state || {};
-    const hook = typeof deps.hookDispatch === "function" ? deps.hookDispatch : () => {};
-    const view = viewFromEvent(ev, deps);
-    if (!view) return false;
+  const runtimeState = deps.state || {};
+  const hook = typeof deps.hookDispatch === "function" ? deps.hookDispatch : () => {};
+  const view = viewFromEvent(ev, deps);
+  if (!view) return false;
 
-    runtimeState.view = view;
-    // Cache the surface at the single view-bind point so the context detector can read it as plain
-    // data (it must never touch the DOM). Written unconditionally (cheap); consumed only under the
-    // engineV2 flag in runtimeContextRuntime.
-    runtimeState.activeSurface = surfaceFromEventPath(ev);
-    hook(view);
-    return true;
-  }
+  runtimeState.view = view;
+  // The surface is stored where the view is bound, so the context detector, which does not read
+  // the DOM, gets it as data. Only runtimeContextRuntime reads it, with completions.engineV2 on.
+  runtimeState.activeSurface = surfaceFromEventPath(ev);
+  hook(view);
+  return true;
+}
 
-// Find the active top-layer modal dialog so Settings can mount inside it.
-// The wildcard shadow traversal below is the Settings-only legacy path,
-// not a general traversal strategy.
+// The open top-layer modal dialog, so the Settings panel can mount inside it. Only the Settings
+// panel uses this wildcard shadow walk.
 export function activeTopLayerDialog(options = {}) {
   const documentRef = options.documentRef || (typeof document !== "undefined" ? document : null);
   const runtimeState = options.state || {};
@@ -466,8 +433,7 @@ export function activeTopLayerDialog(options = {}) {
   addRoot(homeRootFn());
   addRoot(documentRef);
 
-  // Each root is read once per call: the document walk reaches the home-assistant shadow root
-  // again, which used to walk the whole app a second time.
+  // Each root is read once per call: the document walk reaches the home-assistant shadow root again.
   const walked = new Set();
   let traversalAt = "";
   const walk = (root, depth = 0) => {
@@ -485,12 +451,9 @@ export function activeTopLayerDialog(options = {}) {
       if (candidate.open) return candidate;
     }
 
-    // Settings must find the active native HA modal dialog even when Home
-    // Assistant inserts it under shadow hosts outside the targeted list. A
-    // targeted traversal could miss the real top-layer dialog and mount Settings
-    // outside the modal subtree, making the menu visible but inert. Keep this
-    // Settings-only walk on the wildcard path until a measured, portal-safe
-    // replacement is proven.
+    // Home Assistant can put its modal dialog under shadow hosts that no targeted list names. A
+    // targeted walk that misses it mounts Settings outside the modal subtree, where the panel is
+    // visible but does not take input, so this walk enters every shadow host.
     let all = [];
     try { all = Array.from(root.querySelectorAll?.("*") || []); } catch (err) { recordRuntimeErrorOnce("settings:top-layer-dialog-shadow-query", err, { phase: "activeTopLayerDialog", depth }); all = []; }
     runtimeState.settingsTopLayerDialogShadowTraversalMode = legacyRestoredMode;
@@ -518,10 +481,8 @@ export function activeTopLayerDialog(options = {}) {
   return null;
 }
 
-// Active-editor readout helper seam.
-// These helpers are diagnostics-only and intentionally pure/local; active editor
-// discovery, runtime state mutation, dispatch hooks, popup routing, Settings,
-// styling, preview, and insertion/session behavior remain runtime-owned.
+// Active-editor readout for diagnostics (__nostrodomus.contextDiagnostics.readActiveEditor). These
+// helpers only read: they do not bind views, hook dispatch, open the popup, style or insert text.
 const ACTIVE_EDITOR_READOUT_MAX_TEXT = 220;
 
 export function activeEditorReadoutString(value, limit = ACTIVE_EDITOR_READOUT_MAX_TEXT) {
@@ -570,9 +531,6 @@ export function activeEditorReadoutLinePosition(doc, pos, helpers = {}) {
   };
 }
 
-// Active-editor readout discovery helper seam.
-// These helpers are diagnostics-only: they do not mutate the active runtime
-// view, hook dispatch, open/close popups, touch Settings, alter styling, or insert text.
 const ACTIVE_EDITOR_READOUT_MAX_NODE_VISITS = 1800;
 const ACTIVE_EDITOR_READOUT_MAX_CANDIDATES = 80;
 
@@ -819,7 +777,7 @@ export function createActiveEditorContextSnapshotReadout(options = {}) {
   const traversalScoped = typeof options.traversalScoped === "function" ? options.traversalScoped : () => options.targetedTraversal === true;
   const onTraversal = typeof options.onTraversal === "function" ? options.onTraversal : () => {};
   const onError = typeof options.onError === "function" ? options.onError : () => {};
-  const stage = options.stage || "2B-active-editor-context-snapshot-readout";
+  const stage = options.stage || "active-editor-snapshot-readout";
   const version = Number.isFinite(options.version) ? options.version : 1;
   const maxCandidates = Number.isFinite(options.maxCandidates) ? options.maxCandidates : ACTIVE_EDITOR_READOUT_MAX_CANDIDATES;
   const maxNodeVisits = Number.isFinite(options.maxNodeVisits) ? options.maxNodeVisits : ACTIVE_EDITOR_READOUT_MAX_NODE_VISITS;

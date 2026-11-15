@@ -23,9 +23,8 @@ import {
   HUI_DIALOG_EDIT_CARD,
 } from '../editor/haSelectors.js';
 
-// Paint-settle retry ladder (ms): re-attempt paint-then-reveal while CodeMirror syntax classes
-// settle, forcing the reveal at the budget so content is never left hidden. 360 is both the final
-// rung and the give-up budget (deduplicated here).
+// Retry times (ms) for paint-then-reveal while CodeMirror syntax classes settle. The last retry
+// is also the budget: it reveals the content whether or not it is painted.
 const SYNTAX_GATE_RETRY_1_MS = 80;
 const SYNTAX_GATE_RETRY_2_MS = 160;
 const SYNTAX_GATE_BUDGET_MS = 360;
@@ -64,23 +63,10 @@ export function createInitialSyntaxPaintGate(deps) {
   ].join(",");
   const INITIAL_SYNTAX_PAINT_GATE_STYLE_ID = "nostrodomus-initial-syntax-paint-gate-v1";
 
-// important-override registry — first-paint reveal gate.
-
-// external rules overridden: HA theme / card-mod universal transition and opacity
-
-//   rules that would animate the gated reveal and flash unstyled content.
-
-// owner: initial syntax paint gate (this module).
-
-// reason: pending content must stay invisible and reveal instantly once token classes
-
-//   land; any external transition reintroduces the first-paint flash.
-
-// removal condition: synchronous first-paint syntax (no async class application).
-
-// verification: paint-gate behavior tests; browser smoke "no flash" item.
-
-function initialSyntaxPaintGateCss() {
+  // The rules use !important because Home Assistant themes and card_mod set transition and
+  // opacity rules on every element, which would animate the reveal and show the code uncolored
+  // for a moment. New content stays hidden until its token colors are in place, then appears at once.
+  function initialSyntaxPaintGateCss() {
     return `
       .cm-content[data-nostrodomus-initial-syntax-pending="1"],
       .cm-content[data-nostrodomus-initial-syntax-pending="1"] .cm-line,
@@ -97,7 +83,7 @@ function initialSyntaxPaintGateCss() {
     `;
   }
 
-function installInitialSyntaxPaintGateStyle(root) {
+  function installInitialSyntaxPaintGateStyle(root) {
     if (!root) return false;
     const container = root.head || root;
     const style = ensureStyleElementAtEnd(container, INITIAL_SYNTAX_PAINT_GATE_STYLE_ID);
@@ -105,7 +91,7 @@ function installInitialSyntaxPaintGateStyle(root) {
     const css = initialSyntaxPaintGateCss();
     if (style.textContent !== css) style.textContent = css;
     // Drop styles whose editor is gone. The set only exists so uninstall can remove live nodes;
-    // keeping detached ones retained the closed dialog tree for the rest of the session.
+    // a detached one would keep the closed dialog tree alive for the rest of the session.
     for (const known of state.initialSyntaxGateStyles || []) {
       if (known !== style && known?.isConnected === false) state.initialSyntaxGateStyles.delete(known);
     }
@@ -113,7 +99,7 @@ function installInitialSyntaxPaintGateStyle(root) {
     return true;
   }
 
-function initialSyntaxContentPainted(content) {
+  function initialSyntaxContentPainted(content) {
     if (!content?.querySelectorAll) return false;
     if (api.nativeHighlightSyntaxContentPainted(content) || sourceClassSyntaxContentPainted(content, VERSION, CODEMIRROR_SOURCE_CLASS_SYNTAX_STYLE_ID)) return true;
     const spans = Array.from(content.querySelectorAll(CM_LINE_SPAN)).filter((span) => String(span.textContent || "").trim()).slice(0, 180);
@@ -126,14 +112,14 @@ function initialSyntaxContentPainted(content) {
     });
   }
 
-function editorForInitialSyntaxContent(content) {
+  function editorForInitialSyntaxContent(content) {
     const editor = styleEditorFromNode(content) || content?.closest?.(CM_EDITOR) || null;
     if (editor?.querySelector) return editor;
     const root = content?.getRootNode?.();
     return root?.querySelector?.(CM_EDITOR) || null;
   }
 
-function revealInitialSyntaxContent(content, reason = "initial-syntax-reveal") {
+  function revealInitialSyntaxContent(content, reason = "initial-syntax-reveal") {
     if (!content?.dataset) return false;
     delete content.dataset.nostrodomusInitialSyntaxPending;
     content.dataset.nostrodomusInitialSyntaxReady = "1";
@@ -146,7 +132,7 @@ function revealInitialSyntaxContent(content, reason = "initial-syntax-reveal") {
     return true;
   }
 
-function scheduleInitialSyntaxPaintGate(content, reason = "initial-syntax-paint-gate") {
+  function scheduleInitialSyntaxPaintGate(content, reason = "initial-syntax-paint-gate") {
     if (!content?.querySelectorAll || !content?.dataset || !state.enabled) return false;
     if (insideCardOwnEditor(content)) return false; // a code box of a custom card's own editor
     try { installInitialSyntaxPaintGateStyle(content.getRootNode?.()); } catch { /* cross-origin root */ }
@@ -201,11 +187,11 @@ function scheduleInitialSyntaxPaintGate(content, reason = "initial-syntax-paint-
     return true;
   }
 
-function initialSyntaxPaintGateScopedEnabled() {
+  function initialSyntaxPaintGateScopedEnabled() {
     return nostrodomusPerfMode() !== "legacy";
   }
 
-function initialSyntaxPaintGateRootLabel(root, fallback = "root") {
+  function initialSyntaxPaintGateRootLabel(root, fallback = "root") {
     try {
       if (root === document) return "document";
       if (root === document.documentElement) return "documentElement";
@@ -216,11 +202,11 @@ function initialSyntaxPaintGateRootLabel(root, fallback = "root") {
     return fallback;
   }
 
-function initialSyntaxPaintGateTargetedShadowTraversalEnabled() {
+  function initialSyntaxPaintGateTargetedShadowTraversalEnabled() {
     return nostrodomusPerfMode() !== "legacy";
   }
 
-function initialSyntaxPaintGateShadowHosts(root, reason = "initial-syntax-shadow-scan", depth = 0) {
+  function initialSyntaxPaintGateShadowHosts(root, reason = "initial-syntax-shadow-scan", depth = 0) {
     if (!root?.querySelectorAll) return [];
     const targeted = initialSyntaxPaintGateTargetedShadowTraversalEnabled();
     const selector = targeted ? INITIAL_SYNTAX_GATE_TARGETED_SHADOW_HOST_SELECTOR : "*";
@@ -245,7 +231,7 @@ function initialSyntaxPaintGateShadowHosts(root, reason = "initial-syntax-shadow
     return hosts;
   }
 
-function initialSyntaxPaintGateTargets(reason = "initial-syntax-paint-gate") {
+  function initialSyntaxPaintGateTargets(reason = "initial-syntax-paint-gate") {
     if (!initialSyntaxPaintGateScopedEnabled()) {
       return [{ root: document.documentElement || document, scanRoot: document, label: "legacy-document" }];
     }
@@ -289,7 +275,7 @@ function initialSyntaxPaintGateTargets(reason = "initial-syntax-paint-gate") {
     return targets;
   }
 
-function scanInitialSyntaxPaintGateRoot(root, reason = "scan-initial-syntax-root", depth = 0) {
+  function scanInitialSyntaxPaintGateRoot(root, reason = "scan-initial-syntax-root", depth = 0) {
     if (!root || depth > 8) return 0;
     let count = 0;
     try { installInitialSyntaxPaintGateStyle(root); } catch { /* mid-frame HA mutation */ }
@@ -304,7 +290,7 @@ function scanInitialSyntaxPaintGateRoot(root, reason = "scan-initial-syntax-root
     return count;
   }
 
-function primeInitialSyntaxPaintGateForEditor(editor, reason = "prime-initial-syntax-editor") {
+  function primeInitialSyntaxPaintGateForEditor(editor, reason = "prime-initial-syntax-editor") {
     if (!editor?.querySelector) return 0;
     pruneDetachedInitialSyntaxPaintGateObservers();
     let count = 0;
@@ -320,12 +306,11 @@ function primeInitialSyntaxPaintGateForEditor(editor, reason = "prime-initial-sy
     return count;
   }
 
-// Disconnect and forget observers whose root has left the DOM (a closed editor dialog / removed
-// shadow host). initialSyntaxGateObservers is a strong Map, so without this each card-editor open
-// left its MutationObserver + detached root retained for the session (a leak) — they were only
-// cleared on uninstall. document (nodeType 9) is never pruned; a detached shadowRoot reports
-// isConnected === false. Run on each editor-discovery prime.
-function pruneDetachedInitialSyntaxPaintGateObservers() {
+  // Disconnect and forget observers whose root has left the DOM (a closed editor dialog or a
+  // removed shadow host). initialSyntaxGateObservers is a strong Map, so each card editor opened
+  // would otherwise keep its observer and detached root until uninstall. The document (nodeType 9)
+  // is never pruned; a detached shadowRoot reports isConnected === false. Runs on each prime.
+  function pruneDetachedInitialSyntaxPaintGateObservers() {
     const observers = state.initialSyntaxGateObservers;
     if (!observers || typeof observers.forEach !== "function") return 0;
     let pruned = 0;
@@ -340,7 +325,7 @@ function pruneDetachedInitialSyntaxPaintGateObservers() {
     return pruned;
   }
 
-function observeInitialSyntaxPaintGateRoot(root, _reason = "observe-initial-syntax-root") {
+  function observeInitialSyntaxPaintGateRoot(root, _reason = "observe-initial-syntax-root") {
     if (!root || state.initialSyntaxGateObservedRoots?.has?.(root) || typeof MutationObserver === "undefined") return false;
     state.initialSyntaxGateObservedRoots?.add?.(root);
     try { installInitialSyntaxPaintGateStyle(root); } catch { /* mid-frame HA mutation */ }
@@ -387,7 +372,7 @@ function observeInitialSyntaxPaintGateRoot(root, _reason = "observe-initial-synt
     }
   }
 
-function installInitialSyntaxPaintGate(reason = "install-initial-syntax-paint-gate") {
+  function installInitialSyntaxPaintGate(reason = "install-initial-syntax-paint-gate") {
     if (state.initialSyntaxGateInstallComplete) {
       state.lastInitialSyntaxPaintGateInstallSkip = {
         at: new Date().toISOString(),
@@ -447,15 +432,17 @@ function installInitialSyntaxPaintGate(reason = "install-initial-syntax-paint-ga
     return true;
   }
 
-function cleanupInitialSyntaxPaintGate(reason = "cleanup-initial-syntax-paint-gate") {
+  function cleanupInitialSyntaxPaintGate(reason = "cleanup-initial-syntax-paint-gate") {
     try { for (const observer of state.initialSyntaxGateObservers?.values?.() || []) observer?.disconnect?.(); } catch { /* injected observer */ }
     state.initialSyntaxGateObservers?.clear?.();
     state.initialSyntaxGateObservedRoots = new WeakSet();
     state.initialSyntaxGateInstallComplete = false;
     state.initialSyntaxGateMode = "";
     state.initialSyntaxGateObservedRootCount = 0;
-    for (const timer of state.initialSyntaxGateTimers || []) clearTimeout(timer); state.initialSyntaxGateTimers?.clear?.();
-    for (const style of state.initialSyntaxGateStyles || []) style?.remove?.(); state.initialSyntaxGateStyles?.clear?.();
+    for (const timer of state.initialSyntaxGateTimers || []) clearTimeout(timer);
+    state.initialSyntaxGateTimers?.clear?.();
+    for (const style of state.initialSyntaxGateStyles || []) style?.remove?.();
+    state.initialSyntaxGateStyles?.clear?.();
     try {
       for (const root of [document, document.querySelector?.(HOME_ASSISTANT)?.shadowRoot].filter(Boolean)) {
         for (const content of /** @type {NodeListOf<HTMLElement>} */ (root.querySelectorAll?.(".cm-content[data-nostrodomus-initial-syntax-pending], .cm-content[data-nostrodomus-initial-syntax-ready]")) || []) {

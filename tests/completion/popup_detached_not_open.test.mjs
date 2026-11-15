@@ -4,9 +4,9 @@ import assert from 'node:assert/strict';
 import { completionPopupIsOpen } from '../../src/completion/popupRuntime.js';
 import { createEditorDispatchRuntime } from '../../src/editor/editorDispatchRuntime.js';
 
-// Home Assistant removes the list together with the dialog that hosted it. The
-// box keeps display:block, so it counted as open and the first change in the next editor asked
-// for a live update, which showed the list there without Ctrl+Space.
+// Home Assistant removes the list together with the dialog that hosted it, and the box keeps
+// display:block. Counted as open, it would make the first change in the next editor ask for a live
+// update and show the list there without Ctrl+Space.
 test('a list whose box was removed from the page is not open', () => {
   assert.equal(completionPopupIsOpen({ overlay: { style: { display: 'block' }, isConnected: false } }), false);
 });
@@ -14,7 +14,7 @@ test('a list whose box was removed from the page is not open', () => {
 test('a shown list in the page is open, a hidden one is not', () => {
   assert.equal(completionPopupIsOpen({ overlay: { style: { display: 'block' }, isConnected: true } }), true);
   assert.equal(completionPopupIsOpen({ overlay: { style: { display: 'none' }, isConnected: true } }), false);
-  assert.equal(completionPopupIsOpen({ overlay: { style: { display: 'block' } } }), true, 'a box that does not report whether it is connected counts as before');
+  assert.equal(completionPopupIsOpen({ overlay: { style: { display: 'block' } } }), true, 'a box that does not report whether it is connected counts as open');
   assert.equal(completionPopupIsOpen({ overlay: null }), false);
   assert.equal(completionPopupIsOpen(null), false);
 });

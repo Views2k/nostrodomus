@@ -1,0 +1,16 @@
+{
+  "name": "Entity value after a closed template",
+  "rationale": "A template that opened and closed on an earlier line does not make the following YAML value a template; the cursor is in a plain entity value.",
+  "sourceWithCursor": "name: \"{{ states('sensor.x') }}\"\nentity: li__CURSOR__",
+  "expected": {
+    "descriptorVersion": 1,
+    "lang": "yaml",
+    "prefix": "li",
+    "yamlKey": "entity",
+    "yamlRole": "value",
+    "valueKind": "entity",
+    "focusKind": "entity-list",
+    "pathText": "entity",
+    "shouldSuggest": true
+  }
+}

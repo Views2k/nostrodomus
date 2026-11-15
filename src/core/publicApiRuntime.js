@@ -29,11 +29,9 @@ export function createPublicApiRuntime({
 
   let api = null;
 
-  // Install the runtime. The per-editor install functions
-  // (installInitialSyntaxPaintGate / installRootStyleRegistry) are already
-  // editor-gated: they no-op without an editor, so on an editor-less
-  // dashboard this stays cheap (the sentinel, listeners, and one preflight style
-  // node). The completion library load is deferred separately (see boot() below).
+  // Installs the runtime. installInitialSyntaxPaintGate and installRootStyleRegistry do nothing
+  // without an editor, so on a dashboard without one this costs the sentinel, the listeners and one
+  // preflight style node. The completion library loads later (see boot() below).
   function install() {
     lifecycle.installInitialSyntaxPaintGate?.('install');
     lifecycle.installCodeboxPreflightStyle?.('install');
@@ -74,7 +72,6 @@ export function createPublicApiRuntime({
     lifecycle.clearCodeboxExternalFrameSettleTimers?.('uninstall');
     lifecycle.removeCodeboxExternalFrame?.();
     lifecycle.removeCodeboxKeyboardContainment?.('uninstall');
-    state.codeboxFrameEventsInstalled = false;
     try { cancelAnimationFrameRef?.(state.raf); } catch { /* injected timer ref */ }
     lifecycle.unhookDispatch?.();
     lifecycle.removeOverlay?.();
@@ -147,13 +144,10 @@ export function createPublicApiRuntime({
 
   async function boot() {
     installPublicAliases();
-    // The completion library is not loaded eagerly. It builds the index and
-    // registers providers (real memory), and a dashboard that never opens an
-    // editor never needs it. `open()` awaits `loadLibrary()` lazily on first
-    // use, so completion still works on first Ctrl+Space; an editor-less
-    // dashboard just never pays for it. Callers that need the full surface
-    // synchronously (e.g. the contract runner) call `__nostrodomus.open()`
-    // once to trigger the load.
+    // The completion library is not loaded here: it builds the index and registers the providers,
+    // which a dashboard that never opens an editor does not need. `open()` awaits `loadLibrary()`
+    // on first use, so the first Ctrl+Space still completes. Code that needs the library at once
+    // (tools/public_runtime_contract_runner.mjs) calls `__nostrodomus.open()` first.
     install();
     return api;
   }

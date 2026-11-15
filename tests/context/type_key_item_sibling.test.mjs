@@ -55,6 +55,6 @@ test('the type: of the item inside such a block is still not a card type', () =>
 test('trigger and condition types of a list item keep their lanes', () => {
   assert.equal(kindAt('triggers:\n  - trigger: device\n    type: '), 'trigger-type');
   assert.equal(kindAt('- trigger: device\n  type: '), 'trigger-type');
-  assert.equal(kindAt('- platform: device\n  type: '), 'card-type', 'as in 0.1.276: nothing above says trigger');
+  assert.equal(kindAt('- platform: device\n  type: '), 'card-type', 'nothing above says trigger');
   assert.equal(kindAt('conditions:\n  - condition: device\n    type: '), 'condition-type');
 });

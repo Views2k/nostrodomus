@@ -60,7 +60,7 @@ test('syncCompletionEditorAria clears the attributes when closed or empty', () =
   assert.equal(content.attrs['aria-expanded'], undefined);
 });
 
-test('syncCompletionEditorAria is fail-dark with no editor handle', () => {
+test('syncCompletionEditorAria does not throw without an editor handle', () => {
   assert.doesNotThrow(() => syncCompletionEditorAria(stateWith([{ label: 'a' }], 0, null), true));
   assert.doesNotThrow(() => syncCompletionEditorAria({}, true));
   assert.doesNotThrow(() => syncCompletionEditorAria(null, true));
@@ -90,7 +90,7 @@ test('clearCompletionPopupA11y clears both surfaces directly', () => {
   assert.equal(content.attrs['aria-activedescendant'], undefined);
 });
 
-test('ARIA is written to the SERVED completion view, not the styling cache when they differ', () => {
+test('ARIA is written to the served completion view, not the styling cache when they differ', () => {
   const served = fakeContent();
   const styling = fakeContent();
   const state = {
@@ -100,8 +100,9 @@ test('ARIA is written to the SERVED completion view, not the styling cache when 
   };
   syncCompletionEditorAria(state, true);
   assert.equal(served.attrs['aria-expanded'], 'true', 'the served view gets the combobox ARIA');
-  assert.ok(!('aria-expanded' in styling.attrs), 'the styling-cache editor does NOT get it');
-  // Fallback: with no view, the styling cache is still used (existing behavior preserved).
-  const legacy = stateWith([{ label: 'a' }], 0, fakeContent());
-  syncCompletionEditorAria(legacy, true);
+  assert.ok(!('aria-expanded' in styling.attrs), 'the styling-cache editor does not get it');
+  // Without a view, the styling-cache editor is used.
+  const cached = fakeContent();
+  syncCompletionEditorAria(stateWith([{ label: 'a' }], 0, cached), true);
+  assert.equal(cached.attrs['aria-expanded'], 'true', 'the styling-cache editor gets the ARIA when there is no view');
 });

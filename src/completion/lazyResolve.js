@@ -1,13 +1,12 @@
 // Lazy detail resolution for the highlighted completion item.
 //
-// Pure: takes a completion item plus a plain runtimeData snapshot (the same memoized cache the
-// rest of the engine uses) and returns an enriched { documentation, detail } for just the
-// highlighted row. The popup calls this only for the selected item and only when the lazyResolve
-// flag is on, so a default install does zero extra work and the docs pane is byte-identical.
+// Pure: takes a completion item and a runtimeData snapshot (the cached Home Assistant data) and
+// returns { documentation, detail } for the highlighted row. The list calls this only for the
+// selected row and only when the lazyResolve flag is on.
 //
-// No DOM, window, storage, timers, network, or HA host reads — it only reads the snapshot object
-// handed in and fails dark to null (the caller keeps the existing generic documentation) on
-// missing/partial/hostile input. Never throws.
+// No DOM, window, storage, timers, network, or Home Assistant reads: it reads only the snapshot
+// it is given. Missing, partial or unexpected input gives null, and the caller keeps the generic
+// documentation. Never throws.
 
 const ENTITY_ID_RX = /^[a-z_]+\.[a-z0-9_]+/i;
 
@@ -46,8 +45,7 @@ export function resolveEntityDetail(item, snapshot) {
   if (!id) return null;
   const names = plainObject(snapshot?.entityNames);
   const friendly = (names && names[id]) || item?.meta?.friendly || '';
-  // Only enrich when we actually have a friendly name to add; otherwise the generic doc already
-  // shows the id, so there is nothing richer to surface.
+  // Without a friendly name there is nothing to add: the generic documentation shows the id.
   if (!friendly) return null;
   const domain = id.split('.')[0] || '';
   const lines = [`${friendly} (${id})`];

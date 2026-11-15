@@ -1,6 +1,6 @@
 // Shared spec session for the E2E suite: frontend auth via localStorage
 // hassTokens seeding, whole-session console capture with its failure
-// policy, and the STALE-RESOURCE GUARD that runs before any other assertion
+// policy, and the stale-resource guard that runs before any other assertion
 // (see tools/e2e/README.md).
 
 import { test as base, expect } from '@playwright/test';
@@ -111,7 +111,7 @@ export async function openDashboard(page) {
   });
 
   // Navigate to the seeded dashboard by the explicit URL recorded in the
-  // stamp (the OWNED storage-mode dashboard seed.mjs creates). Never rely on
+  // stamp (the owned storage-mode dashboard seed.mjs creates). Never rely on
   // '/' (HA 2026.6 made the built-in '/home' overview the default landing
   // panel) and never on the legacy default-Lovelace slot (removed in 2026.6;
   // saving to it is a silent no-op and '/lovelace/*' is not routed — see
@@ -134,7 +134,7 @@ export async function openDashboard(page) {
     throw error;
   }
 
-  // Guard leg 1: the page must have requested EXACTLY the stamped URL.
+  // Guard leg 1: the page must have requested exactly the stamped URL.
   await expect
     .poll(() => nostrodomusRequests.length, {
       timeout: 15000,

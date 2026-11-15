@@ -1,4 +1,4 @@
-// The suggestion pipeline wired the way src/main.legacy.js wires it: context detection, the
+// The suggestion pipeline wired the way src/app.js wires it: context detection, the
 // registered providers (library, snippets, context rows, catalog, Home Assistant values, words),
 // the scoring runtime with the default settings, and insertItem for accepting a row. For tests
 // that check the list a user sees at a cursor position and what Enter does there.

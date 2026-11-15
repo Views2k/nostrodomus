@@ -88,5 +88,3 @@ function fakeDocument() {
   assert.deepEqual(clampSettingsSize({ w: 2000, h: 2000 }, viewport), { w: 1184, h: 884 });
   assert.deepEqual(clampSettingsSize(null, viewport), { w: 440, h: 684 });
 }
-
-console.log('settings panel module tests OK');

@@ -1,12 +1,12 @@
-// Input-quiet runtime + suppression-gap guard unit tests.
-// (The CodeMirror predicate truth table is also frozen in quiet_window_semantics.)
+// The typing quiet window of the companion layer (src/companion/inputQuietRuntime.js).
+// quiet_window_semantics.test.mjs also covers the CodeMirror event check.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { createInputQuietRuntime, isCodeMirrorEvent } from '../../src/companion/inputQuietRuntime.js';
 
-function harness({ dormant = false } = {}) {
+function harness({ dormant = false, globalRef = {} } = {}) {
   const clock = { t: 0 };
   let queue = [];
   let seq = 1;
@@ -23,25 +23,25 @@ function harness({ dormant = false } = {}) {
     }
   };
   const storage = { getItem: (k) => (dormant && k === 'nostrodomusCompanion' ? 'dormant' : null) };
-  const rt = createInputQuietRuntime({ globalRef: {}, storage, now: () => clock.t, setTimeout, clearTimeout });
+  const rt = createInputQuietRuntime({ globalRef, storage, now: () => clock.t, setTimeout, clearTimeout });
   return { rt, advance, pending: () => queue.length };
 }
 
 const evt = (path) => ({ composedPath: () => path });
 
-test('DORMANT guard is a strict no-op: deferDuringTyping returns false and runs work now even mid-quiet', () => {
+test('while the layer is dormant deferDuringTyping returns false, also inside the typing window', () => {
   const { rt, pending } = harness({ dormant: true });
-  rt.markEditorInputQuiet('typing'); // window is open...
+  rt.markEditorInputQuiet('typing');
   assert.equal(rt.editorInputQuietActive(), true, 'window is open');
   let ran = 0;
   const deferred = rt.deferDuringTyping('diagnostics', () => { ran += 1; });
-  assert.equal(deferred, false, 'dormant -> never defers (behaves exactly as today)');
+  assert.equal(deferred, false, 'dormant: never defers');
   assert.equal(ran, 0, 'the guard never executes the work itself; a false return means the caller runs it');
   assert.equal(pending(), 0, 'no flush timer scheduled while dormant');
   assert.equal(rt.sharedState.editorInputQuietSuppressions, 0, 'no suppression counted while dormant');
 });
 
-test('ACTIVE + quiet: defers the should-be work, flushes it once after the window', () => {
+test('while the user types the work is deferred and runs once after the window', () => {
   const { rt, advance, pending } = harness({ dormant: false });
   rt.markEditorInputQuiet('typing');
   let ran = 0;
@@ -66,7 +66,7 @@ test('cleanup cancels a pending flush so deferred work never fires after teardow
   assert.equal(rt.editorInputQuietActive(), false, 'cleanup closes the quiet window');
 });
 
-test('ACTIVE but not quiet: deferDuringTyping runs now (returns false)', () => {
+test('outside the typing window deferDuringTyping returns false, so the caller runs the work', () => {
   const { rt, pending } = harness({ dormant: false });
   let ran = 0;
   assert.equal(rt.deferDuringTyping('diagnostics', () => { ran += 1; }), false, 'no quiet window -> run now');
@@ -77,19 +77,18 @@ test('ACTIVE but not quiet: deferDuringTyping runs now (returns false)', () => {
 test('multiple defers during one quiet window collapse to a single trailing flush that runs every client', () => {
   const { rt, advance } = harness({ dormant: false });
   rt.markEditorInputQuiet('typing');
-  // Three DISTINCT clients (distinct reasons) each defer their own work in one window.
+  // Three callers with different reasons defer their work in one window.
   let a = 0; let b = 0; let c = 0;
   rt.deferDuringTyping('picker-fix', () => { a += 1; });
   rt.deferDuringTyping('diagnostics-refresh', () => { b += 1; });
   rt.deferDuringTyping('scroll-sync', () => { c += 1; });
   advance(2000);
-  // Coalescing is preserved: ONE flush event (not one per defer)...
-  assert.equal(rt.snapshot().flushes, 1, 'still a single coalesced trailing flush, not one per defer');
-  // ...but that flush runs EVERY client's work — no client's defer cancels another's.
-  assert.deepEqual([a, b, c], [1, 1, 1], 'each distinct client runs exactly once');
+  // One flush, not one per defer, and it runs the work of every caller.
+  assert.equal(rt.snapshot().flushes, 1, 'a single trailing flush, not one per defer');
+  assert.deepEqual([a, b, c], [1, 1, 1], 'each caller runs exactly once');
 });
 
-test('repeated defers of the SAME reason coalesce to one run', () => {
+test('repeated defers with the same reason run once', () => {
   const { rt, advance } = harness({ dormant: false });
   rt.markEditorInputQuiet('typing');
   let ran = 0;
@@ -107,11 +106,28 @@ test('skipCodeEditorHotpath marks quiet for CodeMirror events only', () => {
   assert.equal(rt.editorInputQuietActive(), true, 'CM event opened the quiet window');
 });
 
-test('exported isCodeMirrorEvent predicate matches the frozen truth table', () => {
+test('isCodeMirrorEvent matches ha-code-editor and the CodeMirror classes as whole words', () => {
   assert.equal(isCodeMirrorEvent(evt([{ localName: 'ha-code-editor' }])), true);
   assert.equal(isCodeMirrorEvent(evt([{ className: 'x cm-scroller y' }])), true);
   assert.equal(isCodeMirrorEvent(evt([{ className: { baseVal: 'cm-line' } }])), true);
   assert.equal(isCodeMirrorEvent(evt([{ className: 'cm-content-wrapper' }])), false);
   assert.equal(isCodeMirrorEvent(evt([{ localName: 'div', className: 'foo' }])), false);
   assert.equal(isCodeMirrorEvent(evt([])), false);
+});
+
+test('deferred work still runs when the layer turns dormant while the user keeps typing', () => {
+  // An external companion that registers in the shared coordinator makes the layer dormant.
+  const runtimes = {};
+  const { rt, advance } = harness({ globalRef: { __nostrodomusRuntimeCoordinatorV1: { state: { runtimes } } } });
+
+  rt.markEditorInputQuiet('typing');
+  let ran = 0;
+  assert.equal(rt.deferDuringTyping('diagnostics', () => { ran += 1; }), true, 'deferred while typing');
+  advance(1100);
+  rt.markEditorInputQuiet('typing'); // still typing when the flush is due
+  runtimes['v17-editor-bridge'] = { id: 'v17-editor-bridge', role: 'editor-layout-runtime' };
+  advance(100); // the flush timer fires inside the typing window
+  assert.equal(ran, 1, 'the work deferred before the layer went dormant runs at the flush');
+  advance(5000);
+  assert.equal(ran, 1, 'and runs once');
 });

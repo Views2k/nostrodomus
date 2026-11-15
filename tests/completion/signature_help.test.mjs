@@ -55,7 +55,7 @@ test('jinja signature labels the active argument from a curated map', () => {
   assert.equal(signatureHintModel({ lang: 'jinja', jinjaArg: { fn: 'made_up_fn', argIndex: 0 } }, {}), null);
 });
 
-test('co-tenant: enriching serviceFields rows with schemaValues options does not change the signature', () => {
+test('serviceFields rows with schemaValues options give the same signature as rows without them', () => {
   // schemaValues adds an `options` array to each service-field row. signatureHelp reads only
   // field/required/description, so its output must be byte-identical with or without options.
   const enriched = {
@@ -69,7 +69,7 @@ test('co-tenant: enriching serviceFields rows with schemaValues options does not
   );
 });
 
-test('fail-dark: hostile/partial/missing input never throws and returns null or empty', () => {
+test('hostile, partial or missing input never throws and returns null or empty', () => {
   assert.equal(signatureHintModel(null, SNAPSHOT), null);
   assert.equal(signatureHintModel({ lang: 'yaml' }, null), null);
   assert.equal(signatureHintText(null), '');

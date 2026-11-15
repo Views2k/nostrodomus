@@ -3,6 +3,7 @@
 // It must not own HA runtime discovery, Lovelace runtime context, popup UI, settings UI, visual styling, or network behavior.
 
 import { SECURITY_LIMITS, STATIC_PROVIDER_ID } from '../core/runtimeConstants.js';
+import { safeString } from '../core/string.js';
 import { hacsCatalogProvider } from './hacsCatalogProvider.js';
 import { providerDiagnosticId } from './providerRegistry.js';
 import { templateBlockOpening } from '../yaml/yamlCompletionContext.js';
@@ -11,18 +12,7 @@ function limitsFromOptions(options = {}) {
   return options?.limits || SECURITY_LIMITS;
 }
 
-function safeString(value, maxLen = 512) {
-  const s = String(value ?? "");
-  if (s.length <= maxLen) return s;
-  // A cap landing between a surrogate pair would emit a lone surrogate (ill-formed
-  // text → renders as U+FFFD); step back one unit so truncation ends on a whole code point.
-  const lastCode = s.charCodeAt(maxLen - 1);
-  return s.slice(0, lastCode >= 0xd800 && lastCode <= 0xdbff ? maxLen - 1 : maxLen);
-}
-
-// Bundled Nostrodomus static completion libraries.
-// These replace the old /local/nostrodomus-library-*.js dynamic imports,
-// removing extra resource loads and keeping provider data package-owned.
+// The static completion libraries, bundled with the plugin so they need no extra resource loads.
 export const BUILTIN_NOSTRODOMUS_LIBRARY_CORE_V1 = Object.freeze({
 version: "nostrodomus-library-core-v1",
 packs: {
@@ -640,8 +630,8 @@ packs: {
 },
 });
 
-export async function loadLibrary() {
-  const options = arguments[0] || {};
+export async function loadLibrary(input) {
+  const options = input || {};
   const runtimeState = options?.state;
   const buildRuntimeIndex = typeof options?.buildIndex === 'function' ? options.buildIndex : null;
   if (runtimeState?.library) return runtimeState.library;
@@ -696,7 +686,7 @@ export function sanitizeLibraryRow(raw, source = 'library', options = {}) {
 
   if (!id || !lang || !type || !label) return null;
 
-  // Defense-in-depth: library rows are local, but keep impossible/hostile rows from reaching render/insert paths.
+  // Library rows are local, but a malformed language or type still never reaches rendering or insertion.
   if (!/^[a-z0-9_-]+$/i.test(lang)) return null;
   if (!/^[a-z0-9_.:-]+$/i.test(type)) return null;
 
@@ -727,8 +717,8 @@ export function cacheSet(runtimeState, key, value, options = {}) {
   runtimeState.completionCache.set(key, value);
 }
 
-// Template rows that carry their own block delimiter (`{% if %}`, `{% set %}`). The template
-// lane is only active inside an open `{{` or `{%`, so such a row fits in two places:
+// Template rows that carry their own block delimiter (`{% if %}`, `{% set %}`). Template rows
+// are offered only inside an open `{{` or `{%`, so such a row fits in two places:
 //   - the typed `{%` is the whole prefix: the row replaces it and is offered as it is;
 //   - a word is typed right after `{%` (`{% i`, `{%-se`): the typed `{%` stays, so the row is
 //     offered without its own.
@@ -817,8 +807,8 @@ export function buildIndex(options = {}) {
     if (createHaRuntimeProvider) registerProvider(createHaRuntimeProvider());
     if (createDocumentWordProvider) registerProvider(createDocumentWordProvider());
     // A provider added through the public registerProvider API before this build stays
-    // registered, after the built-in ones. The list was emptied here, so such a provider was
-    // dropped on the first library load. An id that a built-in provider uses stays built in.
+    // registered, after the built-in ones, although the list was emptied above. An id that a
+    // built-in provider uses stays built in.
     const builtInIds = new Set(runtimeState.providers.map(provider => providerDiagnosticId(provider)));
     for (const provider of registeredBefore) {
       if (provider && !builtInIds.has(providerDiagnosticId(provider))) registerProvider(provider);

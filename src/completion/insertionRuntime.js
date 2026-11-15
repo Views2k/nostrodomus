@@ -75,5 +75,3 @@ export function createCompletionInsertionRuntime(options = {}) {
     },
   };
 }
-
-export default createCompletionInsertionRuntime;

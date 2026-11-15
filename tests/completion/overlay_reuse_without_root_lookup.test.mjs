@@ -116,7 +116,7 @@ test('another editor, a removed host or a removed box resolves the root again', 
   assert.equal(h.lookups(), 4, 'the box left its host');
 });
 
-test('without a bound editor the root is resolved on every call, as before', () => {
+test('without a bound editor the root is resolved on every call', () => {
   const h = harness();
   h.state.view = null;
   ensureCompletionOverlay(h.state, h.deps);

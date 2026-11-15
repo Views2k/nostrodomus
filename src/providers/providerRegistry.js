@@ -59,7 +59,7 @@ export function providerTimeoutBudgetMs(provider, limits = DEFAULT_PROVIDER_LIMI
   return limits.defaultProviderTimeoutMs;
 }
 
-// eslint-disable-next-line no-unused-vars -- the signature (provider/index included) is pinned source+dist by test_provider_contract_static.py
+// eslint-disable-next-line no-unused-vars -- providerRuntime passes provider and index; the row checks do not use them
 export function validateProviderRow(row, provider = null, index = 0) {
   if (!row || typeof row !== "object" || Array.isArray(row)) {
     return { ok: false, reason: "row-not-object" };
@@ -219,15 +219,13 @@ export function providerCandidates(ctx, registryState, deps = {}) {
     stats.calls += 1;
     stats.lastMs = elapsed;
     stats.timeoutMs = budgetMs;
-    // provide() returned without throwing: the provider has recovered, so clear any stale error
-    // string left from a prior failure — otherwise diagnostics showed the old error forever.
+    // provide() returned without throwing, so an error left from an earlier call is cleared.
     stats.error = "";
 
-    // provide() is synchronous: by the time the budget can be checked the work is done and the
-    // time is spent. Dropping the rows then only emptied the list (on a large instance the
-    // entity provider rebuilds its snapshot inside this call every 2.5s and went over the 8ms
-    // budget, so the popup showed no entities for that keystroke). The rows are kept and the
-    // slow call is recorded for diagnostics.
+    // provide() is synchronous: when the budget can be checked the time is already spent, and
+    // dropping the rows would only empty the list (on a large instance the entity provider
+    // rebuilds its data snapshot inside this call now and then). The rows are kept and the slow
+    // call is recorded for diagnostics.
     if (elapsed > budgetMs) {
       stats.slowCalls = (stats.slowCalls || 0) + 1;
       stats.lastSlowAt = Date.now();
@@ -248,110 +246,11 @@ export function providerCandidates(ctx, registryState, deps = {}) {
   return out;
 }
 
-
+// The fallback the provider adapter calls when providerCandidates throws: the same pass, with
+// every provider error recorded once per key.
 export function providerCandidatesLegacy(ctx, registryState, deps = {}) {
-  if (!registryState || typeof registryState !== "object") throw new TypeError("registryState is required");
-  const settings = registryState.settings || deps.settings || {};
-  const enabledLangs = settings.enabledLangs || {};
   const recordOnce = deps.recordRuntimeErrorOnce || deps.recordRuntimeError || fallbackRecordRuntimeError;
-  const providerEnabled = deps.providerEnabled || (() => true);
-  const limits = deps.limits || DEFAULT_PROVIDER_LIMITS;
-
-  if (!ctx?.shouldSuggest || (settings.triggerMode === "manual" && ctx.triggerKind !== "explicit" && !ctx.explicitSession)) return [];
-  if (enabledLangs && Object.prototype.hasOwnProperty.call(enabledLangs, ctx.lang) && !enabledLangs[ctx.lang]) return [];
-
-  if (!Array.isArray(registryState.providers)) registryState.providers = [];
-  if (!registryState.providerStats || typeof registryState.providerStats !== "object") registryState.providerStats = {};
-
-  const out = [];
-  for (const provider of registryState.providers || []) {
-    const providerId = providerDiagnosticId(provider);
-    const stats = registryState.providerStats[providerId] || (registryState.providerStats[providerId] = { calls: 0, lastCount: 0, lastMs: 0 });
-    stats.skipped = false;
-
-    if (!providerEnabled(providerId, provider)) {
-      stats.lastCount = 0;
-      stats.lastMs = 0;
-      stats.skipped = true;
-      continue;
-    }
-
-    let canHandle = true;
-    try {
-      canHandle = provider.canHandle ? !!provider.canHandle(ctx) : true;
-    } catch (err) {
-      stats.error = String(err?.message || err);
-      stats.lastErrorAt = Date.now();
-      stats.canHandleErrors = (stats.canHandleErrors || 0) + 1;
-      stats.lastCount = 0;
-      stats.lastMs = 0;
-      recordOnce(`provider:${providerId}:canHandle`, err, {
-        phase: "providerCanHandle",
-        providerId,
-        providerLabel: provider?.label || "",
-      });
-      continue;
-    }
-
-    if (!canHandle) {
-      stats.lastCount = 0;
-      stats.lastMs = 0;
-      continue;
-    }
-
-    const budgetMs = providerTimeoutBudgetMs(provider, limits);
-    let rowsRaw = [];
-    const t0 = runtimeNowMs(deps);
-    try {
-      rowsRaw = provider.provide(ctx) || [];
-    } catch (err) {
-      const elapsed = Math.round((runtimeNowMs(deps) - t0) * 100) / 100;
-      stats.calls += 1;
-      stats.error = String(err?.message || err);
-      stats.lastErrorAt = Date.now();
-      stats.provideErrors = (stats.provideErrors || 0) + 1;
-      stats.lastCount = 0;
-      stats.lastMs = elapsed;
-      recordOnce(`provider:${providerId}:provide`, err, {
-        phase: "providerProvide",
-        providerId,
-        providerLabel: provider?.label || "",
-        elapsedMs: elapsed,
-      });
-      continue;
-    }
-
-    const elapsed = Math.round((runtimeNowMs(deps) - t0) * 100) / 100;
-    stats.calls += 1;
-    stats.lastMs = elapsed;
-    stats.timeoutMs = budgetMs;
-    // provide() returned without throwing: the provider has recovered, so clear any stale error
-    // string left from a prior failure — otherwise diagnostics showed the old error forever.
-    stats.error = "";
-
-    // provide() is synchronous: by the time the budget can be checked the work is done and the
-    // time is spent. Dropping the rows then only emptied the list (on a large instance the
-    // entity provider rebuilds its snapshot inside this call every 2.5s and went over the 8ms
-    // budget, so the popup showed no entities for that keystroke). The rows are kept and the
-    // slow call is recorded for diagnostics.
-    if (elapsed > budgetMs) {
-      stats.slowCalls = (stats.slowCalls || 0) + 1;
-      stats.lastSlowAt = Date.now();
-      recordOnce(`provider:${providerId}:timeout`, new Error(`provider exceeded ${budgetMs}ms budget`), {
-        phase: "providerTimeout",
-        providerId,
-        providerLabel: provider?.label || "",
-        elapsedMs: elapsed,
-        budgetMs,
-      });
-    }
-
-    const rows = validateProviderRows(provider, rowsRaw, stats, { ...deps, limits, recordRuntimeError: recordOnce, recordRuntimeErrorOnce: recordOnce });
-    stats.lastCount = rows.length;
-    out.push(...rows);
-  }
-
-  return out;
+  return providerCandidates(ctx, registryState, { ...deps, recordRuntimeError: recordOnce, recordRuntimeErrorOnce: recordOnce });
 }
 
 export function providerSummary(registryState, deps = {}) {

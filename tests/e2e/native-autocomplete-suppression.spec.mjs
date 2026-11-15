@@ -1,6 +1,6 @@
-// native-autocomplete-suppression.spec — 0.1.182: while the Nostrodomus completion popup is open, HA's
-// native CodeMirror autocomplete tooltip (.cm-tooltip-autocomplete) must not show behind/over it (the
-// "gray native pane pops up too" bug).
+// native-autocomplete-suppression.spec: while the Nostrodomus completion popup is open, Home
+// Assistant's native CodeMirror autocomplete tooltip (.cm-tooltip-autocomplete) must not show behind
+// or over it.
 //
 // Append-to-valid-config setup (no typeless HA crash).
 
@@ -22,7 +22,7 @@ test('native autocomplete: HA native .cm-tooltip-autocomplete stays hidden while
   await page.keyboard.press('Control+Space');
   await expectPopupWithSuggestions(page, 'native autocomplete: the Nostrodomus popup did not open');
 
-  // HA's native CodeMirror autocomplete tooltip must NOT be present/visible in the dialog while ours is up.
+  // HA's native CodeMirror autocomplete tooltip must not be present/visible in the dialog while ours is up.
   const nativeCount = await dialog.locator('.cm-tooltip-autocomplete').count();
   if (nativeCount > 0) {
     const anyVisible = await dialog.locator('.cm-tooltip-autocomplete').first().isVisible().catch(() => false);

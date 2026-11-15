@@ -5,11 +5,11 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/providers/providerRegistry.js"
-LEGACY = ROOT / "src/main.legacy.js"
+APP = ROOT / "src/app.js"
 REPORT = ROOT / "reports/PROVIDER_REGISTRY_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 
 errors = []
 notes = []
@@ -33,8 +33,8 @@ invariant_tokens = [
 ]
 
 for token in invariant_tokens:
-    if token not in legacy:
-        errors.append(f"Legacy lost provider registry token: {token}")
+    if token not in app:
+        errors.append(f"app.js is missing provider registry token: {token}")
 
 required_behavior_tokens = [
     "provider",

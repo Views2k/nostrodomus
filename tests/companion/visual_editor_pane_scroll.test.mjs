@@ -1,18 +1,18 @@
 // The editor pane of the styled card dialog scrolls while the dialog does not show its code editor.
 //
-// The dialog-root sheet takes the pane's scrolling away for the codebox glow and stays in the
-// dialog when the code editor is replaced by a visual editor. A visual editor taller than the
-// pane (a custom card with many controls) then could not be scrolled to its lower controls.
+// The dialog-root sheet takes the pane's scrolling away to make room for the codebox glow, and it
+// stays in the dialog when the code editor is replaced by a visual editor. A visual editor taller
+// than the pane (a custom card with many controls) must still scroll to its lower controls.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  createScrollbarStyleRuntime,
+  createCompanionStyleRuntime,
   DIALOG_ROOT_STYLE_ID,
   VISUAL_EDITOR_SCROLL_STYLE_ID,
   VISUAL_EDITOR_SCROLL_CSS,
-} from '../../src/companion/scrollbarStyleRuntime.js';
+} from '../../src/companion/companionStyleRuntime.js';
 
 function fakeRoot() {
   const root = {
@@ -36,7 +36,7 @@ const has = (root, id) => root.children.some((c) => c.id === id);
 
 function setup({ active = true } = {}) {
   const state = { active };
-  const rt = createScrollbarStyleRuntime({
+  const rt = createCompanionStyleRuntime({
     documentRef: fakeDocument(),
     isActive: () => state.active,
     hideEditorWarnings: () => false,

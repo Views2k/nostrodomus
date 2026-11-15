@@ -4,11 +4,11 @@ import assert from 'node:assert/strict';
 import { haRuntimeValueProvider } from '../../src/providers/haRuntimeProvider.js';
 import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 
-// With the schemaValues lane on, a service-data field VALUE position returned
+// With the schemaValues lane on, a service-data field value position asks
 // runtimeRowsForKind('service-field-value'), which only yields a field's enumerated select options.
-// An entity/icon/etc.-selector field has none, so it returned []  — making entity/icon value
-// completion under data:/service_data: WORSE with schemaValues on than off. provide() now falls
-// through to the kind-based completion when the schema lane yields nothing.
+// An entity or icon selector field has none, so provide() falls through to the kind-based completion
+// when the schema lane yields nothing. Entity and icon values under data: and service_data: must not
+// complete worse with schemaValues on than off.
 
 const fakeRuntime = () => ({
   entities: ['light.a', 'light.b'],
@@ -20,7 +20,7 @@ const fakeRuntime = () => ({
 function rowsFor(doc, key) {
   const provider = haRuntimeValueProvider({ runtimeData: fakeRuntime });
   const ctx = detectRuntimeContext(doc, doc.length, { triggerKind: 'explicit', runtimeData: fakeRuntime });
-  ctx.schemaValuesEnabled = true; // the lane the bug lives in
+  ctx.schemaValuesEnabled = true; // the lane under test
   assert.equal(ctx.yamlRole, 'value', `${key} should be a value position`);
   assert.equal(provider.canHandle(ctx), true, `${key} value should be handled`);
   return provider.provide(ctx).map((r) => r.label);

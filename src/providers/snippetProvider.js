@@ -1,5 +1,5 @@
 // Nostrodomus snippet provider module.
-// Data-driven provider backed by data/snippets.json.
+// Offers the snippets of data/snippets.json (through src/snippets/catalog.js) by context kind.
 
 import { SNIPPET_PROVIDER_ID } from '../core/runtimeConstants.js';
 import { completionMatchRank, isScalarConfigContext } from '../completion/scoring.js';
@@ -70,7 +70,7 @@ export function activeSnippetContextKinds(ctx = {}) {
   return kinds;
 }
 
-
+// A snippet row from positional fields, as the provider runtime builds them.
 export function legacySnippetRow(id, label, insert, aliases = [], meta = {}, deps = {}) {
   const normalizeItem = typeof deps.normalizeItem === 'function' ? deps.normalizeItem : null;
   const providerId = deps.providerId || SNIPPET_PROVIDER_ID;
@@ -115,7 +115,6 @@ export function snippetRow(snippet) {
     },
   };
 }
-
 
 function freezeSnippetProviderRow(row) {
   if (!row) return null;
@@ -172,8 +171,6 @@ function snippetIndexFor(catalogOrIndex = DEFAULT_SNIPPET_PROVIDER_INDEX) {
 //   'card'  a whole `card_mod:` block: a key of the card, next to type:;
 //   'yaml'  YAML for a style block (a button-card styles list, state styles): a key position
 //           inside the style block.
-// Before, all of them were offered at the YAML key positions of a style block and nowhere else,
-// where the CSS rules and the nested `card_mod:` blocks are not valid YAML.
 function styleSnippetShape(row) {
   const insert = String(row?.insert || '');
   if (/^card_mod\s*:/.test(insert)) return 'card';
@@ -181,11 +178,11 @@ function styleSnippetShape(row) {
 }
 
 // The card_mod block snippets start with the text `card_mod:`, so everything typed towards the
-// key name (`card_`, `card_mod`) matches them as well as it matches the plain `card_mod:` key
-// row, and a snippet row ranks ahead of a library key row: in an entities row, Enter on a fully
-// typed `card_mod` inserted a whole glass card block. So these snippets are offered only for
-// typed text that the key itself does not match (`glass`, `mush`, `card-m`), and not for an
-// empty prefix: wherever the plain key row is in the list, they are not.
+// key name (`card_`, `card_mod`) matches them as well as the plain `card_mod:` key row, and a
+// snippet row ranks ahead of a library key row: Enter on a fully typed `card_mod` would insert a
+// whole glass card block. So these snippets are offered only for typed text that the key itself
+// does not match (`glass`, `mush`, `card-m`), and not for an empty prefix: wherever the plain
+// key row is in the list, they are not.
 const CARD_MOD_KEY_ROW = Object.freeze({ label: 'card_mod:', insert: 'card_mod:', aliases: Object.freeze(['cardmod', 'card_mod']) });
 
 function typedTextFitsCardModKey(ctx) {
@@ -216,8 +213,9 @@ export function snippetRowsForContext(ctx, catalog = DEFAULT_SNIPPET_PROVIDER_IN
       if (seen.has(row.id)) continue;
       if (kind === 'style-block' && styleSnippetShape(row) !== (cssText ? 'css' : 'yaml')) continue;
       // A CSS rule snippet is offered where a rule can start, and for typed text that its rule
-      // starts with (`ha` for `ha-card { ... }`). Matched by the words of its label ("card_mod",
-      // "card-mod") it ranked above the CSS variables for `card` inside a rule.
+      // starts with (`ha` for `ha-card { ... }`), not for the words of its label and aliases
+      // ("card_mod", "card-mod"), which would rank it above the CSS variables for `card` inside
+      // a rule.
       if (cssText && !(cssRuleFits && String(row.insert || '').slice(0, cssPrefix.length).toLowerCase() === cssPrefix)) continue;
       seen.add(row.id);
       rows.push(cssText ? cssRowAtCursorIndent(row, ctx) : row);
@@ -234,7 +232,6 @@ export function snippetRowsForContext(ctx, catalog = DEFAULT_SNIPPET_PROVIDER_IN
   }
   return rows;
 }
-
 
 export function snippetProvider(options = {}) {
   const index = snippetIndexFor(options.catalog || DEFAULT_SNIPPET_PROVIDER_INDEX);

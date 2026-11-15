@@ -6,11 +6,11 @@ import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 import { scoreItems } from '../../src/completion/scoring.js';
 import { makeHassFixture } from '../fixtures/hassFixture.mjs';
 
-// Entity LIST items with a typed prefix ('entities:\n  - sensor.hum|') were silent: the
-// colon-less dash line reads as role 'key', so neither the bare-dash list-key lane nor
-// the value-shape lane ever fired -- rows appeared at '- ' and vanished at the first
-// keystroke. The adapter now reclassifies a typed sequence scalar as a list VALUE when
-// it sits under an entities list or the token is entity-shaped against live domains.
+// An entity list item with a typed prefix ('entities:\n  - sensor.hum|') is a colon-less dash line,
+// which reads as role 'key', so neither the bare-dash list-key lane nor the value-shape lane would
+// fire: rows would show at '- ' and vanish at the first keystroke. The adapter reclassifies a typed
+// sequence scalar as a list value when it sits under an entities list or the token is entity-shaped
+// against live domains.
 const hass = makeHassFixture();
 const liveData = () => runtimeData({ state: {}, limits: SECURITY_LIMITS, windowRef: {}, findHass: () => hass, now: () => 1_000 });
 
@@ -60,7 +60,7 @@ test('entity-shaped items under other list names complete via the shape arm', ()
 });
 
 test('a trailing comment with a colon does not disable the list-item lane', () => {
-  // The mapping-item gate must test the CODE part of the line: a colon inside a
+  // The mapping-item gate must test the code part of the line: a colon inside a
   // trailing comment is not a key separator.
   const source = 'entities:\n  - sensor.hum # note: x';
   const pos = source.indexOf(' # note');

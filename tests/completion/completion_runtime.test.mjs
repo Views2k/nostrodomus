@@ -309,7 +309,7 @@ test('Escape closing the settings panel preserves the saved drag position', () =
   runtime.onKeydown({ key: 'Escape', preventDefault: () => {}, stopPropagation: () => {} });
   // Every other close path passes false; Escape must too, or it nulls + persists settingsPos and
   // the user's dragged panel position is lost on the next open.
-  assert.deepEqual(closeArgs, [false], 'Escape closes the panel WITHOUT resetting the saved position');
+  assert.deepEqual(closeArgs, [false], 'Escape closes the panel without resetting the saved position');
 });
 
 test('accept after a deferred update refreshes first and inserts against the current document', () => {
@@ -352,7 +352,7 @@ test('accept with an up-to-date popup does not recompute', () => {
   assert.ok(calls.some((c) => Array.isArray(c) && c[0] === 'insertItem'));
 });
 
-// --- appended: settings panel removed by Home Assistant; keys pressed inside the settings panel ---
+// --- a settings panel removed by Home Assistant; keys pressed inside the settings panel ---
 test('Escape is not swallowed by a settings panel that was removed with its dialog', () => {
   const closeArgs = [];
   const { state, calls, runtime } = createDeps({ closeSettings: (reset) => closeArgs.push(reset) });

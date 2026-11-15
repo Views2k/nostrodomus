@@ -7,16 +7,15 @@ function builder(colors = {}) {
   const palette = { fg: '#d4d4d4', dim: '#7a7a7a', string: '#ce9178', number: '#b5cea8', ...colors };
   const api = {
     darkPlusColor: (kind) => palette[kind] || '#ffffff',
-    // The smart-syntax kind overlay is appended into the same sheet AFTER the base block.
+    // The smart-syntax kind rules are appended to the same sheet after the base block.
     buildSmartSyntaxClassCss: () => '.cm-content .cm-line span.nostrodomus-syntax-kind-string { color: #abc !important; }',
   };
   return createSourceClassCssBuilder({ cssEscapeSelectorPart: (s) => s, api });
 }
 
-// The Ctrl+Space white-out fix: HA's CodeMirror YAML mode tags string/number tokens with the persistent
-// classes .yaml-string / .yaml-number, but highlightingFor() yields nothing here, so without an explicit
-// floor those tokens fall to the broad white container fallback whenever a re-render drops the smart-syntax
-// kind class. The floor colors the stable classes directly (color + -webkit-text-fill-color).
+// Home Assistant's YAML mode gives strings and numbers the classes .yaml-string and .yaml-number,
+// and highlightingFor() returns no class for them. The builder colors those classes directly, so the
+// tokens keep their color while a re-render (Ctrl+Space) has dropped the smart-syntax kind class.
 test('source-class builder gives the stable yaml token classes an explicit color + -webkit-text-fill-color floor', () => {
   const { css } = builder().buildCodeMirrorSourceClassSyntaxCss(
     { cm: { highlightingFor: () => '' }, view: { state: {} }, tags: {} },
@@ -26,7 +25,7 @@ test('source-class builder gives the stable yaml token classes an explicit color
   assert.match(css, /\.cm-content \.cm-line span\.yaml-number \{\s*color: #b5cea8 !important;\s*-webkit-text-fill-color: #b5cea8 !important;/);
 });
 
-test('the yaml token-color floor is emitted BEFORE the smart-syntax kind overlay (kind rule still wins when present)', () => {
+test('the yaml token color rules come before the smart-syntax kind rules, so a kind rule wins when present', () => {
   const { css } = builder().buildCodeMirrorSourceClassSyntaxCss(
     { cm: { highlightingFor: () => '' }, view: { state: {} }, tags: {} },
     { active: false },
@@ -37,13 +36,13 @@ test('the yaml token-color floor is emitted BEFORE the smart-syntax kind overlay
   );
 });
 
-test('the base container foreground no longer targets every token span (v0.1.154 narrowing held)', () => {
+test('the base foreground does not target every token span', () => {
   const { css } = builder().buildCodeMirrorSourceClassSyntaxCss(
     { cm: { highlightingFor: () => '' }, view: { state: {} }, tags: {} },
     { active: false },
   );
-  // a bare `.cm-content .cm-line span { ... }` block is exactly the over-broad fallback that whited tokens
-  // out — assert it's not a real rule (strip /* */ comments first so the explanatory note doesn't match)
+  // A `.cm-content .cm-line span { ... }` rule would give every token the base color whenever its
+  // kind class is missing. Comments are stripped so the notes inside the sheet cannot match.
   const cssNoComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
   assert.doesNotMatch(cssNoComments, /\.cm-content \.cm-line span \{/);
 });

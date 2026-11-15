@@ -5,10 +5,11 @@ import { createCodeboxStyleRuntime } from '../../src/ui/codeboxStyleRuntime.js';
 import { createStyleDomRuntime } from '../../src/ui/styleDomRuntime.js';
 import { codeboxStyleSourceClassSteadyStateSkipDecision } from '../../src/ui/codeboxStyle.js';
 
-// With two code editors on a page the remembered editor stayed the style target for as long as
-// it was visible, and a fresh discovery picked the largest one. An editor the user clicked into
-// and typed in was never styled or colored. The steady-state skip made it permanent: the request
-// that follows the click was answered for the remembered editor and dropped.
+// With two code editors on a page, the style target is the editor the user clicked into and typed
+// in, not the remembered editor for as long as that one is visible, and not simply the largest one
+// in a fresh discovery. Otherwise the user's editor would never be styled or colored, and the
+// steady-state skip would answer the request that follows the click for the remembered editor
+// and drop it.
 
 function editorStub(name, { width = 600, height = 300, candidate = true, inDialog = true } = {}) {
   return {
@@ -94,7 +95,7 @@ test('with a card dialog open, a view editor outside the dialog does not take ov
   assert.equal(runtime.activeCodeboxStyleEditor(), inDialog);
 });
 
-test('one editor, or no view: the remembered editor is returned as before', () => {
+test('one editor, or no view: the remembered editor is returned from the cache', () => {
   const only = editorStub('only');
   const sameView = makeStyleRuntime({ cached: only, editors: [only], view: only });
   assert.equal(sameView.runtime.activeCodeboxStyleEditor(), only);
@@ -113,7 +114,7 @@ test('a fresh discovery picks the editor of the user\'s view over a larger one',
   assert.equal(withView.runtime.activeCodeboxStyleEditor(), typedIn);
 
   const withoutView = makeStyleRuntime({ cached: null, editors: [large, typedIn], view: null });
-  assert.equal(withoutView.runtime.activeCodeboxStyleEditor(), large, 'no view: the largest visible editor, as before');
+  assert.equal(withoutView.runtime.activeCodeboxStyleEditor(), large, 'no view: the largest visible editor');
 });
 
 function makeSkipRuntime({ cached, view }) {

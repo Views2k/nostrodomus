@@ -47,7 +47,7 @@ test('an accepted value snippet puts its other lines next to the action key', ()
   const { ctx, shown } = shownAt(doc);
   const row = shown.find(item => item.id === 'snip.dashboard.action.value.navigate');
   const text = doc.slice(0, ctx.from) + parseSnippetTemplate(prepareInsertText(row.insert, ctx, row)).text;
-  assert.equal(text, 'type: tile\nentity: light.kitchen\ntap_action:\n  action: navigate\n  navigation_path: /lovelace/default');
+  assert.equal(text, 'type: tile\nentity: light.kitchen\ntap_action:\n  action: navigate\n  navigation_path: /my-dashboard/home');
 });
 
 test('once a prefix is typed only the plain action values are offered', () => {
@@ -59,7 +59,7 @@ test('once a prefix is typed only the plain action values are offered', () => {
   assert.ok(shown.some(row => row.type === 'action' && row.label === 'navigate'));
 });
 
-test('other snippets and other value kinds are filtered as before', () => {
+test('an action-value snippet needs the action value after the colon; other snippets and value kinds are filtered out', () => {
   const valueCtx = { lang: 'yaml', valueKind: 'action', afterKeyColon: true };
   const valueSnippet = { type: 'snippet', source: 'snippet-templates', meta: { contextKind: 'lovelace-action-value' } };
   assert.equal(itemMatchesYamlValueKind(valueSnippet, valueCtx), true);

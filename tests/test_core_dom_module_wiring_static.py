@@ -5,13 +5,13 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / 'src/core/dom.js'
-LEGACY = ROOT / 'src/main.legacy.js'
+APP = ROOT / 'src/app.js'
 POPUP_RUNTIME = ROOT / 'src/completion/popupRuntime.js'
 ALLOWLIST = ROOT / 'docs/contracts/MODULE_WIRING_ALLOWLIST.json'
 REPORT = ROOT / 'reports/CORE_DOM_MODULE_WIRING_STATIC_REPORT.txt'
 
 module = MODULE.read_text(encoding='utf-8', errors='replace')
-legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
+app = APP.read_text(encoding='utf-8', errors='replace')
 popup_runtime = POPUP_RUNTIME.read_text(encoding='utf-8', errors='replace')
 allowlist = json.loads(ALLOWLIST.read_text(encoding='utf-8'))
 allowed = allowlist.get('allowed_unwired_modules', {})
@@ -26,9 +26,9 @@ def require(ok, message):
 
 require("from '../core/dom.js'" in popup_runtime, 'popup runtime imports core DOM module')
 require('clearElement(box)' in popup_runtime, 'popup runtime uses module clearElement helper')
-require('function clearElement(el)' not in legacy, 'legacy clearElement compatibility wrapper removed')
-require('while (el.firstChild) el.removeChild(el.firstChild);' not in legacy, 'legacy duplicate clearElement loop removed')
-require('src/core/dom.js' not in allowed, 'core DOM module removed from unwired allowlist')
+require('function clearElement(el)' not in app, 'app.js has no clearElement wrapper')
+require('while (el.firstChild) el.removeChild(el.firstChild);' not in app, 'app.js has no copy of the clearElement loop')
+require('src/core/dom.js' not in allowed, 'core DOM module is not on the unwired allowlist')
 
 for token in [
     'export function createElement',

@@ -16,22 +16,9 @@ function defaultNow() {
   return Date.now();
 }
 
-// Identifies the document text for the completion cache. Length plus first and last character
-// matched every same-length edit, so word rows from the old text were served for the new one.
-export function documentContentToken(doc = '') {
-  const text = String(doc || '');
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < text.length; i += 1) {
-    hash ^= text.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return `${text.length}:${(hash >>> 0).toString(36)}`;
-}
-
-// The token compute() puts in the completion cache key. The same text gets the same token; any
-// other text gets a new one. The text is not hashed for this: while typing every refresh has a
-// new text, so a hash of the whole document was computed on each keystroke and never reused.
-// Comparing with the previous text stops at the first difference.
+// The token compute() puts in the completion cache key: the same text gets the same token, any
+// other text a new one. The text is compared with the previous one instead of hashed, because
+// while typing every refresh has a new text and a hash would never be reused.
 let tokenText = null;
 let tokenSerial = 0;
 export function documentIdentityToken(doc = '') {
@@ -244,10 +231,10 @@ export function createCompletionRuntime(deps = {}) {
   }
 
   // A click on a row. Like Enter and Tab, it first brings a stale list up to date (a deferred
-  // live update, a caret that moved since the last compute): inserted with the old context,
-  // the row replaced the old range and left the characters typed since. The clicked row is
-  // inserted when the current document still offers it; otherwise the click only refreshes
-  // the list.
+  // live update, a caret that moved since the last compute); inserted with the old context, the
+  // row would replace the old range and leave the characters typed since. The clicked row is
+  // inserted when the current document still offers it; otherwise the click only refreshes the
+  // list.
   function insertClickedItem(item) {
     if (!item || !completionStateIsStale()) return insertItem(item);
     const clickedKey = recentAcceptKey(item);
@@ -404,11 +391,15 @@ export function createCompletionRuntime(deps = {}) {
     }
   }
 
-  function flushPendingLiveUpdate() {
+  function cancelPendingLiveUpdate() {
     safeCancelFrame(state.raf);
     state.raf = 0;
     safeClearTimer(state.completionRepeatPressureLiveUpdateTimer);
     state.completionRepeatPressureLiveUpdateTimer = 0;
+  }
+
+  function flushPendingLiveUpdate() {
+    cancelPendingLiveUpdate();
     // compute() moves the selection back to the first row when the highlighted row ranks below
     // it. That suits a live update; here the user is accepting the row they highlighted, so
     // keep it when it is still in the refreshed list.
@@ -553,18 +544,16 @@ export function createCompletionRuntime(deps = {}) {
     if (ev.key === 'Escape' && !settingsPanelDetached && state.settingsPanel?.parentNode && !state.snippetSession) {
       ev.preventDefault?.();
       ev.stopPropagation?.();
-      // Escape just CLOSES the panel — like the close button and every other close path, which all
-      // pass false. Passing true here reset (nulled + persisted) the user's dragged panel position,
-      // so closing with Escape silently lost their layout for the next open.
+      // The same call as every other close path; closeSettings(true) would also reset the stored
+      // panel position.
       closeSettings(false);
       return;
     }
 
-    // Keys pressed inside the settings panel belong to its own controls. With the popup still open
-    // behind the panel, Tab and Enter accepted the highlighted suggestion into the editor and the
-    // arrow keys moved the popup selection instead of the focused slider.
-    // The panel is mounted inside the card dialog, and any key in a dialog that hosts a code editor
-    // counts as editor scope, so this holds for scoped events too.
+    // Keys pressed inside the settings panel belong to its controls, not to the list that may be
+    // open behind it (Tab, Enter and the arrow keys would act on the list). The panel is mounted
+    // inside the card dialog, where every key counts as editor scope, so this also holds for
+    // scoped events.
     if (state.settingsPanel && (ev?.composedPath?.() || []).includes(state.settingsPanel)) return;
 
     // The caret left the snippet (click, arrow keys, typing elsewhere, a move to another
@@ -582,9 +571,9 @@ export function createCompletionRuntime(deps = {}) {
     });
 
     // After a fast typing burst the live update is deferred, so state.items and state.context
-    // still describe an older document. Accepting then replaced the old range and left stray
-    // characters (typing `name:` gave `name: ame`). Bring the popup up to date first and decide
-    // again; if nothing matches any more the key goes to the editor untouched.
+    // still describe an older document, and accepting would replace the old range and leave
+    // stray characters (`name:` typed fast would give `name: ame`). Bring the list up to date
+    // first and decide again; if nothing matches any more the key goes to the editor untouched.
     if ((action.type === 'accept' || action.type === 'commit-typed') && completionStateIsStale()) {
       flushPendingLiveUpdate();
       action = completionKeyAction(ev, state, {
@@ -620,7 +609,10 @@ export function createCompletionRuntime(deps = {}) {
 
     if (action.type === 'move-snippet') {
       moveSnippetPlaceholder(action.direction);
-      showSnippetChoicePopup();
+      // The dispatch of the selection move asks for a live update when the list is open or
+      // keepOpen is on. That update would replace the choice list shown here for the new
+      // placeholder.
+      if (showSnippetChoicePopup()) cancelPendingLiveUpdate();
       return;
     }
 
@@ -654,8 +646,8 @@ export function createCompletionRuntime(deps = {}) {
       }
       const rawInsert = String(selectedItem?.insert || selectedItem?.label || '');
       // A row whose text starts with a key and its colon (`size: normal`, a snippet that opens
-      // with `tap_action:`) already has the colon the user typed; added at the end it gave
-      // `size: normal:`.
+      // with `tap_action:`) already has the colon the user typed; it is not added again at the
+      // end (`size: normal:`).
       const hasKeyColon = action.char === ':' && /^\s*(?:-\s+)?[^\s:]+:(?:\s|$)/.test(rawInsert);
       const needsChar = action.char && !hasKeyColon && !rawInsert.trimEnd().endsWith(action.char);
       const item = needsChar ? { ...selectedItem, insert: rawInsert + action.char } : selectedItem;
@@ -686,11 +678,10 @@ export function createCompletionRuntime(deps = {}) {
   // The style apply a pointerdown outside the editor asks for repaints an editor that lost focus,
   // finds an editor nothing has reported yet, and removes the styles of an editor that is gone.
   // On a page that cannot have an editor (pageMayHaveEditor: no known editor, no card dialog, no
-  // editor panel) only the last of these is left, and it is done once an apply asked for here
-  // has run without an editor, outside an editor-opening window (inside one the apply leaves
-  // the styles in place). Until another apply runs or the page may have an editor again, the
-  // following pointerdowns ask for nothing: on a dashboard every click built the style CSS and
-  // ran the cleanup walk.
+  // editor panel) only the cleanup is left, and it is done once an apply asked for here has run
+  // without an editor outside an editor-opening window (inside one the apply keeps the styles).
+  // After that, pointerdowns ask for nothing until another apply runs or the page may have an
+  // editor again, so a click on a dashboard does not build the style CSS each time.
   let idleApplyAsked = false;
   let idleApplyDone = null;
   function outsidePointerNeedsStyleApply(ev) {

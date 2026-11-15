@@ -5,12 +5,12 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MODULE = ROOT / 'src/core/security.js'
-LEGACY = ROOT / 'src/main.legacy.js'
+APP = ROOT / 'src/app.js'
 ALLOWLIST = ROOT / 'docs/contracts/MODULE_WIRING_ALLOWLIST.json'
 REPORT = ROOT / 'reports/CORE_SECURITY_MODULE_WIRING_STATIC_REPORT.txt'
 
 module = MODULE.read_text(encoding='utf-8', errors='replace')
-legacy = LEGACY.read_text(encoding='utf-8', errors='replace')
+app = APP.read_text(encoding='utf-8', errors='replace')
 allowlist = json.loads(ALLOWLIST.read_text(encoding='utf-8'))
 allowed = allowlist.get('allowed_unwired_modules', {})
 errors = []
@@ -22,11 +22,11 @@ def require(ok, message):
     else:
         errors.append(message)
 
-require("import { escapeHtml } from './core/security.js';" in legacy, 'runtime imports core security helper directly')
-require('escapeHtml as escapeHtmlFromSecurityModule' not in legacy, 'runtime no longer uses security FromModule alias')
-require('function escapeHtml(s)' not in legacy and 'return escapeHtmlFromSecurityModule(s);' not in legacy, 'runtime escapeHtml pass-through wrapper removed')
-require('function escapeHtml(s) {\n    return String(s)\n      .replaceAll("&", "&amp;")' not in legacy, 'legacy duplicate escapeHtml body removed')
-require('src/core/security.js' not in allowed, 'core security module removed from unwired allowlist')
+require("import { escapeHtml } from './core/security.js';" in app, 'runtime imports core security helper directly')
+require('escapeHtml as escapeHtmlFromSecurityModule' not in app, 'app.js has no aliased security import')
+require('function escapeHtml(s)' not in app and 'return escapeHtmlFromSecurityModule(s);' not in app, 'app.js has no escapeHtml wrapper')
+require('function escapeHtml(s) {\n    return String(s)\n      .replaceAll("&", "&amp;")' not in app, 'app.js has no copy of escapeHtml')
+require('src/core/security.js' not in allowed, 'core security module is not on the unwired allowlist')
 
 for token in [
     'export function escapeHtml',

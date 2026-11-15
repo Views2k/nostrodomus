@@ -2,14 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const source = readFileSync('src/main.legacy.js', 'utf8');
-const completionFactory = readFileSync('src/composition/mainLegacyCompletionRuntimeFactory.js', 'utf8');
+const source = readFileSync('src/app.js', 'utf8');
+const completionFactory = readFileSync('src/composition/appCompletionRuntimeFactory.js', 'utf8');
 const dist = readFileSync('dist/nostrodomus.js', 'utf8');
 const scoring = readFileSync('src/completion/scoring.js', 'utf8');
 const runtime = readFileSync('src/completion/scoringRuntime.js', 'utf8');
 
 test('live runtime delegates scoreItems through scoring runtime owner', () => {
-  assert.match(source, /createMainLegacyCompletionRuntimeGroup\(\{/);
+  assert.match(source, /createAppCompletionRuntimeGroup\(\{/);
   assert.match(completionFactory, /createScoringRuntime\(\{/);
   assert.match(completionFactory, /providerCandidates: scoring\.providerCandidates/);
   assert.match(completionFactory, /recordSuggestionQuality,/);
@@ -33,7 +33,7 @@ test('bundled runtime contains scoring owner and no live import for scoring', ()
 });
 
 
-test('legacy completion ranking helper names route through the scoring runtime delegate bundle', () => {
+test('the completion ranking helper names route through the scoring runtime delegates', () => {
   const bridge = readFileSync('src/composition/runtimeDelegateBridge.js', 'utf8');
   for (const helper of [
     'runtimeDomainPriority',

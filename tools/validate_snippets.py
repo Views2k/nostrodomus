@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Validate Nostrodomus snippet data.
+"""Validate the Nostrodomus snippet catalog, data/snippets.json.
 
-This validator is intentionally dependency-free so it can run inside Home
-Assistant's shell and GitHub CI without installing PyYAML.
+The rules are described in docs/SNIPPET_SCHEMA.md. Uses only the standard library.
 """
 from __future__ import annotations
 
@@ -45,7 +44,7 @@ PLACEHOLDER_RE = re.compile(r"\$\{(\d+)(?::([^}]*))?\}|\$(\d+)")
 def load_catalog(path: Path) -> list[dict]:
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
-    except Exception as exc:  # pragma: no cover - shown to shell
+    except Exception as exc:
         raise SystemExit(f"Snippet catalog JSON failed to parse: {exc}")
     if not isinstance(data, list):
         raise SystemExit("Snippet catalog must be a JSON list")

@@ -1,7 +1,7 @@
 // Settings control-factory structure snapshots.
 //
 // Structure-only snapshots (tagName + className + dataset keys + children count
-// — deliberately NOT full serialization) of every settings DOM control factory,
+// — deliberately not full serialization) of every settings DOM control factory,
 // built with the real createSettingsElement helper under a stub document. A refactor
 // that moves code must keep these snapshots unchanged.
 

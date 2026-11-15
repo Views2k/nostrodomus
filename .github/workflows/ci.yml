@@ -4,6 +4,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -31,15 +34,15 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Check module wiring guard
+      - name: Check module wiring
         run: npm run check:modules
 
-      - name: Run executed Node tests
+      - name: Run Node tests
         run: npm test
 
-      # Wall-clock budget tests are advisory: they run on shared CI hardware and
-      # must never block the required gate.
-      - name: Run perf budget tests (non-blocking)
+      # The wall-clock budget tests depend on the speed of the shared runner, so
+      # a failure is reported without failing the job.
+      - name: Run performance budget tests (non-blocking)
         run: npm run test:perf
         continue-on-error: true
 
@@ -54,37 +57,3 @@ jobs:
 
       - name: Validate snippet catalog
         run: python3 tools/validate_snippets.py
-
-  # Real-HA end-to-end suite. Disabled by default: it needs a runner with Docker
-  # (to pull homeassistant/home-assistant), a Playwright browser, and HA boot
-  # time. `if: false` keeps the job defined but inert; enable it on a dedicated
-  # runner when needed. Locally the suite runs via `npm run e2e` / `npm run
-  # e2e:beta` (see tools/e2e/README.md).
-  e2e:
-    if: false # disabled by default; enable on a dedicated Docker runner when needed
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v7
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
-        with:
-          node-version: '22' # e2e tooling needs Node >= 22 (global WebSocket)
-          cache: npm
-
-      - name: Install Node dependencies
-        run: npm ci
-
-      - name: Install Playwright chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Bring up the disposable HA instance and seed it
-        run: npm run e2e:up
-
-      - name: Run the E2E spec suite
-        run: npm run e2e
-
-      - name: Tear down
-        if: always()
-        run: npm run e2e:down

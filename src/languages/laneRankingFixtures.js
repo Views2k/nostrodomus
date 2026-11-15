@@ -5,7 +5,7 @@
 // provider registration, popup rendering, or insertion behavior.
 
 export const LANE_RANKING_FIXTURE_VERSION = 1;
-export const LANE_RANKING_FIXTURE_STAGE = "priority10-provider-contract-v2-ranking-fixtures";
+export const LANE_RANKING_FIXTURE_STAGE = "lane-ranking-fixtures";
 
 function freezeRankingFixture(fixture) {
   return Object.freeze({

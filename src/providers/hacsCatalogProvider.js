@@ -187,8 +187,8 @@ function blockKeyRowsOf(surface, keyRows) {
   return rows;
 }
 
-// The index of the built-in catalog is built on first use. Building it while the module loads
-// cost every page load several milliseconds, with or without an editor on the page.
+// The index of the built-in catalog is built on first use, not when the module loads, which
+// would cost every page load several milliseconds with or without an editor on the page.
 let defaultCatalogIndex = null;
 
 function defaultCatalogIndexOnce() {
@@ -274,9 +274,8 @@ export function hacsCatalogProvider(options = {}) {
     canHandle(ctx) {
       if (!ctx?.shouldSuggest || ctx.lang !== 'yaml') return false;
       if (ctx.valueKind === 'card-type') {
-        // The index is built on first use. Built here, it is ready before provide() runs: the
-        // registry times provide() against the provider's budget, and the one-time build inside
-        // it was reported as a provider that exceeded its budget.
+        // The index is built here, before provide() runs: the registry times provide() against
+        // the provider's budget, and the one-time build would count against it.
         catalogIndex();
         return true;
       }

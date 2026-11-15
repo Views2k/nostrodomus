@@ -57,20 +57,20 @@ def esbuild_candidates() -> list[list[str]]:
     return unique
 
 
-
 def build_esbuild_failure_hint(stderr: str) -> str:
     text = str(stderr or "")
     lowered = text.lower()
     if "npx canceled due to missing packages" in lowered or "no yes option" in lowered:
-        return "local esbuild is missing; run npm install --no-audit --no-fund --include=dev esbuild@0.25.0"
+        return "local esbuild is missing; run npm ci"
     if "invalid: esbuild@" in lowered or "elsproblems" in lowered:
-        return "local esbuild install is invalid; remove node_modules/esbuild node_modules/@esbuild node_modules/.bin/esbuild, then reinstall esbuild@0.25.0"
+        return "local esbuild install is invalid; run npm ci, which replaces node_modules"
     if "permission denied" in lowered or "eacces" in lowered:
-        return "esbuild exists but is not executable; reinstall the local devDependency or fix node_modules/.bin/esbuild permissions"
+        return "esbuild exists but is not executable; run npm ci or fix the permissions of node_modules/.bin/esbuild"
     return "inspect reports/REPRODUCIBLE_BUILD_LAST.txt stderr and reinstall local esbuild if needed"
 
+
 def safe_write_report_text(text: str) -> bool:
-    """Write REPORT without letting stale report-file permissions hide build truth."""
+    """Write REPORT, replacing a report file that cannot be overwritten. Returns False on failure."""
     try:
         REPORT.parent.mkdir(parents=True, exist_ok=True)
     except Exception as exc:

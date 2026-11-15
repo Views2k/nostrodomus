@@ -90,7 +90,6 @@ function makeRuntime(overrides = {}) {
       takeRecords() { return []; }
     },
     state,
-    STYLE_TEXT_SIZE_PRESETS: { base: { fontSize: 14, lineHeight: 1.5 } },
     DARKPLUS_SYNTAX_COLORS: { fg: '#eee' },
     DARKPLUS_STYLE_ID: 'darkplus-style',
     codeboxStyleTokenMap: tokens => tokens,
@@ -192,7 +191,8 @@ test('style DOM owner installs mutation guard outside CodeMirror internals', () 
 // The cleanup walk descends only through the dashboard and dialog hosts. The root style is also put
 // into every shadow root above the editor, and for an editor panel (automation or script YAML, the
 // template tool) those roots, and the one of home-assistant-main, hang below hosts the walk does
-// not enter. The stylesheet stayed there after uninstall and after the editor was gone.
+// not enter. The owner tracks the roots it styled, so the stylesheet does not stay there after
+// uninstall or after the editor is gone.
 test('style DOM owner removes the root style from roots the cleanup walk does not reach', () => {
   const documentRef = makeDocument();
   const { runtime } = makeRuntime({ documentRef });

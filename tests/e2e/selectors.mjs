@@ -4,21 +4,21 @@
 //
 // Each entry says what it finds and which spec/feature degrades if it breaks.
 
-// --- HA internals (treadmill-coupled; breakage here means HA changed DOM) ---
+// --- Home Assistant internals (they change between HA releases; a failure here means HA changed its DOM) ---
 
 /** The HA app shell; `.hass` on it is the spec-side WS/API handle. */
 export const HOME_ASSISTANT = 'home-assistant';
 /** Lovelace dashboard root; "the dashboard rendered" readiness signal. */
 export const HUI_ROOT = 'hui-root';
-/** Onboarding screen; only ever asserted ABSENT (instance must be onboarded). */
+/** Onboarding screen; only ever asserted absent (instance must be onboarded). */
 export const HA_ONBOARDING = 'ha-onboarding';
 /** The card edit dialog (real hui dialog) — editor-completion/styling/live-data. */
 export const HUI_DIALOG_EDIT_CARD = 'hui-dialog-edit-card';
 /** The entities card on the seeded dashboard (its Edit button opens the editor). */
 export const HUI_ENTITIES_CARD = 'hui-entities-card';
 /**
- * The seeded button card — a SIMPLE (no option-tab row) editor. The canonical case
- * for the small editor; companion-discovery-path.spec opens THIS
+ * The seeded button card — a simple (no option-tab row) editor. The canonical case
+ * for the small editor; companion-discovery-path.spec opens this
  * (not the taller entities card) to cover the small/simple-editor failure mode.
  */
 export const HUI_BUTTON_CARD = 'hui-button-card';
@@ -28,8 +28,8 @@ export const HUI_BUTTON_CARD = 'hui-button-card';
  * Ordered most-specific-first, with a layout-based fallback in editor-helpers.mjs.
  */
 export const EDIT_MODE_CARD_WRAPPERS = ['hui-card-edit-mode', 'hui-card-options', 'hui-card'];
-/** The seeded markdown card — its VISUAL editor embeds a CodeMirror template field (inside
- * ha-selector-template / ha-form), the canonical "form-field editor that is NOT the codebox". */
+/** The seeded markdown card — its visual editor embeds a CodeMirror template field (inside
+ * ha-selector-template / ha-form), the canonical "form-field editor that is not the codebox". */
 export const HUI_MARKDOWN_CARD = 'hui-markdown-card';
 /** HA's CodeMirror host element — the codebox the product styles and completes in. */
 export const HA_CODE_EDITOR = 'ha-code-editor';
@@ -38,7 +38,7 @@ export const CM_CONTENT = '.cm-content';
 /** CodeMirror scroll container (scroll-stability assertions). */
 export const CM_SCROLLER = '.cm-scroller';
 
-// --- Nostrodomus-owned surfaces (ours; breakage here means WE changed DOM) ---
+// --- Nostrodomus-owned surfaces (ours; breakage here means we changed DOM) ---
 
 /** Completion popup box (src/completion/popupRuntime.js). */
 export const NOSTRODOMUS_POPUP = '#nostrodomus-completions-root';

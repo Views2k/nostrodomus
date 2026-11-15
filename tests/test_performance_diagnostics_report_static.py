@@ -3,12 +3,11 @@ from pathlib import Path
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src/main.legacy.js"
+SRC = ROOT / "src/app.js"
 DIST = ROOT / "dist/nostrodomus.js"
 PERF_RUNTIME = ROOT / "src/diagnostics/performanceTelemetryRuntime.js"
-TELEMETRY_RUNTIME = ROOT / "src/diagnostics/telemetryRuntime.js"
-# Decomposition: the budget evaluator extracted to src/diagnostics/performanceMetrics.js and the
-# public-API table extracted to src/core/publicApiRuntime.js. Same owners, current source homes.
+TELEMETRY_RUNTIME = ROOT / "src/diagnostics/diagnosticsRuntime.js"
+# The budget evaluator and the public API table.
 PERF_METRICS = ROOT / "src/diagnostics/performanceMetrics.js"
 PUBLIC_API = ROOT / "src/core/publicApiRuntime.js"
 REPORT = ROOT / "reports/PERFORMANCE_DIAGNOSTICS_REPORT_STATIC_TEST_REPORT.txt"
@@ -35,13 +34,10 @@ for path, label in [(SRC, "src"), (DIST, "dist")]:
     require('function performanceStatsSnapshot()' in owner_text, f"{label} defines performanceStatsSnapshot")
     require('function evaluatePerformanceBudgets(' in owner_text, f"{label} defines performance budget evaluation")
     require('function performanceDiagnosticsCard()' in owner_text, f"{label} renders Performance Stats diagnostics card")
-    # Report inclusion: telemetry reports embed performanceStats: performanceStatsSnapshot()
-    # (minification drops the space after the colon).
+    # Telemetry reports embed performanceStats: performanceStatsSnapshot().
     require('performanceStats: performanceStatsSnapshot()' in owner_text or
             'performanceStats:performanceStatsSnapshot()' in owner_text,
             f"{label} includes performanceStats in reports")
-    # Public API table moved to src/core/publicApiRuntime.js and now points at
-    # apiMethods.performanceStatsSnapshot (dist minifies the space away); accept either form.
     require('performanceStats: apiMethods.performanceStatsSnapshot,' in owner_text or
             'performanceStats:apiMethods.performanceStatsSnapshot' in owner_text or
             'performanceStats: performanceStatsSnapshot,' in owner_text or

@@ -169,7 +169,7 @@ test('the rule is asked at the known call sites', () => {
   const enlarge = read('src/companion/codeboxEnlargeRuntime.js');
   assert.match(enlarge, /const isMainCodebox = [^;]*!insideCardOwnEditor\(editor\)[^;]*!nestedInCardOwnEditor\(editor\);/, 'never sized as the main codebox');
 
-  const sheets = read('src/companion/scrollbarStyleRuntime.js');
+  const sheets = read('src/companion/companionStyleRuntime.js');
   assert.match(body(sheets, 'function applyForEditor(editor)'), /if \(insideCardOwnEditor\(editor\)\) return glassRemoved;/, 'no sheets for it or for the dialog on its account');
   assert.match(body(sheets, 'function applyForEditor(editor)'), /const mainCodebox = [^;]*!nestedInCardOwnEditor\(editor\);/, 'a YAML editor nested in a custom card editor is not sized as the main codebox');
   assert.match(body(sheets, 'function deepShadowRootsWithin'), /insideCardOwnEditor\(el\)/, 'the warning walk does not enter it');

@@ -4,13 +4,12 @@ import assert from 'node:assert/strict';
 import { lovelaceContextProvider } from '../../src/providers/lovelaceContextProvider.js';
 import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 
-// Lane routing at the provider seam: every cursor position must receive its OWN
-// block's rowset. The old ordered if-chain let doc-text sniffing (recent
-// "triggers:"/"actions:"/"sequence:") and the tap_action path check outrank the
-// data:/target: path checks, so nested data/target blocks inside automations got
-// trigger/action-step keys and dashboard target blocks got action-block keys.
-// These tests assert rowset IDENTITY through the real pipeline (detectRuntimeContext
-// + provider with getDoc/getPos), never scoring order.
+// Lane routing in the provider: every cursor position gets the rowset of its own block. The
+// data: and target: path checks come before any look at the document text (a recent "triggers:",
+// "actions:" or "sequence:") and before the tap_action path check; otherwise nested data and
+// target blocks in automations would get trigger or action-step keys, and dashboard target blocks
+// would get action-block keys. The tests check which rows are offered, through the real pipeline
+// (detectRuntimeContext and the provider with getDoc/getPos), not their order.
 function rowsAt(doc) {
   const ctx = detectRuntimeContext(doc, doc.length, { triggerKind: 'explicit' });
   const provider = lovelaceContextProvider({ getDoc: () => doc, getPos: () => doc.length });
@@ -43,7 +42,7 @@ test('automation target: triggers earlier in the document must not hijack the bl
 });
 
 test('CM auto-indent: target and data lanes route correctly at the opener own column', () => {
-  // Enter after `target:`/`data:` lands the cursor at the KEY'S own column (not a level
+  // Enter after `target:`/`data:` lands the cursor at the key's own column (not a level
   // deeper) -- the position real editing produces. The lanes must route there, not only
   // at a hand-typed deeper indent.
   assertTargetLane(rowsAt('actions:\n  - action: light.turn_on\n    target:\n    '), 'automation target auto-indent');
@@ -83,9 +82,9 @@ test('dashboard tap_action target: blank and typed positions serve the target ro
   assertTargetLane(rowsAt('type: button\ntap_action:\n  action: perform-action\n  target:\n    entity_id:\n      - '), 'dashboard entity-list');
 });
 
-// ---- keep-green pins: the lanes the fix must NOT move ----
+// ---- lanes that the data and target routing does not change ----
 
-test('keep-green: top-level automation/script steps keep the action-step rowset', () => {
+test('top-level automation and script steps keep the action-step rowset', () => {
   for (const doc of ['actions:\n  - ', 'actions:\n  - action: light.turn_on\n    ', 'sequence:\n  - ']) {
     const labels = rowsAt(doc);
     for (const key of ['wait_for_trigger:', 'choose:', 'response_variable:', 'target:', 'data:']) {
@@ -95,7 +94,7 @@ test('keep-green: top-level automation/script steps keep the action-step rowset'
   }
 });
 
-test('keep-green: trigger and condition steps keep their rowsets', () => {
+test('trigger and condition steps keep their rowsets', () => {
   const trigger = rowsAt('triggers:\n  - trigger: state\n    ');
   assert.ok(trigger.includes('platform:') && trigger.includes('at:'), `trigger rows expected, got ${JSON.stringify(trigger)}`);
   const condition = rowsAt('conditions:\n  - ');
@@ -107,7 +106,7 @@ test('keep-green: trigger and condition steps keep their rowsets', () => {
   assert.ok(!eventData.includes('message:'), 'data rows must not hijack event_data');
 });
 
-test('keep-green: tap_action key positions keep the branch-state action rowset', () => {
+test('tap_action key positions keep the branch-state action rowset', () => {
   const open = rowsAt('type: button\ntap_action:\n  ');
   for (const key of ['action:', 'perform_action:', 'navigation_path:', 'target:']) {
     assert.ok(open.includes(key), `${key} expected at the tap_action key position, got ${JSON.stringify(open)}`);
@@ -117,7 +116,7 @@ test('keep-green: tap_action key positions keep the branch-state action rowset',
   assert.ok(!chosen.includes('action:'), 'the already-chosen action key stays filtered');
 });
 
-test('keep-green: root card keys and entities lists are untouched', () => {
+test('root card keys and entities lists keep their rowsets', () => {
   const root = rowsAt('ty');
   assert.ok(root.includes('type:') && root.includes('card_mod:'), `card keys expected at root, got ${JSON.stringify(root.slice(0, 8))}`);
   assert.ok(!root.includes('wait_for_trigger:'), 'automation step keys must not serve at card root');
@@ -125,7 +124,7 @@ test('keep-green: root card keys and entities lists are untouched', () => {
   assert.ok(entities.includes('secondary_info:'), `entity-row keys expected, got ${JSON.stringify(entities)}`);
 });
 
-test('keep-green: root-level data/target blocks keep their 0.1.260 rowsets', () => {
+test('root-level data and target blocks keep their row sets', () => {
   const data = rowsAt('data:\n  message: hi\n  ti');
   assert.ok(data.includes('title:') && !data.includes('type:'), `data rows expected, got ${JSON.stringify(data)}`);
   assertTargetLane(rowsAt('target:\n  entity_id: light.kitchen\n  ar'), 'root-level');

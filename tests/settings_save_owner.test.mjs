@@ -39,7 +39,7 @@ test('settingsPanelRuntime owns saveSettings write/skip behavior', () => {
   assert.equal(events.at(-1).name, 'settings-save-skipped-unchanged');
 });
 
-test('saveSettings fails dark when storage throws (quota/blocked), no exception escapes', () => {
+test('saveSettings survives storage that throws (quota or blocked); no exception escapes', () => {
   const errs = [];
   let cacheClears = 0;
   const state = { settings: { enabled: true }, settingsLastSerialized: '', settingsSaveStats: null };
@@ -120,9 +120,9 @@ test('resetSettings clears the save-dedupe stamp so re-applying a pre-reset valu
   settings.resetSettings();
   assert.equal(store.has(KEY), false, 'reset removed the stored payload');
 
-  // 3) re-apply the SAME setting the user had before the reset → must persist again
+  // 3) re-apply the same setting the user had before the reset → must persist again
   state.settings = { keepOpen: true };
-  assert.equal(panel.saveSettings('re-enable'), true, 'the re-applied value is NOT deduped against a stale stamp');
+  assert.equal(panel.saveSettings('re-enable'), true, 'the re-applied value is not deduped against a stale stamp');
   assert.ok(store.has(KEY), 'the re-applied setting is persisted (survives reload)');
   assert.equal(JSON.parse(store.get(KEY)).keepOpen, true);
 });
@@ -139,7 +139,7 @@ test('saveSettings never downgrades a future-build schemaVersion stamp', () => {
   rt.saveSettings('toggle');
   assert.equal(JSON.parse(store.get(KEY)).schemaVersion, SETTINGS_SCHEMA_VERSION + 1, 'the future stamp is preserved, not downgraded');
 
-  // With no future payload present, a save stamps the current version as before.
+  // With no future payload present, a save stamps the current version.
   const s2 = new Map();
   const storage2 = { getItem: k => (s2.has(k) ? s2.get(k) : null), setItem: (k, v) => s2.set(k, v), removeItem: k => s2.delete(k) };
   const st2 = { settings: { enabled: true }, settingsLastSerialized: '', settingsSaveStats: null };

@@ -4,13 +4,11 @@ import assert from 'node:assert/strict';
 import { enclosingBlockKey, lovelaceContextProvider } from '../../src/providers/lovelaceContextProvider.js';
 import { detectRuntimeContext } from '../../src/yaml/runtimeContextAdapter.js';
 
-// The provider used to look for block openers (triggers:, conditions:, actions:, cards:,
-// browser_mod:) anywhere in the 2400 characters before the cursor and let them outrank the
-// cursor's own YAML path. Any automation with a triggers: block above therefore served trigger
-// keys at every action and condition step, and any stack with a conditional card or a
-// browser_mod popup above served condition or popup keys inside the following cards. Only the
-// block that encloses the cursor line by indentation counts now; it decides the automation
-// lanes, and the path's own segments decide the rest.
+// Only the block that encloses the cursor line by indentation counts, not a block opener
+// (triggers:, conditions:, actions:, cards:, browser_mod:) anywhere in the text before the cursor.
+// Otherwise a triggers: block above would serve trigger keys at every action and condition step,
+// and a conditional card or a browser_mod popup above would serve its keys inside the following
+// cards. The enclosing block decides the automation lanes; the path's own segments decide the rest.
 function rowsAt(doc) {
   const ctx = detectRuntimeContext(doc, doc.length, { triggerKind: 'explicit' });
   const provider = lovelaceContextProvider({ getDoc: () => doc, getPos: () => doc.length });
@@ -119,16 +117,16 @@ test('compact sequences: the enclosing block still names the lane', () => {
   assertLacks(root, TRIGGER_ONLY, 'at a column-0 line after a compact list');
 });
 
-// ---- keep-green pins: lanes that already routed correctly ----
+// ---- lanes that the enclosing block does not change ----
 
-test('keep-green: trigger lanes, compact and indented', () => {
+test('trigger lanes, compact and indented', () => {
   for (const doc of ['triggers:\n  - trigger: state\n    ', 'triggers:\n  ', 'triggers:\n', 'triggers:\n- ', 'triggers:\n- trigger: state\n  ']) {
     assertHas(rowsAt(doc), TRIGGER_ONLY, `in a trigger block (${JSON.stringify(doc)})`);
   }
   assertHas(rowsAt(`${TRIGGERS_ABOVE}actions:\n  - wait_for_trigger:\n      - `), TRIGGER_ONLY, 'inside wait_for_trigger');
 });
 
-test('keep-green: stack cards and nested condition lists', () => {
+test('stack cards and nested condition lists', () => {
   assertHas(rowsAt('type: vertical-stack\ncards:\n  - type: entities\n    '), CARD_KEYS, 'in a stack card');
   assertHas(rowsAt('type: vertical-stack\ncards:\n  - '), CARD_KEYS, 'at a new stack item');
   assertHas(rowsAt('type: vertical-stack\ncards:\n  - type: conditional\n    conditions:\n      - '), CONDITION_ONLY, 'in a conditional card conditions list');

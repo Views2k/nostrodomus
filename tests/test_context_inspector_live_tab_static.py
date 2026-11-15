@@ -3,11 +3,10 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-SRC = (ROOT / "src" / "main.legacy.js").read_text(encoding="utf-8")
-TELEMETRY_RUNTIME = (ROOT / "src" / "diagnostics" / "telemetryRuntime.js").read_text(encoding="utf-8")
+SRC = (ROOT / "src" / "app.js").read_text(encoding="utf-8")
+TELEMETRY_RUNTIME = (ROOT / "src" / "diagnostics" / "diagnosticsRuntime.js").read_text(encoding="utf-8")
 SETTINGS_PANEL_RUNTIME = (ROOT / "src" / "ui" / "settingsPanelRuntime.js").read_text(encoding="utf-8")
-# The settings panel runtime is a composer over src/ui/settings/ modules;
-# the owner surface is the composer plus its modules.
+# The settings panel runtime composes the modules in src/ui/settings/; the checks read all of them.
 SETTINGS_MODULES = "\n".join(
     path.read_text(encoding="utf-8") for path in sorted((ROOT / "src" / "ui" / "settings").glob("*.js"))
 )

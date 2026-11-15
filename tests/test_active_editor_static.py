@@ -5,11 +5,11 @@ import sys
 
 ROOT = PROJECT_ROOT
 MODULE = ROOT / "src/editor/activeEditor.js"
-LEGACY = ROOT / "src/main.legacy.js"
+APP = ROOT / "src/app.js"
 REPORT = ROOT / "reports/ACTIVE_EDITOR_STATIC_TEST_REPORT.txt"
 
 module = MODULE.read_text(errors="replace")
-legacy = LEGACY.read_text(errors="replace")
+app = APP.read_text(errors="replace")
 
 errors = []
 notes = []
@@ -45,8 +45,8 @@ invariant_tokens = [
 ]
 
 for token in invariant_tokens:
-    if token not in legacy:
-        errors.append(f"Legacy lost active-editor invariant token: {token}")
+    if token not in app:
+        errors.append(f"app.js is missing active-editor invariant token: {token}")
 
 for forbidden in [
     "showPopover",

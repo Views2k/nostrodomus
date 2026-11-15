@@ -1,6 +1,6 @@
 // The pure Jinja call-argument classifier — the brain that decides "the cursor is in an
-// entity-id position" so the live-entity lane can fire. Deterministic, fail-dark, never throws.
-// The load-bearing edge: is_state's 2nd arg is a STATE VALUE, not an entity, so it must NOT classify
+// entity-id position" so the live-entity lane can fire. Deterministic and never throws.
+// The load-bearing edge: is_state's 2nd arg is a state value, not an entity, so it must not classify
 // as entity (only state_attr's 2nd arg is an attribute position).
 
 import test from 'node:test';
@@ -27,7 +27,7 @@ test('is_state(\'  first arg → entity', () => {
   assert.equal(classifyJinjaCallArg("{{ is_state('").fn, 'is_state');
 });
 
-test('is_state second arg is a STATE VALUE, NOT an entity → empty default', () => {
+test('the second is_state argument is a state value, not an entity, so the default is empty', () => {
   assert.deepEqual(classifyJinjaCallArg("{{ is_state('light.kitchen', '"), EMPTY);
 });
 
@@ -58,7 +58,7 @@ test('a closed call / non-call text → empty default', () => {
   assert.deepEqual(classifyJinjaCallArg(''), EMPTY);
 });
 
-test('fail-dark: hostile / non-string input returns the default, never throws', () => {
+test('hostile or non-string input returns the default and never throws', () => {
   assert.deepEqual(classifyJinjaCallArg(undefined), EMPTY);
   assert.deepEqual(classifyJinjaCallArg(null), EMPTY);
   assert.deepEqual(classifyJinjaCallArg(42), EMPTY);
@@ -67,13 +67,13 @@ test('fail-dark: hostile / non-string input returns the default, never throws', 
 });
 
 test('a closed call does not leak its arg classification onto a later expression', () => {
-  // An UNQUOTED arg has no closing quote, so the old [^'"]* pattern ran past ')' and classified
-  // every later cursor position as sitting in the call's entity arg.
+  // An unquoted arg has no closing quote; a [^'"]* pattern would run past ')' and classify every
+  // later cursor position as sitting in the call's entity arg.
   assert.deepEqual(classifyJinjaCallArg("{% set x = states(entity_var) %}\n{{ x | float(0) + oth"),
     { fn: '', argIndex: -1, inStringLiteral: false, expectKind: '' });
   assert.deepEqual(classifyJinjaCallArg("{{ state_attr('a.b', attr_var) }} + oth"),
     { fn: '', argIndex: -1, inStringLiteral: false, expectKind: '' });
-  // Still detects an OPEN call, quoted or unquoted, and the state_attr 2nd arg.
+  // Still detects an open call, quoted or unquoted, and the state_attr 2nd arg.
   assert.equal(classifyJinjaCallArg("{{ states('li").fn, 'states');
   assert.equal(classifyJinjaCallArg("{{ states(sensor.kit").expectKind, 'entity');
   assert.equal(classifyJinjaCallArg("{{ state_attr('light.x', 'bright").argIndex, 1);

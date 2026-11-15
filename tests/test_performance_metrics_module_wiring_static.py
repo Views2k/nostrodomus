@@ -2,7 +2,7 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-LEGACY = (ROOT / "src" / "main.legacy.js").read_text(encoding="utf-8", errors="replace")
+APP = (ROOT / "src" / "app.js").read_text(encoding="utf-8", errors="replace")
 DIST = (ROOT / "dist" / "nostrodomus.js").read_text(encoding="utf-8", errors="replace")
 MODULE = (ROOT / "src" / "diagnostics" / "performanceMetrics.js").read_text(encoding="utf-8", errors="replace")
 errors = []
@@ -11,7 +11,7 @@ def require(ok, msg):
     if not ok:
         errors.append(msg)
 
-require("from './diagnostics/performanceMetrics.js'" in LEGACY, "main.legacy imports diagnostics/performanceMetrics.js")
+require("from './diagnostics/performanceMetrics.js'" in APP, "app.js imports diagnostics/performanceMetrics.js")
 for token in [
     "function roundPerformanceMetric(value, places = 3)",
     "function diagnosticEventMetric(events, name)",
@@ -20,12 +20,12 @@ for token in [
 ]:
     require(token in MODULE, f"performanceMetrics module includes {token}")
 
-for removed in [
+for local_copy in [
     "function diagnosticEventMetric(events, name)",
     "function roundPerformanceMetric(value, places = 3)",
     "function performanceBudgetRules()",
 ]:
-    require(removed not in LEGACY, f"main.legacy no longer owns {removed}")
+    require(local_copy not in APP, f"app.js does not own {local_copy}")
 
 for forbidden in ["window", "document", "localStorage", "sessionStorage", "setTimeout", "setInterval", "addEventListener", "querySelector", "MutationObserver", "ResizeObserver", "fetch("]:
     require(forbidden not in MODULE, f"performanceMetrics module stays pure: no {forbidden}")
