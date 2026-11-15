@@ -33,6 +33,8 @@ export function runtimeSummary(runtimeState = {}, options = {}) {
     themes: boundedArrayLength(rt.themes),
     cards: boundedArrayLength(rt.cards),
     icons: boundedArrayLength(rt.icons),
+    iconSets: boundedArrayLength(rt.iconSetPrefixes),
+    iconSetIcons: boundedArrayLength(rt.iconSetIcons),
     actions: boundedArrayLength(rt.actions),
     customCards: Array.isArray(rt.cards) ? rt.cards.filter(type => String(type || '').startsWith('custom:')).length : 0,
     serviceFieldServices: rt.serviceFields && typeof rt.serviceFields === 'object' ? Object.keys(rt.serviceFields).length : 0,

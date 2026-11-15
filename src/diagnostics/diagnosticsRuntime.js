@@ -951,6 +951,7 @@ export function createDiagnosticsRuntime(ctx = {}) {
       diagnosticValue("Providers", providerText),
       diagnosticValue("Runtime HA", rt.hasHass ? `yes (${rt.entities} entities, ${rt.services} services)` : "not detected yet"),
       diagnosticValue("Live data", rt.hasHass ? `${rt.customCards} custom cards, ${rt.serviceFieldServices} services with field schemas, cache age ${rt.ageMs == null ? "n/a" : `${rt.ageMs}ms`}` : "waiting for HA data"),
+      diagnosticValue("Icon sets", rt.iconSets ? `${rt.iconSets} (${rt.iconSetIcons} icons)` : "none"),
       diagnosticValue("Cache entries", String(state.completionCache?.size || 0)),
       diagnosticValue("Index counts", counts),
     ], "Counts are bounded to keep diagnostics lightweight.");

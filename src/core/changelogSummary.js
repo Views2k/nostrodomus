@@ -6,6 +6,15 @@
 
 export const CHANGELOG_SUMMARY = Object.freeze([
   {
+    version: "0.1.282",
+    title: "Icons from installed icon sets",
+    bullets: [
+      "Icon suggestions include the icon sets installed in Home Assistant, such as Material Symbols, and each row shows its icon.",
+      "Icon values complete bare, in single or double quotes, and inside template strings.",
+      "Pressing Tab to reach an icon placeholder of a snippet opens the icon list.",
+    ],
+  },
+  {
     version: "0.1.281",
     title: "Fixes in coloring, snippets and settings",
     bullets: [
@@ -38,17 +47,6 @@ export const CHANGELOG_SUMMARY = Object.freeze([
     bullets: [
       "No change in behavior. The reference pages were checked against the code, and CHANGELOG.md lists what changed in each version.",
       "Firefox is not supported yet: while you type in the editor there, Home Assistant shortcuts can open in the middle of a word. Use a Chromium-based browser.",
-    ],
-  },
-  {
-    version: "0.1.277",
-    title: "Insertion, list and syntax fixes; less work on idle pages",
-    bullets: [
-      "Accepting a suggestion: a row accepted after cards:, actions:, triggers: and similar keys becomes a list item, lines after a key on a list item are indented from the key, a typed colon no longer adds a second one, and a key row with a value renames the key and keeps the value already on the line. One undo removes the accepted text and keeps what you typed.",
-      "The suggestion list follows scrolling around the editor and closes when the cursor leaves view. Escape in a snippet closes it, keys pressed while an input method composes text are left alone, the same text is listed once, and Ctrl+, opens Settings while the list is open.",
-      "Suggestions by place: style: and class: inside card_mod, action choices for a tile card's icon actions, action snippets after action:, template rows without doubled braces, and no card types at type: keys that are not cards. On large instances, ids that start with what you typed come first and the fields of every service are found.",
-      "Syntax colors: CSS under nested card_mod style keys, YAML aliases, comments after words with apostrophes or quoted parts, and steady colors with a folded block at the edge of the view. A pass rebuilds only the lines that changed, and very long CSS lines no longer slow the editor.",
-      "Settings: the Context, General and Help tabs are built when first shown, Refresh and Copy context work, a failed save is shown, the panel fits small screens and its tabs answer the arrow keys. Pages without an editor do less background work, and uninstall leaves nothing behind.",
     ],
   },
 ]);

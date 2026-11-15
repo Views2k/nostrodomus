@@ -29,6 +29,7 @@ export function itemKindLabel(item) {
     device: 'Device',
     floor: 'Floor',
     label: 'Label',
+    icon: 'Icon',
   };
   return map[item?.type] || String(item?.type || 'Item');
 }
@@ -51,7 +52,7 @@ export function shortItemMeta(item) {
     if (item.type === 'entity') return `entity / ${domain}`;
     if (item.type === 'service') return `service / ${domain}`;
     if (item.type === 'card') return 'card type';
-    if (item.type === 'icon') return 'mdi icon';
+    if (item.type === 'icon') return item?.meta?.sourceDetail || 'icon';
     if (item.type === 'action') return 'action value';
     if (item.type === 'theme') return 'theme';
   }
@@ -113,6 +114,7 @@ export function iconFor(item) {
   if (item.type === 'entity') return 'E';
   if (item.type === 'service') return 'S';
   if (item.type === 'card') return 'C';
+  if (item.type === 'icon') return 'Ic';
   if (item.type === 'action') return 'A';
   if (item.type === 'trigger') return 'T';
   if (item.type === 'condition') return '?';

@@ -465,6 +465,23 @@ function textNodeElement(documentRef, tag, text, styleText = '') {
   return el;
 }
 
+const ICON_ID_RX = /^[a-z0-9][a-z0-9_-]*:[a-z0-9][a-z0-9_.-]*$/i;
+
+// An icon row shows the icon itself, drawn by Home Assistant's ha-icon element, which also draws
+// the icons of the installed icon sets. Without ha-icon (outside Home Assistant) the row keeps
+// its letters.
+function iconPreviewElement(documentRef, item, color) {
+  if (item?.type !== 'icon') return null;
+  let defined = false;
+  try { defined = !!documentRef?.defaultView?.customElements?.get?.('ha-icon'); } catch { defined = false; }
+  const id = String(item.insert || item.label || '');
+  if (!defined || !ICON_ID_RX.test(id)) return null;
+  const el = documentRef.createElement('ha-icon');
+  el.setAttribute('icon', id);
+  el.style.cssText = `width:18px;flex:0 0 18px;display:inline-flex;justify-content:center;--mdc-icon-size:16px;color:${color};opacity:.92`;
+  return el;
+}
+
 function popupSettingsButton(documentRef, openSettings) {
   const button = documentRef.createElement('button');
   button.type = 'button';
@@ -715,7 +732,8 @@ export function renderCompletionPopup(state, deps = {}) {
         color:${selected ? '#fff' : accent.fg};
       `;
 
-      const kindIcon = textNodeElement(documentRef, 'span', iconFor(item), `width:18px;flex:0 0 18px;font-size:10px;text-align:center;color:${accent.fg};opacity:.92;font-weight:900`);
+      const kindIcon = iconPreviewElement(documentRef, item, accent.fg)
+        || textNodeElement(documentRef, 'span', iconFor(item), `width:18px;flex:0 0 18px;font-size:10px;text-align:center;color:${accent.fg};opacity:.92;font-weight:900`);
       kindIcon.setAttribute('aria-hidden', 'true');
       row.appendChild(kindIcon);
       const spans = matchSpans(item.label, ctx?.prefix || '', item.matchReason || item.matchTier);

@@ -315,6 +315,8 @@ export function runtimeDomainPriority(item, ctx = {}) {
 
   if (item.type === 'card') return String(item.label || '').startsWith('custom:') ? 10 : 20;
   if (key === 'action' && item.type === 'action') return item.label === 'call-service' ? 30 : 12;
+  // Among icons that match equally well, the common Material Design icons come first.
+  if (item.type === 'icon') return item.meta?.commonIcon === true ? 10 : 0;
   return 0;
 }
 

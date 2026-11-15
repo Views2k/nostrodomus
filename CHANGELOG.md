@@ -4,6 +4,21 @@ Versions before 0.1.266 are not listed.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Nostrodomus is in beta, with versions numbered `0.1.x`.
 
+## [0.1.282] - 2026-11-15
+
+### Added
+
+- Icon suggestions include the icons of the icon sets installed in Home Assistant, such as Material Symbols (`m3o:`, `m3of:`, `m3r:`, `m3rf:`, `m3s:` and `m3sf:`), next to the common Material Design icons. Every icon set that lists its icons for Home Assistant's icon picker is included. Typing a name without its prefix, such as `home`, finds the icon in every set.
+- Each icon row in the suggestion list shows the icon.
+- An icon name in a template string, such as `{{ 'm3o:light' if is_state('light.desk', 'on') else 'm3o:light-off' }}`, gets the icon suggestions.
+- Pressing Tab to reach a snippet placeholder that holds an icon, such as `icon: ${2:mdi:home}`, opens the icon list. Accepting an icon replaces the placeholder text and keeps it selected.
+- Diagnostics shows the number of icon sets and their icons.
+
+### Changed
+
+- An opening quote after a key with suggested values (`icon: '`, `entity: "`) keeps the suggestion list open, and the accepted value goes inside the quotes.
+- Icon rows are labeled Icon and name their icon set instead of "mdi icon".
+
 ## [0.1.281] - 2026-11-15
 
 ### Fixed

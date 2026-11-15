@@ -27,11 +27,11 @@ function enabledProviderSalt(providerSettings = {}) {
 }
 
 // The positions where rows built from the Home Assistant data snapshot can be in the list: a
-// YAML value or list item, a key of a service data block, and an entity argument in a template.
-// Everywhere else (YAML keys, CSS, JavaScript) the snapshot is not asked for.
+// YAML value or list item, a key of a service data block, and an entity argument or an icon name
+// in a template. Everywhere else (YAML keys, CSS, JavaScript) the snapshot is not asked for.
 function usesRuntimeSnapshot(ctx) {
   if (!ctx || !ctx.shouldSuggest || ctx.suppressPopup) return false;
-  if (ctx.lang === 'jinja') return !!ctx.jinjaArg;
+  if (ctx.lang === 'jinja') return !!ctx.jinjaArg || ctx.valueKind === 'icon';
   if (ctx.lang !== 'yaml') return false;
   return ctx.yamlRole === 'value' || ctx.yamlRole === 'list-key' || isServiceDataFieldKeyContext(ctx);
 }

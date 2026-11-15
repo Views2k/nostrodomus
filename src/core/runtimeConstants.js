@@ -29,6 +29,12 @@ export const SECURITY_LIMITS = Object.freeze({
   maxRuntimeFloors: 100,
   maxRuntimeLabels: 200,
   maxRuntimeCustomCards: 200,
+  // Icon suggestions: the rows of one query, the installed icon sets that are read, and the names
+  // kept per set and in all. Material Symbols has about 2,700 names in each of its six sets.
+  maxRuntimeIcons: 500,
+  maxIconSets: 40,
+  maxIconsPerSet: 8000,
+  maxIconSetIcons: 40000,
   maxServiceFieldsPerService: 40,
   maxServicesWithFields: 400,
   // Cap the enumerated option values captured per service field (select options).

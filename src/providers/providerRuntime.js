@@ -14,6 +14,7 @@ import {
 import * as registry from './providerRegistry.js';
 import * as staticLibrary from './staticLibraryProvider.js';
 import * as haRuntime from './haRuntimeProvider.js';
+import { createIconSetCatalog } from './iconSetCatalog.js';
 import {
   isAutomationScriptContext,
   isDashboardActionContext,
@@ -62,6 +63,14 @@ export function createProviderRuntime(options = {}) {
   const recordRuntimeErrorOnce = options.recordRuntimeErrorOnce || recordRuntimeError;
   const logIndexed = options.logIndexed || fallbackLogIndexed;
   const now = typeof options.now === 'function' ? options.now : fallbackNow;
+  // The icon sets installed in Home Assistant (Material Symbols and others), for the runtime data.
+  // onIconSetsChanged lets the caller refresh an open icon list when the names of a set arrive.
+  const iconSets = createIconSetCatalog({
+    windowRef,
+    limits,
+    now,
+    onChange: typeof options.onIconSetsChanged === 'function' ? options.onIconSetsChanged : null,
+  });
 
   const BUILT_IN_PROVIDER_IDS = [STATIC_PROVIDER_ID, SNIPPET_PROVIDER_ID, LOVELACE_CONTEXT_PROVIDER_ID, HA_VALUE_PROVIDER_ID, WORD_FALLBACK_PROVIDER_ID];
   // The ids of the registered providers, read again when the provider list changes.
@@ -175,6 +184,7 @@ export function createProviderRuntime(options = {}) {
       windowRef,
       findHass,
       now,
+      iconSets,
     });
   }
 
