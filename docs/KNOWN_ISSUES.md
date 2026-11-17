@@ -1,10 +1,10 @@
 # Known issues and limitations
 
-What Nostrodomus does not do yet, or does with restrictions. None of these affects your Home Assistant data or configuration: the plugin runs in the browser and makes no network calls.
+What Nostrodomus does not do yet, or does with restrictions. None of these affects your Home Assistant data or configuration: the plugin runs in the browser and makes no network requests of its own.
 
 ## Where it runs
 
-- Home Assistant's built-in dashboards (Overview, Lights, Security, Climate, Energy, Maintenance) do not load custom resources, so Nostrodomus is not active there. It becomes active once a dashboard you created has been opened in the browser tab. The other [supported editors](../DOCUMENTATION.md#supported-editors-and-surfaces) (automation, script, Developer Tools) work from then on, until the page is reloaded. See [COMPAT.md](COMPAT.md).
+- Home Assistant's built-in Overview dashboard does not load custom resources, so Nostrodomus is not active there, and the other built-in dashboards (Lights, Security, Climate, Energy, Maintenance) may not load them either. It becomes active once a dashboard you created has been opened in the browser tab. The other [supported editors](../DOCUMENTATION.md#supported-editors-and-surfaces) (automation, script, Developer Tools) work from then on, until the page is reloaded. See [COMPAT.md](COMPAT.md).
 - Firefox is not supported yet. The plugin loads and suggests there, but while you type in the editor Firefox delivers some key presses to the page instead of the editor, and Home Assistant's single-letter shortcuts (for example `e` for the entity search) can open in the middle of a word. Use a Chromium-based browser. Safari is not tested.
 - Settings are stored in the browser's local storage. Each browser and device has its own settings, and there is no sync between them.
 

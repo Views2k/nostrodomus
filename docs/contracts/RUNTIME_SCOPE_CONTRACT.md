@@ -1,6 +1,6 @@
 # Contract: Runtime Scope and Ownership
 
-Nostrodomus changes Home Assistant's code editors and nothing else on the page. This contract states where the runtime may act and which approaches are ruled out.
+Nostrodomus changes Home Assistant's code editors and the few elements around them listed below, and nothing else on the page. This contract states where the runtime may act and which approaches are ruled out.
 
 ## Runtime shape
 
@@ -24,6 +24,8 @@ DOM ownership:
 | Dashboard, sidebar, cards | Nothing: no styles, no pointer handlers, no keyboard handling |
 | Edit dialog and its top layer | Hosts the settings panel portal, receives the dialog layout styles. While `settings.style.glassDialog` is on (the default), the companion layer also makes the dialog surface translucent with a backdrop blur, through a stylesheet in the shadow root of `hui-dialog-edit-card` (`src/companion/companionStyleRuntime.js`). The dashboard is seen through the dialog and is not styled |
 | `ha-code-editor` and the CodeMirror root | Suggestion list, syntax styling, codebox frame |
+| Wrappers around the editor, up to the dialog | Up to eight wrappers that would clip the frame get inline `overflow`, `contain`, `clip-path` and `mask-image` overrides (`src/ui/codebox/codeboxUnclip.js`). Wrappers that belong to a custom card's own editor are not written on |
+| Developer Tools template page, `ha-card.render-pane` | The codebox root stylesheet gives the Result pane the border, glow and surface of the codebox (`src/ui/codeboxStyle.js`). Apart from the template editor itself, nothing else on that page is styled |
 | A custom card's own visual editor | Nothing: no styles, no sizing, no completion, no keyboard handling. A codebox in it keeps the suggestions the card turned on. The dialog is not enlarged or restyled because of it |
 | Card preview | The cards in it are observed only to avoid duplicate work. Home Assistant's `value-changed` and `input` events are never intercepted or replayed. The preview pane itself (`.element-preview`) gets the dialog layout styles and, while `settings.style.glassDialog` is on, a transparent background, from the same companion module |
 
@@ -38,7 +40,7 @@ DOM ownership:
 
 ## Ruled out
 
-- `eval`, `new Function`, `fetch`, `sendBeacon`, telemetry, loading code at runtime.
+- `eval`, `new Function`, `fetch`, `sendBeacon`, telemetry upload, loading code at runtime.
 - Pointer or keyboard handlers for the whole document that act outside an editor.
 - Debouncing, capturing or replaying Home Assistant's preview events.
 - Mounting the settings panel in `document.body` while a modal dialog is open (see `SETTINGS_PORTAL_CONTRACT.md`).

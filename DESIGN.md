@@ -49,8 +49,10 @@ repository in `docs/PROJECT_STRUCTURE.md`.
 ### Scope and styling ownership
 
 - All behavior is scoped to the active Home Assistant editor, its dialog and its
-  CodeMirror surface. There is no dashboard-wide CSS and no pointer or keyboard handling
-  outside that scope.
+  CodeMirror surface, with two styling exceptions: the containers around the editor that
+  would clip its frame get inline overrides, and the Result pane of the Developer Tools
+  template editor (`ha-card.render-pane`) gets the codebox frame. There is no
+  dashboard-wide CSS and no pointer or keyboard handling outside that scope.
 - Codebox chrome is owned by the host: on `ha-code-editor` and `:host`, `::before` owns the
   border and glow and `::after` owns the frosted surface, with `isolation: isolate`.
   CodeMirror internals (`.cm-editor`, `.cm-scroller`, `.cm-content`) stay transparent and
@@ -61,7 +63,9 @@ repository in `docs/PROJECT_STRUCTURE.md`.
   highlight range can set a color but not a font style, so comments are not italic in
   that mode. Painting classes on the token elements remains as the fallback.
 - The settings panel mounts through a portal host inside the active native Home Assistant
-  modal dialog. It is never appended to `document.body` while a modal is open, because
+  modal dialog when one is open, and otherwise in the card edit dialog's shadow root, the
+  editor's shadow root, the `home-assistant` root or `document.body`. While a modal is
+  open it goes to `document.body` only when appending to the dialog fails, because
   content outside the modal is inert whatever its z-index.
 
 ### Companion layer
@@ -77,7 +81,7 @@ a resource, the layer in the bundle stays dormant and both sides coordinate thro
 
 ### Security posture
 
-No network calls of any kind (`fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`), no
+No network calls of its own (`fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`), no
 telemetry upload, no `eval` or `new Function`, no remote code loading, and no `innerHTML`
 (zero uses in the bundle, held there by the `innerhtml_max: 0` value in `PROJECT.json`
 that `tools/verify.py` checks). Rendering goes through `textContent`, `createElement`,
@@ -103,5 +107,5 @@ explicit attribute setters, and scoped listeners.
 - A Python backend or custom component.
 - Settings sync between devices.
 - A Home Assistant sidebar panel.
-- Telemetry of any kind.
+- Telemetry upload of any kind.
 - Changes to the frozen companion reference scripts.

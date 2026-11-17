@@ -29,7 +29,7 @@ Chromium-based browsers are supported. Firefox is not supported yet. The plugin 
 
 ### Custom resources are loaded by the dashboards you created
 
-Home Assistant loads custom Lovelace resources when a dashboard that you created is opened. Its built-in dashboards (Overview at `/home`, Lights, Security, Climate, Energy, Maintenance) do not load them, even when the resource is registered. The browser tests check this on every run (`tests/e2e/ha-boots.spec.mjs`).
+Home Assistant loads custom Lovelace resources when a dashboard that you created is opened. Its built-in Overview at `/home` does not load them, even when the resource is registered, and the browser tests check this on every run (`tests/e2e/ha-boots.spec.mjs`). The other built-in dashboards (Lights, Security, Climate, Energy, Maintenance) may not load them either; the tests do not cover them.
 
 Nostrodomus is therefore active once a dashboard you created has been opened in the browser tab. From then on it also works in the other editors listed in [DOCUMENTATION.md](../DOCUMENTATION.md#supported-editors-and-surfaces) (automation, script, Developer Tools) in that tab. After a page reload on one of those pages, open a dashboard you created once and go back.
 

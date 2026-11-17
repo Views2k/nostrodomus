@@ -476,7 +476,7 @@ test('the General tab and the README describe when the list opens with the defau
   const { readFileSync } = await import('node:fs');
   const readme = readFileSync(new URL('../../README.md', import.meta.url), 'utf8');
   assert.equal(readme.includes('or let them appear as you type'), false);
-  assert.match(readme, /Press `Ctrl\+Space` to open or close suggestions/);
+  assert.match(readme, /Press `Ctrl\+Space` to open the list and `Esc` to close it/);
   assert.match(readme, /turn on "Keep Nostrodomus armed"/);
 });
 

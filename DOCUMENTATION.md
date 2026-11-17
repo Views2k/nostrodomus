@@ -33,8 +33,8 @@ Nostrodomus attaches to Home Assistant's built-in CodeMirror editors. As you typ
 
 Two rules shape everything:
 
-- Live from your instance, or bundled, never the network. Entities, services, service-field schemas, themes and your installed custom cards are read from the running `hass` object in your browser, and icon names from the icon sets installed in Home Assistant. Common community cards and Jinja and YAML vocabulary come from a catalog bundled inside the plugin. There are no network calls.
-- Scoped to the active editor. All styling applies only to the editor you are working in and, in the card editor, its dialog, marked with internal data attributes. It never touches the rest of your dashboard or your Home Assistant theme.
+- Live from your instance, bundled, or from the open editor. Entities, services, service-field schemas, themes and your installed custom cards are read from the running `hass` object in your browser, and icon names from the icon sets installed in Home Assistant. Common community cards, the common Material Design icon names and Jinja and YAML vocabulary come from a catalog bundled inside the plugin, and words already in the open editor fill in when the other sources find few matches. Nostrodomus makes no network requests of its own.
+- Scoped to the active editor. Styling applies to the editor you are working in, the containers around it that would clip its frame, and, in the card editor, its dialog, marked with internal data attributes. In Developer Tools the Result pane next to the template editor also gets the editor's frame. The styling never touches the rest of your dashboard or your Home Assistant theme.
 
 ## Supported editors and surfaces
 
@@ -46,20 +46,20 @@ Two rules shape everything:
 | Automation and script editors in YAML mode | Completion, including modern `action:` steps, and styling. Editor warnings stay as Home Assistant draws them |
 | Developer Tools: the Template editor | Completion and styling. Editor warnings stay as Home Assistant draws them |
 | Composite cards with an embedded secondary editor | The main editor is sized. The embedded editor is left at native size |
-| A custom card's own visual editor | Not changed: controls, notes and layout stay as the card built them, a codebox inside it keeps its size, its look and its own suggestions, and the dialog is not enlarged or restyled on its account |
+| A custom card's own visual editor | Not changed: controls, notes and layout stay as the card built them, a codebox the card puts in its editor keeps its size, its look and its own suggestions, and the dialog is not enlarged or restyled on its account. A Home Assistant YAML editor that the card's editor shows for a card inside it is completed and styled, and showing it enlarges the dialog |
 
 The YAML editors of the Actions and Events tools in Developer Tools are admitted by the same rule as the Template editor. The automated browser tests cover the card-edit dialog, the automation and script editors and the Template editor.
 
-In the card-edit dialog Nostrodomus also enlarges the dialog to most of the window and fits the code editor to the space above the dialog buttons, and with the Glass editor dialog setting it makes the dialog translucent. The dialog takes this size and look once its code editor has been shown; a dialog that has only shown the visual editor keeps Home Assistant's own. In a window narrower than 1000 pixels, where Home Assistant stacks the preview under the editor, the dialog scrolls instead.
+In the card-edit dialog Nostrodomus also enlarges the dialog to most of the window and fits the code editor to the space above the dialog buttons, and with the Glass editor dialog setting it makes the dialog translucent. The dialog takes this size and look once one of Home Assistant's code editors in it has been shown: the card's code editor, or the YAML editor of a card inside it, such as a card in a stack. A dialog that has shown neither keeps Home Assistant's own. In a window narrower than 1000 pixels, where Home Assistant stacks the preview under the editor, the dialog scrolls instead.
 
 Before Home Assistant 2026.11 Developer Tools is in the sidebar. Since 2026.11 it is under Settings, named Tools. Both are supported.
 
-Home Assistant loads custom dashboard resources when a dashboard that you created is opened. Its built-in dashboards (Overview at `/home`, Lights, Security, Climate, Energy, Maintenance) do not load them. Nostrodomus is therefore active once a dashboard you created has been opened in the browser tab. From then on it also works in the automation, script and Developer Tools editors of that tab, until the page is reloaded. See [docs/COMPAT.md](docs/COMPAT.md).
+Home Assistant loads custom dashboard resources when a dashboard that you created is opened. Its built-in Overview at `/home` does not load them, and the other built-in dashboards (Lights, Security, Climate, Energy, Maintenance) may not either. Nostrodomus is therefore active once a dashboard you created has been opened in the browser tab. From then on it also works in the automation, script and Developer Tools editors of that tab, until the page is reloaded. See [docs/COMPAT.md](docs/COMPAT.md).
 
 ## The completion experience
 
 ### Triggering suggestions
-- Press `Ctrl+Space` to open or close the list at the cursor. With the default settings this is how the list opens.
+- Press `Ctrl+Space` to open the list at the cursor and `Esc` to close it. With the default settings this is how the list opens.
 - With Keep Nostrodomus armed (`keepOpen`, Settings, General, off by default) the list also opens as you type, controlled by Trigger behavior:
   - Smart (default): after the minimum number of typed characters, or after a trigger character.
   - Manual only: nothing appears until you press `Ctrl+Space`.
@@ -143,14 +143,14 @@ Nostrodomus asks each provider that can handle the cursor position for candidate
 | Snippets (Context snippets) | Multi-line building blocks with tab-through placeholders | Bundled and validated |
 | Lovelace context (Lovelace context rows) | Focused rows for the active YAML path, for example action, trigger, condition or card child keys that belong where your cursor is | The document you are editing |
 | HACS catalog (HACS catalog provider) | Common community `custom:` card types and their usual keys | Bundled catalog |
-| Home Assistant runtime (Home Assistant runtime values) | Entity ids, services, service-field schemas, themes, icons (common Material Design icons and the icons of installed icon sets such as Material Symbols), your installed custom cards. Area, device, floor and label ids with the experimental option for them | Live from your running `hass` |
+| Home Assistant runtime (Home Assistant runtime values) | Entity ids, services, service-field schemas, themes, icons (common Material Design icons and the icons of installed icon sets such as Material Symbols), your installed custom cards. Area, device, floor and label ids with the experimental option for them | Live from your running `hass`. The common icons are bundled, and icon-set names come from the icon sets installed in Home Assistant |
 | Document words (Word fallback) | Words already present in the current buffer (a fallback when other providers are thin) | The document you are editing |
 
 Providers added through `window.__nostrodomus.registerProvider()` are asked after the built-in ones and get their own toggle.
 
-What the context engine recognizes includes: card `type:`, dashboard and card keys, action, `service:`, `perform_action:`, and modern `action:` steps, service `data:` fields, `target:` and `entity_id:` (matching-domain entities first), `card_mod` CSS selectors, properties, and values, Jinja `{{ }}` and `{% %}` templates, trigger and condition shapes, and value kinds (entity, service, trigger type, boolean, number, and so on). You can watch it live in the Context Inspector (Context tab).
+What the context engine recognizes includes: card `type:`, dashboard and card keys, action, `service:`, `perform_action:`, and modern `action:` steps, service `data:` fields, `target:` and `entity_id:`, `card_mod` CSS selectors, properties, and values, Jinja `{{ }}` and `{% %}` templates, trigger and condition shapes, and value kinds (entity, service, trigger type, boolean, number, and so on). You can watch it live in the Context Inspector (Context tab).
 
-Live versus bundled versus never-network: entities, services, service-field schemas, and installed custom cards are live from your instance. Common community cards and language vocabulary are bundled static catalogs. Nothing is fetched over the network.
+Live versus bundled: entities, services, service-field schemas, themes, installed custom cards and the icons of installed icon sets are live from your instance. Common community cards, snippets and language vocabulary are bundled static catalogs. Nostrodomus makes no network requests of its own.
 
 ## Language support
 
@@ -158,7 +158,7 @@ Completion can be turned off per language in Settings, General, Language packs:
 
 YAML, CSS, Jinja, JSON, HTML, JavaScript, Python.
 
-The language at the cursor is detected from context. A `card_mod:` `style: |` block switches to CSS, `{{ }}` and `{% %}` switch to Jinja, and a `[[[ ]]]` button-card block switches to JavaScript. Syntax coloring spans mixed YAML, Jinja, CSS in `card_mod`, and embedded JSON in one document.
+The language at the cursor is detected from context. A `card_mod:` `style: |` block switches to CSS, `{{ }}` and `{% %}` switch to Jinja, and a `[[[ ]]]` button-card block switches to JavaScript. Syntax coloring covers YAML, Jinja, and CSS inside `card_mod` in the same document.
 
 ## Snippets
 
@@ -258,11 +258,11 @@ Stored under the browser local-storage key `nostrodomus.settings`.
 
 Stored `minChars` and `maxItems` values outside their range are brought into range when the settings are loaded. A stored value of the wrong type is ignored and the default is used.
 
-Two keys have no control in the panel: `style.universalCodebox` (default `true`) styles the editors outside the card dialog, and `style.universalAutocomplete` (default `true`) enables completion in them.
+Two keys have no control in the panel: `style.universalCodebox` (default `true`) styles the editors outside the card dialog, and `style.universalAutocomplete` (default `true`) enables completion in them. Three more keys, `style.syntaxTintHue`, `style.syntaxTintSaturation` and `style.syntaxTintOpacity`, are stored with the settings but have no control in the panel either; the syntax colors come from the selected theme.
 
 ## Styling and themes
 
-All styling is scoped to the active editor and, in the card editor, its dialog. It sets internal data attributes on the editor nodes and its host, and never edits your Home Assistant theme or leaks to the wider dashboard.
+All styling is scoped to the active editor, the containers around it that would clip its frame, and, in the card editor, its dialog. Nostrodomus sets internal data attributes on the editor nodes and their host, and never edits your Home Assistant theme or leaks to the wider dashboard. In Developer Tools, the Result pane next to the template editor also gets the editor's frame.
 
 ### Codebox frame model
 One integrated frame. It does not stack a second glow.
@@ -307,7 +307,7 @@ Each theme gives a distinct color to 18 token kinds: foreground, dim, comments, 
 ```yaml
 type: cus          # suggests custom:mushroom-template-card, custom:button-card, custom:mini-graph-card, ...
 ```
-Your installed custom cards (from the live registry) appear with their readable names, next to common community cards from the bundled catalog.
+Your installed custom cards (from the live registry) appear next to common community cards from the bundled catalog.
 
 ### 2. Service and service-field completion
 ```yaml
@@ -315,13 +315,13 @@ action: light.turn_on
 data:
                    # suggests the fields of light.turn_on's real schema: brightness_pct, rgb_color, transition, color_name, flash, ...
 ```
-Fields come straight from your instance's service schema, with type, description, and required and advanced flags. Press `Enter` after `data:` and Nostrodomus re-opens so you can keep filling the block.
+Fields come straight from your instance's service schema. Required fields are listed before optional ones that match equally well. With Show details pane in suggestion popup turned on in the Style tab, the details pane under the list shows the description Home Assistant gives the highlighted field. Press `Enter` after `data:` and Nostrodomus re-opens so you can keep filling the block.
 
-### 3. Target with matching-domain entities first
+### 3. Target entities
 ```yaml
 action: light.turn_on
 target:
-  entity_id:       # your light.* entities are offered first, then everything else
+  entity_id: li    # suggests your entities that match, such as light.kitchen and light.living_room
 ```
 
 ### 4. card_mod CSS
@@ -401,10 +401,10 @@ Use Diagnostics, Copy full report (or `exportDiagnostics()`), which produces a r
 
 ## Privacy, security, and storage
 
-- Local-only, no network. The shipped bundle contains no `fetch`, `XMLHttpRequest`, `WebSocket`, `sendBeacon`, telemetry, or remote-code path, verified by the build's gate in `src` and in the built `dist`.
-- Icon previews in the suggestion list are drawn by Home Assistant's `ha-icon` element, which loads each icon from your Home Assistant the same way the icon picker does. The icon names come from the icon sets installed in Home Assistant, in the browser.
+- Local-only, no network requests of its own. The shipped bundle contains no `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource` or `sendBeacon` call, no telemetry upload, and no way to load or run remote code. The release verification (`tools/verify.py --release`, run by CI on every push and pull request) fails if the built bundle contains the text `fetch(`, `XMLHttpRequest`, `WebSocket(`, `EventSource(`, `sendBeacon`, `eval(`, `new Function`, `import(`, `document.write`, `srcdoc` or `javascript:`, or any `innerHTML`. The performance counters in Diagnostics stay in the browser.
+- Icon previews in the suggestion list are drawn by Home Assistant's `ha-icon` element, which gets each icon the same way Home Assistant's icon picker does: Material Design Icons from Home Assistant, and the icons of an installed icon set from that icon set. The names of the common Material Design icons are bundled with the plugin, and the other icon names come from the icon sets installed in Home Assistant, read in the browser.
 - Safe rendering. No `innerHTML`, no `eval` or `new Function`. DOM is built with `textContent` and `createElement`.
-- No arbitrary user CSS injection. Styling is scoped to the active editor and, in the card editor, its dialog.
+- No arbitrary user CSS injection. Styling is scoped to the active editor, the containers around it that would clip its frame, its dialog in the card editor, and the Result pane next to the template editor of Developer Tools.
 - Diagnostics are redacted by default and never leave your browser. Capability snapshots are coarse (`privacyLevel: "coarse-browser-capability-snapshot"`).
 - Storage keys (browser local storage). Nostrodomus writes three:
   - `nostrodomus.settings`: your settings, including the position and size of the settings panel. Settings saved in one browser tab reach the other open tabs.
@@ -449,11 +449,11 @@ A short list. The full list is in [docs/KNOWN_ISSUES.md](docs/KNOWN_ISSUES.md). 
 | Symptom | Try this |
 |---|---|
 | No suggestions | Make sure the editor has focus and press `Ctrl+Space`. Check Diagnostics, Providers and the Context tab. |
-| Plugin does not seem loaded | You may be on a built-in dashboard, which does not load custom resources. Open an editor on a dashboard you created. In an automation, script or Developer Tools editor after a page reload, open a dashboard you created once and go back. Confirm the resource is registered under Settings, Dashboards, Resources. |
+| Plugin does not seem loaded | You may be on a built-in dashboard such as Overview, which does not load custom resources. Open an editor on a dashboard you created. In an automation, script or Developer Tools editor after a page reload, open a dashboard you created once and go back. Confirm the resource is registered under Settings, Dashboards, Resources. |
 | Health check | `window.__nostrodomus.health()` returns `ok: true`. `window.__nostrodomus.runtimeErrors()` lists recorded errors. |
 | Stale version after update | Hard-reload (clear cache) or bump the resource URL `?v=` query string. Running version is in Diagnostics, System Status. |
 | Native HA dropdowns disappeared | That is Replace Home Assistant native autocomplete, on by default. Turn it off in General to restore them. |
-| Styling wrong with a custom theme | Adjust the frame controls in Style, or use Reset to default in Help. Styling is scoped to the active editor and its dialog. |
+| Styling wrong with a custom theme | Adjust the frame controls in Style, or use Reset to default in Help. Nothing on the dashboard itself is styled. |
 | Settings are not kept | The header of the settings panel shows when a save failed. Check that the browser allows site data for your Home Assistant address. |
 | Want verbose logs | `localStorage.setItem("nostrodomusDebug","1"); location.reload();` or the Debug toggle in Diagnostics. |
 

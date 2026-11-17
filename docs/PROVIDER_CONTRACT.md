@@ -97,7 +97,7 @@ The snapshot holds:
 
 Field rows are offered when the cursor is on a key directly under `data:` or `service_data:` and the enclosing block names a service. The service id is read from `ctx.branchState` by `serviceIdFromContext(ctx)`; the provider does not parse YAML. An unknown service or a service without fields yields no rows.
 
-In `target:` under `entity_id:`, when the enclosing block names a service outside the `homeassistant` domain, entities of the service's domain are listed first.
+In `target:` under `entity_id:`, when the enclosing block names a service outside the `homeassistant` domain, the provider returns the entities of the service's domain before the others, so they are kept when the row limit applies. The order in the suggestion list comes from the scorer (`docs/SCORING_CONTRACT.md`), not from this order.
 
 A missing or partial `hass` object, a non-object `states` or `services`, a getter that throws and a malformed registry entry each reduce the affected data only. The result is fewer suggestions, not an exception and not console output. `tests/providers/ha_runtime_data.test.mjs` covers these cases.
 

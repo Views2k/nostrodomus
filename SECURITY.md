@@ -4,7 +4,7 @@ Nostrodomus is a local-only Home Assistant frontend resource. It runs in the bro
 
 ## Security posture
 
-- No network calls: the bundle contains no `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource` or `sendBeacon` call, and no dynamic `import()`.
+- No network calls of its own: the bundle contains no `fetch`, `XMLHttpRequest`, `WebSocket`, `EventSource` or `sendBeacon` call, and no dynamic `import()`.
 - No telemetry upload. Performance and diagnostics data stay in the browser.
 - No `eval` or `new Function`, and no remote code loading.
 - No `innerHTML`. The interface is built with `textContent`, `createElement` and attribute setters.
