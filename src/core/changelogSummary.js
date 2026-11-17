@@ -6,6 +6,14 @@
 
 export const CHANGELOG_SUMMARY = Object.freeze([
   {
+    version: "0.1.283",
+    title: "Card preview messages stay visible",
+    bullets: [
+      "Messages a card shows in the preview of the card editor dialog, such as an alert, a warning or an error line, stay visible. The dialog styling hid them whatever the Hide editor warnings setting said.",
+      "Hide editor warnings and the warning badge apply to Home Assistant's editor warnings only, not to what a card shows in its preview.",
+    ],
+  },
+  {
     version: "0.1.282",
     title: "Icons from installed icon sets",
     bullets: [
@@ -39,14 +47,6 @@ export const CHANGELOG_SUMMARY = Object.freeze([
       "New setting in Settings, Style: Glass editor dialog, on by default. Turn it off on a slow computer: the blur costs graphics work while the dialog is open.",
       "The visual editor a custom card brings with it is left alone. Its notes are no longer turned into the small warning icon, and working in a code box inside it no longer resizes the dialog, frames that box or switches off the suggestions the card turned on.",
       "A visual editor taller than the dialog scrolls again after the code editor was shown, so its lower controls can be reached.",
-    ],
-  },
-  {
-    version: "0.1.278",
-    title: "Reference pages and comments brought up to date",
-    bullets: [
-      "No change in behavior. The reference pages were checked against the code, and CHANGELOG.md lists what changed in each version.",
-      "Firefox is not supported yet: while you type in the editor there, Home Assistant shortcuts can open in the middle of a word. Use a Chromium-based browser.",
     ],
   },
 ]);

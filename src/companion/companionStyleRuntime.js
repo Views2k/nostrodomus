@@ -2,10 +2,12 @@
 // badge.
 //
 // CODEBOX_CSS and DIALOG_ROOT_CSS, between the @gen markers, are byte for byte the two sheets of
-// the standalone editor layout script (reference/companions/nostrodomus_editor_v17_2_learned_reapply.js),
-// injected under the same element ids; tests/companion/scrollbar_css_byte_identity.test.mjs
-// compares them. Do not edit them by hand. The other sheets in this file have ids of their own;
-// the ones that change a rule of these two are injected after them. The sheets keep the
+// the standalone editor layout script (reference/companions/nostrodomus_editor_v17_2_learned_reapply.js);
+// tests/companion/scrollbar_css_byte_identity.test.mjs compares them. Do not edit them by hand.
+// Both are injected under the ids the script used. CODEBOX_CSS goes in as it is; DIALOG_ROOT_CSS
+// goes in without its last rule, the one that hid alerts (see DIALOG_ROOT_LAYOUT_CSS). The other
+// sheets in this file have ids of their own; the ones that change a rule of these two are
+// injected after them. The sheets keep the
 // `--nostrodomus-codebox-scrollbar-*` variables, so a theme can still set the scrollbar colors.
 //
 // Active by default (SCROLLBAR_SHIPPED_ACTIVE) and gated by companionLayerActive: while the
@@ -88,11 +90,19 @@ export const WARNING_BADGE_SHADOW_STYLE_ID = 'nostrodomus-editor-warning-badge-s
 // root: its notes are in the element editor's own tree, under the card editor area, and the
 // sheets leave that area out with `:not(.gui-editor ...)`. This filter is the same rule for the
 // alerts that get the inner badge sheet.
+//
+// The card preview is the card, not the editor. The walk does not enter its shadow roots either,
+// but Home Assistant renders the previewed card into hui-card's own light tree, which is part of
+// the dialog's shadow root, so a card that draws without a shadow root has its ha-alert there.
+// It is left out the same way, here and in the sheets with `:not(... .element-preview ha-alert)`.
+const CARD_PREVIEW_SELECTOR = '.element-preview';
+
 export function editorWarningAlerts(root) {
   let alerts = [];
   try { alerts = Array.from(root?.querySelectorAll?.('ha-alert') || []); } catch { alerts = []; }
   return alerts.filter((alert) => {
     try { if (alert?.closest?.(CARD_EDITOR_AREA_SELECTOR)) return false; } catch { /* detached */ }
+    try { if (alert?.closest?.(CARD_PREVIEW_SELECTOR)) return false; } catch { /* detached */ }
     return !insideCardOwnEditor(alert);
   });
 }
@@ -340,6 +350,26 @@ const DIALOG_ROOT_CSS = `
       }
     `;
 // @gen:dialog-root-css-end
+
+// The last rule of DIALOG_ROOT_CSS hides every ha-alert, [role="alert"], .issue-type.warning,
+// .warning and .error in the shadow root of the card editor dialog, whatever the settings say.
+// Home Assistant's dialog template has none of these, on 2026.6 as on 2026.11: the editor's
+// warnings and configuration errors are drawn in the shadow root of hui-card-element-editor,
+// where the rule does not reach, and the warning badge and "Hide editor warnings" handle them
+// (WARNING_HIDE_STYLE_ID). What the rule did reach is the card preview. hui-card renders the
+// card into its own light tree, which is part of the dialog's shadow root, so a card that draws
+// without a shadow root lost its own alerts and error messages in the preview. The dialog root
+// sheet is therefore injected without that rule.
+export const DIALOG_ROOT_ALERT_RULE_PATTERN = /\n[ \t]*ha-alert,\s*\[role="alert"\],\s*\.issue-type\.warning,\s*\.warning,\s*\.error\s*\{[^}]*\}\n/;
+
+export function withoutDialogRootAlertRule(css) {
+  const text = String(css || '');
+  const match = DIALOG_ROOT_ALERT_RULE_PATTERN.exec(text);
+  if (!match) return text;
+  return text.slice(0, match.index) + '\n' + text.slice(match.index + match[0].length);
+}
+
+export const DIALOG_ROOT_LAYOUT_CSS = withoutDialogRootAlertRule(DIALOG_ROOT_CSS);
 
 // The wa-dialog sizing sheet (WA_DIALOG_STYLE_ID), for the native top-layer
 // `<dialog part="dialog">` inside wa-dialog. Web Awesome sizes that part with
@@ -640,10 +670,10 @@ ${lines.map((line) => `        ${line}`).join('\n')}
 // See WARNING_HIDE_STYLE_ID. Only the <ha-alert> element itself: `[role="alert"]` would also match
 // the wrapper Home Assistant puts around the visual editor's notice (`div[role="alert"]`), and
 // collapsing that pushes the codebox down. The badge sheet has already taken the alert out of the
-// flow, so hiding it moves nothing. `:not(.gui-editor ha-alert)` leaves a custom card's own notes
-// alone (see editorWarningAlerts).
+// flow, so hiding it moves nothing. `:not(.gui-editor ha-alert, .element-preview ha-alert)` leaves
+// a custom card's own notes and the alerts of the card preview alone (see editorWarningAlerts).
 export const WARNING_HIDE_CSS = `
-      ha-alert:not(.gui-editor ha-alert) {
+      ha-alert:not(.gui-editor ha-alert, .element-preview ha-alert) {
         display: none !important;
       }
     `;
@@ -653,13 +683,14 @@ export const WARNING_HIDE_CSS = `
 // from the codebox frame color (badgeAccentFromBorderColor), with a cyan fallback. The size does
 // not change on hover: the message opens beside the icon instead, so the area under the pointer
 // stays the same. `:has(> ha-alert)` makes the alert's parent the positioning context. Every
-// selector leaves out `.gui-editor`, the area of the card's own editor: an editor that draws
-// without a shadow root has its notes in this same tree, and they are the card's.
+// selector leaves out `.gui-editor`, the area of the card's own editor, and `.element-preview`,
+// the card preview: an editor or a card that draws without a shadow root has its alerts in this
+// same tree, and they are the card's.
 export const WARNING_BADGE_HOST_CSS = `
-      :has(> ha-alert):not(.gui-editor, .gui-editor *) {
+      :has(> ha-alert):not(.gui-editor, .gui-editor *, .element-preview, .element-preview *) {
         position: relative;
       }
-      ha-alert:not(.gui-editor ha-alert) {
+      ha-alert:not(.gui-editor ha-alert, .element-preview ha-alert) {
         position: absolute;
         top: 8px;
         left: 8px;
@@ -684,14 +715,14 @@ export const WARNING_BADGE_HOST_CSS = `
          this outer-tree sheet: the SHADOW sheet's :host rule loses to the outer rule above
          whatever its specificity. Within this sheet :hover and :focus-within are more specific
          than the rule above. */
-      ha-alert:not(.gui-editor ha-alert):hover,
-      ha-alert:not(.gui-editor ha-alert):focus-within {
+      ha-alert:not(.gui-editor ha-alert, .element-preview ha-alert):hover,
+      ha-alert:not(.gui-editor ha-alert, .element-preview ha-alert):focus-within {
         overflow: visible;
       }
-      ha-alert ~ ha-alert:not(.gui-editor ha-alert) {
+      ha-alert ~ ha-alert:not(.gui-editor ha-alert, .element-preview ha-alert) {
         top: 38px;
       }
-      ha-alert ~ ha-alert ~ ha-alert:not(.gui-editor ha-alert) {
+      ha-alert ~ ha-alert ~ ha-alert:not(.gui-editor ha-alert, .element-preview ha-alert) {
         top: 68px;
       }
     `;
@@ -1046,7 +1077,7 @@ export function createCompanionStyleRuntime(deps = {}) {
     } else if (codeRoot && removeOwnedStyle(codeRoot, NATIVE_AUTOCOMPLETE_HIDE_STYLE_ID)) {
       applied = true;
     }
-    if (dialogRoot && injectOwnedStyle(dialogRoot, DIALOG_ROOT_STYLE_ID, DIALOG_ROOT_CSS, documentRef)) {
+    if (dialogRoot && injectOwnedStyle(dialogRoot, DIALOG_ROOT_STYLE_ID, DIALOG_ROOT_LAYOUT_CSS, documentRef)) {
       ownedRoots.add(dialogRoot);
       applied = true;
     }

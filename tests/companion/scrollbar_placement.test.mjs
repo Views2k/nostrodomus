@@ -91,8 +91,8 @@ test('applyToRoots injects each provided stylesheet once per root when active', 
   assert.ok(codeRoot.children[3].textContent.includes('Enter fullscreen'));
   assert.equal(codeRoot.children[4].id, NATIVE_AUTOCOMPLETE_HIDE_STYLE_ID, 'native-autocomplete-hide injected (ungated)');
   assert.ok(codeRoot.children[4].textContent.includes('.cm-tooltip-autocomplete'));
-  // dialogRoot gets the byte-frozen DIALOG_ROOT_CSS, then the additive preview-fill, editor-gutter,
-  // stacked-panes and glass-dialog sheets.
+  // dialogRoot gets DIALOG_ROOT_CSS without its alert rule (DIALOG_ROOT_LAYOUT_CSS), then the
+  // additive preview-fill, editor-gutter, stacked-panes and glass-dialog sheets.
   assert.equal(dialogRoot.children.length, 5);
   assert.equal(dialogRoot.children[4].id, GLASS_DIALOG_STYLE_ID, 'glass-dialog sheet injected after stacked-panes');
   assert.equal(dialogRoot.children[3].id, STACKED_PANES_STYLE_ID, 'stacked-panes sheet injected after editor-gutter');

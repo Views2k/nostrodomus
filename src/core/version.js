@@ -4,8 +4,8 @@
 // reads. A release changes this file together with PROJECT.json, package.json, package-lock.json,
 // src/core/changelogSummary.js and dist (tools/version_bump.py does the version fields).
 
-export const VERSION = "nostrodomus-v0.1.282-icon-sets";
-export const PROJECT_VERSION = "0.1.282";
+export const VERSION = "nostrodomus-v0.1.283-preview-alerts";
+export const PROJECT_VERSION = "0.1.283";
 export const PROJECT_RELEASE_STATE = "beta";
 export const LIVE_COMPANION_EDITOR_VERSION = "nostrodomus-editor-v17.2.65-runtime-coordinator";
 export const PRODUCT_NAME = "Nostrodomus";
