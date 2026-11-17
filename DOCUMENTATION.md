@@ -219,7 +219,7 @@ Local visual controls for the codebox, the card editor dialog and the suggestion
 - Codebox surface: enable, color, opacity (default 0.35), saturation. The surface takes the brightness the text needs: dark under the light-text themes, light under Parchment and Mist. Where that is the opposite of the Home Assistant theme (a light Home Assistant theme with a light-text syntax theme, or a dark one with Parchment or Mist) it is drawn at 0.92 opacity or more, so the page behind it does not wash the text out. In those two cases the surface is drawn even when it is switched off, because the text could not be read without it.
 - Glass editor dialog (`style.glassDialog`, default on). The card editor dialog is translucent and blurs the dashboard behind it, and the card preview has no background of its own, so the dashboard shows through, softened. A Home Assistant theme that sets its own dialog surface or dialog blur keeps it. The blur costs graphics work while the dialog is open; turn the setting off on slow computers. A change applies at once.
 - Syntax theme: enable, theme dropdown (37 themes), opacity, saturation.
-- Hide editor warnings (`style.hideEditorWarnings`, default off). In the card-edit dialog an editor warning from Home Assistant (for example "Visual editor is not supported") is drawn as a small badge that shows the message on hover. With this setting on, those warnings are hidden. A note that a card shows in its own visual editor is not an editor warning: it stays as the card draws it, with the setting on or off.
+- Hide editor warnings (`style.hideEditorWarnings`, default off). In the card-edit dialog an editor warning from Home Assistant (for example "Visual editor is not supported") is drawn as a small badge that shows the message on hover. With this setting on, those warnings are hidden. A note that a card shows in its own visual editor, and any message a card shows in the preview, is not an editor warning: it stays as the card draws it, with the setting on or off.
 - Hide active line highlight (`style.hideActiveLineHighlight`, default on).
 - Ctrl+Space popup: the size of the suggestion list (Compact, Comfort, Large), Show details pane in suggestion popup (default off), Commit prefix-matched YAML keys when typing `:` (default on), Offer buffer words when real providers have few matches (default on), and Completion accept mode (Replace word tail, Insert at cursor).
 
@@ -355,7 +355,7 @@ Everything below is local-only and reads live state in your browser. The stable 
 ### Common console commands
 
 ```js
-window.__nostrodomus.version                 // for example "nostrodomus-v0.1.282-icon-sets"
+window.__nostrodomus.version                 // for example "nostrodomus-v0.1.283-preview-alerts"
 window.__nostrodomus.health()                // { ok, status, warningCount, checks[], ... }
 window.__nostrodomus.runtimeErrors()         // { ok:true, localOnly:true, stats, items[] }  (last 40)
 window.__nostrodomus.exportDiagnostics()     // full, redacted diagnostics object (redact:true by default)
@@ -421,8 +421,8 @@ Security policy and reporting: [SECURITY.md](SECURITY.md).
 
 - Minimum Home Assistant version: 2026.6.0 (per `hacs.json`).
 - Tested Home Assistant versions (automated browser tests, Chromium):
-  - 2026.11.1 with Nostrodomus 0.1.282.
-  - 2026.6.4 with Nostrodomus 0.1.282.
+  - 2026.11.1 with Nostrodomus 0.1.283.
+  - 2026.6.4 with Nostrodomus 0.1.283.
 - Browsers: Chromium-based browsers are supported. Firefox is not supported yet (see [Known issues](docs/KNOWN_ISSUES.md)).
 - Installers: the Marketplace built into Home Assistant 2026.11 and later, or HACS 2.0.0+ on earlier versions. Both download the file `nostrodomus.js` attached to the GitHub release (see [docs/HACS_INSTALL.md](docs/HACS_INSTALL.md)).
 - Details and the Home Assistant behaviors to know are in [docs/COMPAT.md](docs/COMPAT.md).

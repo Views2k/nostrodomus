@@ -4,6 +4,13 @@ Versions before 0.1.266 are not listed.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Nostrodomus is in beta, with versions numbered `0.1.x`.
 
+## [0.1.283] - 2026-11-17
+
+### Fixed
+
+- Messages that a card shows in the preview of the card editor dialog stay visible: an `ha-alert`, an element with `role="alert"`, and elements with the class `error` or `warning`. The dialog styling hid all of them whatever the "Hide editor warnings" setting said, which reached the preview of cards that draw without a shadow root.
+- "Hide editor warnings" and the warning badge apply to Home Assistant's editor warnings only. An `ha-alert` that a card shows in its preview is no longer hidden or drawn as the badge.
+
 ## [0.1.282] - 2026-11-15
 
 ### Added

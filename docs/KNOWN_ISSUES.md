@@ -40,7 +40,6 @@ Limitations:
 ## Card editor dialog
 
 - Composite cards: some cards embed a small second code editor in their configuration form. Nostrodomus enlarges only the main code editor of the dialog and leaves the embedded one at its own size. If an embedded editor of a card is sized wrongly, report it with the card type.
-- Alerts that Home Assistant places directly in the card dialog, outside the editor area, are hidden while Nostrodomus styles the dialog, whatever the "Hide editor warnings" setting is. The editor's own warnings (for example "Visual editor is not supported") are inside the editor area and follow the setting.
 - Editor warnings are drawn as a small badge that shows the message on hover, and "Hide editor warnings" removes them, in the card editor dialog only. This applies to Home Assistant's own editor warnings; a note that a card shows in its own visual editor stays as the card draws it. In the automation, script and Developer Tools editors the warnings stay as Home Assistant draws them and the setting has no effect.
 - The glass editor dialog uses a backdrop blur, which costs graphics work while the dialog is open. On slow computers, turn off "Glass editor dialog" in Settings, Style.
 

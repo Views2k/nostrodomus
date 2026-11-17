@@ -174,8 +174,8 @@ test('the dot is clipped at rest and the host sheet itself unclips it on hover',
   // sheet's `ha-alert{overflow:hidden}`) wins over an inner-tree rule (the shadow sheet's
   // `:host{overflow:visible}`) before specificity is compared, so the flyout must be unclipped by a
   // :hover/:focus-within rule in the host sheet.
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*overflow:\s*hidden/i, 'the host sheet clips the alert box to the dot at rest');
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\):hover[\s\S]*?overflow:\s*visible/i, 'the host sheet unclips on hover and focus, so the flyout opens with or without the shadow sheet');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\)\s*\{[^}]*overflow:\s*hidden/i, 'the host sheet clips the alert box to the dot at rest');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\):hover[\s\S]*?overflow:\s*visible/i, 'the host sheet unclips on hover and focus, so the flyout opens with or without the shadow sheet');
   assert.match(WARNING_BADGE_SHADOW_CSS, /:host\s*\{[^}]*overflow:\s*visible/i, 'the shadow sheet also sets :host overflow:visible (it cannot override the outer rule on its own)');
 });
 
@@ -227,31 +227,31 @@ test('the hide sheet hides only the ha-alert element and collapses no container'
   assert.doesNotMatch(WARNING_HIDE_CSS, /\[role="alert"\]/, 'must not match the broad [role="alert"] container');
   assert.doesNotMatch(WARNING_HIDE_CSS, /issue-type/, 'must not match the structural .issue-type container');
   assert.doesNotMatch(WARNING_HIDE_CSS, /height:\s*0|max-height:\s*0|overflow:\s*hidden/i, 'must not force the collapse props that flatten a container');
-  assert.match(WARNING_HIDE_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*display:\s*none/i, 'hides the precise ha-alert host with display:none');
+  assert.match(WARNING_HIDE_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\)\s*\{[^}]*display:\s*none/i, 'hides the precise ha-alert host with display:none');
 });
 
 test('the badge takes the ha-alert out of the flow (position:absolute), so it cannot move the editor', () => {
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*position:\s*absolute/i, 'the ha-alert badge is absolutely positioned (out of normal flow)');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\)\s*\{[^}]*position:\s*absolute/i, 'the ha-alert badge is absolutely positioned (out of normal flow)');
   assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /!important/, 'the badge adds no !important (relies on outer-tree + :host specificity)');
 });
 
 // --- The badge: a small icon in the border color with a smooth flyout ---
 
 test('the badge sits at the top left, clear of the toolbar at the top right', () => {
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*left:\s*8px/i, 'badge is left-anchored (top-left)');
-  assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*right:\s*\d/i, 'badge is not right-anchored over the toolbar');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\)\s*\{[^}]*left:\s*8px/i, 'badge is left-anchored (top-left)');
+  assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\)\s*\{[^}]*right:\s*\d/i, 'badge is not right-anchored over the toolbar');
 });
 
 test('the badge is a 22px icon with no severity color behind it', () => {
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*width:\s*22px/i, 'icon footprint is small (22px)');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\)\s*\{[^}]*width:\s*22px/i, 'icon footprint is small (22px)');
   assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /--warning-color|#ffa726|--error-color|--info-color|--success-color/i, 'no orange or severity chip background');
 });
 
 test('the caution triangle has no surface, ring, glow or circle around it', () => {
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*background:\s*transparent/i, 'no surface behind the icon');
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*border:\s*0/i, 'no accent ring around the icon');
-  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*box-shadow:\s*none/i, 'no glow ring');
-  assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert\)\s*\{[^}]*border-radius:\s*50%/i, 'no circle');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\)\s*\{[^}]*background:\s*transparent/i, 'no surface behind the icon');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\)\s*\{[^}]*border:\s*0/i, 'no accent ring around the icon');
+  assert.match(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\)\s*\{[^}]*box-shadow:\s*none/i, 'no glow ring');
+  assert.doesNotMatch(WARNING_BADGE_HOST_CSS, /ha-alert:not\(\.gui-editor ha-alert, \.element-preview ha-alert\)\s*\{[^}]*border-radius:\s*50%/i, 'no circle');
 });
 
 test('the caution triangle uses --nostrodomus-badge-accent (the codebox border color) with a cyan fallback', () => {
@@ -310,6 +310,29 @@ test('the card preview is left out of the warning walk; the editor alert is reac
   assert.ok(editorAlertShadow._styles.length > 0, 'the editor alert is badged');
   assert.equal(previewAlertShadows.filter((root) => root._styles.length > 0).length, 0, 'no preview alert is restyled');
   assert.equal(previewReads, 0, 'the preview is not read');
+});
+
+// Home Assistant renders the previewed card into hui-card's light tree, so a card that draws
+// without a shadow root has its ha-alert directly in the dialog's shadow root. That alert is the
+// card's: it is not an editor warning, it is not badged, and the sheets leave it out.
+test('an ha-alert of a card drawn without a shadow root, in the preview of the dialog root, is the card\'s', () => {
+  const previewAlert = { localName: 'ha-alert', shadowRoot: null, closest: (sel) => (String(sel).includes('element-preview') ? {} : null) };
+  const dialogRoot = makeRoot('hui-dialog-edit-card', { alerts: [previewAlert] });
+  assert.deepEqual(editorWarningAlerts(dialogRoot), [], 'not an editor warning');
+
+  const rt = createCompanionStyleRuntime({ documentRef: fakeDoc, isActive: () => true, hideEditorWarnings: () => false });
+  rt.applyEditorWarningHide({ shadowRoot: dialogRoot });
+  assert.equal(hasStyle(dialogRoot, 'nostrodomus-editor-warning-badge-host'), false, 'the dialog root is not badged for it');
+
+  // Every selector of the hide and badge sheets that matches an ha-alert, or the parent of one,
+  // leaves the preview out.
+  for (const [name, css] of [['hide', WARNING_HIDE_CSS], ['badge host', WARNING_BADGE_HOST_CSS]]) {
+    const selectors = css.split('}').map((block) => block.split('{')[0]).flatMap((s) => s.split(/,(?![^(]*\))/)).map((s) => s.trim()).filter((s) => /ha-alert/.test(s));
+    assert.ok(selectors.length > 0, `${name} sheet has ha-alert selectors`);
+    for (const selector of selectors) {
+      assert.match(selector, /\.element-preview/, `${name} sheet selector leaves the preview out: ${selector}`);
+    }
+  }
 });
 
 // A custom card's visual editor (Bubble Card and many others) puts its own notes between its
@@ -429,7 +452,7 @@ test('a card editor without a shadow root: its note is left alone, the warning i
   // the card editor area out.
   const selectors = (css) => css.replace(/\/\*[\s\S]*?\*\//g, '').split('}')
     .map((rule) => rule.split('{')[0].trim()).filter(Boolean)
-    .flatMap((list) => list.split(',').map((s) => s.trim()).filter((s) => !/^\.gui-editor/.test(s) && !/\*\)$/.test(s)));
+    .flatMap((list) => list.split(/,(?![^(]*\))/).map((s) => s.trim()).filter(Boolean));
   for (const selector of [...selectors(WARNING_BADGE_HOST_CSS), ...selectors(WARNING_HIDE_CSS)]) {
     assert.match(selector, /:not\(\.gui-editor/, `"${selector}" leaves out the card editor area`);
   }

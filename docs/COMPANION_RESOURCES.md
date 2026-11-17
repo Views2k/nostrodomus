@@ -15,7 +15,7 @@ The same behavior used to come from two standalone scripts, `nostrodomus_editor_
 | `inputQuietRuntime.js` | Postpones style, syntax refresh and diagnostics work while the user types | active |
 | `pickerStyleRuntime.js` | Transparency and blur fix for entity pickers and popovers | dormant |
 
-The scrollbar and picker stylesheets are kept byte for byte equal to the stylesheets of the standalone scripts. `tests/companion/scrollbar_css_byte_identity.test.mjs` and `tests/companion/picker_style_runtime.test.mjs` fail when they differ.
+The scrollbar and picker stylesheets are kept byte for byte equal to the stylesheets of the standalone scripts. `tests/companion/scrollbar_css_byte_identity.test.mjs` and `tests/companion/picker_style_runtime.test.mjs` fail when they differ. The card dialog stylesheet is injected without its last rule, which hid every `ha-alert`, `[role="alert"]`, `.warning` and `.error` in the dialog and so the messages of the card preview; `tests/companion/dialog_root_alert_rule.test.mjs` checks that nothing else differs.
 
 The companion layer sets heights and overflow on `.cm-editor` and `.cm-scroller`. The codebox style runtime in `src/ui/` leaves those elements alone (see `docs/contracts/STYLE_OWNERSHIP_CONTRACT.md`).
 
