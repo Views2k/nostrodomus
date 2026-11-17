@@ -50,7 +50,7 @@ compatibility section of [DOCUMENTATION.md](DOCUMENTATION.md#compatibility-and-v
 
 - Nostrodomus is the public product name.
 - `window.__nostrodomus` is the public runtime namespace. Keep it.
-- No network calls, no unsafe HTML rendering, no `eval`, and no arbitrary user CSS.
+- No network calls from Nostrodomus code, no unsafe HTML rendering, no `eval`, and no arbitrary user CSS.
 - Settings changes apply in place. They must not close and reopen the settings panel or
   reset its tab and scroll position.
 - Prefer small changes that can be reviewed and reverted over rewrites of the runtime.

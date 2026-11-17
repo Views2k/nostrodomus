@@ -2,7 +2,7 @@
 
 Nostrodomus is a frontend resource that Home Assistant loads into the browser. It adds completion, snippets, syntax coloring, diagnostics and a settings panel to Home Assistant's code editors.
 
-It is not a cloud service and has no backend. It must not add telemetry, remote schema fetching, update checks, remote script loading or any other network call.
+It is not a cloud service and has no backend. It must not add telemetry upload, remote schema fetching, update checks, remote script loading or any other network call of its own.
 
 This document names the actors, the trust boundaries and the defenses that a change has to keep.
 
@@ -17,12 +17,12 @@ Nostrodomus defends against accidental and opportunistic misuse inside the brows
 - No `innerHTML`. The interface is built with `createElement`, `textContent` and explicit attribute setters. The helpers in `src/core/dom.js` accept a fixed set of tag names and reject event-handler attributes (`on*`), `javascript:` URLs and `srcdoc`.
 - Listeners are attached with `addEventListener`, not with handler attributes.
 - Text from providers and from Home Assistant (labels, details, documentation, entity ids, names) is rendered as text nodes. Rows built from the bundled library and from Home Assistant data are cut to fixed lengths (`SECURITY_LIMITS` in `src/core/runtimeConstants.js`).
-- Behavior is limited to code editors. Keyboard and pointer handling, styles and the suggestion list apply to the active editor and its dialog, not to the dashboard (`docs/contracts/RUNTIME_SCOPE_CONTRACT.md`).
+- Behavior is limited to code editors. Keyboard and pointer handling, styles and the suggestion list apply to the active editor and its dialog, not to the dashboard (`docs/contracts/RUNTIME_SCOPE_CONTRACT.md`). Styles also reach the containers around the editor that would clip its frame and the Result pane next to the Developer Tools template editor.
 - Diagnostics are redacted by default. `window.__nostrodomus.exportDiagnostics()` replaces editor text, labels and names unless it is called with `{ redact: false }`, and the copy button in Settings always copies the redacted form.
 - Data read from Home Assistant degrades quietly: a missing, partial or throwing object leads to fewer suggestions, not to an exception (`docs/PROVIDER_CONTRACT.md`).
 - `window.__nostrodomus.uninstall()` removes the listeners, observers, style elements and overlays that Nostrodomus added.
 
-`tools/verify.py` enforces the first three points on `dist/nostrodomus.js`: it fails when one of the forbidden strings appears in the bundle or when the number of `innerHTML` occurrences exceeds `innerhtml_max` in `PROJECT.json`, which is 0. `tools/check_runtime_contracts.py` scans `src/app.js` and the bundle for `eval`, `new Function`, `sendBeacon` and `fetch` calls.
+`tools/verify.py` checks the first three points on `dist/nostrodomus.js` as text: it fails when the bundle contains one of the forbidden strings for network and dynamic-code calls, or when the number of `innerHTML` occurrences exceeds `innerhtml_max` in `PROJECT.json`, which is 0. `tools/check_runtime_contracts.py` scans `src/app.js` and the bundle for `eval`, `new Function`, `sendBeacon` and `fetch` calls.
 
 ## Actors
 
